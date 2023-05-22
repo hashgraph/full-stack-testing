@@ -15,12 +15,40 @@
  */
 
 plugins {
-    id("com.hedera.fst.aggregate-reports")
+    id("java-library")
+    id("jacoco")
     id("com.hedera.fst.spotless-conventions")
+    id("com.hedera.fst.spotless-java-conventions")
     id("com.hedera.fst.spotless-kotlin-conventions")
 }
 
+// Require a consistent group ID across all projects
+group = "com.hedera.fst"
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+        vendor.set(JvmVendorSpec.ADOPTIUM)
+    }
+}
+
 repositories {
+    // Use Maven Central for dependencies
     mavenCentral()
-    gradlePluginPortal()
+}
+
+// Make sure we use UTF-8 encoding when compiling
+tasks.withType<JavaCompile>().configureEach {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType<Javadoc>().configureEach {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType<Jar>().configureEach {
+    isReproducibleFileOrder = true
+    isPreserveFileTimestamps = false
+    fileMode = 664
+    dirMode = 775
 }

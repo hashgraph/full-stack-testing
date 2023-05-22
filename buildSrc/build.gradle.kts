@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+plugins {
+    `kotlin-dsl`
+}
 
-rootProject.name = "full-stack-testing"
+repositories {
+    gradlePluginPortal()
+}
 
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
-    }
+dependencies {
+    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
+    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:4.0.0.2929")
 }
