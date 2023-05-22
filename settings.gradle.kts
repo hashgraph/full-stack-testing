@@ -23,9 +23,7 @@ dependencyResolutionManagement {
         // This is the version catalog for the testLibs configuration.
         // The `libs.versions.toml` file is automatically imported by Gradle conventions.
         // However, we must explicitly declare the `testLibs.versions.toml` catalog.
-        create("testLibs") {
-            from(files("gradle/testLibs.versions.toml"))
-        }
+        create("testLibs") { from(files("gradle/testLibs.versions.toml")) }
     }
 }
 
