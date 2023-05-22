@@ -27,7 +27,7 @@ sonarqube {
         property("sonar.projectVersion", project.version)
         property(
             "sonar.projectDescription",
-            "Full Stack Testing Suite (formerly known as JRS and FSTS) for Hedera Services"
+            "Full Stack Testing Suite (formerly known as JRS) for Hedera Services"
         )
         property("sonar.links.homepage", "https://github.com/hashgraph/full-stack-testing")
         property("sonar.links.ci", "https://github.com/hashgraph/full-stack-testing/actions")

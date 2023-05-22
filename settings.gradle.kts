@@ -18,6 +18,17 @@ plugins { id("com.gradle.enterprise").version("3.13.2") }
 
 rootProject.name = "full-stack-testing"
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        // This is the version catalog for the testLibs configuration.
+        // The `libs.versions.toml` file is automatically imported by Gradle conventions.
+        // However, we must explicitly declare the `testLibs.versions.toml` catalog.
+        create("testLibs") {
+            from(files("gradle/testLibs.versions.toml"))
+        }
+    }
+}
+
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"

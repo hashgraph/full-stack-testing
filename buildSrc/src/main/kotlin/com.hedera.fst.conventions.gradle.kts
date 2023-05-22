@@ -1,3 +1,5 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
+
 /*
  * Copyright (C) 2023 Hedera Hashgraph, LLC
  *
@@ -17,24 +19,30 @@
 plugins {
     id("java-library")
     id("jacoco")
+
+    // Conventions Plugins
     id("com.hedera.fst.spotless-conventions")
     id("com.hedera.fst.spotless-java-conventions")
     id("com.hedera.fst.spotless-kotlin-conventions")
+
+    // Third Party Plugins
+    id("com.adarshr.test-logger")
 }
 
 // Require a consistent group ID across all projects
 group = "com.hedera.fst"
 
+repositories {
+    // Use Maven Central for dependencies
+    mavenCentral()
+}
+
+// Configure the JVM build environment
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
-}
-
-repositories {
-    // Use Maven Central for dependencies
-    mavenCentral()
 }
 
 // Make sure we use UTF-8 encoding when compiling
@@ -46,9 +54,56 @@ tasks.withType<Javadoc>().configureEach {
     options.encoding = "UTF-8"
 }
 
+// Ensure that all JAR files are reproducible
 tasks.withType<Jar>().configureEach {
     isReproducibleFileOrder = true
     isPreserveFileTimestamps = false
     fileMode = 664
     dirMode = 775
+}
+
+// Setup Unit Tests
+testing {
+    suites {
+        // Configure the normal unit test suite to use JUnit Jupiter.
+        @Suppress("UnstableApiUsage")
+        named("test", JvmTestSuite::class) {
+            // Enable JUnit Jupiter as our test engine
+            useJUnitJupiter()
+            targets.all {
+                testTask {
+                    // Increase the heap size for the unit tests
+                    maxHeapSize = "4g"
+                }
+            }
+        }
+    }
+}
+
+// Ensure JaCoCo coverage is generated and aggregated
+tasks.jacocoTestReport.configure {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    val testExtension = tasks.test.get().extensions.getByType<JacocoTaskExtension>()
+    executionData.setFrom(testExtension.destinationFile)
+
+    shouldRunAfter(tasks.named("check"))
+}
+
+// Ensure the check task also runs the JaCoCo coverage report
+tasks.named("check").configure {
+    dependsOn(tasks.named<JacocoReport>("jacocoTestReport"))
+}
+
+// Improve test logging
+testlogger {
+    theme = ThemeType.MOCHA
+    slowThreshold = 10000
+    showStandardStreams = true
+    showPassedStandardStreams = false
+    showSkippedStandardStreams = false
+    showFailedStandardStreams = true
 }

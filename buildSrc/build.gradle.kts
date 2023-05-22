@@ -25,4 +25,5 @@ repositories {
 dependencies {
     implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
     implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:4.0.0.2929")
+    implementation("com.adarshr:gradle-test-logger-plugin:3.2.0")
 }
