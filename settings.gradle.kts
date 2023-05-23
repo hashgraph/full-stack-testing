@@ -18,6 +18,9 @@ plugins { id("com.gradle.enterprise").version("3.13.2") }
 
 rootProject.name = "full-stack-testing"
 
+// Include the subprojects
+include(":junit-extensions")
+
 dependencyResolutionManagement {
     versionCatalogs {
         // This is the version catalog for the testLibs configuration.
