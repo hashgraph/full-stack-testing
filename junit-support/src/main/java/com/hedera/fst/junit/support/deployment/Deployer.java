@@ -102,20 +102,27 @@ public class Deployer {
                 ExecWatch execWatch = client.pods().inNamespace(namespace).withName(podName)
                         .writingOutput(out)
                         .writingError(error)
-                        .usingListener(new MyPodExecListener())
-//                        .exec("cat", targetFilePath);
-                        .exec("touch", "/opt/hgcapp/targetFilePath.txt");
+                        .usingListener(new MyPodExecListener(out, error))
+                        .exec("cat", targetFilePath);
 
-                boolean latchTerminationStatus = execLatch.await(30, TimeUnit.SECONDS);
+                boolean latchTerminationStatus = execLatch.await(5, TimeUnit.SECONDS);
                 if (!latchTerminationStatus) {
                     System.out.println("Latch could not terminate within specified time");
                 }
-                System.out.println("Exec Output: {} " + out);
                 execWatch.close();
             }
         }
     }
+
     private static class MyPodExecListener implements ExecListener {
+        private final ByteArrayOutputStream out;
+        private final ByteArrayOutputStream err;
+
+        public MyPodExecListener(ByteArrayOutputStream out, ByteArrayOutputStream err) {
+            this.out = out;
+            this.err = err;
+        }
+
         @Override
         public void onOpen() {
             System.out.println("Shell was opened");
@@ -123,12 +130,14 @@ public class Deployer {
 
         @Override
         public void onFailure(Throwable t, Response failureResponse) {
-            System.out.println("Some error encountered: " + t.getMessage() + ", " + failureResponse);
+            System.out.println(
+                    "Some error encountered: " + t.getMessage() + ", " + failureResponse + ", " + out.toString() + ", "
+                            + err.toString());
         }
 
         @Override
         public void onClose(int i, String s) {
-            System.out.println("Shell Closing");
+            System.out.println("Shell was closed: " + i + ", " + s + ", out:\n" + out.toString() + ", err:\n" + err.toString());
         }
     }
 }
