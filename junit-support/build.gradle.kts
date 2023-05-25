@@ -20,6 +20,9 @@ dependencies {
     // API Libraries
     api(testLibs.bundles.junit.jupiter.api)
 
+    // Implementation Libraries
+    implementation(libs.bundles.kubernetes)
+
     // Test Libraries
     testRuntimeOnly(testLibs.bundles.junit.jupiter.engine)
 }
