@@ -1,15 +1,18 @@
 package com.hedera.fst.junit.support.deployment;
 
-import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodList;
-import io.fabric8.kubernetes.api.model.PodStatus;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.dsl.ParameterNamespaceListVisitFromServerGetDeleteRecreateWaitApplicable;
+import io.fabric8.kubernetes.client.Watch;
+import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Deployer {
+    int runningCount = 0;
+
     public void deployFromResource(String resourceName, String namespace) throws InterruptedException {
         try (KubernetesClient client = new KubernetesClientBuilder().build()) {
             client.load(Deployer.class.getResourceAsStream(resourceName))
@@ -17,31 +20,26 @@ public class Deployer {
                     .createOrReplace();
 
             PodList podList = client.pods().inNamespace(namespace).list();
+            List<Watch> watchList = new ArrayList<>();
             for (Pod pod : podList.getItems()) {
-                while(!pod.getStatus().getPhase().equals("Running")) {
-                    Thread.sleep(1000);
-                    pod = client.pods().inNamespace(namespace).withName(pod.getMetadata().getName()).get();
-                }
-            }
+                watchList.add(client.pods().inNamespace(namespace).withName(pod.getMetadata().getName()).watch(new Watcher<>() {
+                    @Override
+                    public void eventReceived(Action action, Pod resource) {
+                        System.out.println("Event received: " + action.name() + " " + resource.getMetadata().getName());
+                        if (resource.getStatus().getPhase().equals("Running")){
+                            runningCount++;
+                        }
+                    }
 
-//            //WATCH
-//            Watch watch = client.pods().inNamespace(namespace).withName("pod1").watch(new Watcher<Pod>() {
-//                @Override
-//                public void eventReceived(Action action, Pod resource) {
-//                    switch (action) {
-//                        case DELETED:
-//                            deleteLatch.countDown();
-//                            break;
-//                        default:
-//                            throw new AssertionFailedError(action.toString().concat(" isn't recognised."));
-//                    }
-//                }
-//
-//                @Override
-//                public void onClose(KubernetesClientException cause) {
-//                    closeLatch.countDown();
-//                }
-//            });
+                    @Override
+                    public void onClose(WatcherException cause) {
+                        System.out.println("Watcher close due to " + cause);
+                    }
+                }));
+            }
+            while (runningCount < podList.getItems().size()) {
+                Thread.sleep(1000);
+            }
         }
     }
 
