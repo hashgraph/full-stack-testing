@@ -4,12 +4,9 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Deployer {
     int runningCount = 0;
@@ -65,18 +62,6 @@ public class Deployer {
                                         + resource.getStatus().getPhase());
                                 if (action.name().equals("DELETED")) {
                                     runningCount--;
-//                                    PodList podList = client.pods().inNamespace(namespace).list();
-//                                    System.out.println(
-//                                            LocalDateTime.now() + " Pods remaining: " + podList.getItems().size());
-//                                    try {
-//                                        Thread.sleep(1000);
-//                                    } catch (InterruptedException e) {
-//                                        throw new RuntimeException(e);
-//                                    }
-//                                    podList = client.pods().inNamespace(namespace).list();
-//                                    System.out.println(
-//                                            LocalDateTime.now() + " Pods remaining: " + podList.getItems().size());
-//                                }
                                 }
                             }
 
