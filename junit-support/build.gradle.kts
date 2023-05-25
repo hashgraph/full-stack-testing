@@ -22,6 +22,7 @@ dependencies {
 
     // Implementation Libraries
     implementation(libs.bundles.kubernetes)
+    implementation(libs.bundles.commons)
 
     // Test Libraries
     testRuntimeOnly(testLibs.bundles.junit.jupiter.engine)
