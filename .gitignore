@@ -505,3 +505,6 @@ secring.*
 
 ### Completely Ignore Intellij
 .idea
+
+### Ignore Helm resources
+**/src/main/resources/helm/**

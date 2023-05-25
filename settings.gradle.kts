@@ -19,7 +19,9 @@ plugins { id("com.gradle.enterprise").version("3.13.2") }
 rootProject.name = "full-stack-testing"
 
 // Include the subprojects
-include(":junit-extensions")
+include(":junit-support")
+
+include(":helm-client")
 
 dependencyResolutionManagement {
     versionCatalogs {

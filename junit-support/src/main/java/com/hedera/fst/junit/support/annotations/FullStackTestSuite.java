@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+package com.hedera.fst.junit.support.annotations;
 
-repositories {
-    gradlePluginPortal()
-    mavenCentral()
-}
+import com.hedera.fst.junit.support.extensions.TestSuiteInitializer;
+import java.lang.annotation.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
-dependencies {
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
-    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:4.0.0.2929")
-    implementation("com.adarshr:gradle-test-logger-plugin:3.2.0")
-    implementation("net.swiftzer.semver:semver:1.1.2")
-}
+@Inherited
+@Documented
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Execution(ExecutionMode.SAME_THREAD)
+@ExtendWith({TestSuiteInitializer.class})
+public @interface FullStackTestSuite {}

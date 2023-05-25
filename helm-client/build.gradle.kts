@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-plugins {
-    `kotlin-dsl`
-}
+import com.hedera.fst.gradle.helm.release.HelmArtifactTask
 
-repositories {
-    gradlePluginPortal()
-    mavenCentral()
-}
+plugins { id("com.hedera.fst.conventions") }
+
+tasks.register<HelmArtifactTask>("helmArtifacts")
+
+@Suppress("UnstableApiUsage")
+tasks.withType<ProcessResources> { dependsOn(tasks.withType<HelmArtifactTask>()) }
 
 dependencies {
-    implementation("com.diffplug.spotless:spotless-plugin-gradle:6.18.0")
-    implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:4.0.0.2929")
-    implementation("com.adarshr:gradle-test-logger-plugin:3.2.0")
-    implementation("net.swiftzer.semver:semver:1.1.2")
+    // API Libraries
+    testImplementation(testLibs.bundles.junit.jupiter.api)
+
+    // Test Libraries
+    testRuntimeOnly(testLibs.bundles.junit.jupiter.engine)
 }
