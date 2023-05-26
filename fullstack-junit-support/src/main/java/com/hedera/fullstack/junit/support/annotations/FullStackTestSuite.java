@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.aggregate-reports")
-    id("com.hedera.fullstack.spotless-conventions")
-    id("com.hedera.fullstack.spotless-kotlin-conventions")
-}
+package com.hedera.fullstack.junit.support.annotations;
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+import com.hedera.fullstack.junit.support.extensions.TestSuiteInitializer;
+import java.lang.annotation.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+
+@Inherited
+@Documented
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Execution(ExecutionMode.SAME_THREAD)
+@ExtendWith({TestSuiteInitializer.class})
+public @interface FullStackTestSuite {}

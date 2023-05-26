@@ -19,18 +19,11 @@ plugins { id("com.gradle.enterprise").version("3.13.2") }
 rootProject.name = "full-stack-testing"
 
 // Include the subprojects
-include(":junit-support")
+include(":fullstack-bom")
 
-include(":helm-client")
+include(":fullstack-helm-client")
 
-dependencyResolutionManagement {
-    versionCatalogs {
-        // This is the version catalog for the testLibs configuration.
-        // The `libs.versions.toml` file is automatically imported by Gradle conventions.
-        // However, we must explicitly declare the `testLibs.versions.toml` catalog.
-        create("testLibs") { from(files("gradle/testLibs.versions.toml")) }
-    }
-}
+include(":fullstack-junit-support")
 
 gradleEnterprise {
     buildScan {

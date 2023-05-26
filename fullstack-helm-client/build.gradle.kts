@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.aggregate-reports")
-    id("com.hedera.fullstack.spotless-conventions")
-    id("com.hedera.fullstack.spotless-kotlin-conventions")
-}
+import com.hedera.fullstack.gradle.helm.release.HelmArtifactTask
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+plugins { id("com.hedera.fullstack.conventions") }
+
+tasks.register<HelmArtifactTask>("helmArtifacts")
+
+@Suppress("UnstableApiUsage")
+tasks.withType<ProcessResources> { dependsOn(tasks.withType<HelmArtifactTask>()) }
+
+dependencies {
+    testImplementation(enforcedPlatform(project(":fullstack-bom")))
+
+    // API Libraries
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+
+    // Test Libraries
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

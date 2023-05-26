@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.aggregate-reports")
-    id("com.hedera.fullstack.spotless-conventions")
-    id("com.hedera.fullstack.spotless-kotlin-conventions")
-}
+plugins { id("com.hedera.fullstack.conventions") }
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+dependencies {
+    api(enforcedPlatform(project(":fullstack-bom")))
+
+    // API Libraries
+    api("org.junit.jupiter:junit-jupiter-api")
+
+    // Test Libraries
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

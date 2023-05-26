@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.aggregate-reports")
-    id("com.hedera.fullstack.spotless-conventions")
-    id("com.hedera.fullstack.spotless-kotlin-conventions")
-}
+package com.hedera.fullstack.helm.client;
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-}
+public interface HelmClient {}

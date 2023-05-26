@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.aggregate-reports")
-    id("com.hedera.fullstack.spotless-conventions")
-    id("com.hedera.fullstack.spotless-kotlin-conventions")
-}
+package com.hedera.fullstack.helm.client;
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+import com.hedera.fullstack.helm.client.builder.HelmClientBuilderImpl;
+
+/**
+ * The factory for creating {@link HelmClient} instances.
+ */
+public abstract class Helm {
+
+    public static HelmClientBuilder builder() {
+        return new HelmClientBuilderImpl();
+    }
+
+    public static HelmClient defaultClient() {
+        return builder().build();
+    }
 }
