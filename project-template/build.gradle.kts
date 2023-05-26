@@ -14,27 +14,16 @@
  * limitations under the License.
  */
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+import com.hedera.fullstack.gradle.helm.release.HelmArtifactTask
 
-rootProject.name = "full-stack-testing"
+plugins { id("com.hedera.fullstack.conventions") }
 
-// Include the subprojects
-include(":fullstack-bom")
+dependencies {
+    api(enforcedPlatform(project(":fullstack-bom")))
 
-include(":fullstack-helm-client")
+    // API Libraries
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
 
-include(":fullstack-junit-support")
-
-include(":fullstack-validator-api")
-
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
-    }
+    // Test Libraries
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

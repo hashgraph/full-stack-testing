@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+plugins { id("com.hedera.fullstack.conventions") }
 
-rootProject.name = "full-stack-testing"
+dependencies {
+    api(enforcedPlatform(project(":fullstack-bom")))
 
-// Include the subprojects
-include(":fullstack-bom")
+    // API Libraries
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
 
-include(":fullstack-helm-client")
-
-include(":fullstack-junit-support")
-
-include(":fullstack-validator-api")
-
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
-    }
+    // Test Libraries
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 }

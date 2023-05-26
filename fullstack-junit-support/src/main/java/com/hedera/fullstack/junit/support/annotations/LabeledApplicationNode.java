@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+package com.hedera.fullstack.junit.support.annotations;
 
-rootProject.name = "full-stack-testing"
+import com.hedera.fullstack.junit.support.ApplicationProvisioner;
 
-// Include the subprojects
-include(":fullstack-bom")
+import java.lang.annotation.*;
 
-include(":fullstack-helm-client")
+@Inherited
+@Documented
+@Repeatable(LabeledApplicationNodes.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface LabeledApplicationNode {
+    String value();
 
-include(":fullstack-junit-support")
-
-include(":fullstack-validator-api")
-
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
-    }
+    Class<ApplicationProvisioner> provisioner() default ApplicationProvisioner.class;
 }

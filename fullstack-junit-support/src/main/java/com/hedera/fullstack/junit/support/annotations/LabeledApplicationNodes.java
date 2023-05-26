@@ -14,27 +14,14 @@
  * limitations under the License.
  */
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+package com.hedera.fullstack.junit.support.annotations;
 
-rootProject.name = "full-stack-testing"
+import java.lang.annotation.*;
 
-// Include the subprojects
-include(":fullstack-bom")
-
-include(":fullstack-helm-client")
-
-include(":fullstack-junit-support")
-
-include(":fullstack-validator-api")
-
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
-    }
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface LabeledApplicationNodes {
+    LabeledApplicationNode[] value();
 }

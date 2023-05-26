@@ -14,27 +14,9 @@
  * limitations under the License.
  */
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+package com.hedera.fullstack.validator.api;
 
-rootProject.name = "full-stack-testing"
-
-// Include the subprojects
-include(":fullstack-bom")
-
-include(":fullstack-helm-client")
-
-include(":fullstack-junit-support")
-
-include(":fullstack-validator-api")
-
-gradleEnterprise {
-    buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
-    }
-}
+/**
+ *
+ */
+public interface ValidationResult {}
