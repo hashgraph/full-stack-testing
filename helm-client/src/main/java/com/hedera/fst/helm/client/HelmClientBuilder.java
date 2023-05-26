@@ -17,7 +17,13 @@
 package com.hedera.fst.helm.client;
 
 /**
- * Builder for constructing {@link HelmClient} instances.
+ * {@code HelmClientBuilder} is used to construct instances of {@link HelmClient}. This interface defines the standard
+ * methods which all {@link HelmClient} builders must implement.
+ *
+ * @implNote The {@link HelmClientBuilder#build()} method is responsible for extracting the appropriate Helm executable from
+ * the JAR archive. The Helm executable should be extracted to a temporary directory which is supplied to the {@link HelmClient}
+ * implementation.
+ * @see HelmClient
  */
 public interface HelmClientBuilder {
 
