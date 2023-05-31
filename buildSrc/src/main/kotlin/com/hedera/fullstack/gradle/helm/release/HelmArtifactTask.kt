@@ -1,23 +1,17 @@
 package com.hedera.fullstack.gradle.helm.release
 
-import gradle.kotlin.dsl.accessors._64592ae4a4ab38627abd1749d9f866dc.main
-import gradle.kotlin.dsl.accessors._64592ae4a4ab38627abd1749d9f866dc.sourceSets
 import net.swiftzer.semver.SemVer
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
-import org.gradle.api.invocation.Gradle
-import org.gradle.api.model.ObjectFactory
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.OutputFiles
-import org.gradle.api.tasks.StopExecutionException
-import org.gradle.api.tasks.TaskAction
-import org.gradle.internal.impldep.com.fasterxml.jackson.databind.ser.PropertyBuilder
+import org.gradle.api.tasks.*
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.get
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
@@ -41,18 +35,20 @@ abstract class HelmArtifactTask() : DefaultTask() {
     private var actualVersion: SemVer? = null
     private var actualTuples: List<ArtifactTuple>? = null
     private var workingDirectory: Path? = null
-    private var baseArtifactDirectory: Path? = null
 
     companion object {
         const val HELM_RELEASE_BASE_URL = "https://get.helm.sh/"
         const val HELM_ARTIFACT_TEMPLATE = "helm-v%s-%s-%s.%s"
         const val HELM_EXECUTABLE_PREFIX = "helm"
+        const val HELM_VERSION_FILE = "HELM_VERSION"
     }
 
     init {
         group = "helm"
         description = "Downloads the helm executable for the supplied operating systems and architectures"
-        output.set(project.sourceSets.main.get().resources.srcDirs.first().toPath().resolve("helm").toFile())
+        project.configure<JavaPluginExtension> {
+            output.set(sourceSets["main"].resources.srcDirs.first().toPath().resolve("software").toFile())
+        }
     }
 
     @TaskAction
@@ -63,6 +59,8 @@ abstract class HelmArtifactTask() : DefaultTask() {
         for (tuple in actualTuples!!) {
             download(tuple)
         }
+
+        writeVersionFile(output.get().asFile.toPath())
     }
 
     private fun validate() {
@@ -124,7 +122,8 @@ abstract class HelmArtifactTask() : DefaultTask() {
         }
 
         val destination =
-            output.get().asFile.toPath().resolve(tuple.operatingSystem.descriptor).resolve(tuple.architecture.descriptor)
+            output.get().asFile.toPath().resolve(tuple.operatingSystem.descriptor)
+                .resolve(tuple.architecture.descriptor)
         var treeFn = Function<Any, FileTree> { project.tarTree(project.resources.gzip(it)) }
 
         if (tuple.operatingSystem == OperatingSystem.WINDOWS) {
@@ -151,6 +150,15 @@ abstract class HelmArtifactTask() : DefaultTask() {
             }
         } catch (e: Exception) {
             throw GradleException("Unable to extract '${fileNamePrefix}' from '${archive}' to '${destination}'")
+        }
+    }
+
+    private fun writeVersionFile(path: Path) {
+        val versionFile = path.resolve(HELM_VERSION_FILE)
+        try {
+            Files.writeString(versionFile, actualVersion!!.toString())
+        } catch (e: Exception) {
+            throw GradleException("Unable to write version file")
         }
     }
 }

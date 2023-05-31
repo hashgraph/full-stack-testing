@@ -20,6 +20,9 @@ plugins {
     id("java-library")
     id("jacoco")
 
+    // JPMS Support
+    id("com.hedera.fullstack.jpms-modules")
+
     // Conventions Plugins
     id("com.hedera.fullstack.spotless-conventions")
     id("com.hedera.fullstack.spotless-java-conventions")
@@ -52,6 +55,10 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<Javadoc>().configureEach {
     options.encoding = "UTF-8"
+
+    // Configure Javadoc Tag Support
+    (options as StandardJavadocDocletOptions)
+        .tags("apiNote:a:API Note:", "implSpec:a:Implementation Requirements:", "implNote:a:Implementation Note:")
 }
 
 // Ensure that all JAR files are reproducible
@@ -96,6 +103,10 @@ tasks.jacocoTestReport.configure {
 // Ensure the check task also runs the JaCoCo coverage report
 tasks.named("check").configure {
     dependsOn(tasks.named<JacocoReport>("jacocoTestReport"))
+}
+
+tasks.named("assemble").configure {
+    dependsOn(tasks.named("testClasses"))
 }
 
 // Improve test logging

@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client;
+package com.hedera.fullstack.helm.client.impl;
 
-import com.hedera.fullstack.helm.client.builder.HelmClientBuilderImpl;
+import com.hedera.fullstack.base.api.version.SemanticVersion;
+import com.hedera.fullstack.helm.client.HelmClient;
 
 /**
- * The factory for creating {@link HelmClient} instances.
+ * The default implementation of the {@link HelmClient} interface.
  */
-public abstract class Helm {
+public class DefaultHelmClient implements HelmClient {
 
-    public static HelmClientBuilder builder() {
-        return new HelmClientBuilderImpl();
-    }
-
-    public static HelmClient defaultClient() {
-        return builder().build();
+    @Override
+    public SemanticVersion version() {
+        return null;
     }
 }

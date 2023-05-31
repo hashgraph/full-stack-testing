@@ -14,20 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client.builder;
+plugins { id("com.hedera.fullstack.conventions") }
 
-import com.hedera.fullstack.helm.client.HelmClient;
-import com.hedera.fullstack.helm.client.HelmClientBuilder;
-
-public class HelmClientBuilderImpl implements HelmClientBuilder {
-
-    /**
-     * Constructs a new builder instance and initializes it with the default configuration.
-     */
-    public HelmClientBuilderImpl() {}
-
-    @Override
-    public HelmClient build() {
-        return null;
-    }
-}
+dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }

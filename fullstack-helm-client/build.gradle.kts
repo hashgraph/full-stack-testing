@@ -24,11 +24,6 @@ tasks.register<HelmArtifactTask>("helmArtifacts")
 tasks.withType<ProcessResources> { dependsOn(tasks.withType<HelmArtifactTask>()) }
 
 dependencies {
-    testImplementation(enforcedPlatform(project(":fullstack-bom")))
-
-    // API Libraries
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-
-    // Test Libraries
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    // Bill of Materials
+    implementation(enforcedPlatform(project(":fullstack-bom")))
 }

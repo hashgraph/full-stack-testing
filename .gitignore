@@ -507,4 +507,4 @@ secring.*
 .idea
 
 ### Ignore Helm resources
-**/src/main/resources/helm/**
+**/src/main/resources/software/**

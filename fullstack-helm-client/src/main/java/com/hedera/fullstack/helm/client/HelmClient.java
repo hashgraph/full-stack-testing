@@ -16,4 +16,39 @@
 
 package com.hedera.fullstack.helm.client;
 
-public interface HelmClient {}
+import com.hedera.fullstack.base.api.version.SemanticVersion;
+import com.hedera.fullstack.helm.client.impl.DefaultHelmClientBuilder;
+
+/**
+ * The {@code HelmClient} is a bridge between Java and the Helm CLI. The client is highly dependent on specific features
+ * and versions of the Helm CLI tools; therefore, all implementations are expected to provide a packaged Helm executable
+ * of the appropriate version for each supported OS and architecture.
+ */
+public interface HelmClient {
+
+    /**
+     * Executes the Helm CLI {@code version} sub-command and returns the reported version.
+     *
+     * @return the version of the Helm CLI that is being used by this client.
+     */
+    SemanticVersion version();
+
+    /**
+     * Creates a new {@link HelmClientBuilder} instance with the default configuration.
+     *
+     * @return a new {@link HelmClientBuilder} instance.
+     */
+    static HelmClientBuilder builder() {
+        return new DefaultHelmClientBuilder();
+    }
+
+    /**
+     * Creates a new {@link HelmClient} instance with the default configuration.
+     * This is a shortcut for {@code HelmClient.builder().build()}.
+     *
+     * @return a new {@link HelmClient} instance.
+     */
+    static HelmClient defaultClient() {
+        return builder().build();
+    }
+}

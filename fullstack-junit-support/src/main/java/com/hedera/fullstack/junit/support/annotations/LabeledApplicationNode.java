@@ -17,7 +17,6 @@
 package com.hedera.fullstack.junit.support.annotations;
 
 import com.hedera.fullstack.junit.support.ApplicationProvisioner;
-
 import java.lang.annotation.*;
 
 @Inherited

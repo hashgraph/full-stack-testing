@@ -18,14 +18,18 @@ plugins { id("com.gradle.enterprise").version("3.13.2") }
 
 rootProject.name = "full-stack-testing"
 
+includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/issues/26
+
 // Include the subprojects
 include(":fullstack-bom")
 
-include(":fullstack-helm-client")
+include(":fullstack-base-api", "base-api")
 
-include(":fullstack-junit-support")
+include(":fullstack-helm-client", "helm-client")
 
-include(":fullstack-validator-api")
+include(":fullstack-junit-support", "junit-support")
+
+include(":fullstack-validator-api", "validator-api")
 
 gradleEnterprise {
     buildScan {

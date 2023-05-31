@@ -30,7 +30,11 @@ dependencies {
     // Define the external Bill of Material (BOM) required by this project
     api(platform("io.fabric8:kubernetes-client-bom:6.6.2"))
     api(platform("org.junit:junit-bom:5.9.3"))
+    api(platform("org.assertj:assertj-bom:3.24.2"))
 }
 
 dependencies.constraints {
+    api("org.slf4j:slf4j-api:2.0.7")
+    api("org.slf4j:slf4j-nop:2.0.7")
+    api("org.slf4j:slf4j-simple:2.0.7")
 }
