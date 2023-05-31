@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client.model.request.authentication;
+package com.hedera.fullstack.helm.client.proxy.request.authentication;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
-import com.hedera.fullstack.helm.client.model.request.HelmRequest;
+import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 import java.nio.file.Files;
 import java.nio.file.Path;
 

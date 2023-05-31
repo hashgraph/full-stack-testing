@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client.model.response.common;
+package com.hedera.fullstack.helm.client.model;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import java.util.Objects;
@@ -24,14 +24,15 @@ import java.util.Objects;
  *
  * @param version the semantic version of helm with a leading {@code v} prefix.
  */
-public record VersionResponse(String version) {
+public record Version(String version) {
 
     /**
-     * Constructs a new {@link VersionResponse}.
+     * Constructs a new {@link Version}.
      *
      * @param version the semantic version of helm with a leading {@code v} prefix.
+     * @throws NullPointerException if {@code version} is {@code null}.
      */
-    public VersionResponse {
+    public Version {
         Objects.requireNonNull(version, "version must not be null");
     }
 

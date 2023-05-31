@@ -17,14 +17,23 @@
 package com.hedera.fullstack.helm.client.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
+import com.hedera.fullstack.helm.client.model.Repository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 @DisplayName("Helm Client Tests")
 class HelmClientTest {
+
+    /**
+     * The repository for the ingress-nginx helm chart.
+     */
+    private final static Repository INGRESS_REPOSITORY = new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
 
     @Test
     @DisplayName("Version Command Executes Successfully")
@@ -38,5 +47,30 @@ class HelmClientTest {
         assertThat(helmVersion.major()).isGreaterThanOrEqualTo(3);
         assertThat(helmVersion.minor()).isGreaterThanOrEqualTo(12);
         assertThat(helmVersion.patch()).isNotNegative();
+    }
+
+    @Test
+    @DisplayName("Repository List Executes Successfully")
+    void testRepositoryListCommand() {
+        final HelmClient   defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+
+        final List<Repository> repositories = defaultClient.listRepositories();
+        assertThat(repositories).isNotNull().isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Repository Add Executes Successfully")
+    void testRepositoryAddCommand() {
+        final HelmClient   defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
+            final List<Repository> repositories = defaultClient.listRepositories();
+            assertThat(repositories).isNotNull().isNotEmpty().contains(INGRESS_REPOSITORY);
+        } finally {
+            // TODO: Remove the repository after the test.
+        }
     }
 }

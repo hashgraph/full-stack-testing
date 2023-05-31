@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client.model.request.common;
+package com.hedera.fullstack.helm.client.proxy.request;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
-import com.hedera.fullstack.helm.client.model.request.HelmRequest;
 
-/**
- * A request to execute the helm version command.
- */
-public record VersionRequest() implements HelmRequest {
-    @Override
-    public void apply(HelmExecutionBuilder builder) {
-        builder.subcommands("version").argument("template", "{\"version\":\"{{.Version}}\"}");
-    }
+public interface HelmRequest {
+    void apply(HelmExecutionBuilder builder);
 }

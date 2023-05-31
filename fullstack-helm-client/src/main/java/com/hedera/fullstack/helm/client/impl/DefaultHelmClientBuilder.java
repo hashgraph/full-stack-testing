@@ -18,7 +18,7 @@ package com.hedera.fullstack.helm.client.impl;
 
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmClientBuilder;
-import com.hedera.fullstack.helm.client.model.request.authentication.KubeAuthentication;
+import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthentication;
 import com.hedera.fullstack.helm.client.resource.HelmSoftwareLoader;
 import java.nio.file.Path;
 

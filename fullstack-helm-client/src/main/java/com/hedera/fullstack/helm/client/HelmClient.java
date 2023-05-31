@@ -18,6 +18,9 @@ package com.hedera.fullstack.helm.client;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.impl.DefaultHelmClientBuilder;
+import com.hedera.fullstack.helm.client.model.Repository;
+
+import java.util.List;
 
 /**
  * The {@code HelmClient} is a bridge between Java and the Helm CLI. The client is highly dependent on specific features
@@ -32,6 +35,24 @@ public interface HelmClient {
      * @return the version of the Helm CLI that is being used by this client.
      */
     SemanticVersion version();
+
+    /**
+     * Executes the Helm CLI {@code repo list} sub-command and returns the list of repositories.
+     *
+     * @return the list of repositories.
+     */
+    List<Repository> listRepositories();
+
+    /**
+     * Executes the Helm CLI {@code repo add} sub-command and adds a new repository.
+     *
+     * @param repository the repository to add.
+     * @throws NullPointerException     if {@code name} or {@code url} is {@code null}.
+     * @throws IllegalArgumentException if {@code name} or {@code url} is blank.
+     * @throws HelmExecutionException   if the Helm CLI command fails.
+     * @throws HelmParserException      if the output of the Helm CLI command cannot be parsed.
+     */
+    void addRepository(Repository repository);
 
     /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.
