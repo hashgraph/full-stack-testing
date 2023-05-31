@@ -18,12 +18,14 @@ package com.hedera.fullstack.helm.client.impl;
 
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmClientBuilder;
+import com.hedera.fullstack.helm.client.model.request.authentication.KubeAuthentication;
+import com.hedera.fullstack.helm.client.resource.HelmSoftwareLoader;
 import java.nio.file.Path;
 
 /**
  * The default implementation of the {@link HelmClientBuilder} interface.
  */
-public class DefaultHelmClientBuilder implements HelmClientBuilder {
+public final class DefaultHelmClientBuilder implements HelmClientBuilder {
 
     /**
      * The default namespace to be set by the {@link HelmClient}. Defaults to a {@code null} value which indicates that
@@ -128,6 +130,15 @@ public class DefaultHelmClientBuilder implements HelmClientBuilder {
 
     @Override
     public HelmClient build() {
-        return new DefaultHelmClient();
+        final Path helmExecutable = HelmSoftwareLoader.installSupportedVersion();
+        final KubeAuthentication kubeAuthentication = new KubeAuthentication(
+                kubeApiServer,
+                kubeCAFile,
+                kubeContext,
+                kubeSkipTlsVerification,
+                kubeTlsServerName,
+                kubeToken,
+                kubeConfig);
+        return new DefaultHelmClient(helmExecutable, kubeAuthentication, defaultNamespace);
     }
 }

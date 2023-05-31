@@ -29,7 +29,11 @@ extraJavaModuleInfo {
     knownModule("org.slf4j:slf4j-api", "org.slf4j")
     knownModule("org.slf4j:slf4j-nop", "org.slf4j.nop")
     knownModule("org.slf4j:slf4j-simple", "org.slf4j.simple")
+
     knownModule("org.assertj:assertj-core", "org.assertj.core")
+
+    knownModule("com.fasterxml.jackson.core:jackson-core", "com.fasterxml.jackson.core")
+    knownModule("com.fasterxml.jackson.core:jackson-databind", "com.fasterxml.jackson.databind")
 
     module("com.vdurmont:semver4j", "com.vdurmont.semver4j") {
         exportAllPackages()
