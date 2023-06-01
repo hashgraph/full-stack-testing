@@ -25,6 +25,7 @@ include(":fullstack-bom")
 include(":fullstack-base-api")
 include(":fullstack-helm-client")
 include(":fullstack-junit-support")
+include(":fullstack-reporting")
 include(":fullstack-reporting-api")
 include(":fullstack-validator-api")
 
