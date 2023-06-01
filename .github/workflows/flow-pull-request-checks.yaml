@@ -54,6 +54,7 @@ jobs:
       enable-sonar-analysis: true
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   snyk-scan:
     name: Snyk Scan
