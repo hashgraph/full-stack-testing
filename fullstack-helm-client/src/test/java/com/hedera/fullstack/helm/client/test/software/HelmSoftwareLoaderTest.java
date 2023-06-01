@@ -79,11 +79,10 @@ class HelmSoftwareLoaderTest {
             assertThat(helmPath).hasFileName("helm");
         }
 
-        checkHelmVersion(os);
+        checkHelmVersion(helmPath, os);
     }
 
-    private void checkHelmVersion(final OS os) {
-        final String helmExecutable = os == OS.WINDOWS ? "helm.exe" : "helm";
+    private void checkHelmVersion(final Path helmExecutable, final OS os) {
         final SemanticVersion expectedVersion = expectedHelmVersion();
 
         assertThat(expectedVersion).isNotNull();
@@ -91,7 +90,7 @@ class HelmSoftwareLoaderTest {
         Process helm;
         try {
             helm = new ProcessBuilder()
-                    .command(helmExecutable, "version", "--short")
+                    .command(helmExecutable.toString(), "version", "--short")
                     .redirectOutput(ProcessBuilder.Redirect.PIPE)
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .start();
