@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.HelmParserException;
-
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.Collections;
@@ -40,12 +39,14 @@ public final class HelmExecution {
     /**
      * The message for a deserialization error.
      */
-    private static final String MSG_DESERIALIZATION_ERROR = "Failed to deserialize the output into the specified class: %s";
+    private static final String MSG_DESERIALIZATION_ERROR =
+            "Failed to deserialize the output into the specified class: %s";
 
     /**
      * The message for a list deserialization error.
      */
-    private static final String MSG_LIST_DESERIALIZATION_ERROR = "Failed to deserialize the output into a list of the specified class: %s";
+    private static final String MSG_LIST_DESERIALIZATION_ERROR =
+            "Failed to deserialize the output into a list of the specified class: %s";
 
     /**
      * The global Jackson {@link ObjectMapper} instance used to deserialize all response objects.
@@ -205,7 +206,10 @@ public final class HelmExecution {
         }
 
         try {
-            return OBJECT_MAPPER.readerFor(responseClass).<T>readValues(standardOutput()).readAll();
+            return OBJECT_MAPPER
+                    .readerFor(responseClass)
+                    .<T>readValues(standardOutput())
+                    .readAll();
         } catch (final Exception e) {
             throw new HelmParserException(String.format(MSG_LIST_DESERIALIZATION_ERROR, responseClass.getName()), e);
         }

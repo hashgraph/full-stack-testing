@@ -22,10 +22,9 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Repository;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 @DisplayName("Helm Client Tests")
 class HelmClientTest {
@@ -33,7 +32,8 @@ class HelmClientTest {
     /**
      * The repository for the ingress-nginx helm chart.
      */
-    private final static Repository INGRESS_REPOSITORY = new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
+    private static final Repository INGRESS_REPOSITORY =
+            new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
 
     @Test
     @DisplayName("Version Command Executes Successfully")
@@ -52,7 +52,7 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository List Executes Successfully")
     void testRepositoryListCommand() {
-        final HelmClient   defaultClient = HelmClient.defaultClient();
+        final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
 
         final List<Repository> repositories = defaultClient.listRepositories();
@@ -62,7 +62,7 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository Add Executes Successfully")
     void testRepositoryAddCommand() {
-        final HelmClient   defaultClient = HelmClient.defaultClient();
+        final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
 
         try {

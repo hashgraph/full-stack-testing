@@ -27,7 +27,6 @@ import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthent
 import com.hedera.fullstack.helm.client.proxy.request.common.VersionRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryAddRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryListRequest;
-
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -163,49 +162,6 @@ public final class DefaultHelmClient implements HelmClient {
         return executeInternal(namespace, request, responseClass, HelmExecution::responseAsList);
     }
 
-//    private <T extends HelmRequest> void executeAsCallInternal(final T request) {
-//        final HelmExecutionBuilder builder = new HelmExecutionBuilder(helmExecutable);
-//        applyBuilderDefaults(builder);
-//        request.apply(builder);
-//
-//        final HelmExecution execution = builder.build();
-//        try {
-//            execution.waitFor();
-//        } catch (final InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            return;
-//        }
-//
-//        if (execution.exitCode() != 0) {
-//            throw new HelmExecutionException(execution.exitCode());
-//        }
-//    }
-//
-//    private <T extends HelmRequest> void executeAsCallInternal(final String namespace, final T request) {
-//        Objects.requireNonNull(namespace, MSG_NAMESPACE_NOT_NULL);
-//
-//        if (namespace.isBlank()) {
-//            throw new IllegalArgumentException("namespace must not be blank");
-//        }
-//
-//        final HelmExecutionBuilder builder = new HelmExecutionBuilder(helmExecutable);
-//        applyBuilderDefaults(builder);
-//        request.apply(builder);
-//        builder.argument(NAMESPACE_ARG_NAME, namespace);
-//
-//        final HelmExecution execution = builder.build();
-//        try {
-//            execution.waitFor();
-//        } catch (final InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            return;
-//        }
-//
-//        if (execution.exitCode() != 0) {
-//            throw new HelmExecutionException(execution.exitCode());
-//        }
-//    }
-
     private <T extends HelmRequest, R, V> V executeInternal(
             final T request, final Class<R> responseClass, final BiFunction<HelmExecution, Class<R>, V> responseFn) {
         final HelmExecutionBuilder builder = new HelmExecutionBuilder(helmExecutable);
@@ -215,7 +171,10 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     private <T extends HelmRequest, R, V> V executeInternal(
-            final String namespace, final T request, final Class<R> responseClass, final BiFunction<HelmExecution, Class<R>, V> responseFn) {
+            final String namespace,
+            final T request,
+            final Class<R> responseClass,
+            final BiFunction<HelmExecution, Class<R>, V> responseFn) {
         Objects.requireNonNull(namespace, MSG_NAMESPACE_NOT_NULL);
 
         if (namespace.isBlank()) {
