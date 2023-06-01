@@ -38,6 +38,11 @@ on:
         type: boolean
         required: false
         default: false
+      enable-snyk-scan:
+        description: "Snyk Scan Enabled"
+        type: boolean
+        required: false
+        default: false
       java-distribution:
         description: "Java JDK Distribution:"
         type: string
