@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.gradle.helm.release.HelmArtifactTask
-
 plugins { id("com.hedera.fullstack.conventions") }
 
-dependencies {
-    api(enforcedPlatform(project(":fullstack-bom")))
-    api(enforcedPlatform(project(":fullstack-reporting-api")))
-
-    // API Libraries
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-
-    // Test Libraries
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-}
+dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
