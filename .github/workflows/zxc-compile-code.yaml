@@ -82,6 +82,10 @@ defaults:
 
 permissions:
   contents: read
+  actions: read
+  pull-requests: write
+  checks: write
+  statuses: write
 
 jobs:
   compile:
@@ -209,7 +213,7 @@ jobs:
           }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
-          arguments: sonarqube --info --scan ${{ steps.sonar-cloud.outputs.options }}
+          arguments: sonar --info --scan ${{ steps.sonar-cloud.outputs.options }}
 
       - name: Setup Snyk
         env:
@@ -277,9 +281,28 @@ jobs:
           snyk-to-html -i snyk-test.json -o snyk-test.html --summary
           html-to-markdown snyk-test.html -o snyk
           cat snyk/snyk-test.html.md >> $GITHUB_STEP_SUMMARY
-          
+
           if [[ -f snyk-code.json ]]; then
             snyk-to-html -i snyk-code.json -o snyk-code.html --summary
             html-to-markdown snyk-code.html -o snyk
             cat snyk/snyk-code.html.md >> $GITHUB_STEP_SUMMARY
           fi
+
+      - name: Publish Snyk Reports
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v3
+        if: >-
+          ${{
+            inputs.enable-snyk-scan &&
+            steps.gradle-build.conclusion == 'success' &&
+            (
+              github.event.pull_request.head.repo.full_name == github.repository ||
+              github.event_name == 'push' ||
+              github.event_name == 'workflow_dispatch'
+            ) &&
+            !cancelled()
+          }}
+        with:
+          name: Snyk Reports
+          path: |
+            snyk-*.html
+            snyk-*.json

@@ -23,13 +23,13 @@ includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/iss
 // Include the subprojects
 include(":fullstack-bom")
 
-include(":fullstack-base-api", "base-api")
+include(":base-api", "fullstack-base-api")
 
-include(":fullstack-helm-client", "helm-client")
+include(":helm-client", "fullstack-helm-client")
 
-include(":fullstack-junit-support", "junit-support")
+include(":junit-support", "fullstack-junit-support")
 
-include(":fullstack-validator-api", "validator-api")
+include(":validator-api", "fullstack-validator-api")
 
 gradleEnterprise {
     buildScan {
