@@ -35,11 +35,11 @@ include(":fullstack-infrastructure-core")
 
 include(":fullstack-monitoring-api")
 
-include(":fullstack-reporting-core")
+include(":fullstack-reporting-api")
 
 include(":fullstack-reporting-core")
 
-include(":fullstack-validator-core")
+include(":fullstack-validator-api")
 
 include(":fullstack-validator-core")
 
