@@ -35,6 +35,8 @@ include(":fullstack-infrastructure-core")
 
 include(":fullstack-monitoring-api")
 
+include(":fullstack-monitoring-core")
+
 include(":fullstack-reporting-api")
 
 include(":fullstack-reporting-core")
