@@ -16,11 +16,15 @@
 
 package com.hedera.fullstack.helm.client.execution;
 
+import static com.hedera.fullstack.helm.client.HelmExecutionException.DEFAULT_MESSAGE;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.HelmParserException;
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -68,18 +72,24 @@ public final class HelmExecution {
     }
 
     /**
-     * Causes the current thread to wait, if necessary, until the process represented by this Process object has terminated. This method returns immediately if the process has already terminated. If the process has not yet terminated, the calling thread will be blocked until the process exits.
+     * Causes the current thread to wait, if necessary, until the process represented by this Process object has
+     * terminated. This method returns immediately if the process has already terminated. If the process has not yet
+     * terminated, the calling thread will be blocked until the process exits.
      *
-     * @throws InterruptedException if the current thread is interrupted by another thread while it is waiting, then the wait is ended and an InterruptedException is thrown.
+     * @throws InterruptedException if the current thread is interrupted by another thread while it is waiting, then the
+     *                              wait is ended and an InterruptedException is thrown.
      */
     public void waitFor() throws InterruptedException {
         process.waitFor();
     }
 
     /**
-     * Causes the current thread to wait, if necessary, until the process represented by this Process object has terminated, or the specified waiting time elapses.
-     * If the process has already terminated then this method returns immediately with the value true. If the process has not terminated and the timeout value is less than, or equal to, zero, then this method returns immediately with the value false.
-     * The default implementation of this method polls the exitValue to check if the process has terminated. Concrete implementations of this class are strongly encouraged to override this method with a more efficient implementation.
+     * Causes the current thread to wait, if necessary, until the process represented by this Process object has
+     * terminated, or the specified waiting time elapses. If the process has already terminated then this method returns
+     * immediately with the value true. If the process has not terminated and the timeout value is less than, or equal
+     * to, zero, then this method returns immediately with the value false. The default implementation of this method
+     * polls the exitValue to check if the process has terminated. Concrete implementations of this class are strongly
+     * encouraged to override this method with a more efficient implementation.
      *
      * @param timeout the maximum time to wait.
      * @throws InterruptedException if the current thread is interrupted while waiting.
@@ -91,7 +101,8 @@ public final class HelmExecution {
     /**
      * Returns the exit code of the subprocess.
      *
-     * @return the exit value of the subprocess represented by this Process object. by convention, the value 0 indicates normal termination.
+     * @return the exit value of the subprocess represented by this Process object. by convention, the value 0 indicates
+     * normal termination.
      * @throws IllegalThreadStateException if the subprocess represented by this Process object has not yet terminated.
      */
     public int exitCode() {
@@ -134,7 +145,8 @@ public final class HelmExecution {
      * Deserializes the standard output of the process into the specified response class.
      *
      * @param responseClass The class to deserialize the response into.
-     * @param timeout       The maximum time to wait for the process to complete. If null, the method will wait indefinitely for the process to complete.
+     * @param timeout       The maximum time to wait for the process to complete. If null, the method will wait
+     *                      indefinitely for the process to complete.
      * @param <T>           The type of the response.
      * @return The deserialized response.
      */
@@ -181,7 +193,8 @@ public final class HelmExecution {
      * Deserializes the standard output of the process into a {@link List} of the specified response class.
      *
      * @param responseClass The class to deserialize the response into.
-     * @param timeout       The maximum time to wait for the process to complete. If null, the method will wait indefinitely for the process to complete.
+     * @param timeout       The maximum time to wait for the process to complete. If null, the method will wait
+     *                      indefinitely for the process to complete.
      * @param <T>           The type of the response.
      * @return a list of the deserialized objects.
      */
@@ -226,7 +239,8 @@ public final class HelmExecution {
     /**
      * Invokes a process which does not return a response.
      *
-     * @param timeout The maximum time to wait for the process to complete. If null, the method will wait indefinitely for the process to complete.
+     * @param timeout The maximum time to wait for the process to complete. If null, the method will wait indefinitely
+     *                for the process to complete.
      */
     public void call(final Duration timeout) {
         try {
@@ -243,7 +257,19 @@ public final class HelmExecution {
         }
 
         if (exitCode() != 0) {
-            throw new HelmExecutionException(exitCode());
+            InputStream error = process.getErrorStream();
+            InputStreamReader isrError = new InputStreamReader(error);
+            BufferedReader brError = new BufferedReader(isrError);
+            String errorLine;
+            StringBuffer sb = new StringBuffer(String.format(DEFAULT_MESSAGE, exitCode()) + ":\n");
+            try {
+                while ((errorLine = brError.readLine()) != null) {
+                    sb.append(errorLine);
+                }
+            } catch (Exception e) {
+                sb.append("... interrupted by: " + e.getMessage());
+            }
+            throw new HelmExecutionException(exitCode(), sb.toString());
         }
     }
 }

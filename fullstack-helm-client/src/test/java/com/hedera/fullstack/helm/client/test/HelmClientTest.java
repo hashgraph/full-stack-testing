@@ -17,6 +17,7 @@
 package com.hedera.fullstack.helm.client.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
@@ -56,7 +57,7 @@ class HelmClientTest {
         assertThat(defaultClient).isNotNull();
 
         final List<Repository> repositories = defaultClient.listRepositories();
-        assertThat(repositories).isNotNull().isNotEmpty();
+        assertThat(repositories).isNotNull().isEmpty();
     }
 
     @Test
@@ -68,9 +69,20 @@ class HelmClientTest {
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
             final List<Repository> repositories = defaultClient.listRepositories();
-            assertThat(repositories).isNotNull().isNotEmpty().contains(INGRESS_REPOSITORY);
+            assertThat(repositories).isNotNull().isNotEmpty().contains(INGRESS_REPOSITORY).hasSize(1);
         } finally {
-            // TODO: Remove the repository after the test.
+            assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY));
+            final List<Repository> repositories = defaultClient.listRepositories();
+            assertThat(repositories).isNotNull().isEmpty();
         }
+    }
+
+    @Test
+    @DisplayName("Repository Remove Executes With Error")
+    void testRepositoryRemoveCommand_WithError() {
+        final HelmClient defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+        assertThatException().isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
+                .withMessageContaining("Error: no repositories configured");
     }
 }

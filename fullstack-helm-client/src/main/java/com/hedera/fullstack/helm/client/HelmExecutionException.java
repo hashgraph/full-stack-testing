@@ -24,7 +24,7 @@ public class HelmExecutionException extends RuntimeException {
     /**
      * the default message to use when no message is provided
      */
-    private static final String DEFAULT_MESSAGE = "Execution of the Helm command failed with exit code: %d";
+    public static final String DEFAULT_MESSAGE = "Execution of the Helm command failed with exit code: %d";
 
     /**
      * the non-zero system exit code returned by the Helm executable or the operating system
