@@ -29,6 +29,10 @@ include(":fullstack-helm-client")
 
 include(":fullstack-junit-support")
 
+include(":fullstack-datasource-api")
+
+include(":fullstack-datasource-core")
+
 include(":fullstack-infrastructure-api")
 
 include(":fullstack-infrastructure-core")
