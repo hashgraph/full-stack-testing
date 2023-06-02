@@ -21,9 +21,21 @@ rootProject.name = "full-stack-testing"
 includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/issues/26
 
 // Include the subprojects
+include(":fullstack-alerting-api")
+
+include(":fullstack-alerting-core")
+
 include(":fullstack-bom")
 
 include(":fullstack-base-api")
+
+include(":fullstack-classloader-api")
+
+include(":fullstack-classloader-core")
+
+include(":fullstack-configuration-api")
+
+include(":fullstack-configuration-core")
 
 include(":fullstack-helm-client")
 
@@ -44,6 +56,10 @@ include(":fullstack-monitoring-core")
 include(":fullstack-reporting-api")
 
 include(":fullstack-reporting-core")
+
+include(":fullstack-resource-generator-api")
+
+include(":fullstack-resource-generator-core")
 
 include(":fullstack-validator-api")
 
