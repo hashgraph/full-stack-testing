@@ -23,7 +23,7 @@ includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/iss
 // Include the subprojects
 include(":fullstack-bom")
 
-include(":fullstack-base-api")
+include(":fullstack-base-core")
 
 include(":fullstack-helm-client")
 
@@ -31,11 +31,13 @@ include(":fullstack-junit-support")
 
 include(":fullstack-infrastructure-api")
 
-include(":fullstack-reporting-api")
+include(":fullstack-infrastructure-core")
 
 include(":fullstack-reporting-core")
 
-include(":fullstack-validator-api")
+include(":fullstack-reporting-core")
+
+include(":fullstack-validator-core")
 
 include(":fullstack-validator-core")
 
