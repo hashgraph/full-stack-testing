@@ -29,7 +29,13 @@ include(":fullstack-helm-client")
 
 include(":fullstack-junit-support")
 
+include(":fullstack-reporting-api")
+
+include(":fullstack-reporting-core")
+
 include(":fullstack-validator-api")
+
+include(":fullstack-validator-core")
 
 gradleEnterprise {
     buildScan {

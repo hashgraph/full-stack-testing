@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+package com.hedera.fullstack.reporting.api;
 
-dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
+public class Dummy {}
