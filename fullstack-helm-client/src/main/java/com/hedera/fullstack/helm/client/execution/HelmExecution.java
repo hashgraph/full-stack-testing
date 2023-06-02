@@ -266,7 +266,7 @@ public final class HelmExecution {
                 while ((errorLine = brError.readLine()) != null) {
                     sb.append(errorLine);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 sb.append("... interrupted by: " + e.getMessage());
             }
             throw new HelmExecutionException(exitCode(), sb.toString());
