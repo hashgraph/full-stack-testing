@@ -55,9 +55,8 @@ class HelmClientTest {
     void testRepositoryListCommand() {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
-
         final List<Repository> repositories = defaultClient.listRepositories();
-        assertThat(repositories).isNotNull().isEmpty();
+        assertThat(repositories).isNotNull();
     }
 
     @Test
@@ -65,6 +64,7 @@ class HelmClientTest {
     void testRepositoryAddCommand() {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
+        final int originalRepoListSize = defaultClient.listRepositories().size();
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
@@ -73,11 +73,11 @@ class HelmClientTest {
                     .isNotNull()
                     .isNotEmpty()
                     .contains(INGRESS_REPOSITORY)
-                    .hasSize(1);
+                    .hasSize(originalRepoListSize + 1);
         } finally {
             assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY));
             final List<Repository> repositories = defaultClient.listRepositories();
-            assertThat(repositories).isNotNull().isEmpty();
+            assertThat(repositories).isNotNull().hasSize(originalRepoListSize);
         }
     }
 
