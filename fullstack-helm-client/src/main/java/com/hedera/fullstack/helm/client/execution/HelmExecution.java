@@ -23,10 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.fullstack.base.api.util.StreamUtils;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.HelmParserException;
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -259,9 +256,10 @@ public final class HelmExecution {
         }
 
         if (exitCode() != 0) {
-            throw new HelmExecutionException(exitCode(),
-                    String.format(DEFAULT_MESSAGE, exitCode()) + ":\n" + StreamUtils.streamToString(
-                            process.getErrorStream()));
+            throw new HelmExecutionException(
+                    exitCode(),
+                    String.format(DEFAULT_MESSAGE, exitCode()) + ":\n"
+                            + StreamUtils.streamToString(process.getErrorStream()));
         }
     }
 }
