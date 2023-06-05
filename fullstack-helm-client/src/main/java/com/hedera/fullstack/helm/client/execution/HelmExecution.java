@@ -20,6 +20,7 @@ import static com.hedera.fullstack.helm.client.HelmExecutionException.DEFAULT_ME
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedera.fullstack.base.api.util.StreamUtils;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.HelmParserException;
 import java.io.BufferedReader;
@@ -258,19 +259,9 @@ public final class HelmExecution {
         }
 
         if (exitCode() != 0) {
-            InputStream error = process.getErrorStream();
-            InputStreamReader isrError = new InputStreamReader(error);
-            BufferedReader brError = new BufferedReader(isrError);
-            String errorLine;
-            StringBuffer sb = new StringBuffer(String.format(DEFAULT_MESSAGE, exitCode()) + ":\n");
-            try {
-                while ((errorLine = brError.readLine()) != null) {
-                    sb.append(errorLine);
-                }
-            } catch (IOException e) {
-                sb.append("... interrupted by: " + e.getMessage());
-            }
-            throw new HelmExecutionException(exitCode(), sb.toString());
+            throw new HelmExecutionException(exitCode(),
+                    String.format(DEFAULT_MESSAGE, exitCode()) + ":\n" + StreamUtils.streamToString(
+                            process.getErrorStream()));
         }
     }
 }
