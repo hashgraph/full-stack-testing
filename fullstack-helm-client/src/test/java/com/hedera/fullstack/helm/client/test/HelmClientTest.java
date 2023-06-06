@@ -37,12 +37,12 @@ class HelmClientTest {
      */
     private static final Repository INGRESS_REPOSITORY =
             new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
+
     private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
 
     private static final Repository BITNAMI_REPOSITORY =
             new Repository("bitnami", "https://charts.bitnami.com/bitnami");
     private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
-
 
     @Test
     @DisplayName("Version Command Executes Successfully")
@@ -131,14 +131,14 @@ class HelmClientTest {
                 .description("Test install chart with options")
                 .enableDNS(true)
                 .force(true)
-//                .output("json")
-//                .password("password")
-//                .repo(INGRESS_REPOSITORY.url())
-//                .skipCredentials(true)
-//                .timeout(300)
-//                .username("username")
-//                .verify(true)
-//                .waitFor(true)
+                //                .output("json")
+                //                .password("password")
+                //                .repo(INGRESS_REPOSITORY.url())
+                //                .skipCredentials(true)
+                //                .timeout(300)
+                //                .username("username")
+                //                .verify(true)
+                //                .waitFor(true)
                 .build();
 
         try {
@@ -146,7 +146,7 @@ class HelmClientTest {
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(INGRESS_CHART, options));
             Thread.sleep(5000);
         } finally {
-            try{
+            try {
                 defaultClient.uninstallChart(INGRESS_CHART);
             } catch (Exception e) {
                 // ignore
