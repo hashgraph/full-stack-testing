@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
+import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +36,8 @@ class HelmClientTest {
      */
     private static final Repository INGRESS_REPOSITORY =
             new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
+
+    private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
 
     @Test
     @DisplayName("Version Command Executes Successfully")
@@ -92,5 +95,21 @@ class HelmClientTest {
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
                 .withMessageContaining("Error: no repositories configured");
+    }
+
+    @Test
+    @DisplayName("Install Chart Executes Successfully")
+    void testInstallChartCommand() throws InterruptedException {
+        final HelmClient defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(INGRESS_CHART));
+            Thread.sleep(5000);
+        } finally {
+            assertThatNoException().isThrownBy(() -> defaultClient.uninstallChart(INGRESS_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY));
+        }
     }
 }

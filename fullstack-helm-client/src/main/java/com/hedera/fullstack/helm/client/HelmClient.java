@@ -18,6 +18,8 @@ package com.hedera.fullstack.helm.client;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.impl.DefaultHelmClientBuilder;
+import com.hedera.fullstack.helm.client.model.Chart;
+import com.hedera.fullstack.helm.client.model.InstallChartOptions;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.util.List;
 
@@ -55,9 +57,16 @@ public interface HelmClient {
 
     /**
      * Executes the Helm CLI {@code repo remove} sub-command and removes a repository.
+     *
      * @param repository the repository to remove.
      */
     void removeRepository(Repository repository);
+
+    void installChart(Chart chart);
+
+    void installChart(Chart chart, InstallChartOptions options);
+
+    void uninstallChart(Chart chart);
 
     /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.
@@ -69,8 +78,8 @@ public interface HelmClient {
     }
 
     /**
-     * Creates a new {@link HelmClient} instance with the default configuration.
-     * This is a shortcut for {@code HelmClient.builder().build()}.
+     * Creates a new {@link HelmClient} instance with the default configuration. This is a shortcut for
+     * {@code HelmClient.builder().build()}.
      *
      * @return a new {@link HelmClient} instance.
      */
