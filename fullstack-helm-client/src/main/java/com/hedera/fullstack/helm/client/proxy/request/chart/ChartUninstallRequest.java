@@ -20,6 +20,10 @@ import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 
+/**
+ * A request to uninstall a chart.
+ * @param chart the chart to uninstall
+ */
 public record ChartUninstallRequest(Chart chart) implements HelmRequest {
     @Override
     public void apply(HelmExecutionBuilder builder) {

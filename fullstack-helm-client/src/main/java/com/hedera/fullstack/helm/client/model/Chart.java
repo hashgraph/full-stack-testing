@@ -16,4 +16,9 @@
 
 package com.hedera.fullstack.helm.client.model;
 
+/**
+ * Represents a chart and is used to interact with the Helm install and uninstall commands.
+ * @param name the name of the Helm chart.
+ * @param url the url of the Helm chart.
+ */
 public record Chart(String name, String url) {}

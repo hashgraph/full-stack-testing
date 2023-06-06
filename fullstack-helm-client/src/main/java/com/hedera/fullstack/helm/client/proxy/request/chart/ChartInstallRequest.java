@@ -21,7 +21,16 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.InstallChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 
+/**
+ * Represents a helm install request.
+ * @param chart The chart to install.
+ * @param options The options to use when installing the chart.
+ */
 public record ChartInstallRequest(Chart chart, InstallChartOptions options) implements HelmRequest {
+    /**
+     * Creates a new install request with the given chart and no options.
+     * @param chart The chart to install.
+     */
     public ChartInstallRequest(Chart chart) {
         this(chart, null);
     }
