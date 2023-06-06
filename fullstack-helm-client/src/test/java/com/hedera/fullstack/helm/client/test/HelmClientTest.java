@@ -86,6 +86,9 @@ class HelmClientTest {
     void testRepositoryRemoveCommand_WithError() {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
+        if (defaultClient.listRepositories().contains(INGRESS_REPOSITORY)) {
+            defaultClient.removeRepository(INGRESS_REPOSITORY);
+        }
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
                 .withMessageContaining("Error: no repositories configured");
