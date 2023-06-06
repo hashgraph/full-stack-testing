@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
+import com.hedera.fullstack.helm.client.model.InstallChartOptions;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -36,13 +37,12 @@ class HelmClientTest {
      */
     private static final Repository INGRESS_REPOSITORY =
             new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
+    private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
 
     private static final Repository BITNAMI_REPOSITORY =
             new Repository("bitnami", "https://charts.bitnami.com/bitnami");
-
     private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
 
-    //    private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
 
     @Test
     @DisplayName("Version Command Executes Successfully")
@@ -115,6 +115,47 @@ class HelmClientTest {
         } finally {
             assertThatNoException().isThrownBy(() -> defaultClient.uninstallChart(APACHE_CHART));
             assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully")
+    void testInstallChartWithOptionsCommand() throws InterruptedException {
+        final HelmClient defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                .atomic(true)
+                .createNamespace(true)
+                .dependencyUpdate(true)
+                .description("Test install chart with options")
+                .enableDNS(true)
+                .force(true)
+//                .output("json")
+//                .password("password")
+//                .repo(INGRESS_REPOSITORY.url())
+//                .skipCredentials(true)
+//                .timeout(300)
+//                .username("username")
+//                .verify(true)
+//                .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(INGRESS_CHART, options));
+            Thread.sleep(5000);
+        } finally {
+            try{
+                defaultClient.uninstallChart(INGRESS_CHART);
+            } catch (Exception e) {
+                // ignore
+            }
+            try {
+                defaultClient.removeRepository(INGRESS_REPOSITORY);
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 }

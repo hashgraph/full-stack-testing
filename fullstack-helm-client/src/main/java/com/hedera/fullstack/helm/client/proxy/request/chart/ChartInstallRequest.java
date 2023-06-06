@@ -37,26 +37,26 @@ public record ChartInstallRequest(Chart chart, InstallChartOptions options) impl
 
     @Override
     public void apply(HelmExecutionBuilder builder) {
-        builder.subcommands("install").positional(chart.name()).positional(chart.url());
+        builder.subcommands("install");
         if (options != null) {
             if (options.atomic()) {
-                builder.flag("atomic");
+                builder.flag("--atomic");
             }
 
             if (options.createNamespace()) {
-                builder.flag("create-namespace");
+                builder.flag("--create-namespace");
             }
 
             if (options.dependencyUpdate()) {
-                builder.flag("dependency-update");
+                builder.flag("--dependency-update");
             }
 
             if (options.enableDNS()) {
-                builder.flag("enable-dns");
+                builder.flag("--enable-dns");
             }
 
             if (options.force()) {
-                builder.flag("force");
+                builder.flag("--force");
             }
 
             if (options.output() != null) {
@@ -64,7 +64,7 @@ public record ChartInstallRequest(Chart chart, InstallChartOptions options) impl
             }
 
             if (options.passCredentials()) {
-                builder.flag("pass-credentials");
+                builder.flag("--pass-credentials");
             }
 
             if (options.password() != null) {
@@ -76,7 +76,7 @@ public record ChartInstallRequest(Chart chart, InstallChartOptions options) impl
             }
 
             if (options.skipCredentials()) {
-                builder.flag("skip-crds");
+                builder.flag("--skip-crds");
             }
 
             if (options.timeout() != null) {
@@ -92,7 +92,7 @@ public record ChartInstallRequest(Chart chart, InstallChartOptions options) impl
             }
 
             if (options.verify()) {
-                builder.flag("verify");
+                builder.flag("--verify");
             }
 
             if (options.version() != null) {
@@ -100,8 +100,9 @@ public record ChartInstallRequest(Chart chart, InstallChartOptions options) impl
             }
 
             if (options.waitFor()) {
-                builder.flag("wait");
+                builder.flag("--wait");
             }
         }
+        builder.positional(chart.name()).positional(chart.url());
     }
 }
