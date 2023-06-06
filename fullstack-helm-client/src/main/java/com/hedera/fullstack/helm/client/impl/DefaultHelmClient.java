@@ -27,6 +27,7 @@ import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthent
 import com.hedera.fullstack.helm.client.proxy.request.common.VersionRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryAddRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryListRequest;
+import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryRemoveRequest;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -88,6 +89,14 @@ public final class DefaultHelmClient implements HelmClient {
     @Override
     public void addRepository(Repository repository) {
         executeInternal(new RepositoryAddRequest(repository), Void.class, (b, c) -> {
+            b.call();
+            return null;
+        });
+    }
+
+    @Override
+    public void removeRepository(Repository repository) {
+        executeInternal(new RepositoryRemoveRequest(repository), Void.class, (b, c) -> {
             b.call();
             return null;
         });

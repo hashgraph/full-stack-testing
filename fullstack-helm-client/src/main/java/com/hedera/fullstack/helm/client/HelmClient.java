@@ -54,6 +54,12 @@ public interface HelmClient {
     void addRepository(Repository repository);
 
     /**
+     * Executes the Helm CLI {@code repo remove} sub-command and removes a repository.
+     * @param repository the repository to remove.
+     */
+    void removeRepository(Repository repository);
+
+    /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.
      *
      * @return a new {@link HelmClientBuilder} instance.

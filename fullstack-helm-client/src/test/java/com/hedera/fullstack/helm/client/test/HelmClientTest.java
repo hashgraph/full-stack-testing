@@ -17,6 +17,7 @@
 package com.hedera.fullstack.helm.client.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
@@ -54,9 +55,8 @@ class HelmClientTest {
     void testRepositoryListCommand() {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
-
         final List<Repository> repositories = defaultClient.listRepositories();
-        assertThat(repositories).isNotNull().isNotEmpty();
+        assertThat(repositories).isNotNull();
     }
 
     @Test
@@ -64,13 +64,33 @@ class HelmClientTest {
     void testRepositoryAddCommand() {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
+        final int originalRepoListSize = defaultClient.listRepositories().size();
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
             final List<Repository> repositories = defaultClient.listRepositories();
-            assertThat(repositories).isNotNull().isNotEmpty().contains(INGRESS_REPOSITORY);
+            assertThat(repositories)
+                    .isNotNull()
+                    .isNotEmpty()
+                    .contains(INGRESS_REPOSITORY)
+                    .hasSize(originalRepoListSize + 1);
         } finally {
-            // TODO: Remove the repository after the test.
+            assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY));
+            final List<Repository> repositories = defaultClient.listRepositories();
+            assertThat(repositories).isNotNull().hasSize(originalRepoListSize);
         }
+    }
+
+    @Test
+    @DisplayName("Repository Remove Executes With Error")
+    void testRepositoryRemoveCommand_WithError() {
+        final HelmClient defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+        if (defaultClient.listRepositories().contains(INGRESS_REPOSITORY)) {
+            defaultClient.removeRepository(INGRESS_REPOSITORY);
+        }
+        assertThatException()
+                .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
+                .withMessageContaining("Error: no repositories configured");
     }
 }
