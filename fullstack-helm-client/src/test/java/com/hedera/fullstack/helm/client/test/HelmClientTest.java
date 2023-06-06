@@ -36,12 +36,13 @@ class HelmClientTest {
      */
     private static final Repository INGRESS_REPOSITORY =
             new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
+
     private static final Repository BITNAMI_REPOSITORY =
             new Repository("bitnami", "https://charts.bitnami.com/bitnami");
 
-    private static final Chart MYSQL_CHART = new Chart("mysql", "bitnami/mysql");
+    private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
 
-//    private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
+    //    private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
 
     @Test
     @DisplayName("Version Command Executes Successfully")
@@ -109,10 +110,10 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(MYSQL_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
             Thread.sleep(5000);
         } finally {
-            assertThatNoException().isThrownBy(() -> defaultClient.uninstallChart(MYSQL_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.uninstallChart(APACHE_CHART));
             assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
         }
     }
