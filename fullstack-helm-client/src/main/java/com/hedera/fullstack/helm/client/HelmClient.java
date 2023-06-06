@@ -62,10 +62,26 @@ public interface HelmClient {
      */
     void removeRepository(Repository repository);
 
+    /**
+     * Executes the Helm CLI {@code install} sub-command and installs a Helm chart.
+     *
+     * @param chart
+     */
     void installChart(Chart chart);
 
+    /**
+     * Executes the Helm CLI {@code install} sub-command and installs a Helm chart passing the flags and arguments
+     * provided.
+     *
+     * @param chart the Helm chart to install.
+     * @param options the options to pass to the Helm CLI command.
+     */
     void installChart(Chart chart, InstallChartOptions options);
 
+    /**
+     * Executes the Helm CLI {@code uninstall} sub-command and uninstalls the specified Helm chart.
+     * @param chart
+     */
     void uninstallChart(Chart chart);
 
     /**
