@@ -118,20 +118,18 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
-      - name: Setup Minikube
-        uses: medyagh/setup-minikube@3213bac7294895b1d92c1f4db1f99c91a308efaf
+      - name: Setup Kind
+        uses: helm/kind-action@fa81e57adff234b2908110485695db0f181f3c67 # pin@v1
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
-          driver: none
-          container-runtime: docker
-          kubernetes-version: v1.23.8
-          start-args: --extra-config=kubeadm.ignore-preflight-errors=SystemVerification
+          verbosity: 3
+          wait: 120s
 
-      - name: Setup Kubectl
-        if : ${{ inputs.enable-unit-tests && !cancelled() }}
-        run: |
-          sudo curl -L -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          sudo chmod +x /usr/local/bin/kubectl
+#      - name: Setup Kubectl
+#        if : ${{ inputs.enable-unit-tests && !cancelled() }}
+#        run: |
+#          sudo curl -L -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+#          sudo chmod +x /usr/local/bin/kubectl
 
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
@@ -170,7 +168,7 @@ jobs:
         uses: actionite/publish-unit-test-result-action@1e01e49081c6c4073913aa4b7980fa83e709f322 # pin@v2
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
-          check_name: 'Node: Unit Test Results'
+          check_name: 'Unit Test Results'
           check_run_disabled: true
           json_thousands_separator: ','
           junit_files: "**/build/test-results/test/TEST-*.xml"
