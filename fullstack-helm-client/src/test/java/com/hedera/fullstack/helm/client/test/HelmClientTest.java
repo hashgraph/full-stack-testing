@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.helm.client.test;
 
+import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatException;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -115,11 +116,7 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            try {
-                defaultClient.uninstallChart(APACHE_CHART);
-            } catch (Exception e) {
-                // ignore
-            }
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
             Thread.sleep(5000);
         } finally {
@@ -153,23 +150,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            try {
-                defaultClient.uninstallChart(APACHE_CHART);
-            } catch (Exception e) {
-                // ignore
-            }
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
         } finally {
-            try {
-                defaultClient.uninstallChart(APACHE_CHART);
-            } catch (Exception e) {
-                // ignore
-            }
-            try {
-                defaultClient.removeRepository(BITNAMI_REPOSITORY);
-            } catch (Exception e) {
-                // ignore
-            }
+                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+                suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
         }
     }
 }
