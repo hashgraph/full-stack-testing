@@ -21,7 +21,7 @@ import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.execution.HelmExecution;
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
-import com.hedera.fullstack.helm.client.model.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.Version;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
@@ -101,14 +101,6 @@ public final class DefaultHelmClient implements HelmClient {
     @Override
     public void removeRepository(Repository repository) {
         executeInternal(new RepositoryRemoveRequest(repository), Void.class, (b, c) -> {
-            b.call();
-            return null;
-        });
-    }
-
-    @Override
-    public void installChart(Chart chart) {
-        executeInternal(new ChartInstallRequest(chart), Void.class, (b, c) -> {
             b.call();
             return null;
         });

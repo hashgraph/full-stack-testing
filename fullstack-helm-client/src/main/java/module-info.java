@@ -12,6 +12,8 @@ module com.hedera.fullstack.helm.client {
 
     opens com.hedera.fullstack.helm.client.model to
             com.fasterxml.jackson.databind;
+    exports com.hedera.fullstack.helm.client.model.install;
+    opens com.hedera.fullstack.helm.client.model.install to com.fasterxml.jackson.databind;
 
     requires com.hedera.fullstack.base.api;
     requires com.fasterxml.jackson.databind;

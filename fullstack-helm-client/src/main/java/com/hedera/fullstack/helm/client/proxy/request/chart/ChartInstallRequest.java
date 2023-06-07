@@ -18,7 +18,7 @@ package com.hedera.fullstack.helm.client.proxy.request.chart;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
-import com.hedera.fullstack.helm.client.model.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 
 /**

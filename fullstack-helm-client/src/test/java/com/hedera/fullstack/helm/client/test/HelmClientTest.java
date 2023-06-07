@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
-import com.hedera.fullstack.helm.client.model.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
@@ -140,25 +140,25 @@ class HelmClientTest {
         }
     }
 
-        @Test
-        @DisplayName("Install Chart with Options Executes Successfully0")
-        void testAtomicChartInstall() { // failed atomic
-            removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully0")
+    void testAtomicChartInstall() { // failed atomic
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
 
-            final InstallChartOptions options = InstallChartOptions.builder()
-                    .atomic(true) // Note: fails when ran independently
-                    .createNamespace(true)
-                    .build();
+        final InstallChartOptions options = InstallChartOptions.builder()
+                .atomic(true) // Note: fails when ran independently
+                .createNamespace(true)
+                .build();
 
-            try {
-                assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-                assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-            } finally {
-                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-                suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-            }
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
         }
+    }
 
     @Test
     @DisplayName("Install Chart Executes Successfully")

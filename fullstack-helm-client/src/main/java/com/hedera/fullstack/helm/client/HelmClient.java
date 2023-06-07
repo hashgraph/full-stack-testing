@@ -19,7 +19,7 @@ package com.hedera.fullstack.helm.client;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.impl.DefaultHelmClientBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
-import com.hedera.fullstack.helm.client.model.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.util.List;
 
@@ -67,7 +67,9 @@ public interface HelmClient {
      *
      * @param chart
      */
-    void installChart(Chart chart);
+    default void installChart(Chart chart) {
+        installChart(chart, InstallChartOptions.defaults());
+    }
 
     /**
      * Executes the Helm CLI {@code install} sub-command and installs a Helm chart passing the flags and arguments

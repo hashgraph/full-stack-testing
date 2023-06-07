@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client.model;
+package com.hedera.fullstack.helm.client.model.install;
 
 /**
  * The options to be supplied to the helm install command.
@@ -63,9 +63,19 @@ public record InstallChartOptions(
         boolean waitFor) {
     /**
      * Returns an instance of the InstallChartOptionsBuilder.
+     *
      * @return the InstallChartOptionsBuilder.
      */
     public static InstallChartOptionsBuilder builder() {
         return InstallChartOptionsBuilder.builder();
+    }
+
+    /**
+     * Returns an instance of the default InstallChartOptions.
+     *
+     * @return the default InstallChartOptions.
+     */
+    public static InstallChartOptions defaults() {
+        return builder().build();
     }
 }

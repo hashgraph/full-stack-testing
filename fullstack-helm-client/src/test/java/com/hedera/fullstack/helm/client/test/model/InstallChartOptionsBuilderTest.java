@@ -18,7 +18,7 @@ package com.hedera.fullstack.helm.client.test.model;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.hedera.fullstack.helm.client.model.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

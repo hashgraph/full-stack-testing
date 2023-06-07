@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.helm.client.model;
+package com.hedera.fullstack.helm.client.model.install;
 
 /**
  * The builder for the {@link InstallChartOptions}.
