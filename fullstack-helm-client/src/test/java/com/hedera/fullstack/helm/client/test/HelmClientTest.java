@@ -140,38 +140,25 @@ class HelmClientTest {
         }
     }
 
-    //    @Test
-    //    @DisplayName("Install Chart with Options Executes Successfully0")
-    //    void testInstallChartWithOptionsCommand0() { // failed atomic
-    //        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-    //
-    //        final InstallChartOptions options = InstallChartOptions.builder()
-    //                .atomic(true) // Note: fails when ran independently
-    //                .createNamespace(true)
-    //                // .dependencyUpdate(true)
-    //                // .description("Test install chart with options")
-    //                // .enableDNS(true)
-    //                // .force(true)
-    //                // .output("table") // Note: json & yaml output hangs and doesn't complete
-    //                // .password("password")
-    //                // .repo(BITNAMI_REPOSITORY.url()) // Note: fails when ran independently
-    //                // .skipCredentials(true)
-    //                // .timeout("9m0s")
-    //                // .username("username")
-    //                // .verify(true) // Note: fails when ran independently
-    //                // .version("9.6.3")
-    //                // .waitFor(true) // Note: fails when ran independently
-    //                .build();
-    //
-    //        try {
-    //            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-    //            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-    //        } finally {
-    //            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-    //        }
-    //    }
+        @Test
+        @DisplayName("Install Chart with Options Executes Successfully0")
+        void testAtomicChartInstall() { // failed atomic
+            removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+            final InstallChartOptions options = InstallChartOptions.builder()
+                    .atomic(true) // Note: fails when ran independently
+                    .createNamespace(true)
+                    .build();
+
+            try {
+                assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+                assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            } finally {
+                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+                suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            }
+        }
 
     @Test
     @DisplayName("Install Chart Executes Successfully")
