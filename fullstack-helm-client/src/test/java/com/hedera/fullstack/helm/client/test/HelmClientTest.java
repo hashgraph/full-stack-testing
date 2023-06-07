@@ -135,10 +135,10 @@ class HelmClientTest {
                 //                .password("password")
 //                .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
-                //                .timeout(300)
+                .timeout("3m0s")
                 //                .username("username")
                 //                .verify(true)
-                //                .waitFor(true)
+                .waitFor(true)
                 .build();
 
         try {

@@ -55,7 +55,7 @@ public record InstallChartOptions(
         String password,
         String repo,
         boolean skipCredentials,
-        Integer timeout,
+        String timeout,
         String username,
         String values,
         boolean verify,

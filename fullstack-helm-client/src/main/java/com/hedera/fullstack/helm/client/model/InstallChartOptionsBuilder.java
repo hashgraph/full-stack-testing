@@ -31,7 +31,7 @@ public final class InstallChartOptionsBuilder {
     private String password;
     private String repo;
     private boolean skipCredentials;
-    private Integer timeout;
+    private String timeout;
     private String username;
     private String values;
     private boolean verify;
@@ -178,7 +178,7 @@ public final class InstallChartOptionsBuilder {
      * @param timeout time to wait for any individual Kubernetes operation (like Jobs for hooks) (default 5m0s).
      * @return the current InstallChartOptionsBuilder.
      */
-    public InstallChartOptionsBuilder timeout(Integer timeout) {
+    public InstallChartOptionsBuilder timeout(String timeout) {
         this.timeout = timeout;
         return this;
     }
