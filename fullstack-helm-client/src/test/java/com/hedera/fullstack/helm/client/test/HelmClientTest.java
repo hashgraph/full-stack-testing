@@ -123,11 +123,11 @@ class HelmClientTest {
                 // .password("password")
                 // .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
-                .timeout("9m0s")
+                // .timeout("9m0s")
                 // .username("username")
                 // .verify(true)
                 .version("9.6.3")
-                .waitFor(true)
+                // .waitFor(true)
                 .build();
 
         try {
