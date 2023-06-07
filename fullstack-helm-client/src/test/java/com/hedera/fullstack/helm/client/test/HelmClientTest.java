@@ -116,9 +116,9 @@ class HelmClientTest {
                 .atomic(true)
                 .createNamespace(true)
                 // .dependencyUpdate(true)
-                .description("Test install chart with options")
-                .enableDNS(true)
-                .force(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
                 // .output("table") // Note: json & yaml output hangs and doesn't complete
                 // .password("password")
                 // .repo(BITNAMI_REPOSITORY.url())
@@ -146,6 +146,435 @@ class HelmClientTest {
         removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
         final InstallChartOptions options =
                 InstallChartOptions.builder().createNamespace(true).build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully1")
+    void testInstallChartWithOptionsCommand1() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully2")
+    void testInstallChartWithOptionsCommand2() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully3")
+    void testInstallChartWithOptionsCommand3() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully4")
+    void testInstallChartWithOptionsCommand4() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully5")
+    void testInstallChartWithOptionsCommand5() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully6")
+    void testInstallChartWithOptionsCommand6() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully7")
+    void testInstallChartWithOptionsCommand7() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully8")
+    void testInstallChartWithOptionsCommand8() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully9")
+    void testInstallChartWithOptionsCommand9() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully10")
+    void testInstallChartWithOptionsCommand10() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully11")
+    void testInstallChartWithOptionsCommand11() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                .verify(true)
+                // .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully12")
+    void testInstallChartWithOptionsCommand12() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                .version("9.6.3")
+                // .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Options Executes Successfully13")
+    void testInstallChartWithOptionsCommand13() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                // .atomic(true)
+                .createNamespace(true)
+                // .dependencyUpdate(true)
+                // .description("Test install chart with options")
+                // .enableDNS(true)
+                // .force(true)
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
+                // .skipCredentials(true)
+                // .timeout("9m0s")
+                // .username("username")
+                // .verify(true)
+                // .version("9.6.3")
+                .waitFor(true)
+                .build();
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
