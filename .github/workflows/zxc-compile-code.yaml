@@ -122,14 +122,16 @@ jobs:
         uses: medyagh/setup-minikube@3213bac7294895b1d92c1f4db1f99c91a308efaf
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
+          driver: docker
           container-runtime: docker
+          kubernetes-version: v1.23.8
 
       - name: Setup Kubectl
         if : ${{ inputs.enable-unit-tests && !cancelled() }}
         run: |
           sudo curl -L -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo chmod +x /usr/local/bin/kubectl
-      
+
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         run: kubectl config current-context
