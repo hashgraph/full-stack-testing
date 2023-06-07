@@ -123,7 +123,7 @@ class HelmClientTest {
                 // .password("password")
                 // .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
-                .timeout("5m0s")
+                .timeout("9m0s")
                 // .username("username")
                 // .verify(true)
                 .version("9.6.3")
@@ -144,11 +144,13 @@ class HelmClientTest {
     @DisplayName("Install Chart Executes Successfully")
     void testInstallChartCommand() {
         removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+        final InstallChartOptions options =
+                InstallChartOptions.builder().createNamespace(true).build();
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
         } finally {
             suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
             suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
