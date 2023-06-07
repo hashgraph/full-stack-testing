@@ -118,6 +118,11 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Kubernetes Cluster Info
+        id: k8s-info
+        run: |
+          echo "k8s-cluster-name=`kubectl config current-context`" >> "${GITHUB_OUTPUT}"
+
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # pin@v2
