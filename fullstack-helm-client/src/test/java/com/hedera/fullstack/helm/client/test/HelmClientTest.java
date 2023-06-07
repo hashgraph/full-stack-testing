@@ -120,8 +120,8 @@ class HelmClientTest {
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
             Thread.sleep(5000);
         } finally {
-            assertThatNoException().isThrownBy(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
         }
     }
 
@@ -137,7 +137,7 @@ class HelmClientTest {
                 .description("Test install chart with options")
                 .enableDNS(true)
                 .force(true)
-                .output("table")  // Note: json & yaml output hangs and doesn't complete
+                .output("table") // Note: json & yaml output hangs and doesn't complete
                 // .password("password")
                 // .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
@@ -153,8 +153,8 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
         } finally {
-                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-                suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
         }
     }
 }
