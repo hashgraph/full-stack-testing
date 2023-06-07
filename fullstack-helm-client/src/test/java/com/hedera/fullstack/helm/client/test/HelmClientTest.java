@@ -133,8 +133,8 @@ class HelmClientTest {
                 .force(true)
                 //                .output("json")
                 //                .password("password")
-                //                .repo(INGRESS_REPOSITORY.url())
-                //                .skipCredentials(true)
+//                .repo(BITNAMI_REPOSITORY.url())
+                .skipCredentials(true)
                 //                .timeout(300)
                 //                .username("username")
                 //                .verify(true)
@@ -142,17 +142,17 @@ class HelmClientTest {
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(INGRESS_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
             Thread.sleep(5000);
         } finally {
             try {
-                defaultClient.uninstallChart(INGRESS_CHART);
+                defaultClient.uninstallChart(APACHE_CHART);
             } catch (Exception e) {
                 // ignore
             }
             try {
-                defaultClient.removeRepository(INGRESS_REPOSITORY);
+                defaultClient.removeRepository(BITNAMI_REPOSITORY);
             } catch (Exception e) {
                 // ignore
             }
