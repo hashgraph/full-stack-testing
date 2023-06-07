@@ -122,7 +122,7 @@ jobs:
         uses: medyagh/setup-minikube@3213bac7294895b1d92c1f4db1f99c91a308efaf
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
-          driver: docker
+          driver: none
           container-runtime: docker
           kubernetes-version: v1.23.8
           start-args: --extra-config=kubeadm.ignore-preflight-errors=SystemVerification
