@@ -95,7 +95,7 @@ jobs:
     name: ${{ inputs.custom-job-label || 'Compiles' }}
     runs-on: [self-hosted, Linux, medium, ephemeral]
     steps:
-      - name: Checkout Code 
+      - name: Checkout Code
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v3
 
       - name: Expand Shallow Clone for SonarQube and Spotless
@@ -121,7 +121,15 @@ jobs:
       - name: Setup Minikube
         uses: medyagh/setup-minikube@3213bac7294895b1d92c1f4db1f99c91a308efaf
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        with:
+          container-runtime: docker
 
+      - name: Setup Kubectl
+        if : ${{ inputs.enable-unit-tests && !cancelled() }}
+        run: |
+          sudo curl -L -o /usr/local/bin/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          sudo chmod +x /usr/local/bin/kubectl
+      
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         run: kubectl config current-context
