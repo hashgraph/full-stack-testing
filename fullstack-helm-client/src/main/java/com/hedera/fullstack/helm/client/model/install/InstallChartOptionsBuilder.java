@@ -30,7 +30,7 @@ public final class InstallChartOptionsBuilder {
     private boolean passCredentials;
     private String password;
     private String repo;
-    private boolean skipCredentials;
+    private boolean skipCrds;
     private String timeout;
     private String username;
     private String values;
@@ -164,11 +164,11 @@ public final class InstallChartOptionsBuilder {
     /**
      * if set, no CRDs will be installed. By default, CRDs are installed if not already present.
      *
-     * @param skipCredentials if set, no CRDs will be installed. By default, CRDs are installed if not already present.
+     * @param skipCrds if set, no CRDs will be installed. By default, CRDs are installed if not already present.
      * @return the current InstallChartOptionsBuilder.
      */
-    public InstallChartOptionsBuilder skipCredentials(boolean skipCredentials) {
-        this.skipCredentials = skipCredentials;
+    public InstallChartOptionsBuilder skipCrds(boolean skipCrds) {
+        this.skipCrds = skipCrds;
         return this;
     }
 
@@ -260,7 +260,7 @@ public final class InstallChartOptionsBuilder {
                 passCredentials,
                 password,
                 repo,
-                skipCredentials,
+                skipCrds,
                 timeout,
                 username,
                 values,

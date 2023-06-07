@@ -38,7 +38,7 @@ class InstallChartOptionsBuilderTest {
                 .passCredentials(true)
                 .password("password")
                 .repo("repo")
-                .skipCredentials(true)
+                .skipCrds(true)
                 .timeout("timeout")
                 .username("username")
                 .values("values")
@@ -57,7 +57,7 @@ class InstallChartOptionsBuilderTest {
         assertTrue(options.passCredentials());
         assertEquals("password", options.password());
         assertEquals("repo", options.repo());
-        assertTrue(options.skipCredentials());
+        assertTrue(options.skipCrds());
         assertEquals("timeout", options.timeout());
         assertEquals("username", options.username());
         assertEquals("values", options.values());

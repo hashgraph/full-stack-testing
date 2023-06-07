@@ -16,6 +16,9 @@
 
 package com.hedera.fullstack.helm.client.model.install;
 
+import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
+import com.hedera.fullstack.helm.client.model.Options;
+
 /**
  * The options to be supplied to the helm install command.
  *
@@ -31,7 +34,7 @@ package com.hedera.fullstack.helm.client.model.install;
  * @param passCredentials  - pass credentials to all domains.
  * @param password         - chart repository password where to locate the requested chart.
  * @param repo             - chart repository url where to locate the requested chart.
- * @param skipCredentials  - if set, no CRDs will be installed. By default, CRDs are installed if not already present.
+ * @param skipCrds         - if set, no CRDs will be installed. By default, CRDs are installed if not already present.
  * @param timeout          - time to wait for any individual Kubernetes operation (like Jobs for hooks) (default 5m0s).
  * @param username         - chart repository username where to locate the requested chart.
  * @param values           - specify values in a YAML file or a URL (can specify multiple).
@@ -54,13 +57,14 @@ public record InstallChartOptions(
         boolean passCredentials,
         String password,
         String repo,
-        boolean skipCredentials,
+        boolean skipCrds,
         String timeout,
         String username,
         String values,
         boolean verify,
         String version,
-        boolean waitFor) {
+        boolean waitFor)
+        implements Options {
     /**
      * Returns an instance of the InstallChartOptionsBuilder.
      *
@@ -77,5 +81,76 @@ public record InstallChartOptions(
      */
     public static InstallChartOptions defaults() {
         return builder().build();
+    }
+
+    @Override
+    public void apply(final HelmExecutionBuilder builder) {
+        applyFlags(builder);
+
+        if (output() != null) {
+            builder.argument("output", output());
+        }
+
+        if (password() != null) {
+            builder.argument("password", password());
+        }
+
+        if (repo() != null) {
+            builder.argument("repo", repo());
+        }
+
+        if (timeout() != null) {
+            builder.argument("timeout", timeout());
+        }
+
+        if (username() != null) {
+            builder.argument("username", username());
+        }
+
+        if (values() != null) {
+            builder.argument("values", values());
+        }
+
+        if (version() != null) {
+            builder.argument("version", version());
+        }
+    }
+
+    private void applyFlags(final HelmExecutionBuilder builder) {
+        if (atomic()) {
+            builder.flag("--atomic");
+        }
+
+        if (createNamespace()) {
+            builder.flag("--create-namespace");
+        }
+
+        if (dependencyUpdate()) {
+            builder.flag("--dependency-update");
+        }
+
+        if (enableDNS()) {
+            builder.flag("--enable-dns");
+        }
+
+        if (force()) {
+            builder.flag("--force");
+        }
+
+        if (passCredentials()) {
+            builder.flag("--pass-credentials");
+        }
+
+        if (skipCrds()) {
+            builder.flag("--skip-crds");
+        }
+
+        if (verify()) {
+            builder.flag("--verify");
+        }
+
+        if (waitFor()) {
+            builder.flag("--wait");
+        }
     }
 }

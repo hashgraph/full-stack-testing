@@ -17,9 +17,7 @@
 package com.hedera.fullstack.helm.client.test;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatException;
-import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.*;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
@@ -28,6 +26,7 @@ import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,9 +39,10 @@ class HelmClientTest {
     private static final Repository INGRESS_REPOSITORY =
             new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
 
-    private static final Repository BITNAMI_REPOSITORY =
-            new Repository("bitnami", "https://charts.bitnami.com/bitnami");
-    private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
+    private static final Repository HAPROXYTECH_REPOSITORY =
+            new Repository("haproxytech", "https://haproxytech.github.io/helm-charts");
+    private static final Chart HAPROXY_CHART = new Chart("haproxy", "haproxytech/haproxy");
+    private static final Chart HAPROXY_CHART_UNQUALIFIED = new Chart("haproxy", "haproxy");
 
     private static HelmClient defaultClient;
 
@@ -102,15 +102,25 @@ class HelmClientTest {
     @DisplayName("Repository Remove Executes With Error")
     void testRepositoryRemoveCommand_WithError() {
         removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
+
+        int existingRepoCount = defaultClient.listRepositories().size();
+        final String expectedMessage;
+
+        if (existingRepoCount == 0) {
+            expectedMessage = "Error: no repositories configured";
+        } else {
+            expectedMessage = String.format("Error: no repo named \"%s\" found", INGRESS_REPOSITORY.name());
+        }
+
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
-                .withMessageContaining("Error: no repositories configured");
+                .withMessageContaining(expectedMessage);
     }
 
     @Test
     @DisplayName("Install Chart with Options Executes Successfully")
     void testInstallChartWithOptionsCommand() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
                 // .atomic(true) // Note: fails when ran independently
@@ -122,7 +132,7 @@ class HelmClientTest {
                 .output("table") // Note: json & yaml output hangs and doesn't complete
                 .password("password")
                 // .repo(BITNAMI_REPOSITORY.url()) // Note: fails when ran independently
-                .skipCredentials(true)
+                .skipCrds(true)
                 .timeout("9m0s")
                 .username("username")
                 // .verify(true) // Note: fails when ran independently
@@ -131,19 +141,19 @@ class HelmClientTest {
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully0")
+    @DisplayName("Atomic Chart Installation Executes Successfully")
     void testAtomicChartInstall() { // failed atomic
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
                 .atomic(true) // Note: fails when ran independently
@@ -151,459 +161,284 @@ class HelmClientTest {
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
     @DisplayName("Install Chart Executes Successfully")
     void testInstallChartCommand() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-        final InstallChartOptions options =
-                InstallChartOptions.builder().createNamespace(true).build();
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully1")
-    void testInstallChartWithOptionsCommand1() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with Dependency Updates")
+    void testInstallChartWithDependencyUpdates() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
                 .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully2")
-    void testInstallChartWithOptionsCommand2() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with Description")
+    void testInstallChartWithDescription() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
-                // .dependencyUpdate(true)
                 .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully3")
-    void testInstallChartWithOptionsCommand3() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with DNS Enabled")
+    void testInstallChartWithDnsEnabled() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
                 .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully4")
-    void testInstallChartWithOptionsCommand4() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Forced Chart Installation")
+    void testForcedChartInstallation() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
-        final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
-                .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
-                .build();
+        final InstallChartOptions options =
+                InstallChartOptions.builder().createNamespace(true).force(true).build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully5")
-    void testInstallChartWithOptionsCommand5() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with Tabular Output")
+    void testInstallChartWithTableOutput() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
                 .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully6")
-    void testInstallChartWithOptionsCommand6() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with Password")
+    void testInstallChartWithPassword() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
                 .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-        }
-    }
-
-    //        @Test
-    //        @DisplayName("Install Chart with Options Executes Successfully7")
-    //        void testInstallChartWithOptionsCommand7() { // fails with .repo(BITNAMI_REPOSITORY.url())
-    //            removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-    //
-    //            final InstallChartOptions options = InstallChartOptions.builder()
-    //                    // .atomic(true)
-    //                    .createNamespace(true)
-    //                    // .dependencyUpdate(true)
-    //                    // .description("Test install chart with options")
-    //                    // .enableDNS(true)
-    //                    // .force(true)
-    //                    // .output("table") // Note: json & yaml output hangs and doesn't complete
-    //                    // .password("password")
-    //                    // .repo(BITNAMI_REPOSITORY.url()) fails
-    //                    .repo("https://charts.bitnami.com/bitnami/index.yaml") // also fails
-    //                    // .skipCredentials(true)
-    //                    // .timeout("9m0s")
-    //                    // .username("username")
-    //                    // .verify(true)
-    //                    // .version("9.6.3")
-    //                    // .waitFor(true)
-    //                    .build();
-    //
-    //            try {
-    //                assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-    //                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //                assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-    //            } finally {
-    //                suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //                suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-    //            }
-    //        }
-
-    @Test
-    @DisplayName("Install Chart with Options Executes Successfully8")
-    void testInstallChartWithOptionsCommand8() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
-                .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully9")
-    void testInstallChartWithOptionsCommand9() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart From Repository")
+    void testInstallChartFromRepo() { // fails with .repo(BITNAMI_REPOSITORY.url())
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
+                .repo(HAPROXYTECH_REPOSITORY.url()) // also fails
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART_UNQUALIFIED));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART_UNQUALIFIED, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART_UNQUALIFIED));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart Skipping CRDs")
+    void testInstallChartSkippingCrds() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                .createNamespace(true)
+                .skipCrds(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Timeout")
+    void testInstallChartWithTimeout() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                .createNamespace(true)
                 .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully10")
-    void testInstallChartWithOptionsCommand10() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with Username")
+    void testInstallChartWithUsername() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
                 .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
                 .username("username")
-                // .verify(true)
-                // .version("9.6.3")
-                // .waitFor(true)
                 .build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
-
-    //    @Test
-    //    @DisplayName("Install Chart with Options Executes Successfully11")
-    //    void testInstallChartWithOptionsCommand11() { // fails
-    //        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-    //
-    //        final InstallChartOptions options = InstallChartOptions.builder()
-    //                // .atomic(true)
-    //                .createNamespace(true)
-    //                // .dependencyUpdate(true)
-    //                // .description("Test install chart with options")
-    //                // .enableDNS(true)
-    //                // .force(true)
-    //                // .output("table") // Note: json & yaml output hangs and doesn't complete
-    //                // .password("password")
-    //                // .repo(BITNAMI_REPOSITORY.url())
-    //                // .skipCredentials(true)
-    //                // .timeout("9m0s")
-    //                // .username("username")
-    //                .verify(true)
-    //                // .version("9.6.3")
-    //                // .waitFor(true)
-    //                .build();
-    //
-    //        try {
-    //            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-    //            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-    //        } finally {
-    //            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-    //        }
-    //    }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully12")
-    void testInstallChartWithOptionsCommand12() {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+    @DisplayName("Install Chart with Provenance Validation")
+    @Disabled("Provenance validation is not supported in our unit tests due to lack of signed charts.")
+    void testInstallChartWithProvenanceValidation() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
-        final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true)
-                .createNamespace(true)
-                // .dependencyUpdate(true)
-                // .description("Test install chart with options")
-                // .enableDNS(true)
-                // .force(true)
-                // .output("table") // Note: json & yaml output hangs and doesn't complete
-                // .password("password")
-                // .repo(BITNAMI_REPOSITORY.url())
-                // .skipCredentials(true)
-                // .timeout("9m0s")
-                // .username("username")
-                // .verify(true)
-                .version("9.6.3")
-                // .waitFor(true)
-                .build();
+        final InstallChartOptions options =
+                InstallChartOptions.builder().createNamespace(true).verify(true).build();
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
 
-    //    @Test
-    //    @DisplayName("Install Chart with Options Executes Successfully13")
-    //    void testInstallChartWithOptionsCommand13() { // fails
-    //        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-    //
-    //        final InstallChartOptions options = InstallChartOptions.builder()
-    //                // .atomic(true)
-    //                .createNamespace(true)
-    //                // .dependencyUpdate(true)
-    //                // .description("Test install chart with options")
-    //                // .enableDNS(true)
-    //                // .force(true)
-    //                // .output("table") // Note: json & yaml output hangs and doesn't complete
-    //                // .password("password")
-    //                // .repo(BITNAMI_REPOSITORY.url())
-    //                // .skipCredentials(true)
-    //                // .timeout("9m0s")
-    //                // .username("username")
-    //                // .verify(true)
-    //                // .version("9.6.3")
-    //                .waitFor(true)
-    //                .build();
-    //
-    //        try {
-    //            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-    //            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-    //        } finally {
-    //            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-    //            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-    //        }
-    //    }
+    @Test
+    @DisplayName("Install Chart with Specific Version")
+    void testInstallChartVersion() {
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                .createNamespace(true)
+                .version("1.18.0")
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart with Wait")
+    void testInstallChartWithWait() { // fails
+        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+
+        final InstallChartOptions options = InstallChartOptions.builder()
+                .createNamespace(true)
+                .waitFor(true)
+                .build();
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
+        }
+    }
 }

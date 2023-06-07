@@ -39,69 +39,7 @@ public record ChartInstallRequest(Chart chart, InstallChartOptions options) impl
     public void apply(HelmExecutionBuilder builder) {
         builder.subcommands("install");
         if (options != null) {
-            if (options.atomic()) {
-                builder.flag("--atomic");
-            }
-
-            if (options.createNamespace()) {
-                builder.flag("--create-namespace");
-            }
-
-            if (options.dependencyUpdate()) {
-                builder.flag("--dependency-update");
-            }
-
-            if (options.enableDNS()) {
-                builder.flag("--enable-dns");
-            }
-
-            if (options.force()) {
-                builder.flag("--force");
-            }
-
-            if (options.output() != null) {
-                builder.argument("output", options.output());
-            }
-
-            if (options.passCredentials()) {
-                builder.flag("--pass-credentials");
-            }
-
-            if (options.password() != null) {
-                builder.argument("password", options.password());
-            }
-
-            if (options.repo() != null) {
-                builder.argument("repo", options.repo());
-            }
-
-            if (options.skipCredentials()) {
-                builder.flag("--skip-crds");
-            }
-
-            if (options.timeout() != null) {
-                builder.argument("timeout", options.timeout().toString());
-            }
-
-            if (options.username() != null) {
-                builder.argument("username", options.username());
-            }
-
-            if (options.values() != null) {
-                builder.argument("values", options.values());
-            }
-
-            if (options.verify()) {
-                builder.flag("--verify");
-            }
-
-            if (options.version() != null) {
-                builder.argument("version", options.version());
-            }
-
-            if (options.waitFor()) {
-                builder.flag("--wait");
-            }
+            options.apply(builder);
         }
         builder.positional(chart.name()).positional(chart.url());
     }

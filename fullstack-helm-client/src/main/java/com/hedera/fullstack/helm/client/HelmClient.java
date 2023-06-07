@@ -82,7 +82,7 @@ public interface HelmClient {
 
     /**
      * Executes the Helm CLI {@code uninstall} sub-command and uninstalls the specified Helm chart.
-     * @param chart
+     * @param chart the Helm chart to uninstall.
      */
     void uninstallChart(Chart chart);
 
