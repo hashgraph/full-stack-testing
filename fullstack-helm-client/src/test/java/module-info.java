@@ -1,6 +1,8 @@
 module com.hedera.fullstack.helm.client.test {
     opens com.hedera.fullstack.helm.client.test to
             org.junit.platform.commons;
+    opens com.hedera.fullstack.helm.client.test.model to
+            org.junit.platform.commons;
     opens com.hedera.fullstack.helm.client.test.software to
             org.junit.platform.commons;
 
