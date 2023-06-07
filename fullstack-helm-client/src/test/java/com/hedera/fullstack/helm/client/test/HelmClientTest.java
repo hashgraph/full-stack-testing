@@ -40,8 +40,6 @@ class HelmClientTest {
     private static final Repository INGRESS_REPOSITORY =
             new Repository("ingress-nginx", "https://kubernetes.github.io/ingress-nginx");
 
-    private static final Chart INGRESS_CHART = new Chart("ingress-nginx", "ingress-nginx/ingress-nginx");
-
     private static final Repository BITNAMI_REPOSITORY =
             new Repository("bitnami", "https://charts.bitnami.com/bitnami");
     private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
@@ -110,24 +108,8 @@ class HelmClientTest {
     }
 
     @Test
-    @DisplayName("Install Chart Executes Successfully")
-    void testInstallChartCommand() throws InterruptedException {
-        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
-            Thread.sleep(5000);
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
-            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
-        }
-    }
-
-    @Test
     @DisplayName("Install Chart with Options Executes Successfully")
-    void testInstallChartWithOptionsCommand() throws InterruptedException {
+    void testInstallChartWithOptionsCommand() {
         removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
@@ -141,7 +123,7 @@ class HelmClientTest {
                 // .password("password")
                 // .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
-                .timeout("1m0s")
+                .timeout("5m0s")
                 // .username("username")
                 // .verify(true)
                 .version("9.6.3")
@@ -152,6 +134,21 @@ class HelmClientTest {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
+        } finally {
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
+        }
+    }
+
+    @Test
+    @DisplayName("Install Chart Executes Successfully")
+    void testInstallChartCommand() {
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
+
+        try {
+            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
         } finally {
             suppressExceptions(() -> defaultClient.uninstallChart(APACHE_CHART));
             suppressExceptions(() -> defaultClient.removeRepository(BITNAMI_REPOSITORY));
