@@ -258,8 +258,9 @@ public final class HelmExecution {
         if (exitCode() != 0) {
             throw new HelmExecutionException(
                     exitCode(),
-                    String.format(DEFAULT_MESSAGE, exitCode()) + ":\n"
-                            + StreamUtils.streamToString(process.getErrorStream()));
+                    String.format(DEFAULT_MESSAGE + ":\nstdErr:%s\nstdOut:%s\n", exitCode(),
+                            StreamUtils.streamToString(standardError()),
+                            StreamUtils.streamToString(standardOutput())));
         }
     }
 }
