@@ -3,6 +3,8 @@ module com.hedera.fullstack.helm.client.test {
             org.junit.platform.commons;
     opens com.hedera.fullstack.helm.client.test.model to
             org.junit.platform.commons;
+    opens com.hedera.fullstack.helm.client.test.proxy.request.chart to
+            org.junit.platform.commons;
     opens com.hedera.fullstack.helm.client.test.software to
             org.junit.platform.commons;
 

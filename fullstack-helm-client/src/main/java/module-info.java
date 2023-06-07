@@ -7,6 +7,8 @@ module com.hedera.fullstack.helm.client {
             com.hedera.fullstack.helm.client.test;
     exports com.hedera.fullstack.helm.client.proxy.request.authentication to
             com.hedera.fullstack.helm.client.test;
+    exports com.hedera.fullstack.helm.client.proxy.request.chart to
+            com.hedera.fullstack.helm.client.test;
 
     opens com.hedera.fullstack.helm.client.model to
             com.fasterxml.jackson.databind;
