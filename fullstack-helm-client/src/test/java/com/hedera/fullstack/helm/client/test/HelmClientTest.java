@@ -44,6 +44,13 @@ class HelmClientTest {
             new Repository("bitnami", "https://charts.bitnami.com/bitnami");
     private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
 
+    void removeRepoIfPresent(HelmClient client, Repository repo) {
+        final List<Repository> repositories = client.listRepositories();
+        if (repositories.contains(repo)) {
+            client.removeRepository(repo);
+        }
+    }
+
     @Test
     @DisplayName("Version Command Executes Successfully")
     void testVersionCommand() {
@@ -73,6 +80,7 @@ class HelmClientTest {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
         final int originalRepoListSize = defaultClient.listRepositories().size();
+        removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
@@ -94,9 +102,7 @@ class HelmClientTest {
     void testRepositoryRemoveCommand_WithError() {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
-        if (defaultClient.listRepositories().contains(INGRESS_REPOSITORY)) {
-            defaultClient.removeRepository(INGRESS_REPOSITORY);
-        }
+        removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
                 .withMessageContaining("Error: no repositories configured");
@@ -107,9 +113,15 @@ class HelmClientTest {
     void testInstallChartCommand() throws InterruptedException {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            try {
+                defaultClient.uninstallChart(APACHE_CHART);
+            } catch (Exception e) {
+                // ignore
+            }
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART));
             Thread.sleep(5000);
         } finally {
@@ -123,6 +135,7 @@ class HelmClientTest {
     void testInstallChartWithOptionsCommand() throws InterruptedException {
         final HelmClient defaultClient = HelmClient.defaultClient();
         assertThat(defaultClient).isNotNull();
+        removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
                 .atomic(true)
@@ -131,19 +144,24 @@ class HelmClientTest {
                 .description("Test install chart with options")
                 .enableDNS(true)
                 .force(true)
-                //                .output("json")
-                //                .password("password")
-                //                .repo(BITNAMI_REPOSITORY.url())
+                .output("table")  // Note: json & yaml output hangs and doesn't complete
+                // .password("password")
+                // .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
-                .timeout("3m0s")
-                //                .username("username")
-                //                .verify(true)
+                .timeout("1m0s")
+                // .username("username")
+                // .verify(true)
                 .version("9.6.3")
                 .waitFor(true)
                 .build();
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(BITNAMI_REPOSITORY));
+            try {
+                defaultClient.uninstallChart(APACHE_CHART);
+            } catch (Exception e) {
+                // ignore
+            }
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
             Thread.sleep(5000);
         } finally {
