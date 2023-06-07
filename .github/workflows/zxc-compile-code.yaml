@@ -118,17 +118,19 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Setup Minikube
+        uses: medyagh/setup-minikube@3213bac7294895b1d92c1f4db1f99c91a308efaf
+        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+
+      - name: Kubernetes Cluster Info
+        run: kubectl config current-context
+
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # pin@v2
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
-
-      - name: Kubernetes Cluster Info
-        id: k8s-info
-        run: |
-          echo "k8s-cluster-name=`kubectl config current-context`" >> "${GITHUB_OUTPUT}"
 
       - name: Javadoc
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # pin@v2
