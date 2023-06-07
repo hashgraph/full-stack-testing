@@ -26,6 +26,7 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.InstallChartOptions;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.util.List;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +45,14 @@ class HelmClientTest {
             new Repository("bitnami", "https://charts.bitnami.com/bitnami");
     private static final Chart APACHE_CHART = new Chart("apache", "bitnami/apache");
 
+    private static HelmClient defaultClient;
+
+    @BeforeAll
+    static void beforeAll() {
+        defaultClient = HelmClient.defaultClient();
+        assertThat(defaultClient).isNotNull();
+    }
+
     void removeRepoIfPresent(HelmClient client, Repository repo) {
         final List<Repository> repositories = client.listRepositories();
         if (repositories.contains(repo)) {
@@ -54,9 +63,6 @@ class HelmClientTest {
     @Test
     @DisplayName("Version Command Executes Successfully")
     void testVersionCommand() {
-        final HelmClient defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
-
         final SemanticVersion helmVersion = defaultClient.version();
         assertThat(helmVersion).isNotNull().isNotEqualTo(SemanticVersion.ZERO);
 
@@ -68,8 +74,6 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository List Executes Successfully")
     void testRepositoryListCommand() {
-        final HelmClient defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
         final List<Repository> repositories = defaultClient.listRepositories();
         assertThat(repositories).isNotNull();
     }
@@ -77,8 +81,6 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository Add Executes Successfully")
     void testRepositoryAddCommand() {
-        final HelmClient defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
         final int originalRepoListSize = defaultClient.listRepositories().size();
         removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
 
@@ -100,8 +102,6 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository Remove Executes With Error")
     void testRepositoryRemoveCommand_WithError() {
-        final HelmClient defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
         removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
@@ -111,8 +111,6 @@ class HelmClientTest {
     @Test
     @DisplayName("Install Chart Executes Successfully")
     void testInstallChartCommand() throws InterruptedException {
-        final HelmClient defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
         removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
 
         try {
@@ -133,8 +131,6 @@ class HelmClientTest {
     @Test
     @DisplayName("Install Chart with Options Executes Successfully")
     void testInstallChartWithOptionsCommand() throws InterruptedException {
-        final HelmClient defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
         removeRepoIfPresent(defaultClient, BITNAMI_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
@@ -163,7 +159,6 @@ class HelmClientTest {
                 // ignore
             }
             assertThatNoException().isThrownBy(() -> defaultClient.installChart(APACHE_CHART, options));
-            Thread.sleep(5000);
         } finally {
             try {
                 defaultClient.uninstallChart(APACHE_CHART);
