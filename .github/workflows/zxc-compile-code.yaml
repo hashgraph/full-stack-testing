@@ -125,6 +125,7 @@ jobs:
           driver: docker
           container-runtime: docker
           kubernetes-version: v1.23.8
+          start-args: --extra-config=kubeadm.ignore-preflight-errors=SystemVerification
 
       - name: Setup Kubectl
         if : ${{ inputs.enable-unit-tests && !cancelled() }}
