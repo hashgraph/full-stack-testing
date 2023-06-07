@@ -194,7 +194,6 @@ public final class HelmExecutionBuilder {
         }
 
         command.addAll(positionals);
-        System.out.println(command.toArray(new String[0]));
         return command.toArray(new String[0]);
     }
 }
