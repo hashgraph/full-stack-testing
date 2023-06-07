@@ -119,7 +119,7 @@ class HelmClientTest {
                 .description("Test install chart with options")
                 .enableDNS(true)
                 .force(true)
-                .output("table") // Note: json & yaml output hangs and doesn't complete
+                // .output("table") // Note: json & yaml output hangs and doesn't complete
                 // .password("password")
                 // .repo(BITNAMI_REPOSITORY.url())
                 .skipCredentials(true)
