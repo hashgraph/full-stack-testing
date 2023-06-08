@@ -25,10 +25,7 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 @DisplayName("Helm Client Tests")
 class HelmClientTest {
@@ -118,12 +115,11 @@ class HelmClientTest {
     }
 
     @Test
-    @DisplayName("Install Chart with Options Executes Successfully")
+    @DisplayName("Install Chart with Options")
     void testInstallChartWithOptionsCommand() {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
-                // .atomic(true) // Note: fails when ran independently
                 .createNamespace(true)
                 .dependencyUpdate(true)
                 .description("Test install chart with options")
@@ -131,13 +127,10 @@ class HelmClientTest {
                 .force(true)
                 .output("table") // Note: json & yaml output hangs and doesn't complete
                 .password("password")
-                // .repo(BITNAMI_REPOSITORY.url()) // Note: fails when ran independently
                 .skipCrds(true)
                 .timeout("9m0s")
                 .username("username")
-                // .verify(true) // Note: fails when ran independently
                 .version("9.6.3")
-                // .waitFor(true) // Note: fails when ran independently
                 .build();
 
         try {
@@ -345,12 +338,13 @@ class HelmClientTest {
 
     @Test
     @DisplayName("Install Chart with Timeout")
+    @Timeout(value = 90)
     void testInstallChartWithTimeout() {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options = InstallChartOptions.builder()
                 .createNamespace(true)
-                .timeout("9m0s")
+                .timeout("60s")
                 .build();
 
         try {
