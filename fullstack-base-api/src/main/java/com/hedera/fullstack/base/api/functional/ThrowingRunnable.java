@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+package com.hedera.fullstack.base.api.functional;
 
-dependencies {
-    api(enforcedPlatform(project(":fullstack-bom")))
-    javaModuleDependencies {
-        testImplementation(gav("org.junit.jupiter.api"))
-        testImplementation(gav("org.mockito"))
-        testImplementation(gav("org.mockito.junit.jupiter"))
-        testImplementation(gav("org.assertj.core"))
-        testRuntimeOnly(gav("org.mockito.inline"))
-    }
+/**
+ * A replacement for {@link Runnable} that allows for checked exceptions.
+ */
+@FunctionalInterface
+public interface ThrowingRunnable {
+    /**
+     * Executes the method potentially throwing a checked exception.
+     *
+     * @throws Exception if an error occurs.
+     */
+    @SuppressWarnings("java:S112")
+    void run() throws Throwable;
 }
