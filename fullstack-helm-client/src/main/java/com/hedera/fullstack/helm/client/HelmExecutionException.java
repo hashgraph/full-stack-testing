@@ -129,8 +129,8 @@ public class HelmExecutionException extends RuntimeException {
     public String toString() {
         return "HelmExecutionException{" + "message="
                 + getMessage() + ", exitCode="
-                + exitCode + ", stdOut='"
-                + stdOut + '\'' + ", stdErr='"
-                + stdErr + '\'' + '}';
+                + getExitCode() + ", stdOut='"
+                + getStdOut() + '\'' + ", stdErr='"
+                + getStdErr() + '\'' + '}';
     }
 }
