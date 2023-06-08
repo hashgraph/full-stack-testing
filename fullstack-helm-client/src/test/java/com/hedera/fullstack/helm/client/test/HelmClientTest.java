@@ -38,8 +38,9 @@ class HelmClientTest {
 
     private static final Repository HAPROXYTECH_REPOSITORY =
             new Repository("haproxytech", "https://haproxytech.github.io/helm-charts");
-    private static final Chart HAPROXY_CHART = new Chart("haproxy", "haproxytech/haproxy");
-    private static final Chart HAPROXY_CHART_UNQUALIFIED = new Chart("haproxy", "haproxy");
+    private static final Chart HAPROXY_CHART = new Chart("haproxy", "haproxytech");
+
+    private static final String HAPROXY_RELEASE_NAME = "haproxy-release";
 
     private static HelmClient defaultClient;
 
@@ -135,10 +136,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -155,10 +157,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -170,10 +173,10 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -190,10 +193,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -210,10 +214,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -230,10 +235,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -248,10 +254,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -268,10 +275,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -288,10 +296,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -308,10 +317,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART_UNQUALIFIED));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART_UNQUALIFIED, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART_UNQUALIFIED));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -328,10 +338,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -349,10 +360,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -369,10 +381,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -388,10 +401,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -408,10 +422,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }
@@ -428,10 +443,11 @@ class HelmClientTest {
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_CHART, options));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            assertThatNoException()
+                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_CHART));
+            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
     }

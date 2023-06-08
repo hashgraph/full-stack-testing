@@ -91,7 +91,7 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public void addRepository(Repository repository) {
+    public void addRepository(final Repository repository) {
         executeInternal(new RepositoryAddRequest(repository), Void.class, (b, c) -> {
             b.call();
             return null;
@@ -99,7 +99,7 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public void removeRepository(Repository repository) {
+    public void removeRepository(final Repository repository) {
         executeInternal(new RepositoryRemoveRequest(repository), Void.class, (b, c) -> {
             b.call();
             return null;
@@ -107,16 +107,16 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public void installChart(Chart chart, InstallChartOptions options) {
-        executeInternal(new ChartInstallRequest(chart, options), Void.class, (b, c) -> {
+    public void installChart(final String releaseName, final Chart chart, final InstallChartOptions options) {
+        executeInternal(new ChartInstallRequest(releaseName, chart, options), Void.class, (b, c) -> {
             b.call();
             return null;
         });
     }
 
     @Override
-    public void uninstallChart(Chart chart) {
-        executeInternal(new ChartUninstallRequest(chart), Void.class, (b, c) -> {
+    public void uninstallChart(final String releaseName) {
+        executeInternal(new ChartUninstallRequest(releaseName), Void.class, (b, c) -> {
             b.call();
             return null;
         });

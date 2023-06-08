@@ -28,7 +28,7 @@ class ChartInstallRequestTest {
     @DisplayName("Test ChartInstallRequest Chart constructor")
     void testChartInstallRequestChartConstructor() {
         Chart chart = new Chart("apache", "bitnami/apache");
-        ChartInstallRequest chartInstallRequest = new ChartInstallRequest(chart);
+        ChartInstallRequest chartInstallRequest = new ChartInstallRequest("apache", chart);
         assertEquals(chart, chartInstallRequest.chart());
         assertNull(chartInstallRequest.options());
     }

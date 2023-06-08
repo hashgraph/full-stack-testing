@@ -65,26 +65,29 @@ public interface HelmClient {
     /**
      * Executes the Helm CLI {@code install} sub-command and installs a Helm chart.
      *
-     * @param chart
+     * @param releaseName the name of the release.
+     * @param chart       the Helm chart to install.
      */
-    default void installChart(Chart chart) {
-        installChart(chart, InstallChartOptions.defaults());
+    default void installChart(String releaseName, Chart chart) {
+        installChart(releaseName, chart, InstallChartOptions.defaults());
     }
 
     /**
      * Executes the Helm CLI {@code install} sub-command and installs a Helm chart passing the flags and arguments
      * provided.
      *
-     * @param chart the Helm chart to install.
-     * @param options the options to pass to the Helm CLI command.
+     * @param releaseName the name of the release.
+     * @param chart       the Helm chart to install.
+     * @param options     the options to pass to the Helm CLI command.
      */
-    void installChart(Chart chart, InstallChartOptions options);
+    void installChart(String releaseName, Chart chart, InstallChartOptions options);
 
     /**
      * Executes the Helm CLI {@code uninstall} sub-command and uninstalls the specified Helm chart.
-     * @param chart the Helm chart to uninstall.
+     *
+     * @param releaseName the name of the release to uninstall.
      */
-    void uninstallChart(Chart chart);
+    void uninstallChart(String releaseName);
 
     /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.

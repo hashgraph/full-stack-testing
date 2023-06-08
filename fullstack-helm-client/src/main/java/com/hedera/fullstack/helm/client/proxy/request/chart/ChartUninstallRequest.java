@@ -17,16 +17,25 @@
 package com.hedera.fullstack.helm.client.proxy.request.chart;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
-import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
+import java.util.Objects;
 
 /**
  * A request to uninstall a chart.
- * @param chart the chart to uninstall
+ * @param releaseName the name of the release to uninstall.
  */
-public record ChartUninstallRequest(Chart chart) implements HelmRequest {
+public record ChartUninstallRequest(String releaseName) implements HelmRequest {
+
+    public ChartUninstallRequest {
+        Objects.requireNonNull(releaseName, "releaseName must not be null");
+
+        if (releaseName.isBlank()) {
+            throw new IllegalArgumentException("releaseName must not be null or blank");
+        }
+    }
+
     @Override
     public void apply(HelmExecutionBuilder builder) {
-        builder.subcommands("uninstall").positional(chart.name());
+        builder.subcommands("uninstall").positional(releaseName);
     }
 }
