@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 class ChartInstallRequestTest {
     @Test
     @DisplayName("Test ChartInstallRequest Chart constructor")
-    public void testChartInstallRequestChartConstructor() {
+    void testChartInstallRequestChartConstructor() {
         Chart chart = new Chart("apache", "bitnami/apache");
         ChartInstallRequest chartInstallRequest = new ChartInstallRequest(chart);
         assertEquals(chart, chartInstallRequest.chart());
