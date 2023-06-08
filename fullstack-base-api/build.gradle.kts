@@ -20,9 +20,9 @@ dependencies {
     api(enforcedPlatform(project(":fullstack-bom")))
     javaModuleDependencies {
         testImplementation(gav("org.junit.jupiter.api"))
+        testImplementation(gav("org.assertj.core"))
         testImplementation(gav("org.mockito"))
         testImplementation(gav("org.mockito.junit.jupiter"))
-        testImplementation(gav("org.assertj.core"))
         testRuntimeOnly(gav("org.mockito.inline"))
     }
 }
