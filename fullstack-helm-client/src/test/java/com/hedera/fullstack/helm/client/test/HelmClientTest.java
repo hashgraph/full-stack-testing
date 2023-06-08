@@ -126,11 +126,11 @@ class HelmClientTest {
                 .enableDNS(true)
                 .force(true)
                 .output("table") // Note: json & yaml output hangs and doesn't complete
-                .password("password")
                 .skipCrds(true)
-                .timeout("9m0s")
+                .timeout("3m0s")
                 .username("username")
-                .version("9.6.3")
+                .password("password")
+                .version("1.18.0")
                 .build();
 
         try {
