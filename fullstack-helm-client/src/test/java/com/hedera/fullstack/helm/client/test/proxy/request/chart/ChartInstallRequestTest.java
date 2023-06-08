@@ -16,9 +16,11 @@
 
 package com.hedera.fullstack.helm.client.test.proxy.request.chart;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.hedera.fullstack.helm.client.model.Chart;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartInstallRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,9 +29,19 @@ class ChartInstallRequestTest {
     @Test
     @DisplayName("Test ChartInstallRequest Chart constructor")
     void testChartInstallRequestChartConstructor() {
-        Chart chart = new Chart("apache", "bitnami/apache");
-        ChartInstallRequest chartInstallRequest = new ChartInstallRequest("apache", chart);
-        assertEquals(chart, chartInstallRequest.chart());
-        assertNull(chartInstallRequest.options());
+        final Chart chart = new Chart("apache", "bitnami/apache");
+        final ChartInstallRequest chartInstallRequest = new ChartInstallRequest("apache", chart);
+        assertThat(chart).isEqualTo(chartInstallRequest.chart()).isSameAs(chartInstallRequest.chart());
+        assertThat(chartInstallRequest.options()).isNotNull().isEqualTo(InstallChartOptions.defaults());
+        assertThat(chartInstallRequest.releaseName()).isEqualTo("apache");
+
+        final InstallChartOptions opts =
+                InstallChartOptions.builder().timeout("9m0s").atomic(true).build();
+        final ChartInstallRequest nonDefaultOptRequest = new ChartInstallRequest("apache", chart, opts);
+
+        assertThat(nonDefaultOptRequest.options())
+                .isNotNull()
+                .isEqualTo(opts)
+                .isNotEqualTo(InstallChartOptions.defaults());
     }
 }
