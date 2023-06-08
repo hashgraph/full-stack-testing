@@ -23,6 +23,5 @@ dependencies {
         testImplementation(gav("org.assertj.core"))
         testImplementation(gav("org.mockito"))
         testImplementation(gav("org.mockito.junit.jupiter"))
-        testRuntimeOnly(gav("org.mockito.inline"))
     }
 }
