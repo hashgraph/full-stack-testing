@@ -16,22 +16,46 @@
 
 package com.hedera.fullstack.base.api.test.util;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.hedera.fullstack.base.api.util.StreamUtils;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class StreamUtilsTest {
 
     @Test
-    @DisplayName("Test streamToString")
-    void streamToString() {
-        String testString = "This is a test string";
-        InputStream inputStream = new ByteArrayInputStream(testString.getBytes());
-        String result = StreamUtils.streamToString(inputStream);
-        assertEquals(testString, result);
+    @DisplayName("Verify streamToString works as expected")
+    void testStreamToString() {
+        final String testString = "This is a test string";
+        final InputStream inputStream = new ByteArrayInputStream(testString.getBytes());
+        final String result = StreamUtils.streamToString(inputStream);
+        assertThat(testString).isEqualTo(result);
+    }
+
+    @Test
+    @DisplayName("Verify streamToString works as expected with null input")
+    void testStreamToStringNullInput() {
+        assertThatNullPointerException().isThrownBy(() -> StreamUtils.streamToString(null));
+    }
+
+    @Test
+    @DisplayName("Verify streamToString handles IOExceptions")
+    void testStreamToStringIOExceptions(@Mock InputStream inputStream) {
+        assertThatCode(() -> doThrow(new IOException("test exception"))
+                        .when(inputStream)
+                        .read(any(byte[].class), anyInt(), anyInt()))
+                .doesNotThrowAnyException();
+
+        assertThat(StreamUtils.streamToString(inputStream)).isNotBlank().contains("... interrupted by: test exception");
     }
 }

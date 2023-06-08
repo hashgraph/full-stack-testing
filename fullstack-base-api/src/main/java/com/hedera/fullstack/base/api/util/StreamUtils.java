@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 public final class StreamUtils {
     /**
@@ -33,16 +34,19 @@ public final class StreamUtils {
      * @return the string representation of the input stream.
      */
     public static String streamToString(final InputStream inputStream) {
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        String lineRead;
-        StringBuffer sb = new StringBuffer();
+        Objects.requireNonNull(inputStream, "inputStream must not be null");
+
+        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+        final StringBuilder sb = new StringBuilder();
+
+        String line;
         try {
-            while ((lineRead = bufferedReader.readLine()) != null) {
-                sb.append(lineRead);
+            while ((line = bufferedReader.readLine()) != null) {
+                sb.append(line);
             }
         } catch (IOException e) {
-            sb.append("... interrupted by: " + e.getMessage());
+            sb.append("... interrupted by: ").append(e.getMessage());
         }
 
         return sb.toString();

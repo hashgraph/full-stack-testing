@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+package com.hedera.fullstack.helm.client.model;
 
-dependencies {
-    api(enforcedPlatform(project(":fullstack-bom")))
-    javaModuleDependencies {
-        testImplementation(gav("org.junit.jupiter.api"))
-        testImplementation(gav("org.assertj.core"))
-        testImplementation(gav("org.mockito"))
-        testImplementation(gav("org.mockito.junit.jupiter"))
-    }
+import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
+
+public interface Options {
+    void apply(HelmExecutionBuilder builder);
 }

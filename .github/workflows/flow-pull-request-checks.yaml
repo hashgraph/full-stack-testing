@@ -36,20 +36,23 @@ jobs:
   build:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
+    with:
+      enable-javadoc: true
 
   spotless:
     name: Spotless
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: "Check"
+      enable-javadoc: false
       enable-spotless-check: true
 
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
-    #if: ${{ contains(github.event.pull_request.labels.*.name, 'CI:UnitTests') || contains(github.event.pull_request.labels.*.name, 'CI:FinalChecks') }}
     with:
       custom-job-label: Standard
+      enable-javadoc: false
       enable-unit-tests: true
       enable-sonar-analysis: true
     secrets:
@@ -61,6 +64,7 @@ jobs:
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
+      enable-javadoc: false
       enable-snyk-scan: true
     secrets:
       snyk-token: ${{ secrets.SNYK_TOKEN }}

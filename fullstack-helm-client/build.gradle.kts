@@ -26,4 +26,10 @@ tasks.withType<ProcessResources> { dependsOn(tasks.withType<HelmArtifactTask>())
 dependencies {
     // Bill of Materials
     implementation(enforcedPlatform(project(":fullstack-bom")))
+    javaModuleDependencies {
+        testImplementation(gav("org.junit.jupiter.api"))
+        testImplementation(gav("org.assertj.core"))
+        testImplementation(gav("org.mockito"))
+        testImplementation(gav("org.mockito.junit.jupiter"))
+    }
 }

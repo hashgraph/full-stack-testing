@@ -18,7 +18,9 @@ package com.hedera.fullstack.helm.client;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.impl.DefaultHelmClientBuilder;
+import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import java.util.List;
 
 /**
@@ -55,9 +57,37 @@ public interface HelmClient {
 
     /**
      * Executes the Helm CLI {@code repo remove} sub-command and removes a repository.
+     *
      * @param repository the repository to remove.
      */
     void removeRepository(Repository repository);
+
+    /**
+     * Executes the Helm CLI {@code install} sub-command and installs a Helm chart.
+     *
+     * @param releaseName the name of the release.
+     * @param chart       the Helm chart to install.
+     */
+    default void installChart(String releaseName, Chart chart) {
+        installChart(releaseName, chart, InstallChartOptions.defaults());
+    }
+
+    /**
+     * Executes the Helm CLI {@code install} sub-command and installs a Helm chart passing the flags and arguments
+     * provided.
+     *
+     * @param releaseName the name of the release.
+     * @param chart       the Helm chart to install.
+     * @param options     the options to pass to the Helm CLI command.
+     */
+    void installChart(String releaseName, Chart chart, InstallChartOptions options);
+
+    /**
+     * Executes the Helm CLI {@code uninstall} sub-command and uninstalls the specified Helm chart.
+     *
+     * @param releaseName the name of the release to uninstall.
+     */
+    void uninstallChart(String releaseName);
 
     /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.
@@ -69,8 +99,8 @@ public interface HelmClient {
     }
 
     /**
-     * Creates a new {@link HelmClient} instance with the default configuration.
-     * This is a shortcut for {@code HelmClient.builder().build()}.
+     * Creates a new {@link HelmClient} instance with the default configuration. This is a shortcut for
+     * {@code HelmClient.builder().build()}.
      *
      * @return a new {@link HelmClient} instance.
      */

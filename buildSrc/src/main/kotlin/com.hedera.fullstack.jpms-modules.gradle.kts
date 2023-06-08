@@ -35,8 +35,14 @@ extraJavaModuleInfo {
     knownModule("com.fasterxml.jackson.core:jackson-core", "com.fasterxml.jackson.core")
     knownModule("com.fasterxml.jackson.core:jackson-databind", "com.fasterxml.jackson.databind")
 
-    module("com.vdurmont:semver4j", "com.vdurmont.semver4j") {
-        exportAllPackages()
-        requireAllDefinedDependencies()
-    }
+    knownModule("net.bytebuddy:byte-buddy", "net.bytebuddy")
+    knownModule("net.bytebuddy:byte-buddy-agent", "net.bytebuddy.agent")
+    knownModule("org.objenesis:objenesis", "org.objenesis")
+
+    knownModule("org.junit.jupiter:junit-jupiter-api", "org.junit.jupiter.api")
+
+    knownModule("org.mockito:mockito-core", "org.mockito")
+    knownModule("org.mockito:mockito-junit-jupiter", "org.mockito.junit.jupiter")
+
+    automaticModule("org.mockito:mockito-inline", "org.mockito.inline")
 }

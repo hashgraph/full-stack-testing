@@ -20,10 +20,14 @@ import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.execution.HelmExecution;
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
+import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.Version;
+import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthentication;
+import com.hedera.fullstack.helm.client.proxy.request.chart.ChartInstallRequest;
+import com.hedera.fullstack.helm.client.proxy.request.chart.ChartUninstallRequest;
 import com.hedera.fullstack.helm.client.proxy.request.common.VersionRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryAddRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryListRequest;
@@ -87,7 +91,7 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public void addRepository(Repository repository) {
+    public void addRepository(final Repository repository) {
         executeInternal(new RepositoryAddRequest(repository), Void.class, (b, c) -> {
             b.call();
             return null;
@@ -95,8 +99,24 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public void removeRepository(Repository repository) {
+    public void removeRepository(final Repository repository) {
         executeInternal(new RepositoryRemoveRequest(repository), Void.class, (b, c) -> {
+            b.call();
+            return null;
+        });
+    }
+
+    @Override
+    public void installChart(final String releaseName, final Chart chart, final InstallChartOptions options) {
+        executeInternal(new ChartInstallRequest(releaseName, chart, options), Void.class, (b, c) -> {
+            b.call();
+            return null;
+        });
+    }
+
+    @Override
+    public void uninstallChart(final String releaseName) {
+        executeInternal(new ChartUninstallRequest(releaseName), Void.class, (b, c) -> {
             b.call();
             return null;
         });
