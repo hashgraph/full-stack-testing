@@ -36,6 +36,8 @@ jobs:
   build:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
+    with:
+      enable-javadoc: true
 
   spotless:
     name: Spotless
@@ -47,9 +49,9 @@ jobs:
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
-    #if: ${{ contains(github.event.pull_request.labels.*.name, 'CI:UnitTests') || contains(github.event.pull_request.labels.*.name, 'CI:FinalChecks') }}
     with:
       custom-job-label: Standard
+      enable-javadoc: false
       enable-unit-tests: true
       enable-sonar-analysis: true
     secrets:
