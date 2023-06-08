@@ -18,6 +18,7 @@ package com.hedera.fullstack.helm.client.test;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Named.named;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
@@ -25,7 +26,10 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @DisplayName("Helm Client Tests")
 class HelmClientTest {
@@ -116,57 +120,6 @@ class HelmClientTest {
     }
 
     @Test
-    @DisplayName("Install Chart with Options")
-    void testInstallChartWithOptionsCommand() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .dependencyUpdate(true)
-                .description("Test install chart with options")
-                .enableDNS(true)
-                .force(true)
-                .output("table") // Note: json & yaml output hangs and doesn't complete
-                .skipCrds(true)
-                .timeout("3m0s")
-                .username("username")
-                .password("password")
-                .version("1.18.0")
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Atomic Chart Installation Executes Successfully")
-    void testAtomicChartInstall() { // failed atomic
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .atomic(true) // Note: fails when ran independently
-                .createNamespace(true)
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
     @DisplayName("Install Chart Executes Successfully")
     void testInstallChartCommand() {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
@@ -181,16 +134,7 @@ class HelmClientTest {
         }
     }
 
-    @Test
-    @DisplayName("Install Chart with Dependency Updates")
-    void testInstallChartWithDependencyUpdates() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .dependencyUpdate(true)
-                .build();
-
+    private static void testChartInstallWithCleanup(InstallChartOptions options) {
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
@@ -202,192 +146,109 @@ class HelmClientTest {
         }
     }
 
-    @Test
-    @DisplayName("Install Chart with Description")
-    void testInstallChartWithDescription() {
+    @ParameterizedTest
+    @MethodSource
+    @DisplayName("Parameterized Chart Installation with Options Executes Successfully")
+    void testChartInstallOptions(InstallChartOptions options) {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .description("Test install chart with options")
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
+        testChartInstallWithCleanup(options);
     }
 
-    @Test
-    @DisplayName("Install Chart with DNS Enabled")
-    void testInstallChartWithDnsEnabled() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .enableDNS(true)
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Forced Chart Installation")
-    void testForcedChartInstallation() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options =
-                InstallChartOptions.builder().createNamespace(true).force(true).build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart with Tabular Output")
-    void testInstallChartWithTableOutput() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .output("table") // Note: json & yaml output hangs and doesn't complete
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart with Password")
-    void testInstallChartWithPassword() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .password("password")
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart From Repository")
-    void testInstallChartFromRepo() { // fails with .repo(BITNAMI_REPOSITORY.url())
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .repo(HAPROXYTECH_REPOSITORY.url()) // also fails
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart Skipping CRDs")
-    void testInstallChartSkippingCrds() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .skipCrds(true)
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart with Timeout")
-    @Timeout(value = 90)
-    void testInstallChartWithTimeout() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .timeout("60s")
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart with Username")
-    void testInstallChartWithUsername() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .username("username")
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
+    static Stream<Named<InstallChartOptions>> testChartInstallOptions() {
+        return Stream.of(
+                named(
+                        "Atomic Chart Installation Executes Successfully",
+                        InstallChartOptions.builder()
+                                .atomic(true)
+                                .createNamespace(true)
+                                .build()),
+                named(
+                        "Install Chart with Combination of Options Executes Successfully",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .dependencyUpdate(true)
+                                .description("Test install chart with options")
+                                .enableDNS(true)
+                                .force(true)
+                                .output("table") // Note: json & yaml output hangs and doesn't complete
+                                .skipCrds(true)
+                                .timeout("3m0s")
+                                .username("username")
+                                .password("password")
+                                .version("1.18.0")
+                                .build()),
+                named(
+                        "Install Chart with Dependency Updates",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .dependencyUpdate(true)
+                                .build()),
+                named(
+                        "Install Chart with Description",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .description("Test install chart with options")
+                                .build()),
+                named(
+                        "Install Chart with DNS Enabled",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .enableDNS(true)
+                                .build()),
+                named(
+                        "Forced Chart Installation",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .force(true)
+                                .build()),
+                named(
+                        "Install Chart with Tabular Output",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .output("table") // Note: json & yaml output hangs and doesn't complete
+                                .build()),
+                named(
+                        "Install Chart with Password",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .password("password")
+                                .build()),
+                named(
+                        "Install Chart From Repository",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .repo(HAPROXYTECH_REPOSITORY.url())
+                                .build()),
+                named(
+                        "Install Chart Skipping CRDs",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .skipCrds(true)
+                                .build()),
+                named(
+                        "Install Chart with Timeout",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .timeout("60s")
+                                .build()),
+                named(
+                        "Install Chart with Username",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .username("username")
+                                .build()),
+                named(
+                        "Install Chart with Specific Version",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .version("1.18.0")
+                                .build()),
+                named(
+                        "Install Chart with Wait",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .waitFor(true)
+                                .build()));
     }
 
     @Test
@@ -399,56 +260,6 @@ class HelmClientTest {
         final InstallChartOptions options =
                 InstallChartOptions.builder().createNamespace(true).verify(true).build();
 
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart with Specific Version")
-    void testInstallChartVersion() {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .version("1.18.0")
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
-    }
-
-    @Test
-    @DisplayName("Install Chart with Wait")
-    void testInstallChartWithWait() { // fails
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-
-        final InstallChartOptions options = InstallChartOptions.builder()
-                .createNamespace(true)
-                .waitFor(true)
-                .build();
-
-        try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
-        } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
-        }
+        testChartInstallWithCleanup(options);
     }
 }
