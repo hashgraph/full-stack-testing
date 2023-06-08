@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.gradle.helm.release.Architecture
-import com.hedera.fullstack.gradle.helm.release.ArtifactTuple
 import com.hedera.fullstack.gradle.helm.release.HelmArtifactTask
-import com.hedera.fullstack.gradle.helm.release.OperatingSystem
 
 plugins { id("com.hedera.fullstack.conventions") }
 
-tasks.register<HelmArtifactTask>("helmArtifacts") {
-    tuples.set(listOf(ArtifactTuple.of(OperatingSystem.DARWIN, Architecture.ARM64)))
-}
+tasks.register<HelmArtifactTask>("helmArtifacts")
 
 @Suppress("UnstableApiUsage")
 tasks.withType<ProcessResources> { dependsOn(tasks.withType<HelmArtifactTask>()) }
