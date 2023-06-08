@@ -17,7 +17,6 @@
 package com.hedera.fullstack.helm.client.execution;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
-import static com.hedera.fullstack.helm.client.HelmExecutionException.DEFAULT_MESSAGE;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -300,11 +299,8 @@ public final class HelmExecution {
         if (exitCode() != 0) {
             throw new HelmExecutionException(
                     exitCode(),
-                    String.format(
-                            DEFAULT_MESSAGE + ":\nstdErr:%s\nstdOut:%s\n",
-                            exitCode(),
-                            StreamUtils.streamToString(suppressExceptions(this::standardError)),
-                            StreamUtils.streamToString(suppressExceptions(this::standardOutput))));
+                    StreamUtils.streamToString(suppressExceptions(this::standardError)),
+                    StreamUtils.streamToString(suppressExceptions(this::standardOutput)));
         }
     }
 }

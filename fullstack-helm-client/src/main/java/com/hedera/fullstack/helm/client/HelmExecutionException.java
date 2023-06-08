@@ -32,12 +32,35 @@ public class HelmExecutionException extends RuntimeException {
     private final int exitCode;
 
     /**
+     * the standard output of the Helm executable
+     */
+    private String stdOut;
+
+    /**
+     * the standard error of the Helm executable
+     */
+    private String stdErr;
+
+    /**
      * Constructs a new exception instance with the specified exit code and a default message.
      *
      * @param exitCode the exit code returned by the Helm executable or the operating system.
      */
     public HelmExecutionException(final int exitCode) {
         this(exitCode, String.format(DEFAULT_MESSAGE, exitCode));
+    }
+
+    /**
+     * Constructs a new exception instance with the specified exit code, standard output and standard error.
+     *
+     * @param exitCode the exit code returned by the Helm executable or the operating system.
+     * @param stdOut the standard output of the Helm executable.
+     * @param stdErr the standard error of the Helm executable.
+     */
+    public HelmExecutionException(final int exitCode, final String stdOut, final String stdErr) {
+        this(exitCode);
+        this.stdOut = stdOut;
+        this.stdErr = stdErr;
     }
 
     /**
@@ -55,7 +78,8 @@ public class HelmExecutionException extends RuntimeException {
      * Constructs a new exception instance with the specified exit code and cause using the default message.
      *
      * @param exitCode the exit code returned by the Helm executable or the operating system.
-     * @param cause    the cause (which is saved for later retrieval by the getCause() method). (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
+     * @param cause    the cause (which is saved for later retrieval by the getCause() method). (A null value is
+     *                 permitted, and indicates that the cause is nonexistent or unknown.)
      */
     public HelmExecutionException(final int exitCode, final Throwable cause) {
         this(exitCode, String.format(DEFAULT_MESSAGE, exitCode), cause);
@@ -66,7 +90,8 @@ public class HelmExecutionException extends RuntimeException {
      *
      * @param exitCode the exit code returned by the Helm executable or the operating system.
      * @param message  the detail message (which is saved for later retrieval by the getMessage() method).
-     * @param cause    the cause (which is saved for later retrieval by the getCause() method). (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
+     * @param cause    the cause (which is saved for later retrieval by the getCause() method). (A null value is
+     *                 permitted, and indicates that the cause is nonexistent or unknown.)
      */
     public HelmExecutionException(final int exitCode, final String message, final Throwable cause) {
         super(message, cause);
@@ -80,5 +105,32 @@ public class HelmExecutionException extends RuntimeException {
      */
     public int getExitCode() {
         return exitCode;
+    }
+
+    /**
+     * Returns the standard output of the Helm executable.
+     *
+     * @return the standard output of the Helm executable.
+     */
+    public String getStdOut() {
+        return stdOut;
+    }
+
+    /**
+     * Returns the standard error of the Helm executable.
+     *
+     * @return the standard error of the Helm executable.
+     */
+    public String getStdErr() {
+        return stdErr;
+    }
+
+    @Override
+    public String toString() {
+        return "HelmExecutionException{" + "message="
+                + getMessage() + ", exitCode="
+                + exitCode + ", stdOut='"
+                + stdOut + '\'' + ", stdErr='"
+                + stdErr + '\'' + '}';
     }
 }
