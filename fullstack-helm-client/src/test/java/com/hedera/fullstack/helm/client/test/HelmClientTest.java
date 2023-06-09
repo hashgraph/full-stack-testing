@@ -24,6 +24,7 @@ import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
+import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import java.util.List;
 import java.util.stream.Stream;
@@ -47,6 +48,7 @@ class HelmClientTest {
     private static final String HAPROXY_RELEASE_NAME = "haproxy-release";
 
     private static HelmClient defaultClient;
+    private static final int INSTALL_TIMEOUT = 10;
 
     @BeforeAll
     static void beforeAll() {
@@ -121,13 +123,16 @@ class HelmClientTest {
 
     @Test
     @DisplayName("Install Chart Executes Successfully")
+    @Timeout(INSTALL_TIMEOUT)
     void testInstallChartCommand() {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException().isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART));
+            Release release = defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
+            assertThat(release).isNotNull();
+            System.out.println(release); // TODO assertions
         } finally {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
@@ -138,8 +143,9 @@ class HelmClientTest {
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            assertThatNoException()
-                    .isThrownBy(() -> defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options));
+            Release release = defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options);
+            assertThat(release).isNotNull();
+            System.out.println(release); // TODO assertions
         } finally {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
@@ -147,6 +153,7 @@ class HelmClientTest {
     }
 
     @ParameterizedTest
+    @Timeout(INSTALL_TIMEOUT)
     @MethodSource
     @DisplayName("Parameterized Chart Installation with Options Executes Successfully")
     void testChartInstallOptions(InstallChartOptions options) {
@@ -170,7 +177,6 @@ class HelmClientTest {
                                 .description("Test install chart with options")
                                 .enableDNS(true)
                                 .force(true)
-                                .output("table") // Note: json & yaml output hangs and doesn't complete
                                 .skipCrds(true)
                                 .timeout("3m0s")
                                 .username("username")
@@ -200,18 +206,6 @@ class HelmClientTest {
                         InstallChartOptions.builder()
                                 .createNamespace(true)
                                 .force(true)
-                                .build()),
-                named(
-                        "Install Chart with Tabular Output",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .output("table") // Note: json & yaml output hangs and doesn't complete
-                                .build()),
-                named(
-                        "Install Chart with JSON Output",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .output("json") // Note: json & yaml output hangs and doesn't complete
                                 .build()),
                 named(
                         "Install Chart with Password",

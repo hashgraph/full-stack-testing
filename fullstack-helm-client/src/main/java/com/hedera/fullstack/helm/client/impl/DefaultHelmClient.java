@@ -23,6 +23,7 @@ import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.Version;
+import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthentication;
@@ -107,8 +108,8 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public void installChart(final String releaseName, final Chart chart, final InstallChartOptions options) {
-        executeInternal(new ChartInstallRequest(releaseName, chart, options), Void.class, (b, c) -> {
+    public Release installChart(final String releaseName, final Chart chart, final InstallChartOptions options) {
+        return executeInternal(new ChartInstallRequest(releaseName, chart, options), Void.class, (b, c) -> {
             b.call();
             return null;
         });

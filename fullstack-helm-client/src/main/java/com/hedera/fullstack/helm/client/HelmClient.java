@@ -20,6 +20,7 @@ import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.impl.DefaultHelmClientBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
+import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import java.util.List;
 
@@ -67,9 +68,10 @@ public interface HelmClient {
      *
      * @param releaseName the name of the release.
      * @param chart       the Helm chart to install.
+     * @return the {@link Release} that was installed.
      */
-    default void installChart(String releaseName, Chart chart) {
-        installChart(releaseName, chart, InstallChartOptions.defaults());
+    default Release installChart(String releaseName, Chart chart) {
+        return installChart(releaseName, chart, InstallChartOptions.defaults());
     }
 
     /**
@@ -79,8 +81,9 @@ public interface HelmClient {
      * @param releaseName the name of the release.
      * @param chart       the Helm chart to install.
      * @param options     the options to pass to the Helm CLI command.
+     * @return the {@link Release} that was installed.
      */
-    void installChart(String releaseName, Chart chart, InstallChartOptions options);
+    Release installChart(String releaseName, Chart chart, InstallChartOptions options);
 
     /**
      * Executes the Helm CLI {@code uninstall} sub-command and uninstalls the specified Helm chart.

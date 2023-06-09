@@ -34,7 +34,6 @@ class InstallChartOptionsBuilderTest {
                 .description("description")
                 .enableDNS(true)
                 .force(true)
-                .output("output")
                 .passCredentials(true)
                 .password("password")
                 .repo("repo")
@@ -53,7 +52,6 @@ class InstallChartOptionsBuilderTest {
         assertEquals("description", options.description());
         assertTrue(options.enableDNS());
         assertTrue(options.force());
-        assertEquals("output", options.output());
         assertTrue(options.passCredentials());
         assertEquals("password", options.password());
         assertEquals("repo", options.repo());
