@@ -16,13 +16,16 @@
 
 package com.hedera.fullstack.helm.client.execution;
 
+import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
 import static com.hedera.fullstack.helm.client.HelmExecutionException.DEFAULT_MESSAGE;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hedera.fullstack.base.api.io.BufferedStreamSink;
 import com.hedera.fullstack.base.api.util.StreamUtils;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.HelmParserException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.Collections;
@@ -61,6 +64,16 @@ public final class HelmExecution {
      */
     private final Process process;
 
+    /**
+     * The standard output sink used to buffer input from the processes standard output stream.
+     */
+    private final BufferedStreamSink standardOutputSink;
+
+    /**
+     * The standard error sink used to buffer input from the processes standard error stream.
+     */
+    private final BufferedStreamSink standardErrorSink;
+
     static {
         OBJECT_MAPPER.findAndRegisterModules();
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -68,6 +81,11 @@ public final class HelmExecution {
 
     public HelmExecution(final Process process) {
         this.process = Objects.requireNonNull(process, "process must not be null");
+        this.standardOutputSink = new BufferedStreamSink(process.getInputStream());
+        this.standardErrorSink = new BufferedStreamSink(process.getErrorStream());
+
+        this.standardOutputSink.begin();
+        this.standardErrorSink.begin();
     }
 
     /**
@@ -80,6 +98,10 @@ public final class HelmExecution {
      */
     public void waitFor() throws InterruptedException {
         process.waitFor();
+        // Ensure that the standard output and error sinks are closed. Knowingly ignoring any exceptions since this is
+        // best effort closure.
+        suppressExceptions(standardOutputSink::close);
+        suppressExceptions(standardErrorSink::close);
     }
 
     /**
@@ -94,7 +116,14 @@ public final class HelmExecution {
      * @throws InterruptedException if the current thread is interrupted while waiting.
      */
     public boolean waitFor(final Duration timeout) throws InterruptedException {
-        return process.waitFor(timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+        final boolean success = process.waitFor(timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+        if (success) {
+            // Ensure that the standard output and error sinks are closed.
+            suppressExceptions(standardOutputSink::close);
+            suppressExceptions(standardErrorSink::close);
+        }
+
+        return success;
     }
 
     /**
@@ -113,9 +142,15 @@ public final class HelmExecution {
      * standard output of the process represented by this Process object.
      *
      * @return the input stream connected to the normal output of the subprocess.
+     * @throws IOException           if an I/O error occurs or the underlying resources cannot be closed.
+     * @throws IllegalStateException if the process has not yet terminated.
      */
-    public InputStream standardOutput() {
-        return process.getInputStream();
+    public InputStream standardOutput() throws IOException {
+        if (process.isAlive()) {
+            throw new IllegalStateException(
+                    "the call to standardOutput() is not valid until the process has terminated");
+        }
+        return standardOutputSink.end();
     }
 
     /**
@@ -123,9 +158,16 @@ public final class HelmExecution {
      * error output of the process represented by this Process object.
      *
      * @return the input stream connected to the error output of the subprocess.
+     * @throws IOException           if an I/O error occurs or the underlying resources cannot be closed.
+     * @throws IllegalStateException if the process has not yet terminated.
      */
-    public InputStream standardError() {
-        return process.getErrorStream();
+    public InputStream standardError() throws IOException {
+        if (process.isAlive()) {
+            throw new IllegalStateException(
+                    "the call to standardOutput() is not valid until the process has terminated");
+        }
+
+        return standardErrorSink.end();
     }
 
     /**
@@ -261,8 +303,8 @@ public final class HelmExecution {
                     String.format(
                             DEFAULT_MESSAGE + ":\nstdErr:%s\nstdOut:%s\n",
                             exitCode(),
-                            StreamUtils.streamToString(standardError()),
-                            StreamUtils.streamToString(standardOutput())));
+                            StreamUtils.streamToString(suppressExceptions(this::standardError)),
+                            StreamUtils.streamToString(suppressExceptions(this::standardOutput))));
         }
     }
 }
