@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 /**
  * A sink for data which is read from an input stream. The data is buffered in a ring buffer and proxied to the
@@ -82,7 +83,25 @@ public class BufferedStreamSink implements AutoCloseable {
      * @throws NullPointerException     if {@code source} is {@code null}.
      */
     public BufferedStreamSink(final InputStream source, final int bufferSize) {
+        this(source, bufferSize, ThreadBuilder::new);
+    }
+
+    /**
+     * Creates a new {@link BufferedStreamSink} instance with the specified ring buffer capacity and thread builder
+     * supplier.
+     *
+     * @param source                the underlying stream from which data should be read. This stream will not be closed when the
+     *                              {@link BufferedStreamSink} is closed.
+     * @param bufferSize            the capacity of the ring buffer. This value must be greater than zero.
+     * @param threadBuilderSupplier the supplier of the thread builder to use for creating the sink thread.
+     * @throws IllegalArgumentException if {@code bufferSize} is less than or equal to zero.
+     * @throws NullPointerException     if {@code source} or {@code threadBuilderSupplier} is {@code null}.
+     */
+    public BufferedStreamSink(
+            final InputStream source, final int bufferSize, final Supplier<ThreadBuilder> threadBuilderSupplier) {
         Objects.requireNonNull(source, "source must not be null");
+        Objects.requireNonNull(threadBuilderSupplier, "threadBuilderSupplier must not be null");
+
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("bufferSize must be greater than zero");
         }
@@ -91,7 +110,11 @@ public class BufferedStreamSink implements AutoCloseable {
         this.sink = new ByteArrayOutputStream(bufferSize);
         this.closed = new AtomicBoolean(false);
 
-        this.thread = new ThreadBuilder(this::run).name("stream-sink-io-reader").build();
+        this.thread = threadBuilderSupplier
+                .get()
+                .executable(this::run)
+                .name("stream-sink-io-reader")
+                .build();
     }
 
     /**
@@ -118,7 +141,7 @@ public class BufferedStreamSink implements AutoCloseable {
      * @throws IOException if an error occurs while closing the sink.
      */
     public synchronized InputStream end() throws IOException {
-        if (closed.get()) {
+        if (isClosed()) {
             return destination;
         }
 
@@ -167,7 +190,7 @@ public class BufferedStreamSink implements AutoCloseable {
      *
      * @return the original source stream.
      */
-    public synchronized InputStream getSource() {
+    public InputStream getSource() {
         return source;
     }
 
@@ -178,11 +201,20 @@ public class BufferedStreamSink implements AutoCloseable {
      * @throws IllegalStateException if the sink has not been closed via the {@link #end()} or {@link #close()} methods.
      */
     public synchronized InputStream getDataStream() {
-        if (!closed.get()) {
+        if (!isClosed()) {
             throw new IllegalStateException("sink has not been closed");
         }
 
         return destination;
+    }
+
+    /**
+     * Returns a flag indicating whether or not the sink has been closed.
+     *
+     * @return {@code true} if the sink has been closed, otherwise {@code false}.
+     */
+    public boolean isClosed() {
+        return closed.get();
     }
 
     /**
