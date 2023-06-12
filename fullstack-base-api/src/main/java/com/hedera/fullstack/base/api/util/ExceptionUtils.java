@@ -17,6 +17,7 @@
 package com.hedera.fullstack.base.api.util;
 
 import com.hedera.fullstack.base.api.functional.ThrowingRunnable;
+import com.hedera.fullstack.base.api.functional.ThrowingSupplier;
 
 /**
  * Standard utility methods for dealing with exceptions.
@@ -42,5 +43,46 @@ public class ExceptionUtils {
         } catch (final Throwable ignored) {
             // ignore
         }
+    }
+
+    /**
+     * Suppresses all exceptions thrown by the given method.
+     *
+     * @param fn  the method for which all exceptions should be suppressed.
+     * @param <T> the type of the result.
+     * @return the result of the method or null if an exception was thrown.
+     */
+    @SuppressWarnings("java:S1181")
+    public static <T> T suppressExceptions(final ThrowingSupplier<T> fn) {
+        try {
+            return fn.get();
+        } catch (final Error err) {
+            throw err;
+        } catch (final Throwable ignored) {
+            // ignore
+        }
+
+        return null;
+    }
+
+    /**
+     * Suppresses all exceptions thrown by the given method, returning the given default value if an exception is thrown.
+     *
+     * @param fn           the method for which all exceptions should be suppressed.
+     * @param defaultValue the default value to return if an exception is thrown.
+     * @param <T>          the type of the result.
+     * @return the result of the method or null if an exception was thrown.
+     */
+    @SuppressWarnings("java:S1181")
+    public static <T> T suppressExceptions(final ThrowingSupplier<T> fn, final T defaultValue) {
+        try {
+            return fn.get();
+        } catch (final Error err) {
+            throw err;
+        } catch (final Throwable ignored) {
+            // ignore
+        }
+
+        return defaultValue;
     }
 }

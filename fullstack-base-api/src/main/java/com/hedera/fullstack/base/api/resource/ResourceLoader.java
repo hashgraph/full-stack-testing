@@ -61,6 +61,7 @@ public class ResourceLoader<T> {
      * @return the path to the resource in the temporary directory.
      * @throws IOException if the resource cannot be loaded or an I/O error occurs.
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Path load(final String path) throws IOException {
         Objects.requireNonNull(path, "path cannot be null");
 

@@ -208,6 +208,12 @@ class HelmClientTest {
                                 .output("table") // Note: json & yaml output hangs and doesn't complete
                                 .build()),
                 named(
+                        "Install Chart with JSON Output",
+                        InstallChartOptions.builder()
+                                .createNamespace(true)
+                                .output("json") // Note: json & yaml output hangs and doesn't complete
+                                .build()),
+                named(
                         "Install Chart with Password",
                         InstallChartOptions.builder()
                                 .createNamespace(true)

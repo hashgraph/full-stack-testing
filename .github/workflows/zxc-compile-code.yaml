@@ -169,7 +169,7 @@ jobs:
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           check_name: 'Unit Test Results'
-          check_run_disabled: true
+          check_run_disabled: false
           json_thousands_separator: ','
           junit_files: "**/build/test-results/test/TEST-*.xml"
 
