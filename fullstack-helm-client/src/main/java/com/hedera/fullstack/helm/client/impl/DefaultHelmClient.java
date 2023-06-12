@@ -109,10 +109,7 @@ public final class DefaultHelmClient implements HelmClient {
 
     @Override
     public Release installChart(final String releaseName, final Chart chart, final InstallChartOptions options) {
-        return executeInternal(new ChartInstallRequest(releaseName, chart, options), Void.class, (b, c) -> {
-            b.call();
-            return null;
-        });
+        return execute(new ChartInstallRequest(releaseName, chart, options), Release.class);
     }
 
     @Override
