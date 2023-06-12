@@ -47,7 +47,7 @@ public class HelmExecutionException extends RuntimeException {
      * @param exitCode the exit code returned by the Helm executable or the operating system.
      */
     public HelmExecutionException(final int exitCode) {
-        this(exitCode, String.format(DEFAULT_MESSAGE, exitCode), "", "");
+        this(exitCode, String.format(DEFAULT_MESSAGE, exitCode), StringUtils.EMPTY, StringUtils.EMPTY);
     }
 
     /**
