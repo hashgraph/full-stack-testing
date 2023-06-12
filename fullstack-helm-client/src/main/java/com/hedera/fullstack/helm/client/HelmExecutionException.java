@@ -16,6 +16,8 @@
 
 package com.hedera.fullstack.helm.client;
 
+import com.hedera.fullstack.base.api.util.StringUtils;
+
 /**
  * Exception thrown when the execution of the Helm executable fails.
  */
