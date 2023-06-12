@@ -34,7 +34,7 @@ public class HelmExecutionException extends RuntimeException {
     /**
      * the standard output of the Helm executable
      */
-    private String stdOut;
+    private final String stdOut;
 
     /**
      * the standard error of the Helm executable
