@@ -25,6 +25,8 @@ include(":fullstack-alerting-api")
 
 include(":fullstack-alerting-core")
 
+include(":fullstack-assert4j-extensions")
+
 include(":fullstack-bom")
 
 include(":fullstack-base-api")
@@ -45,6 +47,10 @@ include(":fullstack-datasource-api")
 
 include(":fullstack-datasource-core")
 
+include(":fullstack-examples")
+
+include(":fullstack-gradle-plugin")
+
 include(":fullstack-infrastructure-api")
 
 include(":fullstack-infrastructure-core")
@@ -60,6 +66,8 @@ include(":fullstack-reporting-core")
 include(":fullstack-resource-generator-api")
 
 include(":fullstack-resource-generator-core")
+
+include(":fullstack-test-toolkit-api")
 
 include(":fullstack-validator-api")
 
