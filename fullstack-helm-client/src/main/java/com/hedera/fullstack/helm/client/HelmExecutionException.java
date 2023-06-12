@@ -47,7 +47,7 @@ public class HelmExecutionException extends RuntimeException {
      * @param exitCode the exit code returned by the Helm executable or the operating system.
      */
     public HelmExecutionException(final int exitCode) {
-        this(exitCode, String.format(DEFAULT_MESSAGE, exitCode));
+        this(exitCode, String.format(DEFAULT_MESSAGE, exitCode), "", "");
     }
 
     /**
@@ -58,20 +58,22 @@ public class HelmExecutionException extends RuntimeException {
      * @param stdErr the standard error of the Helm executable.
      */
     public HelmExecutionException(final int exitCode, final String stdOut, final String stdErr) {
-        this(exitCode);
-        this.stdOut = stdOut;
-        this.stdErr = stdErr;
+        this(exitCode, String.format(DEFAULT_MESSAGE, exitCode), stdOut, stdErr);
     }
 
     /**
-     * Constructs a new exception instance with the specified exit code and message.
+     * Constructs a new exception instance with the specified exit code, message, stdOut, and stdErr.
      *
      * @param exitCode the exit code returned by the Helm executable or the operating system.
-     * @param message  the detail message (which is saved for later retrieval by the getMessage() method).
+     * @param message the detail message (which is saved for later retrieval by the getMessage() method).
+     * @param stdOut the standard output of the Helm executable.
+     * @param stdErr the standard error of the Helm executable.
      */
-    public HelmExecutionException(final int exitCode, final String message) {
+    public HelmExecutionException(final int exitCode, final String message, final String stdOut, final String stdErr) {
         super(message);
         this.exitCode = exitCode;
+        this.stdOut = stdOut;
+        this.stdErr = stdErr;
     }
 
     /**
@@ -96,6 +98,8 @@ public class HelmExecutionException extends RuntimeException {
     public HelmExecutionException(final int exitCode, final String message, final Throwable cause) {
         super(message, cause);
         this.exitCode = exitCode;
+        this.stdOut = "";
+        this.stdErr = "";
     }
 
     /**
