@@ -39,7 +39,7 @@ public class HelmExecutionException extends RuntimeException {
     /**
      * the standard error of the Helm executable
      */
-    private String stdErr;
+    private final String stdErr;
 
     /**
      * Constructs a new exception instance with the specified exit code and a default message.
