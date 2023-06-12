@@ -116,7 +116,7 @@ class HelmClientTest {
 
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
-                .withMessageContaining(expectedMessage);
+                .withStackTraceContaining(expectedMessage);
     }
 
     @Test
