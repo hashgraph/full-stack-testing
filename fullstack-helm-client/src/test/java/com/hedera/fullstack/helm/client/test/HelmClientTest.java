@@ -132,7 +132,9 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             Release release = defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
             assertThat(release).isNotNull();
-            System.out.println(release); // TODO assertions
+            assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(release.info().description()).isEqualTo("Install complete");
+            assertThat(release.info().status()).isEqualTo("deployed");
         } finally {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
@@ -145,7 +147,9 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             Release release = defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options);
             assertThat(release).isNotNull();
-            System.out.println(release); // TODO assertions
+            assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(release.info().description()).isEqualTo("Install complete");
+            assertThat(release.info().status()).isEqualTo("deployed");
         } finally {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
