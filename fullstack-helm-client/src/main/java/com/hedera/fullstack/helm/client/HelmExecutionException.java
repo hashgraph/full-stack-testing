@@ -100,8 +100,8 @@ public class HelmExecutionException extends RuntimeException {
     public HelmExecutionException(final int exitCode, final String message, final Throwable cause) {
         super(message, cause);
         this.exitCode = exitCode;
-        this.stdOut = "";
-        this.stdErr = "";
+        this.stdOut = StringUtils.EMPTY;
+        this.stdErr = StringUtils.EMPTY;
     }
 
     /**
