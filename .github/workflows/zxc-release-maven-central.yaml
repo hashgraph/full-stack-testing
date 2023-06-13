@@ -106,39 +106,39 @@ jobs:
             echo "::endgroup::"
           fi
 
-#      - name: Validate Workflow Inputs
-#        id: validate-workflow
-#        run: |
-#          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
-#          BRANCH_NAME="${BRANCH_NAME##origin/}"
-#
-#          if [[ ! "${BRANCH_NAME}" =~ ^main$|^master$|^release\/[0-9]+\.[0-9]+$ ]]; then
-#            printf "::error title=Branch Error::The version policy of %s only allows this workflow to be executed on branches matching the pattern: %s" "${POLICY}" '^main$|^master$|^release\/[0-9]+\.[0-9]+$'
-#            exit 32
-#          fi
-#
-#          NEW_VERSION="${{ inputs.new-version }}"
-#          VALID_VERSION="$(semver validate "${NEW_VERSION}")"
-#
-#          if [[ "${VALID_VERSION}" != "valid" ]]; then
-#            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) is invalid and does not conform to the semantic versioning specifications."
-#            exit 2
-#          fi
-#
-#          PRERELEASE="$(semver get prerel "${NEW_VERSION}")"
-#
-#          if [[ -n "${PRERELEASE}" ]]; then
-#            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) is a PRERELEASE version and is not supported by this pipeline."
-#            exit 8
-#          fi
-#
-#          BUILD="$(semver get build "${NEW_VERSION}")"
-#
-#          if [[ -n "${BUILD}" ]]; then
-#            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) contains a BUILD specification and is not supported by this pipeline."
-#            exit 12
-#          fi
-#
+      - name: Validate Workflow Inputs
+        id: validate-workflow
+        run: |
+          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
+          BRANCH_NAME="${BRANCH_NAME##origin/}"
+
+          if [[ ! "${BRANCH_NAME}" =~ ^main$|^master$|^release\/[0-9]+\.[0-9]+$ ]]; then
+            printf "::error title=Branch Error::The version policy of %s only allows this workflow to be executed on branches matching the pattern: %s" "${POLICY}" '^main$|^master$|^release\/[0-9]+\.[0-9]+$'
+            exit 32
+          fi
+
+          NEW_VERSION="${{ inputs.new-version }}"
+          VALID_VERSION="$(semver validate "${NEW_VERSION}")"
+
+          if [[ "${VALID_VERSION}" != "valid" ]]; then
+            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) is invalid and does not conform to the semantic versioning specifications."
+            exit 2
+          fi
+
+          PRERELEASE="$(semver get prerel "${NEW_VERSION}")"
+
+          if [[ -n "${PRERELEASE}" ]]; then
+            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) is a PRERELEASE version and is not supported by this pipeline."
+            exit 8
+          fi
+
+          BUILD="$(semver get build "${NEW_VERSION}")"
+
+          if [[ -n "${BUILD}" ]]; then
+            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) contains a BUILD specification and is not supported by this pipeline."
+            exit 12
+          fi
+
 #      - name: Import GPG key
 #        id: gpg_key
 #        uses: crazy-max/ghaction-import-gpg@v5
