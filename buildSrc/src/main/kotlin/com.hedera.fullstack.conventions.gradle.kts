@@ -1,4 +1,5 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import net.swiftzer.semver.SemVer
 
 /*
  * Copyright (C) 2023 Hedera Hashgraph, LLC
@@ -107,6 +108,20 @@ tasks.named("check").configure {
 
 tasks.named("assemble").configure {
     dependsOn(tasks.named("testClasses"))
+}
+
+tasks.create("versionAsSpecified") {
+    group = "versioning"
+    doLast {
+        val verStr = findProperty("newVersion")?.toString()
+
+        if (verStr == null) {
+            throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
+        }
+
+        val newVer = SemVer.parse(verStr)
+        Utils.updateVersion(project, newVer)
+    }
 }
 
 // Improve test logging
