@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotation.node;
 
 import com.hedera.fullstack.junit.support.ApplicationProvisioner;
 import java.lang.annotation.*;

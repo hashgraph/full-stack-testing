@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+package com.hedera.fullstack.junit.support.annotation.services;
 
-dependencies { api(platform(project(":fullstack-bom"))) }
+import java.lang.annotation.*;
 
-testing {
-    suites {
-        @Suppress("UnstableApiUsage", "unused")
-        val fullStackTest by
-            registering(JvmTestSuite::class) {
-                useJUnitJupiter()
-                dependencies { implementation(project(":fullstack-examples")) }
-            }
-    }
-}
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface HashScan {}

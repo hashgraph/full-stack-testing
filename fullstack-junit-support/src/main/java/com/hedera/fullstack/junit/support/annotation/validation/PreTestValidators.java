@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotation.validation;
 
 import java.lang.annotation.*;
 
 @Inherited
 @Documented
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnableHashIO {}
+public @interface PreTestValidators {
+    Class<?>[] value();
+}

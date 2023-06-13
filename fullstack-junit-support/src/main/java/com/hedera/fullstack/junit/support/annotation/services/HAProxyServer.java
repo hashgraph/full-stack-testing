@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotation.services;
 
-import com.hedera.fullstack.junit.support.ApplicationProvisioner;
 import java.lang.annotation.*;
 
 @Inherited
 @Documented
-@Repeatable(LabeledApplicationNodes.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface LabeledApplicationNode {
-    String value();
-
-    Class<ApplicationProvisioner> provisioner() default ApplicationProvisioner.class;
-}
+public @interface HAProxyServer {}

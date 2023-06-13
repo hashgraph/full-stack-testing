@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotation.services;
 
 import java.lang.annotation.*;
 
@@ -22,4 +22,4 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnableMirrorNode {}
+public @interface MirrorNode {}

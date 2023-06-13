@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+package com.hedera.fullstack.junit.support.annotation.node;
 
-dependencies { api(platform(project(":fullstack-bom"))) }
+import com.hedera.fullstack.junit.support.ApplicationProvisioner;
+import java.lang.annotation.*;
 
-testing {
-    suites {
-        @Suppress("UnstableApiUsage", "unused")
-        val fullStackTest by
-            registering(JvmTestSuite::class) {
-                useJUnitJupiter()
-                dependencies { implementation(project(":fullstack-examples")) }
-            }
-    }
+@Inherited
+@Documented
+@Repeatable(LabeledApplicationNodes.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface LabeledApplicationNode {
+    String value();
+
+    Class<ApplicationProvisioner> provisioner() default ApplicationProvisioner.class;
 }

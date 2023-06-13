@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotation.services;
 
-import com.hedera.fullstack.junit.support.extensions.TestSuiteInitializer;
 import java.lang.annotation.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
 @Inherited
 @Documented
-@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Execution(ExecutionMode.SAME_THREAD)
-@ExtendWith({TestSuiteInitializer.class})
-public @interface FullStackTestSuite {}
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface HashIO {}
