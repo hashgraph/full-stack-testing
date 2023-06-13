@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.core;
+package com.hedera.fullstack.junit.support.annotation.application;
 
+import com.hedera.fullstack.junit.support.events.application.ApplicationEvent;
 import java.lang.annotation.*;
-import org.junit.jupiter.api.Test;
 
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-@Test
-public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface ApplicationNodes {
+    int value();
+
+    Class<? extends ApplicationEvent>[] eventHandlers() default {};
 }

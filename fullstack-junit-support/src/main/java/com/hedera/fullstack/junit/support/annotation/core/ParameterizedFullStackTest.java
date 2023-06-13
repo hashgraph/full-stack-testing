@@ -24,4 +24,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @ParameterizedTest
-public @interface ParameterizedFullStackTest {}
+public @interface ParameterizedFullStackTest {
+    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+}

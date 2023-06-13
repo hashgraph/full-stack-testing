@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 
 /**
  * Indicates the annotated {@link com.hedera.fullstack.validator.api.Validator} implementation should always be executed,
- * even if the test has already failed.
+ * even if the test has already failed or if a prior validator reports a failure.
  */
 @Inherited
 @Documented

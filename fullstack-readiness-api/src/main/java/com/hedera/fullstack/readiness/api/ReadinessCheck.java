@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.core;
+package com.hedera.fullstack.readiness.api;
 
-import java.lang.annotation.*;
-import org.junit.jupiter.api.Test;
+import java.time.Duration;
 
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-@Test
-public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+@FunctionalInterface
+public interface ReadinessCheck {
+    Duration DEFAULT_CHECK_INTERVAL = Duration.ofSeconds(1);
+    Duration DEFAULT_CHECK_TIMEOUT = Duration.ofSeconds(60);
+
+    boolean ready();
+
+    default Duration checkInterval() {
+        return DEFAULT_CHECK_INTERVAL;
+    }
+
+    default Duration checkTimeout() {
+        return DEFAULT_CHECK_TIMEOUT;
+    }
 }

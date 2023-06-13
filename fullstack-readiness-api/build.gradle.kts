@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support;
+plugins { id("com.hedera.fullstack.conventions") }
 
-public interface ApplicationProvisioner {
-
-    void beforeApplicationConfigured(int index, Object node, Object config);
-}
+dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }

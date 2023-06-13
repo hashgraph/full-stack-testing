@@ -16,12 +16,13 @@
 
 package com.hedera.fullstack.junit.support.annotation.validation;
 
+import com.hedera.fullstack.monitoring.api.Monitor;
 import java.lang.annotation.*;
 
 @Inherited
 @Documented
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Monitors {
-    Class<?>[] value();
+    Class<Monitor>[] value();
 }

@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.node;
+package com.hedera.fullstack.junit.support.annotation.application;
 
-import com.hedera.fullstack.junit.support.ApplicationProvisioner;
+import com.hedera.fullstack.junit.support.events.application.ApplicationEvent;
 import java.lang.annotation.*;
 
 @Inherited
 @Documented
+@Repeatable(LabeledApplicationNodes.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface ApplicationNodes {
-    int value();
+public @interface LabeledApplicationNode {
+    String value();
 
-    Class<ApplicationProvisioner> provisioner() default ApplicationProvisioner.class;
+    String[] tags() default {};
+
+    Class<? extends ApplicationEvent>[] eventHandlers() default {};
 }

@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.core;
+package com.hedera.fullstack.junit.support.extensions;
 
-import java.lang.annotation.*;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-@Test
-public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+public class TestInitializer implements BeforeEachCallback {
+    /**
+     * Callback that is invoked <em>before</em> each test is executed.
+     *
+     * @param context the current extension context; never {@code null}
+     * @throws Exception if an error occurs during callback execution.
+     */
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {}
 }

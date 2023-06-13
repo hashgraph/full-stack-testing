@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.core;
+package com.hedera.fullstack.monitoring.api;
 
-import java.lang.annotation.*;
-import org.junit.jupiter.api.Test;
+import java.time.Duration;
 
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-@Test
-public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+@FunctionalInterface
+public interface Monitor {
+
+    Duration DEFAULT_CHECK_INTERVAL = Duration.ofSeconds(5);
+
+    CheckOutcome check();
+
+    default Duration checkInterval() {
+        return DEFAULT_CHECK_INTERVAL;
+    }
 }

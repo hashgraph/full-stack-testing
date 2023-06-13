@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.core;
+package com.hedera.fullstack.junit.support.annotation.resource;
 
 import java.lang.annotation.*;
-import org.junit.jupiter.api.Test;
 
 @Inherited
 @Documented
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-@Test
-public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+public @interface LabeledResourceShapes {
+    LabeledResourceShape[] value();
 }

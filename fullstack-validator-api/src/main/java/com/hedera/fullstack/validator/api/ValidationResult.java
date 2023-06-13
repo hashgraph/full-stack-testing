@@ -16,7 +16,13 @@
 
 package com.hedera.fullstack.validator.api;
 
+import java.util.List;
+
 /**
  *
  */
-public interface ValidationResult {}
+public interface ValidationResult {
+    ValidationOutcome getOutcome();
+
+    <T extends ValidationDetail> List<T> getDetails();
+}

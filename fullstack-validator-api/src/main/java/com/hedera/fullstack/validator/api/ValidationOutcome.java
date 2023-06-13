@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.node;
+package com.hedera.fullstack.validator.api;
 
-import com.hedera.fullstack.junit.support.ApplicationProvisioner;
-import java.lang.annotation.*;
-
-@Inherited
-@Documented
-@Repeatable(LabeledApplicationNodes.class)
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface LabeledApplicationNode {
-    String value();
-
-    Class<ApplicationProvisioner> provisioner() default ApplicationProvisioner.class;
+public enum ValidationOutcome {
+    PASS,
+    FAIL,
+    WARN,
+    SKIP
 }

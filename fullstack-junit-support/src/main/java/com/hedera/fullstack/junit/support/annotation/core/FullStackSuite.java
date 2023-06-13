@@ -16,8 +16,11 @@
 
 package com.hedera.fullstack.junit.support.annotation.core;
 
+import com.hedera.fullstack.junit.support.annotation.application.ApplicationNodes;
+import com.hedera.fullstack.junit.support.annotation.flow.MaxTestExecutionTime;
 import com.hedera.fullstack.junit.support.extensions.TestSuiteInitializer;
 import java.lang.annotation.*;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -28,4 +31,6 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 @Retention(RetentionPolicy.RUNTIME)
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith({TestSuiteInitializer.class})
+@ApplicationNodes(4)
+@MaxTestExecutionTime(value = 45, unit = TimeUnit.MINUTES)
 public @interface FullStackSuite {}

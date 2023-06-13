@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.core;
+package com.hedera.fullstack.junit.support.annotation.services;
 
 import java.lang.annotation.*;
-import org.junit.jupiter.api.Test;
 
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-@Test
-public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
-}
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface EnvoyProxy {}

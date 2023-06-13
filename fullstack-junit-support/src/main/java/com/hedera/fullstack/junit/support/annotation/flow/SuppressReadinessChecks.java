@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.monitoring.api;
+package com.hedera.fullstack.junit.support.annotation.flow;
 
-public class Dummy {}
+import com.hedera.fullstack.readiness.api.ReadinessCheck;
+
+public @interface SuppressReadinessChecks {
+    Class<ReadinessCheck>[] value();
+
+    String[] nodeNames() default {};
+
+    int[] nodeIndices() default {};
+}

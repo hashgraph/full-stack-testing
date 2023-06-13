@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.validation;
+package com.hedera.fullstack.junit.support.events.application;
 
-import java.lang.annotation.*;
+public interface BeforeApplicationConfigured extends ApplicationEvent {
 
-@Inherited
-@Documented
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PreTestValidators {
-    Class<?>[] value();
+    void beforeApplicationConfigured(int index, Object node, Object config);
 }

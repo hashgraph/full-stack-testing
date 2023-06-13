@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation.validation;
+package com.hedera.fullstack.monitoring.api;
 
-import java.lang.annotation.*;
-
-@Inherited
-@Documented
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PostTestValidators {
-    Class<?>[] value();
+public enum CheckOutcome {
+    NOT_READY,
+    WAITING,
+    SUCCESS,
+    FAILURE,
+    SKIPPED
 }
