@@ -123,7 +123,7 @@ jobs:
           #          fi
 
           # TODO: 0.0.1 is just for testing the pipeline, remove before merge
-          NEW_VERSION="${{ inputs.new-version || '0.0.1' }}"  
+          NEW_VERSION="${{ inputs.new-version || '0.0.1' }}"
           VALID_VERSION="$(semver validate "${NEW_VERSION}")"
 
           if [[ "${VALID_VERSION}" != "valid" ]]; then
