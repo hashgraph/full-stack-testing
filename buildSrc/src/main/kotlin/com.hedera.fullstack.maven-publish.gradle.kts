@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022 Hedera Hashgraph, LLC
+ * Copyright 2016-2023 Hedera Hashgraph, LLC
  *
  * This software is the confidential and proprietary information of
  * Hedera Hashgraph, LLC. ("Confidential Information"). You shall not
@@ -47,7 +47,7 @@ publishing {
 
                 developers {
                     developer {
-                        name.set("Services Team")
+                        name.set("Full Stack Testing Team")
                         email.set("full-stack-testing@swirldslabs.com")
                         organization.set("Hedera Hashgraph")
                         organizationUrl.set("https://www.hedera.com")
