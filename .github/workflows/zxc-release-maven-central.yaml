@@ -152,8 +152,10 @@ jobs:
         with:
           # TODO: need secrets.gpg-key-contents
           # gpg_private_key: ${{ secrets.gpg-key-contents }}
+          gpg_private_key: TODO
           # TODO: need secrets.gpg-key-passphrase
           # passphrase: ${{ secrets.gpg-key-passphrase }}
+          passphrase: TODO
           git_config_global: true
           git_user_signingkey: true
           git_commit_gpgsign: true
