@@ -67,7 +67,6 @@ on:
 defaults:
   run:
     shell: bash
-#    working-directory: platform-sdk
 
 permissions:
   id-token: write
@@ -180,7 +179,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          # build-root-directory: platform-sdk
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           # gradle-home-cache-strict-match: false
           gradle-home-cache-includes: |
@@ -192,14 +190,12 @@ jobs:
       - name: Apply Version Number Update (Explicit)
         uses: gradle/gradle-build-action@v2
         with:
-#          build-root-directory: platform-sdk
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
         with:
-#          build-root-directory: platform-sdk
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           arguments: githubVersionSummary --scan
 
@@ -207,7 +203,6 @@ jobs:
         uses: gradle/gradle-build-action@v2
         if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         with:
-#          build-root-directory: platform-sdk
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           arguments: assemble --scan
 
@@ -216,7 +211,6 @@ jobs:
         uses: gradle/gradle-build-action@v2
         if: ${{ steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
-#          build-root-directory: platform-sdk
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           arguments: javadoc --scan --parallel
 
@@ -227,7 +221,6 @@ jobs:
 #          OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
 #          OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
 #        with:
-#          build-root-directory: platform-sdk
 #          gradle-version: ${{ inputs.gradle-version }}
 #          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true
 #
