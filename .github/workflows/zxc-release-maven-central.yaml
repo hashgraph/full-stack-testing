@@ -16,6 +16,7 @@
 
 name: "ZXC: Release Maven Central"
 on:
+  pull_request:
   workflow_call:
     inputs:
       new-version:
