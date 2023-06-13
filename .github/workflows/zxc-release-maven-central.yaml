@@ -189,13 +189,13 @@ jobs:
             dependency-check-data
             # jdks
 
-#      - name: Apply Version Number Update (Explicit)
-#        uses: gradle/gradle-build-action@v2
-#        with:
-#          build-root-directory: platform-sdk
-#          gradle-version: ${{ inputs.gradle-version }}
-#          arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}
-#
+      - name: Apply Version Number Update (Explicit)
+        uses: gradle/gradle-build-action@v2
+        with:
+          build-root-directory: platform-sdk
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}
+
 #      - name: Version Report
 #        uses: gradle/gradle-build-action@v2
 #        with:
