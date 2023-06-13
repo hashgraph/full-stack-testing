@@ -8,4 +8,5 @@ module com.hedera.fullstack.junit.support {
             org.junit.platform.commons;
 
     requires transitive org.junit.jupiter.api;
+    requires transitive org.junit.jupiter.params;
 }

@@ -18,15 +18,24 @@ package com.hedera.fullstack.examples.signing;
 
 import com.hedera.fullstack.junit.support.annotation.FullStackSuite;
 import com.hedera.fullstack.junit.support.annotation.FullStackTest;
+import com.hedera.fullstack.junit.support.annotation.ParameterizedFullStackTest;
 import com.hedera.fullstack.junit.support.annotation.node.ApplicationNodes;
 import com.hedera.fullstack.junit.support.annotation.validation.Monitors;
 import com.hedera.fullstack.junit.support.annotation.validation.PostTestValidators;
 import com.hedera.fullstack.junit.support.annotation.validation.PreTestValidators;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Named;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @FullStackSuite
 @ApplicationNodes(4)
 public class PlatformSigningTest {
+
+    public static Stream<Arguments> testScalingBasicSignatures() {
+        return Stream.of(Arguments.of(Named.of("5k TPS", 5000)), Arguments.of(Named.of("10k TPS", 10000)));
+    }
 
     @FullStackTest
     @DisplayName("SSTT: Basic Signatures - Mixed Algorithms - 4 Nodes - 10k TPS")
@@ -34,4 +43,11 @@ public class PlatformSigningTest {
     @PreTestValidators({PreTestValidators.class})
     @PostTestValidators({PostTestValidators.class})
     void testBasicSignaturesMixedAlgorithms() {}
+
+    @ParameterizedFullStackTest
+    @DisplayName("SSTT: Scaling Basic Signatures - 4 Nodes")
+    @MethodSource
+    @Monitors({Monitors.class})
+    @PostTestValidators({PostTestValidators.class})
+    void testScalingBasicSignatures(int tps) {}
 }
