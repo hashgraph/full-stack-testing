@@ -214,15 +214,18 @@ jobs:
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           arguments: javadoc --scan --parallel
 
-#      - name: Gradle Deploy
-#        uses: gradle/gradle-build-action@v2
-#        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
-#        env:
+      - name: Gradle Deploy
+        uses: gradle/gradle-build-action@v2
+        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
+        env:
+# TODO: need secrets.ossrh-user-name and secrets.ossrh-user-password
 #          OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
 #          OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
-#        with:
-#          gradle-version: ${{ inputs.gradle-version }}
-#          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true
+          OSSRH_USERNAME: user
+          OSSRH_PASSWORD: pass
+        with:
+          gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
+          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true
 #
 #      - name: Commit Version Changes
 #        id: commit
