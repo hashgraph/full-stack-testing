@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotation;
+package com.hedera.fullstack.junit.support.annotation.core;
 
 import java.lang.annotation.*;
 import org.junit.jupiter.params.ParameterizedTest;

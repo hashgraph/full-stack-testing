@@ -16,9 +16,9 @@
 
 package com.hedera.fullstack.examples.signing;
 
-import com.hedera.fullstack.junit.support.annotation.FullStackSuite;
-import com.hedera.fullstack.junit.support.annotation.FullStackTest;
-import com.hedera.fullstack.junit.support.annotation.ParameterizedFullStackTest;
+import com.hedera.fullstack.junit.support.annotation.core.FullStackSuite;
+import com.hedera.fullstack.junit.support.annotation.core.FullStackTest;
+import com.hedera.fullstack.junit.support.annotation.core.ParameterizedFullStackTest;
 import com.hedera.fullstack.junit.support.annotation.node.ApplicationNodes;
 import com.hedera.fullstack.junit.support.annotation.validation.Monitors;
 import com.hedera.fullstack.junit.support.annotation.validation.PostTestValidators;
