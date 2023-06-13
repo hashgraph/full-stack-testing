@@ -142,6 +142,7 @@ jobs:
             echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) contains a BUILD specification and is not supported by this pipeline."
             exit 12
           fi
+          echo "BUILD=${BUILD}"
 
 #      - name: Import GPG key
 #        id: gpg_key
