@@ -1,3 +1,5 @@
+import java.io.BufferedOutputStream
+
 /*
  * Copyright (C) 2023 Hedera Hashgraph, LLC
  *
@@ -33,5 +35,18 @@ sonarqube {
         property("sonar.links.ci", "https://github.com/hashgraph/full-stack-testing/actions")
         property("sonar.links.issue", "https://github.com/hashgraph/full-stack-testing/issues")
         property("sonar.links.scm", "https://github.com/hashgraph/full-stack-testing.git")
+    }
+}
+
+tasks.create("githubVersionSummary") {
+    group = "versioning"
+    doLast {
+        val ghStepSummaryPath: String? = System.getenv("GITHUB_STEP_SUMMARY")
+        if (ghStepSummaryPath == null) {
+            throw IllegalArgumentException("This task may only be run in a Github Actions CI environment! Unable to locate the GITHUB_STEP_SUMMARY environment variable.")
+        }
+
+        val ghStepSummaryFile: File = File(ghStepSummaryPath)
+        Utils.generateProjectVersionReport(rootProject, BufferedOutputStream(ghStepSummaryFile.outputStream()))
     }
 }
