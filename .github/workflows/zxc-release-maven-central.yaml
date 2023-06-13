@@ -42,11 +42,11 @@ on:
         type: string
         required: false
         default: "wrapper"
-#      custom-job-label:
-#        description: "Custom Job Label:"
-#        type: string
-#        required: false
-#        default: "Release"
+      custom-job-label:
+        description: "Custom Job Label:"
+        type: string
+        required: false
+        default: "Release"
 
 #    secrets:
 #      gpg-key-contents:
