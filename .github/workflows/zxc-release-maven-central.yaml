@@ -193,33 +193,33 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
 #          build-root-directory: platform-sdk
-          gradle-version: ${{ inputs.gradle-version }}
+          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}
 
-#      - name: Version Report
-#        uses: gradle/gradle-build-action@v2
-#        with:
+      - name: Version Report
+        uses: gradle/gradle-build-action@v2
+        with:
 #          build-root-directory: platform-sdk
-#          gradle-version: ${{ inputs.gradle-version }}
-#          arguments: githubVersionSummary --scan
-#
-#      - name: Gradle Assemble
-#        uses: gradle/gradle-build-action@v2
-#        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
-#        with:
+          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          arguments: githubVersionSummary --scan
+
+      - name: Gradle Assemble
+        uses: gradle/gradle-build-action@v2
+        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
+        with:
 #          build-root-directory: platform-sdk
-#          gradle-version: ${{ inputs.gradle-version }}
-#          arguments: assemble --scan
-#
-#      - name: Gradle JavaDoc
-#        id: gradle-javadoc
-#        uses: gradle/gradle-build-action@v2
-#        if: ${{ steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
-#        with:
+          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          arguments: assemble --scan
+
+      - name: Gradle JavaDoc
+        id: gradle-javadoc
+        uses: gradle/gradle-build-action@v2
+        if: ${{ steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
+        with:
 #          build-root-directory: platform-sdk
-#          gradle-version: ${{ inputs.gradle-version }}
-#          arguments: javadoc --scan --parallel
-#
+          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          arguments: javadoc --scan --parallel
+
 #      - name: Gradle Deploy
 #        uses: gradle/gradle-build-action@v2
 #        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
