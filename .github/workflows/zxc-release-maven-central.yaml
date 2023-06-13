@@ -67,7 +67,7 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: platform-sdk
+#    working-directory: platform-sdk
 
 permissions:
   id-token: write
