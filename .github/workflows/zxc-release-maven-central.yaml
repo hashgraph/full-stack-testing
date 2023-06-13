@@ -114,12 +114,14 @@ jobs:
           echo "BRANCH_NAME=${BRANCH_NAME}"
           echo "POLICY=${POLICY}"
 
+# TODO: Uncomment this section before merge
 #          if [[ ! "${BRANCH_NAME}" =~ ^main$|^master$|^release\/[0-9]+\.[0-9]+$ ]]; then
 #            printf "::error title=Branch Error::The version policy of %s only allows this workflow to be executed on branches matching the pattern: %s" "${POLICY}" '^main$|^master$|^release\/[0-9]+\.[0-9]+$'
 #            exit 32
 #          fi
 
-          NEW_VERSION="${{ inputs.new-version || "0.0.1" }}"  # TODO: 0.0.1 is just for testing the pipeline, remove before merge
+          # TODO: 0.0.1 is just for testing the pipeline, remove before merge
+          NEW_VERSION="${{ inputs.new-version || "0.0.1" }}"  
           VALID_VERSION="$(semver validate "${NEW_VERSION}")"
 
           if [[ "${VALID_VERSION}" != "valid" ]]; then
