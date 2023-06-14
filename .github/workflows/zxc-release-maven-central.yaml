@@ -222,29 +222,30 @@ jobs:
         run: |
           find . -type f -name "*.jar"
 
-      - name: Gradle Deploy
-        uses: gradle/gradle-build-action@v2
-        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
-        env:
-# TODO: need secrets.ossrh-user-name and secrets.ossrh-user-password
-#          OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
-#          OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
-          OSSRH_USERNAME: user
-          OSSRH_PASSWORD: pass
-        with:
-          gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
-          # TODO: remove -i
-          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true -i
+#      - name: Gradle Deploy
+#        uses: gradle/gradle-build-action@v2
+#        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
+#        env:
+## TODO: need secrets.ossrh-user-name and secrets.ossrh-user-password
+##          OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
+##          OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
+#          OSSRH_USERNAME: user
+#          OSSRH_PASSWORD: pass
+#        with:
+#          gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
+#          # TODO: remove -i
+#          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true -i
 #
 #      - name: Commit Version Changes
 #        id: commit
 #        uses: EndBug/add-and-commit@v9
 #        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
 #        with:
+# TODO: need secrets.git-user-name and secrets.git-user-email
 #          author_name: ${{ secrets.git-user-name }}
 #          author_email: ${{ secrets.git-user-email }}
 #          commit: --signoff --gpg-sign
-#          message: "[Automated Maven Central Release] Platform SDK v${{ inputs.new-version }}"
+#          message: "[Automated Maven Central Release] Full Stack Testing v${{ inputs.new-version }}"
 #
 ##      - name: Cache SDK Release Archives
 ##        id: archive-cache
