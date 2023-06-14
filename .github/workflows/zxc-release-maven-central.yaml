@@ -204,7 +204,8 @@ jobs:
         if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
-          arguments: assemble --scan
+          # TODO: remove -i
+          arguments: assemble --scan -i
 
       - name: Gradle JavaDoc
         id: gradle-javadoc
@@ -212,7 +213,8 @@ jobs:
         if: ${{ steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
-          arguments: javadoc --scan --parallel
+          # TODO: remove -i
+          arguments: javadoc --scan --parallel -i
 
       - name: Gradle Deploy
         uses: gradle/gradle-build-action@v2
@@ -225,7 +227,8 @@ jobs:
           OSSRH_PASSWORD: pass
         with:
           gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
-          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true
+          # TODO: remove -i
+          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true -i
 #
 #      - name: Commit Version Changes
 #        id: commit
