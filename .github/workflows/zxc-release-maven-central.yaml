@@ -200,6 +200,7 @@ jobs:
           arguments: githubVersionSummary --scan
 
       - name: Gradle Assemble
+        id: gradle-build
         uses: gradle/gradle-build-action@v2
         if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         with:
@@ -215,6 +216,11 @@ jobs:
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
           # TODO: remove -i
           arguments: javadoc --scan --parallel -i
+
+      # TODO: remove this before merge
+      - name: Check for Jars
+        run: |
+          find . -type f -name "*.jar"
 
       - name: Gradle Deploy
         uses: gradle/gradle-build-action@v2
