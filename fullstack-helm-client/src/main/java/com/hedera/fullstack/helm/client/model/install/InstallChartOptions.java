@@ -29,8 +29,6 @@ import com.hedera.fullstack.helm.client.model.Options;
  * @param description      - add a custom description.
  * @param enableDNS        - enable DNS lookups when rendering templates.
  * @param force            - force resource updates through a replacement strategy.
- * @param output           - prints the output in the specified format. Allowed values: table, json, yaml (default
- *                         table).
  * @param passCredentials  - pass credentials to all domains.
  * @param password         - chart repository password where to locate the requested chart.
  * @param repo             - chart repository url where to locate the requested chart.
@@ -53,7 +51,6 @@ public record InstallChartOptions(
         String description,
         boolean enableDNS,
         boolean force,
-        String output,
         boolean passCredentials,
         String password,
         String repo,
@@ -87,9 +84,7 @@ public record InstallChartOptions(
     public void apply(final HelmExecutionBuilder builder) {
         applyFlags(builder);
 
-        if (output() != null) {
-            builder.argument("output", output());
-        }
+        builder.argument("output", "json");
 
         if (password() != null) {
             builder.argument("password", password());

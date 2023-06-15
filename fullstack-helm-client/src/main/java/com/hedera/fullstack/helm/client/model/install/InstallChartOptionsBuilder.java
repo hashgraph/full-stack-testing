@@ -26,7 +26,6 @@ public final class InstallChartOptionsBuilder {
     private String description;
     private boolean enableDNS;
     private boolean force;
-    private String output;
     private boolean passCredentials;
     private String password;
     private String repo;
@@ -114,17 +113,6 @@ public final class InstallChartOptionsBuilder {
      */
     public InstallChartOptionsBuilder force(boolean force) {
         this.force = force;
-        return this;
-    }
-
-    /**
-     * prints the output in the specified format. Allowed values: table, json, yaml (default table).
-     *
-     * @param output prints the output in the specified format. Allowed values: table, json, yaml (default table).
-     * @return the current InstallChartOptionsBuilder.
-     */
-    public InstallChartOptionsBuilder output(String output) {
-        this.output = output;
         return this;
     }
 
@@ -256,7 +244,6 @@ public final class InstallChartOptionsBuilder {
                 description,
                 enableDNS,
                 force,
-                output,
                 passCredentials,
                 password,
                 repo,
