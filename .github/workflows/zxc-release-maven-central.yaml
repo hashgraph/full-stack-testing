@@ -93,6 +93,7 @@ jobs:
           echo "::group::Show SemVer Binary Version Info"
           semver --version
           echo "::endgroup::"
+          echo "secrets.git-user-name=${{ secrets.git-user-name }}"
 
       - name: Install GnuPG Tools
         run: |
