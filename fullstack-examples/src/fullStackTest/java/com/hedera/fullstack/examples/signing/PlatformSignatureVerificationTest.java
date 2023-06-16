@@ -35,8 +35,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @FullStackSuite
-@MaxTestExecutionTime(value = 25, unit = TimeUnit.MINUTES)
 public class PlatformSignatureVerificationTest {
+
+    @FullStackTest
+    void testBasicCase() {}
 
     @FullStackTest
     @ResourceShape(cpuInMillis = 10_000, memorySize = 64, memoryUnits = StorageUnits.GIGABYTES)
