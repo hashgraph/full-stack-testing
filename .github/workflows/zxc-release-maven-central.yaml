@@ -17,6 +17,50 @@
 name: "ZXC: Release Maven Central"
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      new-version:
+        description: "New Release Version (ie. 0.30.0):"
+        type: string
+        required: true
+      dry-run-enabled:
+        description: "Perform Dry Run"
+        type: boolean
+        required: false
+        default: false
+      java-distribution:
+        description: "Java JDK Distribution:"
+        type: string
+        required: false
+        default: "temurin"
+      java-version:
+        description: "Java JDK Version:"
+        type: string
+        required: false
+        default: "17.0.3"
+      gradle-version:
+        description: "Gradle Version:"
+        type: string
+        required: false
+        default: "wrapper"
+      custom-job-label:
+        description: "Custom Job Label:"
+        type: string
+        required: false
+        default: "Release"
+    secrets:
+      gpg-key-contents:
+        required: false
+      gpg-key-passphrase:
+        required: false
+      git-user-name:
+        required: false
+      git-user-email:
+        required: false
+      ossrh-user-name:
+        required: true
+      ossrh-user-password:
+        required: true
   workflow_call:
     inputs:
       new-version:
@@ -48,7 +92,6 @@ on:
         type: string
         required: false
         default: "Release"
-
     secrets:
       gpg-key-contents:
         required: false
@@ -62,7 +105,6 @@ on:
         required: true
       ossrh-user-password:
         required: true
-
 
 defaults:
   run:
