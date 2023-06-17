@@ -71,8 +71,11 @@ jobs:
       - name: Extract Tag Version
         id: tag
         run: |
-          RELEASE_VERSION="$(semver get release "${{ github.ref_name }}")"
-          PRERELEASE_VERSION="$(semver get prerel "${{ github.ref_name }}")"
+          # TODO remove before merge     
+          # RELEASE_VERSION="$(semver get release "${{ github.ref_name }}")"
+          # PRERELEASE_VERSION="$(semver get prerel "${{ github.ref_name }}")"
+          RELEASE_VERSION=0.0.1
+          PRERELEASE_VERSION=""
 
           FINAL_VERSION="${RELEASE_VERSION}"
           PRERELEASE_FLAG="false"
