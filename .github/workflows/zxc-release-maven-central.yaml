@@ -16,51 +16,6 @@
 
 name: "ZXC: Release Maven Central"
 on:
-  pull_request:
-  workflow_dispatch:
-    inputs:
-      new-version:
-        description: "New Release Version (ie. 0.30.0):"
-        type: string
-        required: true
-      dry-run-enabled:
-        description: "Perform Dry Run"
-        type: boolean
-        required: false
-        default: false
-      java-distribution:
-        description: "Java JDK Distribution:"
-        type: string
-        required: false
-        default: "temurin"
-      java-version:
-        description: "Java JDK Version:"
-        type: string
-        required: false
-        default: "17.0.3"
-      gradle-version:
-        description: "Gradle Version:"
-        type: string
-        required: false
-        default: "wrapper"
-      custom-job-label:
-        description: "Custom Job Label:"
-        type: string
-        required: false
-        default: "Release"
-    secrets:
-      gpg-key-contents:
-        required: false
-      gpg-key-passphrase:
-        required: false
-      git-user-name:
-        required: false
-      git-user-email:
-        required: false
-      ossrh-user-name:
-        required: true
-      ossrh-user-password:
-        required: true
   workflow_call:
     inputs:
       new-version:
@@ -124,19 +79,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Semantic Version Tools
-        run: |
-          echo "::group::Download SemVer Binary"
-          sudo curl -L -o /usr/local/bin/semver https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver
-          echo "::endgroup::"
-          echo "::group::Change SemVer Binary Permissions"
-          sudo chmod -v +x /usr/local/bin/semver
-          echo "::endgroup::"
-          echo "::group::Show SemVer Binary Version Info"
-          semver --version
-          echo "::endgroup::"
-          echo "secrets.git-user-name=${{ secrets.git-user-name }}"
-
       - name: Install GnuPG Tools
         run: |
           if ! command -v gpg2 >/dev/null 2>&1; then
@@ -146,45 +88,6 @@ jobs:
             echo "::group::Installing GnuPG Tools"
               sudo apt install -y gnupg2
             echo "::endgroup::"
-          fi
-
-      - name: Validate Workflow Inputs
-        id: validate-workflow
-        run: |
-          BRANCH_NAME="${{ github.head_ref || github.ref_name }}"
-          BRANCH_NAME="${BRANCH_NAME##origin/}"
-          # TODO: remove echo
-          echo "BRANCH_NAME=${BRANCH_NAME}"
-          # TODO: remove echo
-          echo "POLICY=${POLICY}"
-
-          # TODO: Uncomment this section before merge
-          #          if [[ ! "${BRANCH_NAME}" =~ ^main$|^master$|^release\/[0-9]+\.[0-9]+$ ]]; then
-          #            printf "::error title=Branch Error::The version policy of %s only allows this workflow to be executed on branches matching the pattern: %s" "${POLICY}" '^main$|^master$|^release\/[0-9]+\.[0-9]+$'
-          #            exit 32
-          #          fi
-
-          # TODO: 0.0.1 is just for testing the pipeline, remove before merge
-          NEW_VERSION="${{ inputs.new-version || '0.0.1' }}"
-          VALID_VERSION="$(semver validate "${NEW_VERSION}")"
-
-          if [[ "${VALID_VERSION}" != "valid" ]]; then
-            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) is invalid and does not conform to the semantic versioning specifications."
-            exit 2
-          fi
-
-          PRERELEASE="$(semver get prerel "${NEW_VERSION}")"
-
-          if [[ -n "${PRERELEASE}" ]]; then
-            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) is a PRERELEASE version and is not supported by this pipeline."
-            exit 8
-          fi
-
-          BUILD="$(semver get build "${NEW_VERSION}")"
-
-          if [[ -n "${BUILD}" ]]; then
-            echo "::error title=Version Error::The supplied new-version parameter (${NEW_VERSION}) contains a BUILD specification and is not supported by this pipeline."
-            exit 12
           fi
 
       - name: Import GPG key
@@ -218,7 +121,9 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
-          arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}
+          # arguments: ":fullstack-bom:versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}"
+          arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}"
+
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
@@ -244,28 +149,23 @@ jobs:
           # TODO: remove -i
           arguments: javadoc --scan --parallel -i
 
-#      - name: Gradle Deploy
-#        uses: gradle/gradle-build-action@v2
-#        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
-#        env:
-## TODO: need secrets.ossrh-user-name and secrets.ossrh-user-password
-##          OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
-##          OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
-#          OSSRH_USERNAME: user
-#          OSSRH_PASSWORD: pass
-#        with:
-#          gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
-#          # TODO: remove -i
-#          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true -i
-#
-#      - name: Commit Version Changes
-#        id: commit
-#        uses: EndBug/add-and-commit@v9
-#        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
-#        with:
-# TODO: need secrets.git-user-name and secrets.git-user-email
-#          author_name: ${{ secrets.git-user-name }}
-#          author_email: ${{ secrets.git-user-email }}
-#          commit: --signoff --gpg-sign
-#          message: "[Automated Maven Central Release] Full Stack Testing v${{ inputs.new-version }}"
-#
+      - name: Gradle Deploy
+        uses: gradle/gradle-build-action@v2
+        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
+        env:
+          OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
+          OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
+        with:
+          gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
+          # TODO: remove -i
+          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true -i
+
+      - name: Commit Version Changes
+        id: commit
+        uses: EndBug/add-and-commit@v9
+        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
+        with:
+          author_name: ${{ secrets.git-user-name }}
+          author_email: ${{ secrets.git-user-email }}
+          commit: --signoff --gpg-sign
+          message: "[Automated Maven Central Release] Full Stack Testing v${{ inputs.new-version }}"

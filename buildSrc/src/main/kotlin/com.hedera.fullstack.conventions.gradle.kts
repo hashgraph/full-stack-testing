@@ -110,7 +110,7 @@ tasks.named("assemble").configure {
     dependsOn(tasks.named("testClasses"))
 }
 
-tasks.create("versionAsSpecified") {
+tasks.register("versionAsSpecified") {
     group = "versioning"
     doLast {
         val verStr = findProperty("newVersion")?.toString()
