@@ -105,13 +105,13 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: ${{ inputs.java-distribution || 'temurin' }}
-          java-version: ${{ inputs.java-version || '17.0.3' }}
+          distribution: ${{ inputs.java-distribution }}
+          java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          gradle-version: ${{ inputs.gradle-version }}
           gradle-home-cache-includes: |
             caches
             notifications
@@ -120,15 +120,15 @@ jobs:
       - name: Apply Version Number Update (Explicit)
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
-          # arguments: ":fullstack-bom:versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}"
-          arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version || '0.0.1' }}"
+          gradle-version: ${{ inputs.gradle-version }}
+          # arguments: ":fullstack-bom:versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}"
+          arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}"
 
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          gradle-version: ${{ inputs.gradle-version }}
           arguments: githubVersionSummary --scan
 
       - name: Gradle Assemble
@@ -136,7 +136,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         with:
-          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          gradle-version: ${{ inputs.gradle-version }}
           # TODO: remove -i
           arguments: assemble --scan -i
 
@@ -145,7 +145,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         if: ${{ steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
-          gradle-version: ${{ inputs.gradle-version || 'wrapper' }}
+          gradle-version: ${{ inputs.gradle-version }}
           # TODO: remove -i
           arguments: javadoc --scan --parallel -i
 
@@ -156,7 +156,7 @@ jobs:
           OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
           OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
         with:
-          gradle-version: ${{ inputs.gradle-version || '0.0.1' }}
+          gradle-version: ${{ inputs.gradle-version }}
           # TODO: remove -i
           arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true -i
 
