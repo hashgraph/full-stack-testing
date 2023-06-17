@@ -14,7 +14,7 @@
 # limitations under the License.
 ##
 
-name: "Node: Deploy Release Artifact"
+name: "Deploy Release Artifact"
 on:
   # TODO remove after done testing
   pull_request:
@@ -94,7 +94,7 @@ jobs:
       java-distribution: ${{ github.event.inputs.java-distribution }}
       gradle-version: ${{ github.event.inputs.gradle-version }}
     secrets:
-      access-token: ${{ secrets.GITHUB_TOKEN }}
+#      access-token: ${{ secrets.GITHUB_TOKEN }}
       gpg-key-contents: ${{ secrets.GPG_KEY_CONTENTS }}
       gpg-key-passphrase: ${{ secrets.GPG_KEY_PASSPHRASE }}
       git-user-name: ${{ secrets.GIT_USER_NAME }}
