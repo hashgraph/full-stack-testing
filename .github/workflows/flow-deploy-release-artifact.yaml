@@ -92,7 +92,7 @@ jobs:
       - prepare-tag-release
     with:
       new-version: ${{ needs.prepare-tag-release.outputs.version || '0.0.1' }}
-      dry-run-enabled: ${{ github.event.inputs.dry-run-enabled || 'false' }}
+      dry-run-enabled: ${{ github.event.inputs.dry-run-enabled || false }}
       java-version: ${{ github.event.inputs.java-version || '17.0.3' }}
       java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
