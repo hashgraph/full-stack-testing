@@ -16,9 +16,9 @@
  */
 
 plugins {
-    java
+    id("java")
     `maven-publish`
-    signing
+    id("signing")
 }
 
 publishing {
