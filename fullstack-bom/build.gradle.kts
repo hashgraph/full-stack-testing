@@ -16,7 +16,6 @@
 
 plugins {
     id("java-platform")
-    id("com.hedera.fullstack.maven-publish")
 }
 
 repositories {
