@@ -24,7 +24,7 @@ plugins {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components["javaPlatform"])
+            from(components.getByName("java"))
 
             pom {
                 packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
