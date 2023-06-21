@@ -16,67 +16,72 @@
  */
 
 plugins {
-    id("java")
+    id("java-platform")
     `maven-publish`
     id("signing")
 }
+subprojects {
+    apply(plugin = "java-platform")
+    apply(plugin = "maven-publish")
+    apply(plugin = "signing")
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components.getByName("java"))
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                from(components.getByName("javaPlatform"))
 
-            pom {
-                packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
-                name.set(project.name)
-                description.set(provider(project::getDescription))
-                url.set("https://www.hedera.com/")
-                inceptionYear.set("2016")
+                pom {
+                    packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
+                    name.set(project.name)
+                    description.set(provider(project::getDescription))
+                    url.set("https://www.hedera.com/")
+                    inceptionYear.set("2016")
 
-                organization {
-                    name.set("Hedera Hashgraph, LLC")
-                    url.set("https://www.hedera.com")
-                }
-
-                licenses {
-                    license {
-                        name.set("Apache License, Version 2.0")
-                        url.set("https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/LICENSE")
+                    organization {
+                        name.set("Hedera Hashgraph, LLC")
+                        url.set("https://www.hedera.com")
                     }
-                }
 
-                developers {
-                    developer {
-                        name.set("Full Stack Testing Team")
-                        email.set("full-stack-testing@swirldslabs.com")
-                        organization.set("Hedera Hashgraph")
-                        organizationUrl.set("https://www.hedera.com")
+                    licenses {
+                        license {
+                            name.set("Apache License, Version 2.0")
+                            url.set("https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/LICENSE")
+                        }
                     }
-                }
 
-                scm {
-                    connection.set("scm:git:git://github.com/hashgraph/full-stack-testing.git")
-                    developerConnection.set("scm:git:ssh://github.com:hashgraph/full-stack-testing.git")
-                    url.set("https://github.com/hashgraph/full-stack-testing")
+                    developers {
+                        developer {
+                            name.set("Full Stack Testing Team")
+                            email.set("full-stack-testing@swirldslabs.com")
+                            organization.set("Hedera Hashgraph")
+                            organizationUrl.set("https://www.hedera.com")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:git:git://github.com/hashgraph/full-stack-testing.git")
+                        developerConnection.set("scm:git:ssh://github.com:hashgraph/full-stack-testing.git")
+                        url.set("https://github.com/hashgraph/full-stack-testing")
+                    }
                 }
             }
         }
-    }
-    repositories {
-        maven {
-            name = "sonatype"
-            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+        repositories {
+            maven {
+                name = "sonatype"
+                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                credentials {
+                    username = System.getenv("OSSRH_USERNAME")
+                    password = System.getenv("OSSRH_PASSWORD")
+                }
             }
-        }
-        maven {
-            name = "sonatypeSnapshot"
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-            credentials {
-                username = System.getenv("OSSRH_USERNAME")
-                password = System.getenv("OSSRH_PASSWORD")
+            maven {
+                name = "sonatypeSnapshot"
+                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                credentials {
+                    username = System.getenv("OSSRH_USERNAME")
+                    password = System.getenv("OSSRH_PASSWORD")
+                }
             }
         }
     }
@@ -97,7 +102,8 @@ tasks.register("releaseMavenCentralSnapshot") {
     dependsOn(tasks.named("publishMavenPublicationToSonatypeSnapshotRepository"))
 }
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
+//javaPlatform {
+//
+//    withJavadocJar()
+//    withSourcesJar()
+//}
