@@ -90,6 +90,13 @@ jobs:
             echo "::endgroup::"
           fi
 
+      - name: Install Commitizen Tools
+        run: |
+          python --version
+          python3 --version
+          pip --version
+          pip3 --version
+
       - name: Import GPG key
         id: gpg_key
         uses: crazy-max/ghaction-import-gpg@v5
