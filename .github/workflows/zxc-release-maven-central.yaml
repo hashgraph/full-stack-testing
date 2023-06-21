@@ -92,10 +92,11 @@ jobs:
 
       - name: Install Commitizen Tools
         run: |
-          python --version
-          python3 --version
-          pip --version
-          pip3 --version
+            if ! command -v cz >/dev/null 2>&1; then
+                echo "::group::Installing Commitizen Tools"
+                sudo pip3 install -U commitizen
+                echo "::endgroup::"
+            fi
 
       - name: Import GPG key
         id: gpg_key
