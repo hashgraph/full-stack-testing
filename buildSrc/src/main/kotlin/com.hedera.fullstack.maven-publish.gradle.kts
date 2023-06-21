@@ -26,38 +26,38 @@ publishing {
             from(components.getByName("java"))
 
             pom {
-//                packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
+                packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
                 name.set(project.name)
                 description.set(provider(project::getDescription))
-//                url.set("https://www.hedera.com/")
-//                inceptionYear.set("2016")
-//
-//                organization {
-//                    name.set("Hedera Hashgraph, LLC")
-//                    url.set("https://www.hedera.com")
-//                }
-//
-//                licenses {
-//                    license {
-//                        name.set("Apache License, Version 2.0")
-//                        url.set("https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/LICENSE")
-//                    }
-//                }
-//
-//                developers {
-//                    developer {
-//                        name.set("Full Stack Testing Team")
-//                        email.set("full-stack-testing@swirldslabs.com")
-//                        organization.set("Hedera Hashgraph")
-//                        organizationUrl.set("https://www.hedera.com")
-//                    }
-//                }
-//
-//                scm {
-//                    connection.set("scm:git:git://github.com/hashgraph/full-stack-testing.git")
-//                    developerConnection.set("scm:git:ssh://github.com:hashgraph/full-stack-testing.git")
-//                    url.set("https://github.com/hashgraph/full-stack-testing")
-//                }
+                url.set("https://www.hedera.com/")
+                inceptionYear.set("2016")
+
+                organization {
+                    name.set("Hedera Hashgraph, LLC")
+                    url.set("https://www.hedera.com")
+                }
+
+                licenses {
+                    license {
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/LICENSE")
+                    }
+                }
+
+                developers {
+                    developer {
+                        name.set("Full Stack Testing Team")
+                        email.set("full-stack-testing@swirldslabs.com")
+                        organization.set("Hedera Hashgraph")
+                        organizationUrl.set("https://www.hedera.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/hashgraph/full-stack-testing.git")
+                    developerConnection.set("scm:git:ssh://github.com:hashgraph/full-stack-testing.git")
+                    url.set("https://github.com/hashgraph/full-stack-testing")
+                }
             }
         }
     }
@@ -70,14 +70,14 @@ publishing {
                 password = System.getenv("OSSRH_PASSWORD")
             }
         }
-//        maven {
-//            name = "sonatypeSnapshot"
-//            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-//            credentials {
-//                username = System.getenv("OSSRH_USERNAME")
-//                password = System.getenv("OSSRH_PASSWORD")
-//            }
-//        }
+        maven {
+            name = "sonatypeSnapshot"
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
     }
 }
 
@@ -102,8 +102,7 @@ tasks.withType<GenerateModuleMetadata> {
     suppressedValidationErrors.add("enforced-platform")
 }
 
-//javaPlatform {
-//
-//    withJavadocJar()
-//    withSourcesJar()
-//}
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
