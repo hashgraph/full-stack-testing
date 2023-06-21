@@ -91,12 +91,7 @@ jobs:
           fi
 
       - name: Install Commitizen Tools
-        run: |
-            if ! command -v cz >/dev/null 2>&1; then
-                echo "::group::Installing Commitizen Tools"
-                sudo pip3 install -U commitizen
-                echo "::endgroup::"
-            fi
+        run: sudo pip3 install -U commitizen
 
       - name: Import GPG key
         id: gpg_key
@@ -130,6 +125,9 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}"
+
+      - name: Create Release Notes
+        run: cz changelog --dry-run "$(cz version --project)" > RELEASE_NOTES.md
 
 
       - name: Version Report
