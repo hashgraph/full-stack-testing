@@ -129,7 +129,7 @@ jobs:
       - name: Create Release Notes
         # TODO: remove git tag, this was only for testing without a tag
         run: |
-          git tag ${{ inputs.new-version }}
+          git tag ${{ inputs.new-version }} -m "test run, can be removed"
           cz changelog --dry-run "$(cz version --project)" > RELEASE_NOTES.md && cat RELEASE_NOTES.md
 
       - name: Version Report
