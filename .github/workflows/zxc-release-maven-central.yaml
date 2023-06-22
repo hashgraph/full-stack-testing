@@ -130,7 +130,14 @@ jobs:
         # TODO: remove git tag, this was only for testing without a tag
         run: |
           git tag ${{ inputs.new-version }} -m "test run, can be removed"
-          cz changelog --dry-run "$(cz version --project)" > RELEASE_NOTES.md && cat RELEASE_NOTES.md
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          cz changelog --dry-run "$(cz version --project)" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Display Release Notes
+        run: |
+            echo "Release Notes:"
+            echo "${{ env.RELEASE_NOTES }}"
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
