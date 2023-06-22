@@ -1,3 +1,5 @@
+import net.swiftzer.semver.SemVer
+
 /*
  * Copyright (C) 2023 Hedera Hashgraph, LLC
  *
@@ -24,4 +26,18 @@ plugins {
 repositories {
     mavenCentral()
     gradlePluginPortal()
+}
+
+tasks.register("versionAsSpecified") {
+    group = "versioning"
+    doLast {
+        val verStr = findProperty("newVersion")?.toString()
+
+        if (verStr == null) {
+            throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
+        }
+
+        val newVer = SemVer.parse(verStr)
+        Utils.updateCommitizenVersion(project, newVer)
+    }
 }

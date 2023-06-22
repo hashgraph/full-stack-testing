@@ -24,30 +24,38 @@ class Utils {
         @JvmStatic
         fun updateVersion(project: Project, newVersion: SemVer) {
             val gradlePropFile = File(project.projectDir, "gradle.properties")
+            updateStringInFile(gradlePropFile, "version=", "version=${newVersion.toString()}")
+        }
+
+        @JvmStatic
+        fun updateCommitizenVersion(project: Project, newVersion: SemVer) {
+            val czFile = File(project.projectDir, ".cz.toml")
+            updateStringInFile(czFile, "version =", "version = \"${newVersion.toString()}\"")
+        }
+
+        private fun updateStringInFile(file: File, startsWith: String, newString: String) {
             var lines: List<String> = mutableListOf()
 
-            if (gradlePropFile.exists()) {
-                lines = gradlePropFile.readLines(Charsets.UTF_8)
+            if (file.exists()) {
+                lines = file.readLines(Charsets.UTF_8)
             }
 
-            var versionStr = "version=${newVersion.toString()}"
             val finalLines: List<String>
-
 
             if (lines.isNotEmpty()) {
                 finalLines = lines.map {
-                    if (it.trimStart().startsWith("version=")) {
-                        versionStr
+                    if (it.trimStart().startsWith(startsWith)) {
+                        newString
                     } else {
                         it
                     }
                 }
             } else {
-                finalLines = listOf(versionStr)
+                finalLines = listOf(newString)
             }
 
 
-            gradlePropFile.bufferedWriter(Charsets.UTF_8).use {
+            file.bufferedWriter(Charsets.UTF_8).use {
                 val writer = it
                 finalLines.forEach {
                     writer.write(it)

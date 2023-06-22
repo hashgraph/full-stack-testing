@@ -127,8 +127,10 @@ jobs:
           arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}"
 
       - name: Create Release Notes
-        run: cz changelog --dry-run "$(cz version --project)" > RELEASE_NOTES.md
-
+        # TODO: remove git tag, this was only for testing without a tag
+        run: |
+          git tag ${{ inputs.new-version }}
+          cz changelog --dry-run "$(cz version --project)" > RELEASE_NOTES.md && cat RELEASE_NOTES.md
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
