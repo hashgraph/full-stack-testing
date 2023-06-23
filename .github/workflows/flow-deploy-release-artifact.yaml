@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ##
+
 name: "Deploy Release Artifact"
 on:
   # TODO remove after done testing
-  pull_request:
   workflow_dispatch:
     inputs:
       dry-run-enabled:
@@ -89,12 +89,13 @@ jobs:
     uses: ./.github/workflows/zxc-release-maven-central.yaml
     needs:
       - prepare-tag-release
+    # TODO remove with clause when we switch to tag push event
     with:
-      new-version: ${{ needs.prepare-tag-release.outputs.version || '0.0.1' }}
-      dry-run-enabled: ${{ github.event.inputs.dry-run-enabled || false }}
-      java-version: ${{ github.event.inputs.java-version || '17.0.3' }}
-      java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
-      gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
+      new-version: ${{ needs.prepare-tag-release.outputs.version }}
+      dry-run-enabled: ${{ github.event.inputs.dry-run-enabled }}
+      java-version: ${{ github.event.inputs.java-version }}
+      java-distribution: ${{ github.event.inputs.java-distribution }}
+      gradle-version: ${{ github.event.inputs.gradle-version }}
     secrets:
 #      access-token: ${{ secrets.GITHUB_TOKEN }}
       gpg-key-contents: ${{ secrets.GPG_KEY_CONTENTS }}
