@@ -73,6 +73,8 @@ jobs:
   release:
     name: ${{ inputs.custom-job-label || 'Release' }}
     runs-on: [self-hosted, Linux, medium, ephemeral]
+    outputs:
+      release-notes: ${{ steps.release-notes.outputs.RELEASE_NOTES }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -127,19 +129,18 @@ jobs:
           arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}"
 
       - name: Create Release Notes
+        id: release-notes
         # TODO: remove git tag, this was only for testing without a tag
-        # TODO: switch to outputs, job and step ID references
         run: |
           git tag v${{ inputs.new-version }} -m "test run, can be removed"
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          cz changelog --dry-run "$(cz version --project)" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "RELEASE_NOTES<<EOF" >> "$GITHUB_OUTPUT"
+          cz changelog --dry-run "$(cz version --project)" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Display Release Notes
-        # TODO: switch to output
         run: |
             echo "Release Notes:"
-            echo "${{ env.RELEASE_NOTES }}"
+            echo "${{ steps.release-notes.outputs.RELEASE_NOTES }}"
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
@@ -173,6 +174,3 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           # always run with --no-parallel to avoid sonatype maven publish issues which result in invalid publications
           arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true --no-parallel
-
-
-# TODO: remove publishing of everything that only has dummy.java (no-code)
