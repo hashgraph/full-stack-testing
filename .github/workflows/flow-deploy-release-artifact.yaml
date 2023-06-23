@@ -19,11 +19,6 @@ on:
   # TODO remove after done testing
   workflow_dispatch:
     inputs:
-      dry-run-enabled:
-        description: "Perform Dry Run"
-        type: boolean
-        required: false
-        default: false
       java-version:
         description: "Java JDK Version:"
         type: string
@@ -92,7 +87,6 @@ jobs:
     # TODO remove with clause when we switch to tag push event
     with:
       new-version: ${{ needs.prepare-tag-release.outputs.version }}
-      dry-run-enabled: ${{ github.event.inputs.dry-run-enabled }}
       java-version: ${{ github.event.inputs.java-version }}
       java-distribution: ${{ github.event.inputs.java-distribution }}
       gradle-version: ${{ github.event.inputs.gradle-version }}
