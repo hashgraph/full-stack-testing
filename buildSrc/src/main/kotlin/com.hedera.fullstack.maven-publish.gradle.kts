@@ -52,8 +52,7 @@ publishing {
                 developers {
                     developer {
                         name.set("Full Stack Testing Team")
-                        // TODO: Update this email address
-                        email.set("full-stack-testing@swirldslabs.com")
+                        email.set("hedera-eng-automation@swirldslabs.com")
                         organization.set("Hedera Hashgraph")
                         organizationUrl.set("https://www.hedera.com")
                     }
