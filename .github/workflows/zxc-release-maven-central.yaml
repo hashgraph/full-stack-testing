@@ -134,9 +134,7 @@ jobs:
 
       - name: Create Release Notes
         id: create-release-notes
-        # TODO: remove git tag, this was only for testing without a tag
         run: |
-          git tag v${{ inputs.new-version }} -m "test run, can be removed"
           echo "RELEASE_NOTES<<EOF" >> "$GITHUB_OUTPUT"
           cz changelog --dry-run "$(cz version --project)" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
