@@ -54,7 +54,6 @@ class Utils {
                 finalLines = listOf(newString)
             }
 
-
             file.bufferedWriter(Charsets.UTF_8).use {
                 val writer = it
                 finalLines.forEach {
