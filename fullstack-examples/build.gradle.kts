@@ -16,4 +16,4 @@
 
 plugins { id("com.hedera.fullstack.conventions") }
 
-dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
+dependencies { api(platform(project(":fullstack-bom"))) }

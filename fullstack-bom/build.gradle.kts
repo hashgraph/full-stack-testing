@@ -16,6 +16,8 @@
 
 plugins {
     id("java-platform")
+    id("maven-publish")
+    id("signing")
 }
 
 repositories {
@@ -39,4 +41,96 @@ dependencies.constraints {
     api("org.slf4j:slf4j-api:2.0.7")
     api("org.slf4j:slf4j-nop:2.0.7")
     api("org.slf4j:slf4j-simple:2.0.7")
+
+    for (p in rootProject.childProjects) {
+        val isPublished = p.value.findProperty("mavenPublishingEnabled")?.toString()?.toBoolean() ?: false
+        val excludedProjects = listOf(project.name, project(":fullstack-gradle-plugin").name)
+        if (isPublished && !excludedProjects.contains(p.value.name)) {
+            api(project(p.value.path))
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components.getByName("javaPlatform"))
+
+            pom {
+                packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
+                name.set(project.name)
+                description.set(provider(project::getDescription))
+                url.set("https://www.hedera.com/")
+                inceptionYear.set("2023")
+
+                organization {
+                    name.set("Hedera Hashgraph, LLC")
+                    url.set("https://www.hedera.com")
+                }
+
+                licenses {
+                    license {
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/LICENSE")
+                    }
+                }
+
+                developers {
+                    developer {
+                        name.set("Full Stack Testing Team")
+                        // TODO: Update this email address
+                        email.set("full-stack-testing@swirldslabs.com")
+                        organization.set("Hedera Hashgraph")
+                        organizationUrl.set("https://www.hedera.com")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:git://github.com/hashgraph/full-stack-testing.git")
+                    developerConnection.set("scm:git:ssh://github.com:hashgraph/full-stack-testing.git")
+                    url.set("https://github.com/hashgraph/full-stack-testing")
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "sonatype"
+            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+        maven {
+            name = "sonatypeSnapshot"
+            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications.getByName("maven"))
+}
+
+tasks.withType<Sign>() {
+    onlyIf {
+        project.hasProperty("publishSigningEnabled")
+                && (project.property("publishSigningEnabled") as String).toBoolean()
+    }
+}
+
+tasks.register("releaseMavenCentral") {
+    group = "release"
+    dependsOn(tasks.named("publishMavenPublicationToSonatypeRepository"))
+}
+
+tasks.register("releaseMavenCentralSnapshot") {
+    group = "release"
+    dependsOn(tasks.named("publishMavenPublicationToSonatypeSnapshotRepository"))
 }

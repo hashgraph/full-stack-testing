@@ -128,13 +128,15 @@ jobs:
 
       - name: Create Release Notes
         # TODO: remove git tag, this was only for testing without a tag
+        # TODO: switch to outputs, job and step ID references
         run: |
-          git tag ${{ inputs.new-version }} -m "test run, can be removed"
+          git tag v${{ inputs.new-version }} -m "test run, can be removed"
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           cz changelog --dry-run "$(cz version --project)" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Display Release Notes
+        # TODO: switch to output
         run: |
             echo "Release Notes:"
             echo "${{ env.RELEASE_NOTES }}"
@@ -159,7 +161,7 @@ jobs:
         if: ${{ steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
-          arguments: javadoc --scan --parallel
+          arguments: javadoc --scan
 
       - name: Gradle Deploy
         uses: gradle/gradle-build-action@v2
@@ -169,4 +171,5 @@ jobs:
           OSSRH_PASSWORD: ${{ secrets.ossrh-user-password }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
-          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true
+          # always run with --no-parallel to avoid sonatype maven publish issues which result in invalid publications
+          arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true --no-parallel

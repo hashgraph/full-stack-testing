@@ -1,3 +1,4 @@
+import net.swiftzer.semver.SemVer
 import java.io.BufferedOutputStream
 
 /*
@@ -38,7 +39,7 @@ sonarqube {
     }
 }
 
-tasks.create("githubVersionSummary") {
+tasks.register("githubVersionSummary") {
     group = "versioning"
     doLast {
         val ghStepSummaryPath: String? = System.getenv("GITHUB_STEP_SUMMARY")
@@ -48,5 +49,38 @@ tasks.create("githubVersionSummary") {
 
         val ghStepSummaryFile: File = File(ghStepSummaryPath)
         Utils.generateProjectVersionReport(rootProject, BufferedOutputStream(ghStepSummaryFile.outputStream()))
+    }
+}
+
+tasks.register("versionAsSpecified") {
+    group = "versioning"
+    doLast {
+        val verStr = findProperty("newVersion")?.toString()
+
+        if (verStr == null) {
+            throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
+        }
+
+        val newVer = SemVer.parse(verStr)
+        Utils.updateCommitizenVersion(project, newVer)
+        Utils.updateVersion(project, newVer)
+    }
+}
+
+tasks.register("versionAsSnapshot") {
+    group = "versioning"
+    doLast {
+        val currVer = SemVer.parse(project.version.toString())
+        val newVer = SemVer(currVer.major, currVer.minor, currVer.patch, "SNAPSHOT")
+
+        Utils.updateCommitizenVersion(project, newVer)
+        Utils.updateVersion(project, newVer)
+    }
+}
+
+tasks.register("showVersion") {
+    group = "versioning"
+    doLast {
+        println(project.version)
     }
 }

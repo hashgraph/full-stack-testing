@@ -33,9 +33,6 @@ plugins {
     id("com.adarshr.test-logger")
 }
 
-// Require a consistent group ID across all projects
-group = "com.hedera.fullstack"
-
 repositories {
     // Use Maven Central for dependencies
     mavenCentral()
@@ -108,20 +105,6 @@ tasks.named("check").configure {
 
 tasks.named("assemble").configure {
     dependsOn(tasks.named("testClasses"))
-}
-
-tasks.register("versionAsSpecified") {
-    group = "versioning"
-    doLast {
-        val verStr = findProperty("newVersion")?.toString()
-
-        if (verStr == null) {
-            throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
-        }
-
-        val newVer = SemVer.parse(verStr)
-        Utils.updateVersion(project, newVer)
-    }
 }
 
 // Improve test logging

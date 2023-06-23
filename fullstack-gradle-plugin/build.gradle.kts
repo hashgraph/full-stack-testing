@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.maven-publish")
-}
+plugins { id("com.hedera.fullstack.conventions") }
 
-dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
+dependencies { api(platform(project(":fullstack-bom"))) }

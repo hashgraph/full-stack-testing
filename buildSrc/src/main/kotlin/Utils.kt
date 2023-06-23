@@ -24,13 +24,13 @@ class Utils {
         @JvmStatic
         fun updateVersion(project: Project, newVersion: SemVer) {
             val gradlePropFile = File(project.projectDir, "gradle.properties")
-            updateStringInFile(gradlePropFile, "version=", "version=${newVersion.toString()}")
+            updateStringInFile(gradlePropFile, "version=", "version=${newVersion}")
         }
 
         @JvmStatic
         fun updateCommitizenVersion(project: Project, newVersion: SemVer) {
             val czFile = File(project.projectDir, ".cz.toml")
-            updateStringInFile(czFile, "version =", "version = \"${newVersion.toString()}\"")
+            updateStringInFile(czFile, "version =", "version = \"${newVersion}\"")
         }
 
         private fun updateStringInFile(file: File, startsWith: String, newString: String) {

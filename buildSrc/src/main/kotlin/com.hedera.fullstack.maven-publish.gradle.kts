@@ -17,9 +17,14 @@
 
 plugins {
     id("java")
-    `maven-publish`
+    id("maven-publish")
     id("signing")
 }
+
+beforeEvaluate{
+    project.setProperty("mavenPublishingEnabled", true)
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
@@ -30,7 +35,7 @@ publishing {
                 name.set(project.name)
                 description.set(provider(project::getDescription))
                 url.set("https://www.hedera.com/")
-                inceptionYear.set("2016")
+                inceptionYear.set("2023")
 
                 organization {
                     name.set("Hedera Hashgraph, LLC")
@@ -47,6 +52,7 @@ publishing {
                 developers {
                     developer {
                         name.set("Full Stack Testing Team")
+                        // TODO: Update this email address
                         email.set("full-stack-testing@swirldslabs.com")
                         organization.set("Hedera Hashgraph")
                         organizationUrl.set("https://www.hedera.com")
@@ -86,6 +92,13 @@ signing {
     sign(publishing.publications.getByName("maven"))
 }
 
+tasks.withType<Sign>() {
+    onlyIf {
+        project.hasProperty("publishSigningEnabled")
+                && (project.property("publishSigningEnabled") as String).toBoolean()
+    }
+}
+
 tasks.register("releaseMavenCentral") {
     group = "release"
     dependsOn(tasks.named("publishMavenPublicationToSonatypeRepository"))
@@ -96,11 +109,11 @@ tasks.register("releaseMavenCentralSnapshot") {
     dependsOn(tasks.named("publishMavenPublicationToSonatypeSnapshotRepository"))
 }
 
-tasks.withType<GenerateModuleMetadata> {
-    // The value 'enforced-platform' is provided in the validation
-    // error message you got
-    suppressedValidationErrors.add("enforced-platform")
-}
+//tasks.withType<GenerateModuleMetadata> {
+//    // The value 'enforced-platform' is provided in the validation
+//    // error message you got
+//    suppressedValidationErrors.add("enforced-platform")
+//}
 
 java {
     withJavadocJar()

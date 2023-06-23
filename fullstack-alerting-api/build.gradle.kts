@@ -16,7 +16,7 @@
 
 plugins {
     id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.maven-publish")
+    //    id("com.hedera.fullstack.maven-publish")
 }
 
-dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
+dependencies { api(platform(project(":fullstack-bom"))) }

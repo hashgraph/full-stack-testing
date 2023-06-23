@@ -20,7 +20,7 @@ plugins {
 }
 
 dependencies {
-    api(enforcedPlatform(project(":fullstack-bom")))
+    api(platform(project(":fullstack-bom")))
     javaModuleDependencies {
         testImplementation(gav("org.junit.jupiter.api"))
         testImplementation(gav("org.assertj.core"))
