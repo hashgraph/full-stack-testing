@@ -48,7 +48,8 @@ on:
         required: false
         default: "Release"
     outputs:
-      release-notes: ${{ jobs.release-notes.outputs.RELEASE_NOTES }}
+      release-notes:
+        value: ${{ jobs.release-notes.outputs.RELEASE_NOTES }}
     secrets:
       gpg-key-contents:
         required: false
