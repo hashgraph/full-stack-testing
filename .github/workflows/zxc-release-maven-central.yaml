@@ -173,3 +173,6 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           # always run with --no-parallel to avoid sonatype maven publish issues which result in invalid publications
           arguments: releaseMavenCentral --scan -PpublishSigningEnabled=true --no-parallel
+
+
+# TODO: remove publishing of everything that only has dummy.java (no-code)

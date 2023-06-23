@@ -2,5 +2,5 @@
 name = "cz_conventional_commits"
 tag_format = "$version"
 version_scheme = "semver"
-version = "0.1.0"
+version = "0.1.0-SNAPSHOT"
 major_version_zero = true
