@@ -112,5 +112,8 @@ jobs:
     needs: release-tag
     steps:
       - env:
-          RELEASE_NOTES: ${{ needs.release-tag.outputs.release-notes }}
-        run: echo "RELEASE_NOTES=${RELEASE_NOTES}"
+          RELEASE_NOTES1: ${{ needs.release-tag.outputs.release-notes }}
+          RELEASE_NOTES2: ${{ needs.release.outputs.release-notes }}
+        run: |
+          echo "RELEASE_NOTES1=${RELEASE_NOTES1}"
+          echo "RELEASE_NOTES2=${RELEASE_NOTES2}"
