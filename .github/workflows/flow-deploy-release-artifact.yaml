@@ -19,6 +19,8 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+-?*"
+env:
+  REGISTRY: ghcr.io
 
 defaults:
   run:
@@ -66,10 +68,40 @@ jobs:
     with:
       new-version: ${{ needs.prepare-tag-release.outputs.version }}
     secrets:
-#      access-token: ${{ secrets.GITHUB_TOKEN }}
       gpg-key-contents: ${{ secrets.GPG_KEY_CONTENTS }}
       gpg-key-passphrase: ${{ secrets.GPG_KEY_PASSPHRASE }}
       git-user-name: ${{ secrets.GIT_USER_NAME }}
       git-user-email: ${{ secrets.GIT_USER_EMAIL }}
       ossrh-user-name: ${{ secrets.OSSRH_USER_NAME }}
       ossrh-user-password: ${{ secrets.OSSRH_USER_PASSWORD }}
+
+  docker-image-publish:
+    name: "Publish / Docker Image"
+    runs-on: [self-hosted, Linux, medium, ephemeral]
+    needs:
+      - prepare-tag-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Qemu
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push images
+        uses: docker/build-push-action@v2
+        with:
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64, linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/ubi8-init-dind:${{needs.prepare-tag-release.outputs.version}}
