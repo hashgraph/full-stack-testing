@@ -111,4 +111,4 @@ jobs:
           # TODO: only use one platform?  if so, which one?
           platforms: linux/amd64, linux/arm64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}:${{needs.prepare-tag-release.outputs.version}}
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/ubi8-init-dind:${{needs.prepare-tag-release.outputs.version}}
