@@ -56,7 +56,7 @@ jobs:
           # PRERELEASE_VERSION="$(semver get prerel "${{ github.ref_name }}")"
           RELEASE_VERSION=0.2.0
           PRERELEASE_VERSION=""
-          
+
           FINAL_VERSION="${RELEASE_VERSION}"
           PRERELEASE_FLAG="false"
           [[ -n "${PRERELEASE_VERSION}" ]] && FINAL_VERSION="${RELEASE_VERSION}-${PRERELEASE_VERSION}"
@@ -81,7 +81,7 @@ jobs:
       ossrh-user-password: ${{ secrets.OSSRH_USER_PASSWORD }}
 
   docker-image-publish:
-      name: "Publish / Docker Image"
+    name: "Publish / Docker Image"
     runs-on: [self-hosted, Linux, medium, ephemeral]
     needs:
       - prepare-tag-release
