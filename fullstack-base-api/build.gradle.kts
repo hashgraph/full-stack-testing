@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+plugins {
+    id("com.hedera.fullstack.conventions")
+    id("com.hedera.fullstack.maven-publish")
+}
 
 dependencies {
-    api(enforcedPlatform(project(":fullstack-bom")))
+    api(platform(project(":fullstack-bom")))
     javaModuleDependencies {
         testImplementation(gav("org.junit.jupiter.api"))
         testImplementation(gav("org.assertj.core"))

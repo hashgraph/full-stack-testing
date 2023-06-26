@@ -1,60 +1,34 @@
 /*
- * Copyright (C) 2023 Hedera Hashgraph, LLC
+ * Copyright 2016-2023 Hedera Hashgraph, LLC
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This software is the confidential and proprietary information of
+ * Hedera Hashgraph, LLC. ("Confidential Information"). You shall not
+ * disclose such Confidential Information and shall use it only in
+ * accordance with the terms of the license agreement you entered into
+ * with Hedera Hashgraph.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * HEDERA HASHGRAPH MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF
+ * THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE, OR NON-INFRINGEMENT. HEDERA HASHGRAPH SHALL NOT BE LIABLE FOR
+ * ANY DAMAGES SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR
+ * DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
  */
 
 plugins {
-    id("java-platform")
+    id("java")
     id("maven-publish")
     id("signing")
 }
 
-repositories {
-    mavenCentral()
-}
-
-javaPlatform {
-    allowDependencies()
-}
-
-dependencies {
-    // Define the external Bill of Material (BOM) required by this project
-    api(platform("io.fabric8:kubernetes-client-bom:6.6.2"))
-    api(platform("org.junit:junit-bom:5.9.3"))
-    api(platform("org.assertj:assertj-bom:3.24.2"))
-    api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
-    api(platform("org.mockito:mockito-bom:5.3.1"))
-}
-
-dependencies.constraints {
-    api("org.slf4j:slf4j-api:2.0.7")
-    api("org.slf4j:slf4j-nop:2.0.7")
-    api("org.slf4j:slf4j-simple:2.0.7")
-
-    for (p in rootProject.childProjects) {
-        val isPublished = p.value.findProperty("mavenPublishingEnabled")?.toString()?.toBoolean() ?: false
-        val excludedProjects = listOf(project.name, project(":fullstack-gradle-plugin").name)
-        if (isPublished && !excludedProjects.contains(p.value.name)) {
-            api(project(p.value.path))
-        }
-    }
+beforeEvaluate{
+    project.setProperty("mavenPublishingEnabled", true)
 }
 
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            from(components.getByName("javaPlatform"))
+            from(components.getByName("java"))
 
             pom {
                 packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
@@ -132,4 +106,9 @@ tasks.register("releaseMavenCentral") {
 tasks.register("releaseMavenCentralSnapshot") {
     group = "release"
     dependsOn(tasks.named("publishMavenPublicationToSonatypeSnapshotRepository"))
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }

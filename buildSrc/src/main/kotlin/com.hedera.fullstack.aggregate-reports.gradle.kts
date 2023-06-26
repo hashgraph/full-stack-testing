@@ -1,3 +1,6 @@
+import net.swiftzer.semver.SemVer
+import java.io.BufferedOutputStream
+
 /*
  * Copyright (C) 2023 Hedera Hashgraph, LLC
  *
@@ -33,5 +36,51 @@ sonarqube {
         property("sonar.links.ci", "https://github.com/hashgraph/full-stack-testing/actions")
         property("sonar.links.issue", "https://github.com/hashgraph/full-stack-testing/issues")
         property("sonar.links.scm", "https://github.com/hashgraph/full-stack-testing.git")
+    }
+}
+
+tasks.register("githubVersionSummary") {
+    group = "versioning"
+    doLast {
+        val ghStepSummaryPath: String? = System.getenv("GITHUB_STEP_SUMMARY")
+        if (ghStepSummaryPath == null) {
+            throw IllegalArgumentException("This task may only be run in a Github Actions CI environment! Unable to locate the GITHUB_STEP_SUMMARY environment variable.")
+        }
+
+        val ghStepSummaryFile: File = File(ghStepSummaryPath)
+        Utils.generateProjectVersionReport(rootProject, BufferedOutputStream(ghStepSummaryFile.outputStream()))
+    }
+}
+
+tasks.register("versionAsSpecified") {
+    group = "versioning"
+    doLast {
+        val verStr = findProperty("newVersion")?.toString()
+
+        if (verStr == null) {
+            throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
+        }
+
+        val newVer = SemVer.parse(verStr)
+        Utils.updateCommitizenVersion(project, newVer)
+        Utils.updateVersion(project, newVer)
+    }
+}
+
+tasks.register("versionAsSnapshot") {
+    group = "versioning"
+    doLast {
+        val currVer = SemVer.parse(project.version.toString())
+        val newVer = SemVer(currVer.major, currVer.minor, currVer.patch, "SNAPSHOT")
+
+        Utils.updateCommitizenVersion(project, newVer)
+        Utils.updateVersion(project, newVer)
+    }
+}
+
+tasks.register("showVersion") {
+    group = "versioning"
+    doLast {
+        println(project.version)
     }
 }

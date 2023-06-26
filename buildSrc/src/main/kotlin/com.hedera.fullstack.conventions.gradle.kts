@@ -1,4 +1,5 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
+import net.swiftzer.semver.SemVer
 
 /*
  * Copyright (C) 2023 Hedera Hashgraph, LLC
@@ -31,9 +32,6 @@ plugins {
     // Third Party Plugins
     id("com.adarshr.test-logger")
 }
-
-// Require a consistent group ID across all projects
-group = "com.hedera.fullstack"
 
 repositories {
     // Use Maven Central for dependencies
