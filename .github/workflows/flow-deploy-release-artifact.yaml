@@ -105,3 +105,17 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository }}/ubi8-init-dind:${{needs.prepare-tag-release.outputs.version}}
+
+  finalize-release:
+    name: "Finalize / Release"
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
+    needs:
+      - release-tag
+      - docker-image-publish
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ needs.release-tag.outputs.release-notes }}
