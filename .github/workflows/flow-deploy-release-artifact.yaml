@@ -119,3 +119,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ needs.release-tag.outputs.release-notes }}
+          prerelease: ${{ needs.prepare-tag-release.outputs.prerelease }}
+          draft: true
