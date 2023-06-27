@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uploader-mirror-config
+data:
+  # add your data here
+  property1: value1
+  property2: value2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-config
+data:
+  # add your data here
+  property1: value1
+  property2: value2
