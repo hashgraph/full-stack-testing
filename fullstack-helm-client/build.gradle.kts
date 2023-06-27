@@ -16,7 +16,10 @@
 
 import com.hedera.fullstack.gradle.helm.release.HelmArtifactTask
 
-plugins { id("com.hedera.fullstack.conventions") }
+plugins {
+    id("com.hedera.fullstack.conventions")
+    id("com.hedera.fullstack.maven-publish")
+}
 
 tasks.register<HelmArtifactTask>("helmArtifacts")
 
@@ -33,3 +36,5 @@ dependencies {
         testImplementation(gav("org.mockito.junit.jupiter"))
     }
 }
+
+tasks.named("sourcesJar") { dependsOn(tasks.withType<HelmArtifactTask>()) }
