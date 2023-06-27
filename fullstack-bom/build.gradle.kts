@@ -57,7 +57,7 @@ publishing {
             from(components.getByName("javaPlatform"))
 
             pom {
-                packaging = findProperty("maven.project.packaging")?.toString() ?: "jar"
+                packaging = "pom"
                 name.set(project.name)
                 description.set(provider(project::getDescription))
                 url.set("https://www.hedera.com/")
