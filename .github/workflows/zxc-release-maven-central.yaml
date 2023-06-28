@@ -96,9 +96,6 @@ jobs:
             echo "::endgroup::"
           fi
 
-      - name: Install Commitizen Tools
-        run: sudo pip3 install -U commitizen
-
       - name: Import GPG key
         id: gpg_key
         uses: crazy-max/ghaction-import-gpg@v5
@@ -130,19 +127,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: ${{ inputs.gradle-version }}
-          arguments: "versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}"
-
-      - name: Create Release Notes
-        id: create-release-notes
-        run: |
-          echo "RELEASE_NOTES<<EOF" >> "$GITHUB_OUTPUT"
-          cz changelog --dry-run "$(cz version --project)" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-      - name: Display Release Notes
-        run: |
-            echo "Release Notes:"
-            echo "${{ steps.create-release-notes.outputs.RELEASE_NOTES }}"
+          arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}
 
       - name: Version Report
         uses: gradle/gradle-build-action@v2
