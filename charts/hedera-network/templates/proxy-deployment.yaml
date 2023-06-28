@@ -1,0 +1,59 @@
+{{ range $nodeName, $nodeConfig := ($.Values.hedera.nodes) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy-{{ $nodeName }}
+spec:
+  replicas: {{ $.Values.haproxyReplicaCount }}
+  selector:
+    matchLabels:
+      app: haproxy-{{ $nodeName }}
+  template:
+    metadata:
+      labels:
+        app: haproxy-{{ $nodeName }}
+    spec:
+      containers:
+      - name: haproxy
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.haproxy }}
+        imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy-proxy-{{ $nodeName }}
+spec:
+  replicas: {{ $.Values.envoyProxyReplicaCount }}
+  selector:
+    matchLabels:
+      app: envoy-proxy-{{ $nodeName }}
+  template:
+    metadata:
+      labels:
+        app: envoy-proxy-{{ $nodeName }}
+    spec:
+      containers:
+      - name: envoy-proxy
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.envoyproxy }}
+        imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: json-rpc-relay-{{ $nodeName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: json-rpc-relay-{{ $nodeName }}
+  template:
+    metadata:
+      labels:
+        app: json-rpc-relay-{{ $nodeName }}
+    spec:
+      containers:
+      - name: json-rpc-relay
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.jsonrpcrelay }}
+        imagePullPolicy: Always
+{{- end }}

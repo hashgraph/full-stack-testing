@@ -1,0 +1,4 @@
+apiVersion: v2
+name: hedera-network
+description: A Helm chart for the Hedera network
+version: 0.1.0
