@@ -1,6 +1,6 @@
 ## Description
 
-This pull request fixes or changes the following:
+This pull request changes the following:
 
 - TBD
 
