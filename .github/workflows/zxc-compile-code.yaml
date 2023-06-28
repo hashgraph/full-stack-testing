@@ -182,7 +182,7 @@ jobs:
 
       - name: Publish To Codecov
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() }}
-        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # pin@v3
+        uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # pin@v3
         env:
           CODECOV_TOKEN: ${{ secrets.codecov-token }}
 
