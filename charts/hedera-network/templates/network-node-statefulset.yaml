@@ -1,0 +1,52 @@
+
+{{ range $nodeName, $nodeConfig := ($.Values.hedera.nodes) }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: network-{{ $nodeName }}
+  labels:
+    app: network-{{ $nodeName }}
+spec:
+  replicas: 1
+  serviceName: "network-node-{{ $nodeName }}"
+  selector:
+    matchLabels:
+      app: network-{{ $nodeName }}
+  template:
+    metadata:
+      labels:
+        app: network-{{ $nodeName }}
+    spec:
+      containers:
+      - name: root-container
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.root }}
+        resources:
+          requests:
+            memory: 50Mi
+            cpu: {{ index (index $.Values.hedera.nodes $nodeName) "cpu" }}
+          limits:
+            memory: 100Mi
+            cpu: 100m
+      - name: record-stream-uploader
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.streamuploader }}
+        envFrom:
+        - configMapRef:
+            name: uploader-mirror-config
+        - secretRef:
+            name: uploader-mirror-secrets
+      - name: event-stream-uploader
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.streamuploader }}
+        envFrom:
+        - configMapRef:
+            name: uploader-mirror-config
+        - secretRef:
+            name: uploader-mirror-secrets
+      - name: backup-uploader
+        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.backupuploader }}
+        envFrom:
+        - configMapRef:
+            name: backup-config
+        - secretRef:
+            name: backup-secrets
+{{ end }}
