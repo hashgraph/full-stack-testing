@@ -82,7 +82,7 @@ jobs:
       - prepare-tag-release
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
