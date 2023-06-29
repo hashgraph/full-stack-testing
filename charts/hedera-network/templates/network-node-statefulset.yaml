@@ -18,35 +18,102 @@ spec:
       labels:
         app: network-{{ $nodeName }}
     spec:
+      volumes:
+        - name: hedera-storage
+          # TODO:
+          # 1. In Prod: this needs to be a PVC in prod,
+          # 2. In Dev: this should be localfolder (could be handled automatically by k8s)
+          emptyDir: {}
+
       containers:
       - name: root-container
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.root }}
         resources:
           requests:
-            memory: 50Mi
+            memory: {{ index (index $.Values.hedera.nodes $nodeName) "memory" }}
             cpu: {{ index (index $.Values.hedera.nodes $nodeName) "cpu" }}
           limits:
-            memory: 100Mi
-            cpu: 100m
+            memory: {{ index (index $.Values.hedera.nodes $nodeName) "memory" }}
+            cpu: {{ index (index $.Values.hedera.nodes $nodeName) "cpu" }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /hedera-storage
+
+      # Account Balances Uploader
+      - name: account-balances-uploader
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        user: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.accountBalance.watchDirectory }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /hedera-storage
+        # TODO: do we need to move this to a config map ? since config is same for all uploader containers
+        env:
+          - name: DEBUG
+            value: {{ $.Values.mirror.debug }}
+          - name: REAPER_ENABLE
+            value: {{ $.Values.mirror.reaper.enable }}
+          - name: REAPER_MIN_KEEP
+            value: {{ $.Values.mirror.reaper.minKeep }}
+          - name: REAPER_INTERVAL
+            value: {{ $.Values.mirror.reaper.interval }}
+          - name: REAPER_DEFAULT_BACKOFF
+            value: {{ $.Values.mirror.reaper.defaultBackoff }}
+          - name: S3_ENABLE
+            value: {{ $.Values.mirror.s3.enable }}
+          - name: GCS_ENABLE
+            value: {{ $.Values.mirror.gcs.enable }}
+          - name: SIG_REQUIRE
+            value: {{ $.Values.mirror.sig.require }}
+          - name: SIG_PRIORITIZE
+            value: {{ $.Values.mirror.sig.prioritize }}
+          - name: BUCKET_PATH
+            value: {{ $.Values.mirror.accountBalance.bucketPath }}
+
+
+      # Record Stream Uploader
       - name: record-stream-uploader
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.streamuploader }}
-        envFrom:
-        - configMapRef:
-            name: uploader-mirror-config
-        - secretRef:
-            name: uploader-mirror-secrets
-      - name: event-stream-uploader
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.streamuploader }}
-        envFrom:
-        - configMapRef:
-            name: uploader-mirror-config
-        - secretRef:
-            name: uploader-mirror-secrets
-      - name: backup-uploader
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.backupuploader }}
-        envFrom:
-        - configMapRef:
-            name: backup-config
-        - secretRef:
-            name: backup-secrets
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        user: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.recordStream.watchDirectory }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /hedera-storage
+        # TODO: do we need to move this to a config map ? since config is same for all uploader containers
+        env:
+          - name: DEBUG
+            value: {{ $.Values.mirror.debug }}
+          - name: REAPER_ENABLE
+            value: {{ $.Values.mirror.reaper.enable }}
+          - name: REAPER_MIN_KEEP
+            value: {{ $.Values.mirror.reaper.minKeep }}
+          - name: REAPER_INTERVAL
+            value: {{ $.Values.mirror.reaper.interval }}
+          - name: REAPER_DEFAULT_BACKOFF
+            value: {{ $.Values.mirror.reaper.defaultBackoff }}
+          - name: S3_ENABLE
+            value: {{ $.Values.mirror.s3.enable }}
+          - name: GCS_ENABLE
+            value: {{ $.Values.mirror.gcs.enable }}
+          - name: SIG_REQUIRE
+            value: {{ $.Values.mirror.sig.require }}
+          - name: SIG_PRIORITIZE
+            value: {{ $.Values.mirror.sig.prioritize }}
+          - name: BUCKET_PATH
+            value: {{ $.Values.mirror.recordStream.bucketPath }}
+      # Record Stream Side Car
+      # Event Stream Uploader
+
 {{ end }}

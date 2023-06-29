@@ -29,8 +29,40 @@ infrastructure:
       envoyproxy: envoyproxy/envoy:v1.26-latest
       haproxy: haproxy:lts-alpine3.18
       jsonrpcrelay: jsonrpcrelay
+      mirroruploader: gcr.io/hedera-registry/uploader-mirror:1.3.0
       streamuploader: ubuntu
       backupuploader: ubuntu
+
+mirror:
+  # TODO: These have to be a deep folder inside the root folder
+  accountBalance:
+    watchDir: /accountbalance
+    bucketPath: /accountbalance
+  recordStream:
+    watchDir: /recordstream
+    bucketPath: /accountbalance
+  recordStreamSideCar:
+    watchDir: /recordstreamsidecar
+    bucketPath: /accountbalance
+  eventStream:
+    watchDir: /events
+    bucketPath: /accountbalance
+  user: user
+  debug: true
+  reaper:
+    enable: true
+    minKeep: 1
+    interval: 1
+    defaultBackoff: 1
+  sig:
+    require: true
+    prioritize: true
+  s3:
+    enable: true
+  gcs:
+    enable: true
+  bucket:
+    path: "${ACCOUNTBALANCE_PB_STREAM_UPLOAD_PATH}"
 
   proxies:
     # 1 Haproxy Deployment is created for 1 hedera network node (StatefulSet)
