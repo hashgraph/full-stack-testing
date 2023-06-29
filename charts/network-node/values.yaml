@@ -36,6 +36,7 @@ securityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 2000 # hedera user
+  allowPrivilegeEscalation: true
 
 service:
   type: ClusterIP
@@ -79,5 +80,13 @@ autoscaling:
 nodeSelector: {}
 
 tolerations: []
+
+podVolumes:
+  - name: tmp
+    emptyDir: {}
+
+volumes:
+  - name: tmp
+    mountPath: /data/tmp
 
 affinity: {}
