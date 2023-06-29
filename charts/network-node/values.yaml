@@ -5,11 +5,16 @@
 replicaCount: 1
 
 image:
-#  repository: nginx
   repository: ghcr.io/hashgraph/full-stack-testing/ubi8-init-dind
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "0.2.0"
+  command: {}
+  # specify command to be run inside the container
+#    - sleep
+  args: {}
+  # specify args for the command to be run inside the container
+#    - 1h
 
 imagePullSecrets: []
 nameOverride: ""
@@ -26,8 +31,8 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext:
-  fsGroup: 2000 # hedera group
+podSecurityContext: {}
+#  fsGroup: 2000 # hedera group
 
 securityContext:
   capabilities:
@@ -36,6 +41,7 @@ securityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 2000 # hedera user
+  runAsGroup: 2000 # hedera group
   allowPrivilegeEscalation: true
 
 service:
