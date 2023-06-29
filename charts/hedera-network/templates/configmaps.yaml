@@ -1,11 +1,19 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: uploader-mirror-config
+ name: uploader-config
 data:
-  # add your data here
-  property1: value1
-  property2: value2
+  DEBUG: "{{ $.Values.mirror.debug }}"
+  REAPER_ENABLE: "{{ $.Values.mirror.reaper.enable }}"
+  REAPER_MIN_KEEP: "{{ $.Values.mirror.reaper.minKeep }}"
+  REAPER_INTERVAL: "{{ $.Values.mirror.reaper.interval }}"
+  REAPER_DEFAULT_BACKOFF: "{{ $.Values.mirror.reaper.defaultBackoff }}"
+  S3_ENABLE: "{{ $.Values.mirror.s3.enable }}"
+  GCS_ENABLE: "{{ $.Values.mirror.gcs.enable }}"
+  SIG_REQUIRE: "{{ $.Values.mirror.sig.require }}"
+  SIG_PRIORITIZE: "{{ $.Values.mirror.sig.prioritize }}"
+  BUCKET_PATH: "{{ $.Values.mirror.accountBalance.bucketPath }}"
+  BUCKET_NAME: "{{ $.Values.mirror.accountBalance.bucketName }}"
 ---
 apiVersion: v1
 kind: ConfigMap

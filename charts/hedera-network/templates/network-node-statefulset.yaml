@@ -1,52 +1,128 @@
 
-{{ range $nodeName, $nodeConfig := ($.Values.hedera.nodes) }}
+{{ range $node := ($.Values.hedera.nodes) }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: network-{{ $nodeName }}
+  name: network-{{ $node.name }}
   labels:
-    app: network-{{ $nodeName }}
+    app: network-{{ $node.name }}
 spec:
   replicas: 1
-  serviceName: "network-node-{{ $nodeName }}"
+  serviceName: "network-node-{{ $node.name }}"
   selector:
     matchLabels:
-      app: network-{{ $nodeName }}
+      app: network-{{ $node.name }}
   template:
     metadata:
       labels:
-        app: network-{{ $nodeName }}
+        app: network-{{ $node.name }}
     spec:
+      volumes:
+        - name: hedera-storage
+          emptyDir: {}
+
       containers:
       - name: root-container
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.root }}
         resources:
           requests:
-            memory: 50Mi
-            cpu: {{ index (index $.Values.hedera.nodes $nodeName) "cpu" }}
+            cpu: {{ $node.requests.cpu }}
+            memory: {{ $node.requests.memory }}
           limits:
-            memory: 100Mi
-            cpu: 100m
-      - name: record-stream-uploader
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.streamuploader }}
+            cpu: {{ $node.limits.cpu }}
+            memory: {{ $node.limits.memory }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
+
+  {{ if $node.uploaderSidecars }}
+
+      # Account Balance Uploader
+      - name: account-balances-uploader
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.accountBalance.watchDir }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
         envFrom:
-        - configMapRef:
-            name: uploader-mirror-config
-        - secretRef:
-            name: uploader-mirror-secrets
+          - configMapRef:
+                name: uploader-config
+          - secretRef:
+              name: uploader-secrets
+
+        # Event Stream Uploader
       - name: event-stream-uploader
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.streamuploader }}
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.eventStream.watchDir }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
         envFrom:
-        - configMapRef:
-            name: uploader-mirror-config
-        - secretRef:
-            name: uploader-mirror-secrets
-      - name: backup-uploader
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.backupuploader }}
+          - configMapRef:
+              name: uploader-config
+          - secretRef:
+              name: uploader-secrets
+
+        # Record Stream Uploader
+      - name: record-stream-uploader
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.recordStream.watchDir }}
+          - --csv-stats-directory
+          - {{ $.Values.mirror.recordStream.csvStatsDir }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
         envFrom:
-        - configMapRef:
-            name: backup-config
-        - secretRef:
-            name: backup-secrets
+          - configMapRef:
+              name: uploader-config
+          - secretRef:
+              name: uploader-secrets
+
+      # Record Stream Sidecar Uploader
+      - name: record-sidecar-uploader
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.recordStreamSideCar.watchDir }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
+        envFrom:
+          - configMapRef:
+              name: uploader-config
+          - secretRef:
+              name: uploader-secrets
+  {{ end }}
+
 {{ end }}
