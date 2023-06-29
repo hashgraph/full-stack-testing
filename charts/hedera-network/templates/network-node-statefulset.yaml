@@ -41,7 +41,8 @@ spec:
       # Account Balance Uploader
       - name: account-balances-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
-        #user: {{ $.Values.mirror.user }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
         command:
           - /usr/bin/env
           - python3.7
@@ -61,7 +62,8 @@ spec:
         # Event Stream Uploader
       - name: event-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
-        #user: {{ $.Values.mirror.user }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
         command:
           - /usr/bin/env
           - python3.7
@@ -81,7 +83,8 @@ spec:
         # Record Stream Uploader
       - name: record-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
-        #user: {{ $.Values.mirror.user }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
         command:
           - /usr/bin/env
           - python3.7
@@ -103,7 +106,8 @@ spec:
       # Record Stream Sidecar Uploader
       - name: record-sidecar-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
-        #user: {{ $.Values.mirror.user }}
+        securityContext:
+          runAsUser: {{ $.Values.mirror.user }}
         command:
           - /usr/bin/env
           - python3.7
@@ -111,7 +115,6 @@ spec:
           - --linux
           - --watch-directory
           - {{ $.Values.mirror.recordStreamSideCar.watchDir }}
-
         volumeMounts:
           - name: hedera-storage
             mountPath: /opt/hgcapp/

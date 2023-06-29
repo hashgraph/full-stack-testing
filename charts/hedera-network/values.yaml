@@ -65,7 +65,7 @@ mirror:
   eventStream:
     watchDir: /opt/hgcapp/events
     bucketPath: /events
-  user: user
+  user: 1000
   debug: true
   reaper:
     enable: true
