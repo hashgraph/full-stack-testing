@@ -1,28 +1,25 @@
 
-{{ range $nodeName, $nodeConfig := ($.Values.hedera.nodes) }}
+{{ range $node := ($.Values.hedera.nodes) }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: network-{{ $nodeName }}
+  name: network-{{ $node.name }}
   labels:
-    app: network-{{ $nodeName }}
+    app: network-{{ $node.name }}
 spec:
   replicas: 1
-  serviceName: "network-node-{{ $nodeName }}"
+  serviceName: "network-node-{{ $node.name }}"
   selector:
     matchLabels:
-      app: network-{{ $nodeName }}
+      app: network-{{ $node.name }}
   template:
     metadata:
       labels:
-        app: network-{{ $nodeName }}
+        app: network-{{ $node.name }}
     spec:
       volumes:
         - name: hedera-storage
-          # TODO:
-          # 1. In Prod: this needs to be a PVC in prod,
-          # 2. In Dev: this should be localfolder (could be handled automatically by k8s)
           emptyDir: {}
 
       containers:
@@ -30,90 +27,99 @@ spec:
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.root }}
         resources:
           requests:
-            memory: {{ index (index $.Values.hedera.nodes $nodeName) "memory" }}
-            cpu: {{ index (index $.Values.hedera.nodes $nodeName) "cpu" }}
+            cpu: {{ $node.requests.cpu }}
+            memory: {{ $node.requests.memory }}
           limits:
-            memory: {{ index (index $.Values.hedera.nodes $nodeName) "memory" }}
-            cpu: {{ index (index $.Values.hedera.nodes $nodeName) "cpu" }}
+            cpu: {{ $node.limits.cpu }}
+            memory: {{ $node.limits.memory }}
         volumeMounts:
           - name: hedera-storage
-            mountPath: /hedera-storage
+            mountPath: /opt/hgcapp/
 
-      # Account Balances Uploader
+  {{ if $node.uploaderSidecars }}
+
+      # Account Balance Uploader
       - name: account-balances-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
-        user: {{ $.Values.mirror.user }}
+        #user: {{ $.Values.mirror.user }}
         command:
           - /usr/bin/env
           - python3.7
           - /usr/local/bin/mirror.py
           - --linux
           - --watch-directory
-          - {{ $.Values.mirror.accountBalance.watchDirectory }}
+          - {{ $.Values.mirror.accountBalance.watchDir }}
         volumeMounts:
           - name: hedera-storage
-            mountPath: /hedera-storage
-        # TODO: do we need to move this to a config map ? since config is same for all uploader containers
-        env:
-          - name: DEBUG
-            value: {{ $.Values.mirror.debug }}
-          - name: REAPER_ENABLE
-            value: {{ $.Values.mirror.reaper.enable }}
-          - name: REAPER_MIN_KEEP
-            value: {{ $.Values.mirror.reaper.minKeep }}
-          - name: REAPER_INTERVAL
-            value: {{ $.Values.mirror.reaper.interval }}
-          - name: REAPER_DEFAULT_BACKOFF
-            value: {{ $.Values.mirror.reaper.defaultBackoff }}
-          - name: S3_ENABLE
-            value: {{ $.Values.mirror.s3.enable }}
-          - name: GCS_ENABLE
-            value: {{ $.Values.mirror.gcs.enable }}
-          - name: SIG_REQUIRE
-            value: {{ $.Values.mirror.sig.require }}
-          - name: SIG_PRIORITIZE
-            value: {{ $.Values.mirror.sig.prioritize }}
-          - name: BUCKET_PATH
-            value: {{ $.Values.mirror.accountBalance.bucketPath }}
+            mountPath: /opt/hgcapp/
+        envFrom:
+          - configMapRef:
+                name: uploader-config
+          - secretRef:
+              name: uploader-secrets
 
+        # Event Stream Uploader
+      - name: event-stream-uploader
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        #user: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.eventStream.watchDir }}
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
+        envFrom:
+          - configMapRef:
+              name: uploader-config
+          - secretRef:
+              name: uploader-secrets
 
-      # Record Stream Uploader
+        # Record Stream Uploader
       - name: record-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
-        user: {{ $.Values.mirror.user }}
+        #user: {{ $.Values.mirror.user }}
         command:
           - /usr/bin/env
           - python3.7
           - /usr/local/bin/mirror.py
           - --linux
           - --watch-directory
-          - {{ $.Values.mirror.recordStream.watchDirectory }}
+          - {{ $.Values.mirror.recordStream.watchDir }}
+          - --csv-stats-directory
+          - {{ $.Values.mirror.recordStream.csvStatsDir }}
         volumeMounts:
           - name: hedera-storage
-            mountPath: /hedera-storage
-        # TODO: do we need to move this to a config map ? since config is same for all uploader containers
-        env:
-          - name: DEBUG
-            value: {{ $.Values.mirror.debug }}
-          - name: REAPER_ENABLE
-            value: {{ $.Values.mirror.reaper.enable }}
-          - name: REAPER_MIN_KEEP
-            value: {{ $.Values.mirror.reaper.minKeep }}
-          - name: REAPER_INTERVAL
-            value: {{ $.Values.mirror.reaper.interval }}
-          - name: REAPER_DEFAULT_BACKOFF
-            value: {{ $.Values.mirror.reaper.defaultBackoff }}
-          - name: S3_ENABLE
-            value: {{ $.Values.mirror.s3.enable }}
-          - name: GCS_ENABLE
-            value: {{ $.Values.mirror.gcs.enable }}
-          - name: SIG_REQUIRE
-            value: {{ $.Values.mirror.sig.require }}
-          - name: SIG_PRIORITIZE
-            value: {{ $.Values.mirror.sig.prioritize }}
-          - name: BUCKET_PATH
-            value: {{ $.Values.mirror.recordStream.bucketPath }}
-      # Record Stream Side Car
-      # Event Stream Uploader
+            mountPath: /opt/hgcapp/
+        envFrom:
+          - configMapRef:
+              name: uploader-config
+          - secretRef:
+              name: uploader-secrets
+
+      # Record Stream Sidecar Uploader
+      - name: record-sidecar-uploader
+        image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
+        #user: {{ $.Values.mirror.user }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - {{ $.Values.mirror.recordStreamSideCar.watchDir }}
+
+        volumeMounts:
+          - name: hedera-storage
+            mountPath: /opt/hgcapp/
+        envFrom:
+          - configMapRef:
+              name: uploader-config
+          - secretRef:
+              name: uploader-secrets
+  {{ end }}
 
 {{ end }}
