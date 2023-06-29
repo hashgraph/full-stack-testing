@@ -1,0 +1,18 @@
+[Unit]
+Description=Hedera Network Node
+After=network.target
+
+[Service]
+Type=simple
+Restart=no
+User=hedera
+Group=hedera
+
+EnvironmentFile=/etc/network-node/java.env
+EnvironmentFile=/etc/network-node/application.env
+
+WorkingDirectory=/opt/hgcapp/services-hedera/HapiApp2.0
+ExecStart=/usr/bin/bash /opt/hgcapp/services-hedera/HapiApp2.0/entrypoint.sh
+
+[Install]
+WantedBy=multi-user.target
