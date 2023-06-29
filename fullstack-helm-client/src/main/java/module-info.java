@@ -13,7 +13,6 @@ module com.hedera.fullstack.helm.client {
             com.fasterxml.jackson.databind;
 
     requires com.fasterxml.jackson.databind;
-
     requires transitive com.hedera.fullstack.base.api;
     requires transitive com.fasterxml.jackson.annotation;
 }
