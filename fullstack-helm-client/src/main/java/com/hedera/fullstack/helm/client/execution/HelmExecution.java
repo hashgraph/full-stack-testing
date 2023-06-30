@@ -217,7 +217,8 @@ public final class HelmExecution {
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
         LOGGER.atDebug()
-                .setMessage("responseAs exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .setMessage(
+                        "responseAs exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                 .addArgument(this::exitCode)
                 .addArgument(responseClass.getName())
                 .addArgument(standardOutput)
@@ -276,7 +277,8 @@ public final class HelmExecution {
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
         LOGGER.atDebug()
-                .setMessage("ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .setMessage(
+                        "ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                 .addArgument(this::exitCode)
                 .addArgument(responseClass.getName())
                 .addArgument(standardOutput)
