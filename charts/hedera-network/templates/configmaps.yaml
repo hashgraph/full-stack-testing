@@ -23,3 +23,14 @@ data:
   # add your data here
   property1: value1
   property2: value2
+
+{{- if $.Values.sidecars.otel.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+data:
+  config.yaml:
+  {{- .Files.Get "configs/otel-collector-config.yaml" | toYaml | nindent 4 }}
+{{ end }}

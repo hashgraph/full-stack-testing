@@ -13,7 +13,7 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 1 Mbps
-      uploaderSidecars: true
+      uploaderSidecars: false
     - name: node-2
       address: 0.0.2
       requests:
@@ -24,7 +24,7 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 2 Mbps
-      uploaderSidecars: true
+      uploaderSidecars: false
     - name: node-3
       address: 0.0.3
       requests:
@@ -87,3 +87,37 @@ mirror:
     # This controls how many replicas within a deployment are needed, in production we use 3
     haproxyReplicas: 1
     envoyProxyReplicas: 1
+
+# sidecar configurations
+sidecars:
+  otel:
+    enabled: true
+    image:
+      repository: "otel/opentelemetry-collector-contrib"
+      tag: "0.72.0"
+      pullPolicy: IfNotPresent
+    resources:
+#      limits:
+#        cpu: 100m
+#        memory: 128Mi
+#      requests:
+#        cpu: 100m
+#        memory: 128Mi
+    ports:
+#      otlp:
+#        enabled: true
+#        containerPort: 4317
+#        protocol: TCP
+#      metrics:
+#        enabled: true
+#        containerPort: 8888
+#        protocol: TCP
+      healthcheck:
+        enabled: true
+        containerPort: 13133
+        protocol: TCP
+    volumes:
+      - name: otel-collector-config
+        mountPath: /etc/otel-collector-config.yaml
+        subPath: config.yaml #key in the configmap
+        readOnly: true
