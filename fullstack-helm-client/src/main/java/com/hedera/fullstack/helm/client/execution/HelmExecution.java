@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * Represents the execution of a helm command and is responsible for parsing the response.
  */
 public final class HelmExecution {
-    private static final Logger logger = LoggerFactory.getLogger(HelmExecution.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelmExecution.class);
 
     /**
      * The message for a timeout error.
@@ -261,6 +261,16 @@ public final class HelmExecution {
             throw new HelmExecutionException(exitCode());
         }
 
+        final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
+        final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
+
+        LOGGER.atDebug()
+                .setMessage("ResponseAsList exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .addArgument(this::exitCode)
+                .addArgument(standardOutput)
+                .addArgument(standardError)
+                .log();
+
         try {
             return OBJECT_MAPPER
                     .readerFor(responseClass)
@@ -302,7 +312,7 @@ public final class HelmExecution {
         final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
-        logger.atDebug()
+        LOGGER.atDebug()
                 .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                 .addArgument(this::exitCode)
                 .addArgument(standardOutput)
