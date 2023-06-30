@@ -8,13 +8,7 @@ image:
   repository: ghcr.io/hashgraph/full-stack-testing/ubi8-init-dind
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.2.0"
-  command: {}
-  # specify command to be run inside the container
-#    - sleep
-  args: {}
-  # specify args for the command to be run inside the container
-#    - 1h
+  tag: "0.1.2"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -35,14 +29,15 @@ podSecurityContext: {}
 #  fsGroup: 2000 # hedera group
 
 securityContext:
-  capabilities:
-    drop:
-      - ALL
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  runAsUser: 2000 # hedera user
-  runAsGroup: 2000 # hedera group
-  allowPrivilegeEscalation: true
+#  capabilities:
+#    drop:
+#      - ALL
+#  readOnlyRootFilesystem: true
+#  runAsNonRoot: false
+#  runAsUser: 0 # hedera user
+#  runAsGroup: 0 # hedera group
+#  allowPrivilegeEscalation: true
+  privileged: true
 
 service:
   type: ClusterIP
@@ -64,17 +59,17 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-#   limits:
-#     cpu: 100m
-#     memory: 128Mi
-#   requests:
-#     cpu: 100m
-#     memory: 128Mi
+   limits:
+     cpu: 100m
+     memory: 128Mi
+   requests:
+     cpu: 100m
+     memory: 128Mi
 
 autoscaling:
   enabled: false
@@ -88,11 +83,59 @@ nodeSelector: {}
 tolerations: []
 
 podVolumes:
-  - name: tmp
+  - name: data
     emptyDir: {}
+  - name: otel-collector-config
+    configMap:
+      name: otel-collector-config
 
 volumes:
-  - name: tmp
-    mountPath: /data/tmp
+  - name: data
+    mountPath: /app/data
 
 affinity: {}
+
+livenessProbe: {}
+#  httpGet:
+#    path: /
+#    port: http
+
+#readinessProbe:
+#  httpGet:
+#    path: /
+#    port: http
+
+# sidecar configurations
+sidecars:
+  otel:
+    enabled: true
+    image:
+      repository: "otel/opentelemetry-collector-contrib"
+      tag: "0.72.0"
+      pullPolicy: IfNotPresent
+    resources:
+#      limits:
+#        cpu: 100m
+#        memory: 128Mi
+#      requests:
+#        cpu: 100m
+#        memory: 128Mi
+    ports:
+#      otlp:
+#        enabled: true
+#        containerPort: 4317
+#        protocol: TCP
+#      metrics:
+#        enabled: true
+#        containerPort: 8888
+#        protocol: TCP
+#      healthcheck:
+#        enabled: true
+#        containerPort: 13133
+#        protocol: TCP
+    volumes:
+     - name: otel-collector-config
+       mountPath: /etc/otel-collector-config.yaml
+       subPath: config.yaml #key in the configmap
+       readOnly: true
+    configFile: "" # need to be loaded by helm using --set-file

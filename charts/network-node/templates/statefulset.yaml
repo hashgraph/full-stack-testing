@@ -24,39 +24,16 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "network-node.serviceAccountName" . }}
+{{/*      serviceAccountName: {{ include "network-node.serviceAccountName" . }}*/}}
+      {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.image.command }}
-          command: {{ . }}
-          {{- end }}
-          {{- with .Values.image.args}}
-          args: {{ . }}
-          {{- end }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
- #         livenessProbe:
- #           httpGet:
- #             path: /
- #             port: http
- #         readinessProbe:
- #           httpGet:
- #             path: /
- #             port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumes }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+        {{- include "network-node.root-container" . | nindent 8 }}
+      {{- if .Values.sidecars.otel.enabled }}
+        {{- include "network-node.otel-collector" . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
