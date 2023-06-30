@@ -12,6 +12,7 @@ module com.hedera.fullstack.helm.client {
     opens com.hedera.fullstack.helm.client.model.install to
             com.fasterxml.jackson.databind;
 
-    requires com.hedera.fullstack.base.api;
     requires com.fasterxml.jackson.databind;
+    requires transitive com.hedera.fullstack.base.api;
+    requires transitive com.fasterxml.jackson.annotation;
 }
