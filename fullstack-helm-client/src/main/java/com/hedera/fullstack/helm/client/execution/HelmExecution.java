@@ -274,7 +274,7 @@ public final class HelmExecution {
         try {
             return OBJECT_MAPPER
                     .readerFor(responseClass)
-                    .<T>readValues(standardOutput())
+                    .<T>readValues(standardOutput)
                     .readAll();
         } catch (final Exception e) {
             throw new HelmParserException(String.format(MSG_LIST_DESERIALIZATION_ERROR, responseClass.getName()), e);
