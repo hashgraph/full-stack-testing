@@ -30,11 +30,14 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the execution of a helm command and is responsible for parsing the response.
  */
 public final class HelmExecution {
+    final Logger logger = LoggerFactory.getLogger(HelmExecution.class);
 
     /**
      * The message for a timeout error.
@@ -295,6 +298,13 @@ public final class HelmExecution {
             Thread.currentThread().interrupt();
             return;
         }
+
+        logger.atDebug()
+                .setMessage("Call exiting with exitCode={}\nstandardOutput={}\nstandardError={}")
+                .addArgument(this::exitCode)
+                .addArgument(suppressExceptions(this::standardOutput))
+                .addArgument(suppressExceptions(this::standardError))
+                .log();
 
         if (exitCode() != 0) {
             throw new HelmExecutionException(
