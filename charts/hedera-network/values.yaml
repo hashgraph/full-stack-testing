@@ -13,7 +13,7 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 1 Mbps
-      uploaderSidecars: false
+      uploaderSidecars: true
     - name: node-2
       address: 0.0.2
       requests:
@@ -24,7 +24,7 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 2 Mbps
-      uploaderSidecars: false
+      uploaderSidecars: true
     - name: node-3
       address: 0.0.3
       requests:
