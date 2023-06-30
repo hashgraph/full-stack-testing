@@ -310,10 +310,7 @@ public final class HelmExecution {
                 .log();
 
         if (exitCode() != 0) {
-            throw new HelmExecutionException(
-                    exitCode(),
-                    standardError,
-                    standardOutput);
+            throw new HelmExecutionException(exitCode(), standardError, standardOutput);
         }
     }
 }
