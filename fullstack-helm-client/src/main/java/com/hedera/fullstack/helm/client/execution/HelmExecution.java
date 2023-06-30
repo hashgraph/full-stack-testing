@@ -213,8 +213,19 @@ public final class HelmExecution {
             throw new HelmExecutionException(exitCode());
         }
 
+        final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
+        final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
+
+        LOGGER.atDebug()
+                .setMessage("responseAs exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .addArgument(this::exitCode)
+                .addArgument(responseClass.getName())
+                .addArgument(standardOutput)
+                .addArgument(standardError)
+                .log();
+
         try {
-            return OBJECT_MAPPER.readValue(standardOutput(), responseClass);
+            return OBJECT_MAPPER.readValue(standardOutput, responseClass);
         } catch (final Exception e) {
             throw new HelmParserException(String.format(MSG_DESERIALIZATION_ERROR, responseClass.getName()), e);
         }
@@ -265,8 +276,9 @@ public final class HelmExecution {
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
         LOGGER.atDebug()
-                .setMessage("ResponseAsList exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .setMessage("ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                 .addArgument(this::exitCode)
+                .addArgument(responseClass.getName())
                 .addArgument(standardOutput)
                 .addArgument(standardError)
                 .log();
