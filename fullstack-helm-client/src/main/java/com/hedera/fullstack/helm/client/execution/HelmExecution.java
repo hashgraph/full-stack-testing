@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * Represents the execution of a helm command and is responsible for parsing the response.
  */
 public final class HelmExecution {
-    final Logger logger = LoggerFactory.getLogger(HelmExecution.class);
+    private static final Logger logger = LoggerFactory.getLogger(HelmExecution.class);
 
     /**
      * The message for a timeout error.
