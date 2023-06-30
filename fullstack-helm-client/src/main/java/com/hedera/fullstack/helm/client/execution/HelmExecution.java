@@ -299,18 +299,21 @@ public final class HelmExecution {
             return;
         }
 
+        final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
+        final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
+
         logger.atDebug()
-                .setMessage("Call exiting with exitCode={}\nstandardOutput={}\nstandardError={}")
+                .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                 .addArgument(this::exitCode)
-                .addArgument(suppressExceptions(this::standardOutput))
-                .addArgument(suppressExceptions(this::standardError))
+                .addArgument(standardOutput)
+                .addArgument(standardError)
                 .log();
 
         if (exitCode() != 0) {
             throw new HelmExecutionException(
                     exitCode(),
-                    StreamUtils.streamToString(suppressExceptions(this::standardError)),
-                    StreamUtils.streamToString(suppressExceptions(this::standardOutput)));
+                    standardError,
+                    standardOutput);
         }
     }
 }
