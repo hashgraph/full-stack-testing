@@ -9,7 +9,7 @@ metadata:
     app: network-{{ $node.name }}
 spec:
   replicas: 1
-  serviceName: "network-node-{{ $node.name }}"
+  serviceName: "network-{{ $node.name }}"
   selector:
     matchLabels:
       app: network-{{ $node.name }}
