@@ -39,8 +39,10 @@ spec:
       containers:
       - name: root-container
         image: {{ $.Values.infrastructure.docker.images.root }}
-        command: [ "/bin/sh" ]
-        args: [ "-c", "while true; do echo root:heartbeat; sleep 10;done" ]
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          privileged: true
         resources:
           requests:
             cpu: {{ $node.requests.cpu }}
