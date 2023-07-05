@@ -21,7 +21,11 @@ spec:
       volumes:
         - name: hedera-storage
           emptyDir: {}
-
+        {{- if $.Values.sidecars.otel.enabled }}
+        - name: otel-collector-config
+          configMap:
+            name: otel-collector-config
+        {{- end }}
       containers:
       - name: root-container
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.root }}
@@ -36,7 +40,7 @@ spec:
           - name: hedera-storage
             mountPath: /opt/hgcapp/
 
-  {{ if $node.uploaderSidecars }}
+  {{- if $node.uploaderSidecars }}
 
       # Account Balance Uploader
       - name: account-balances-uploader
@@ -123,6 +127,12 @@ spec:
               name: uploader-config
           - secretRef:
               name: uploader-secrets
+  {{ end }}
+
+  {{ if $.Values.sidecars.otel.enabled }}
+
+      # OTel collector side car
+      {{- include "sidecars.otel-collector" $ | nindent 6 }}
   {{ end }}
 
 {{ end }}
