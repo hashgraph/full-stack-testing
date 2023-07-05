@@ -26,6 +26,10 @@ javaModuleDependencies {
 }
 
 extraJavaModuleInfo {
+    module("org.apache.logging.log4j:log4j-slf4j2-impl", "org.apache.logging.log4j.slf4j2.impl") {
+        exportAllPackages()
+    }
+
     knownModule("org.slf4j:slf4j-api", "org.slf4j")
     knownModule("org.slf4j:slf4j-nop", "org.slf4j.nop")
     knownModule("org.slf4j:slf4j-simple", "org.slf4j.simple")
