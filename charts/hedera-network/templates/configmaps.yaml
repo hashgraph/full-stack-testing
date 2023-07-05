@@ -1,19 +1,86 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
- name: uploader-config
+ name: account-balance-uploader-config
 data:
   DEBUG: "{{ $.Values.mirror.debug }}"
   REAPER_ENABLE: "{{ $.Values.mirror.reaper.enable }}"
   REAPER_MIN_KEEP: "{{ $.Values.mirror.reaper.minKeep }}"
   REAPER_INTERVAL: "{{ $.Values.mirror.reaper.interval }}"
   REAPER_DEFAULT_BACKOFF: "{{ $.Values.mirror.reaper.defaultBackoff }}"
+  STREAM_FILE_EXTENSION: "pb"
+  STREAM_SIG_EXTENSION: "pb_sig"
+  STREAM_EXTENSION: "pb.gz"
   S3_ENABLE: "{{ $.Values.mirror.s3.enable }}"
   GCS_ENABLE: "{{ $.Values.mirror.gcs.enable }}"
   SIG_REQUIRE: "{{ $.Values.mirror.sig.require }}"
   SIG_PRIORITIZE: "{{ $.Values.mirror.sig.prioritize }}"
+  SIG_EXTENSION: "pb_sig.gz"
   BUCKET_PATH: "{{ $.Values.mirror.accountBalance.bucketPath }}"
   BUCKET_NAME: "{{ $.Values.mirror.accountBalance.bucketName }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: record-stream-uploader-config
+data:
+  DEBUG: "{{ $.Values.mirror.debug }}"
+  REAPER_ENABLE: "{{ $.Values.mirror.reaper.enable }}"
+  REAPER_MIN_KEEP: "{{ $.Values.mirror.reaper.minKeep }}"
+  REAPER_INTERVAL: "{{ $.Values.mirror.reaper.interval }}"
+  REAPER_DEFAULT_BACKOFF: "{{ $.Values.mirror.reaper.defaultBackoff }}"
+  STREAM_FILE_EXTENSION: "rcd"
+  STREAM_SIG_EXTENSION: "rcd_sig"
+  STREAM_EXTENSION: "rcd"
+  S3_ENABLE: "{{ $.Values.mirror.s3.enable }}"
+  GCS_ENABLE: "{{ $.Values.mirror.gcs.enable }}"
+  SIG_REQUIRE: "{{ $.Values.mirror.sig.require }}"
+  SIG_PRIORITIZE: "{{ $.Values.mirror.sig.prioritize }}"
+  SIG_EXTENSION: "rcd_sig"
+  BUCKET_PATH: "{{ $.Values.mirror.recordStream.bucketPath }}"
+  BUCKET_NAME: "{{ $.Values.mirror.recordStream.bucketName }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-stream-uploader-config
+data:
+  DEBUG: "{{ $.Values.mirror.debug }}"
+  REAPER_ENABLE: "{{ $.Values.mirror.reaper.enable }}"
+  REAPER_MIN_KEEP: "{{ $.Values.mirror.reaper.minKeep }}"
+  REAPER_INTERVAL: "{{ $.Values.mirror.reaper.interval }}"
+  REAPER_DEFAULT_BACKOFF: "{{ $.Values.mirror.reaper.defaultBackoff }}"
+  STREAM_FILE_EXTENSION: "evts"
+  STREAM_SIG_EXTENSION: "evts_sig"
+  STREAM_EXTENSION: "evts"
+  S3_ENABLE: "{{ $.Values.mirror.s3.enable }}"
+  GCS_ENABLE: "{{ $.Values.mirror.gcs.enable }}"
+  SIG_REQUIRE: "{{ $.Values.mirror.sig.require }}"
+  SIG_PRIORITIZE: "{{ $.Values.mirror.sig.prioritize }}"
+  SIG_EXTENSION: "evts_sig"
+  BUCKET_PATH: "{{ $.Values.mirror.eventStream.bucketPath }}"
+  BUCKET_NAME: "{{ $.Values.mirror.eventStream.bucketName }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: record-stream-sidecar-config
+data:
+  DEBUG: "{{ $.Values.mirror.debug }}"
+  REAPER_ENABLE: "{{ $.Values.mirror.reaper.enable }}"
+  REAPER_MIN_KEEP: "{{ $.Values.mirror.reaper.minKeep }}"
+  REAPER_INTERVAL: "{{ $.Values.mirror.reaper.interval }}"
+  REAPER_DEFAULT_BACKOFF: "{{ $.Values.mirror.reaper.defaultBackoff }}"
+  STREAM_FILE_EXTENSION: "rcd"
+  STREAM_SIG_EXTENSION: "rcd_sig"
+  STREAM_EXTENSION: "rcd"
+  S3_ENABLE: "{{ $.Values.mirror.s3.enable }}"
+  GCS_ENABLE: "{{ $.Values.mirror.gcs.enable }}"
+  SIG_REQUIRE: "{{ $.Values.mirror.sig.require }}"
+  SIG_PRIORITIZE: "{{ $.Values.mirror.sig.prioritize }}"
+  SIG_EXTENSION: "rcd_sig"
+  BUCKET_PATH: "{{ $.Values.mirror.recordStreamSideCar.bucketPath }}"
+  BUCKET_NAME: "{{ $.Values.mirror.recordStreamSideCar.bucketName }}"
 ---
 apiVersion: v1
 kind: ConfigMap
