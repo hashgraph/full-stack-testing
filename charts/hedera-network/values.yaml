@@ -55,17 +55,21 @@ mirror:
   accountBalance:
     watchDir: /opt/hgcapp/accountbalance
     bucketPath: /accountbalance
+    bucketName: "dev"
   recordStream:
     watchDir: /opt/hgcapp/recordstream
-    csvStatsDir: /uploader-stats/recordstreams/gcs
+    csvStatsDir: /opt/hgcapp/recordstream/uploader-stats/
     bucketPath: /recordstream
+    bucketName: "dev"
   recordStreamSideCar:
     watchDir: /opt/hgcapp/sidecar
     bucketPath: /recordstreamsidecar
+    bucketName: "dev"
   eventStream:
     watchDir: /opt/hgcapp/events
     bucketPath: /events
-  user: 1000
+    bucketName: "dev"
+  user: 2000
   debug: true
   reaper:
     enable: true
@@ -79,8 +83,6 @@ mirror:
     enable: true
   gcs:
     enable: false
-  bucket:
-    path: bucket
 
   proxies:
     # 1 Haproxy Deployment is created for 1 hedera network node (StatefulSet)

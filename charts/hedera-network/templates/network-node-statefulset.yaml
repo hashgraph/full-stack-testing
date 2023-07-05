@@ -69,7 +69,7 @@ spec:
             mountPath: /opt/hgcapp/accountbalance
         envFrom:
           - configMapRef:
-                name: uploader-config
+                name: account-balance-uploader-config
           - secretRef:
               name: uploader-secrets
 
@@ -90,7 +90,7 @@ spec:
             mountPath: /opt/hgcapp/events
         envFrom:
           - configMapRef:
-              name: uploader-config
+              name: event-stream-uploader-config
           - secretRef:
               name: uploader-secrets
 
@@ -113,7 +113,7 @@ spec:
             mountPath: /opt/hgcapp/recordstream
         envFrom:
           - configMapRef:
-              name: uploader-config
+              name: record-stream-uploader-config
           - secretRef:
               name: uploader-secrets
 
@@ -134,7 +134,7 @@ spec:
             mountPath: /opt/hgcapp/sidecar
         envFrom:
           - configMapRef:
-              name: uploader-config
+              name: record-stream-sidecar-config
           - secretRef:
               name: uploader-secrets
   {{ end }}
