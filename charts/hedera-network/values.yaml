@@ -41,7 +41,7 @@ infrastructure:
   docker:
     registry: docker.io
     images:
-      root: docker:24.0.2-dind
+      root: ghcr.io/hashgraph/full-stack-testing/ubi8-init-dind:0.1.2
       envoyproxy: envoyproxy/envoy:v1.26-latest
       haproxy: haproxy:lts-alpine3.18
       jsonrpcrelay: jsonrpcrelay

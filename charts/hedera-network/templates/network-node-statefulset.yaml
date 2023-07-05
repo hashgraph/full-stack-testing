@@ -19,12 +19,22 @@ spec:
         app: network-{{ $node.name }}
     spec:
       volumes:
-        - name: hedera-storage
+        - name: hgcapp-dir # /opt/hgcapp
+          emptyDir: {}
+        - name: hedera-account-balances # /opt/hgcapp/accountbalance
+          emptyDir: {}
+        - name: hedera-event-streams # /opt/hgcapp/events
+          emptyDir: {}
+        - name: hedera-record-streams # /opt/hgcapp/recordstreams
+          emptyDir: {}
+        - name: hedera-sidecar # /opt/hgcapp/sidecar
           emptyDir: {}
 
       containers:
       - name: root-container
-        image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.root }}
+        image: {{ $.Values.infrastructure.docker.images.root }}
+        command: [ "/bin/sh" ]
+        args: [ "-c", "while true; do echo root:heartbeat; sleep 10;done" ]
         resources:
           requests:
             cpu: {{ $node.requests.cpu }}
@@ -33,7 +43,7 @@ spec:
             cpu: {{ $node.limits.cpu }}
             memory: {{ $node.limits.memory }}
         volumeMounts:
-          - name: hedera-storage
+          - name: hgcapp-dir
             mountPath: /opt/hgcapp/
 
   {{ if $node.uploaderSidecars }}
@@ -51,8 +61,8 @@ spec:
           - --watch-directory
           - {{ $.Values.mirror.accountBalance.watchDir }}
         volumeMounts:
-          - name: hedera-storage
-            mountPath: /opt/hgcapp/
+          - name: hedera-account-balances
+            mountPath: /opt/hgcapp/accountbalance
         envFrom:
           - configMapRef:
                 name: uploader-config
@@ -72,8 +82,8 @@ spec:
           - --watch-directory
           - {{ $.Values.mirror.eventStream.watchDir }}
         volumeMounts:
-          - name: hedera-storage
-            mountPath: /opt/hgcapp/
+          - name: hedera-event-streams
+            mountPath: /opt/hgcapp/events
         envFrom:
           - configMapRef:
               name: uploader-config
@@ -95,8 +105,8 @@ spec:
           - --csv-stats-directory
           - {{ $.Values.mirror.recordStream.csvStatsDir }}
         volumeMounts:
-          - name: hedera-storage
-            mountPath: /opt/hgcapp/
+          - name: hedera-record-streams
+            mountPath: /opt/hgcapp/recordstream
         envFrom:
           - configMapRef:
               name: uploader-config
@@ -116,8 +126,8 @@ spec:
           - --watch-directory
           - {{ $.Values.mirror.recordStreamSideCar.watchDir }}
         volumeMounts:
-          - name: hedera-storage
-            mountPath: /opt/hgcapp/
+          - name: hedera-sidecar
+            mountPath: /opt/hgcapp/sidecar
         envFrom:
           - configMapRef:
               name: uploader-config
