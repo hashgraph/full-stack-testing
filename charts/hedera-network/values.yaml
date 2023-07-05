@@ -14,10 +14,13 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 1 Mbps
-      uploaderSidecars: true
       sidecars:
         otel: true
         backupUploader: true
+        accountBalancesUploader: true
+        eventStreamUploader: true
+        recordStreamUploader: true
+        recordSidecarUploader: true
     - name: node-2
       address: 0.0.2
       requests:
@@ -28,10 +31,13 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 2 Mbps
-      uploaderSidecars: true
       sidecars:
         otel: true
         backupUploader: true
+        accountBalancesUploader: true
+        eventStreamUploader: true
+        recordStreamUploader: true
+        recordSidecarUploader: true
     - name: node-3
       address: 0.0.3
       requests:
@@ -42,10 +48,13 @@ hedera:
         memory: 1G
       latency: 10ms
       bandwidth: 3 Mbps
-      uploaderSidecars: true
       sidecars:
         otel: true
         backupUploader: true
+        accountBalancesUploader: true
+        eventStreamUploader: true
+        recordStreamUploader: true
+        recordSidecarUploader: true
 
 infrastructure:
   docker:

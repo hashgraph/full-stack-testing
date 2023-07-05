@@ -52,8 +52,7 @@ spec:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
 
-  {{- if $node.uploaderSidecars }}
-
+  {{- if $node.sidecars.accountBalancesUploader }}
       # Account Balance Uploader
       - name: account-balances-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
@@ -75,8 +74,10 @@ spec:
                 name: account-balance-uploader-config
           - secretRef:
               name: uploader-secrets
+  {{- end }}
 
-        # Event Stream Uploader
+  {{- if $node.sidecars.eventStreamUploader }}
+      # Event Stream Uploader
       - name: event-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
@@ -97,8 +98,10 @@ spec:
               name: event-stream-uploader-config
           - secretRef:
               name: uploader-secrets
+  {{- end }}
 
-        # Record Stream Uploader
+  {{- if $node.sidecars.recordStreamUploader }}
+      # Record Stream Uploader
       - name: record-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
@@ -121,7 +124,9 @@ spec:
               name: record-stream-uploader-config
           - secretRef:
               name: uploader-secrets
+  {{- end }}
 
+  {{- if $node.sidecars.recordSidecarUploader }}
       # Record Stream Sidecar Uploader
       - name: record-sidecar-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
@@ -143,15 +148,15 @@ spec:
               name: record-stream-sidecar-config
           - secretRef:
               name: uploader-secrets
-  {{ end }}
+  {{- end }}
 
-  {{ if $node.sidecars.otel }}
+  {{- if $node.sidecars.otel }}
       # OTel collector side car
       {{- include "sidecars.otel-collector" $ | nindent 6 }}
-  {{ end }}
+  {{- end }}
 
-  {{ if $node.sidecars.backupUploader }}
-        # Backup Uploader
+  {{- if $node.sidecars.backupUploader }}
+      # Backup Uploader
       - name: backup-uploader
         image: {{ $.Values.infrastructure.docker.images.backupUploader }}
         securityContext:
@@ -166,6 +171,5 @@ spec:
               name: backup-config
           - secretRef:
               name: backup-secrets
-  {{ end }}
-
+  {{- end }}
 {{ end }}
