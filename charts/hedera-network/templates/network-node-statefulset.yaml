@@ -30,7 +30,8 @@ spec:
         - name: init-container
           image: {{ $.Values.infrastructure.docker.images.root }}
           command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
-          runAsUser: {{ $.Values.mirror.user }}
+          securityContext:
+            runAsUser: {{ $.Values.mirror.user }}
           volumeMounts:
             - name: hgcapp-storage
               mountPath: /opt/hgcapp/
