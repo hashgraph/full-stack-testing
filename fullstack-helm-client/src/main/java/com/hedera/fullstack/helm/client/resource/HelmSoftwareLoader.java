@@ -22,11 +22,14 @@ import com.hedera.fullstack.base.api.resource.ResourceLoader;
 import com.hedera.fullstack.helm.client.HelmConfigurationException;
 import java.io.IOException;
 import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Loads the Helm executable contained in the JAR file into a temporary directory.
  */
 public final class HelmSoftwareLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelmSoftwareLoader.class);
 
     /**
      * The root resources folder where the software is located.
@@ -82,6 +85,13 @@ public final class HelmSoftwareLoader {
             if (os == OperatingSystem.WINDOWS) {
                 pathBuilder.append(".exe");
             }
+
+            LOGGER.atDebug()
+                    .setMessage("Loading Helm executable from JAR file.  [os={}, arch={}, path={}]")
+                    .addArgument(os.name())
+                    .addArgument(arch.name())
+                    .addArgument(pathBuilder.toString())
+                    .log();
 
             return RESOURCE_LOADER.load(pathBuilder.toString());
         } catch (IOException | SecurityException | IllegalStateException e) {

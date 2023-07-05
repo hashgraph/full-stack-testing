@@ -20,11 +20,14 @@ import com.hedera.fullstack.helm.client.HelmConfigurationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A builder for creating a helm command execution.
  */
 public final class HelmExecutionBuilder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelmExecutionBuilder.class);
 
     /**
      * The path to the helm executable.
@@ -194,6 +197,13 @@ public final class HelmExecutionBuilder {
         }
 
         command.addAll(positionals);
-        return command.toArray(new String[0]);
+
+        String[] commandArray = command.toArray(new String[0]);
+        LOGGER.atDebug()
+                .setMessage("Helm command: {}")
+                .addArgument(String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)))
+                .log();
+
+        return commandArray;
     }
 }

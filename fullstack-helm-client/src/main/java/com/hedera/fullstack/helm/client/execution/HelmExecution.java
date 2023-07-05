@@ -30,11 +30,17 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the execution of a helm command and is responsible for parsing the response.
  */
 public final class HelmExecution {
+    /**
+     * The logger for this class which should be used for all logging.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelmExecution.class);
 
     /**
      * The message for a timeout error.
@@ -78,6 +84,11 @@ public final class HelmExecution {
         OBJECT_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
+    /**
+     * Creates a new {@link HelmExecution} instance for the specified process.
+     *
+     * @param process the underlying {@link Process} instance wrapped by this {@link HelmExecution} instance.
+     */
     public HelmExecution(final Process process) {
         this.process = Objects.requireNonNull(process, "process must not be null");
         this.standardOutputSink = new BufferedStreamSink(process.getInputStream());
@@ -210,9 +221,28 @@ public final class HelmExecution {
             throw new HelmExecutionException(exitCode());
         }
 
+        final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
+        final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
+
+        LOGGER.atDebug()
+                .setMessage(
+                        "ResponseAs exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .addArgument(this::exitCode)
+                .addArgument(responseClass.getName())
+                .addArgument(standardOutput)
+                .addArgument(standardError)
+                .log();
+
         try {
-            return OBJECT_MAPPER.readValue(standardOutput(), responseClass);
+            return OBJECT_MAPPER.readValue(standardOutput, responseClass);
         } catch (final Exception e) {
+            LOGGER.atWarn()
+                    .setMessage("ResponseAs failed to deserialize response into class: {}\n\tresponse: {}")
+                    .addArgument(responseClass.getName())
+                    .addArgument(standardOutput)
+                    .setCause(e)
+                    .log();
+
             throw new HelmParserException(String.format(MSG_DESERIALIZATION_ERROR, responseClass.getName()), e);
         }
     }
@@ -258,12 +288,31 @@ public final class HelmExecution {
             throw new HelmExecutionException(exitCode());
         }
 
+        final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
+        final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
+
+        LOGGER.atDebug()
+                .setMessage(
+                        "ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .addArgument(this::exitCode)
+                .addArgument(responseClass.getName())
+                .addArgument(standardOutput)
+                .addArgument(standardError)
+                .log();
+
         try {
             return OBJECT_MAPPER
                     .readerFor(responseClass)
-                    .<T>readValues(standardOutput())
+                    .<T>readValues(standardOutput)
                     .readAll();
         } catch (final Exception e) {
+            LOGGER.atWarn()
+                    .setMessage("ResponseAsList failed to deserialize response into class: {}\n\tresponse: {}")
+                    .addArgument(responseClass.getName())
+                    .addArgument(standardOutput)
+                    .setCause(e)
+                    .log();
+
             throw new HelmParserException(String.format(MSG_LIST_DESERIALIZATION_ERROR, responseClass.getName()), e);
         }
     }
@@ -296,11 +345,25 @@ public final class HelmExecution {
             return;
         }
 
+        final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
+        final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
+
+        LOGGER.atDebug()
+                .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                .addArgument(this::exitCode)
+                .addArgument(standardOutput)
+                .addArgument(standardError)
+                .log();
+
         if (exitCode() != 0) {
-            throw new HelmExecutionException(
-                    exitCode(),
-                    StreamUtils.streamToString(suppressExceptions(this::standardError)),
-                    StreamUtils.streamToString(suppressExceptions(this::standardOutput)));
+            LOGGER.atWarn()
+                    .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                    .addArgument(this::exitCode)
+                    .addArgument(standardOutput)
+                    .addArgument(standardError)
+                    .log();
+
+            throw new HelmExecutionException(exitCode(), standardError, standardOutput);
         }
     }
 }
