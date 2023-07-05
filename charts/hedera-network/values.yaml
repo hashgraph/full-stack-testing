@@ -1,4 +1,6 @@
 hedera:
+  user: 2000
+  group: 2000
   # TODO: do we need an easy way (to avoid repetition) to create multiple notes if they all have the same configuration?
   nodes:
     - name: node-1
@@ -13,6 +15,9 @@ hedera:
       latency: 10ms
       bandwidth: 1 Mbps
       uploaderSidecars: true
+      sidecars:
+        otel: true
+        backupUploader: true
     - name: node-2
       address: 0.0.2
       requests:
@@ -24,6 +29,9 @@ hedera:
       latency: 10ms
       bandwidth: 2 Mbps
       uploaderSidecars: true
+      sidecars:
+        otel: true
+        backupUploader: true
     - name: node-3
       address: 0.0.3
       requests:
@@ -35,6 +43,9 @@ hedera:
       latency: 10ms
       bandwidth: 3 Mbps
       uploaderSidecars: true
+      sidecars:
+        otel: true
+        backupUploader: true
 
 infrastructure:
   docker:
@@ -45,8 +56,7 @@ infrastructure:
       haproxy: haproxy:lts-alpine3.18
       jsonrpcrelay: jsonrpcrelay
       mirroruploader: gcr.io/hedera-registry/uploader-mirror:1.3.0
-      streamuploader: ubuntu
-      backupuploader: ubuntu
+      backupUploader: gcr.io/hedera-registry/hedera-backups:0.6.0
 
 mirror:
   # TODO: Use accurate folder names
@@ -68,7 +78,6 @@ mirror:
     watchDir: /opt/hgcapp/events
     bucketPath: /events
     bucketName: "dev"
-  user: 2000
   debug: true
   reaper:
     enable: true
@@ -92,7 +101,6 @@ mirror:
 # sidecar configurations
 sidecars:
   otel:
-    enabled: true
     image:
       repository: "otel/opentelemetry-collector-contrib"
       tag: "0.72.0"

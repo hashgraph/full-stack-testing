@@ -21,7 +21,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if $.Values.sidecars.otel.enabled }}
+        {{- if $node.sidecars.otel }}
         - name: otel-collector-config
           configMap:
             name: otel-collector-config
@@ -29,9 +29,10 @@ spec:
       initContainers:
         - name: init-container
           image: {{ $.Values.infrastructure.docker.images.root }}
-          command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
+          command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
           securityContext:
-            runAsUser: {{ $.Values.mirror.user }}
+            runAsUser: {{ $.Values.hedera.user }}
+            runAsGroup: {{ $.Values.hedera.group }}
           volumeMounts:
             - name: hgcapp-storage
               mountPath: /opt/hgcapp/
@@ -57,7 +58,8 @@ spec:
       - name: account-balances-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.mirror.user }}
+          runAsUser: {{ $.Values.hedera.user }}
+          runAsGroup: {{ $.Values.hedera.group }}
         command:
           - /usr/bin/env
           - python3.7
@@ -78,7 +80,8 @@ spec:
       - name: event-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.mirror.user }}
+          runAsUser: {{ $.Values.hedera.user }}
+          runAsGroup: {{ $.Values.hedera.group }}
         command:
           - /usr/bin/env
           - python3.7
@@ -99,7 +102,8 @@ spec:
       - name: record-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.mirror.user }}
+          runAsUser: {{ $.Values.hedera.user }}
+          runAsGroup: {{ $.Values.hedera.group }}
         command:
           - /usr/bin/env
           - python3.7
@@ -122,7 +126,8 @@ spec:
       - name: record-sidecar-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.mirror.user }}
+          runAsUser: {{ $.Values.hedera.user }}
+          runAsGroup: {{ $.Values.hedera.group }}
         command:
           - /usr/bin/env
           - python3.7
@@ -140,10 +145,27 @@ spec:
               name: uploader-secrets
   {{ end }}
 
-  {{ if $.Values.sidecars.otel.enabled }}
-
+  {{ if $node.sidecars.otel }}
       # OTel collector side car
       {{- include "sidecars.otel-collector" $ | nindent 6 }}
+  {{ end }}
+
+  {{ if $node.sidecars.backupUploader }}
+        # Backup Uploader
+      - name: backup-uploader
+        image: {{ $.Values.infrastructure.docker.images.backupUploader }}
+        securityContext:
+          runAsUser: {{ $.Values.hedera.user }}
+          runAsGroup: {{ $.Values.hedera.user }}
+        volumeMounts:
+          - name: hgcapp-storage
+            mountPath: /opt/hgcapp/
+            readOnly: true
+        envFrom:
+          - configMapRef:
+              name: backup-config
+          - secretRef:
+              name: backup-secrets
   {{ end }}
 
 {{ end }}
