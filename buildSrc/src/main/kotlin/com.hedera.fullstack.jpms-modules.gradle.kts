@@ -39,6 +39,8 @@ extraJavaModuleInfo {
     knownModule("com.fasterxml.jackson.core:jackson-core", "com.fasterxml.jackson.core")
     knownModule("com.fasterxml.jackson.core:jackson-databind", "com.fasterxml.jackson.databind")
 
+    knownModule("com.jcovalent.junit:jcovalent-junit-logging","com.jcovalent.junit.logging")
+
     knownModule("net.bytebuddy:byte-buddy", "net.bytebuddy")
     knownModule("net.bytebuddy:byte-buddy-agent", "net.bytebuddy.agent")
     knownModule("org.objenesis:objenesis", "org.objenesis")
