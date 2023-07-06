@@ -136,7 +136,7 @@ spec:
             mountPath: /opt/hgcapp/
         envFrom:
           - configMapRef:
-              name: record-stream-sidecar-config
+              name: record-stream-uploader-config
           - secretRef:
               name: uploader-secrets
   {{ end }}
