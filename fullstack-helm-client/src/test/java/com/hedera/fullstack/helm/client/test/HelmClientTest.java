@@ -28,6 +28,7 @@ import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
+import com.jcovalent.junit.logging.LogEntry;
 import com.jcovalent.junit.logging.LoggingOutput;
 import java.util.List;
 import java.util.stream.Stream;
@@ -145,19 +146,23 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        assertThat(loggingOutput.allEntries()).haveAtLeastOne(new Condition<>(
-                entry -> entry.level() == Level.DEBUG && entry.message().contains("Install complete"),
-                "message contains 'Install complete'"
-        ));
-        assertThat(loggingOutput.allEntries()).haveAtLeastOne(new Condition<>(
-                entry -> entry.level() == Level.DEBUG && entry.message().contains("ResponseAsList exiting with exitCode: 0"),
-                "message contains 'ResponseAsList exiting with exitCode: 0'"
-        ));
-        assertThat(loggingOutput.allEntries()).haveAtLeastOne(new Condition<>(
-                entry -> entry.level() == Level.DEBUG && entry.message().contains("Call exiting with exitCode: 0"),
-                "message contains 'Call exiting with exitCode: 0'"
-        ));
+        assertThatLogEntriesHasMessages(loggingOutput.allEntries(),
+                List.of("Call exiting with exitCode: 0",
+                        "ResponseAsList exiting with exitCode: 0",
+                        "Install complete")
+        );
         loggingOutput.writeLogStream(System.out);
+    }
+
+    // TODO move into util class?
+    private void assertThatLogEntriesHasMessages(List<LogEntry> logEntries, List<String> messages) {
+        assertThat(logEntries).isNotNull();
+        for (String message : messages) {
+            assertThat(logEntries).haveAtLeastOne(new Condition<>(
+                    entry -> entry.message().contains(message),
+                    "message contains '" + message + "'"
+            ));
+        }
     }
 
     private static void testChartInstallWithCleanup(InstallChartOptions options) {
