@@ -20,19 +20,25 @@ import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptio
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Named.named;
 
+import com.hedera.fullstack.base.api.util.StreamUtils;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.jcovalent.junit.logging.JCovalentLoggingSupport;
+import com.jcovalent.junit.logging.LoggingOutput;
 import java.util.List;
 import java.util.stream.Stream;
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
 
 @DisplayName("Helm Client Tests")
+@JCovalentLoggingSupport
 class HelmClientTest {
 
     /**
@@ -124,7 +130,7 @@ class HelmClientTest {
     @Test
     @DisplayName("Install Chart Executes Successfully")
     @Timeout(INSTALL_TIMEOUT)
-    void testInstallChartCommand() {
+    void testInstallChartCommand(final LoggingOutput loggingOutput) {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         try {
@@ -139,6 +145,19 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
+        assertThat(loggingOutput.allEntries()).haveAtLeastOne(new Condition<>(
+                entry -> entry.level() == Level.DEBUG && entry.message().contains("Install complete"),
+                "message contains 'Install complete'"
+        ));
+        assertThat(loggingOutput.allEntries()).haveAtLeastOne(new Condition<>(
+                entry -> entry.level() == Level.DEBUG && entry.message().contains("ResponseAsList exiting with exitCode: 0"),
+                "message contains 'ResponseAsList exiting with exitCode: 0'"
+        ));
+        assertThat(loggingOutput.allEntries()).haveAtLeastOne(new Condition<>(
+                entry -> entry.level() == Level.DEBUG && entry.message().contains("Call exiting with exitCode: 0"),
+                "message contains 'Call exiting with exitCode: 0'"
+        ));
+        loggingOutput.writeLogStream(System.out);
     }
 
     private static void testChartInstallWithCleanup(InstallChartOptions options) {
