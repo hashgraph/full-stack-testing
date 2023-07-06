@@ -20,7 +20,6 @@ import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptio
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Named.named;
 
-import com.hedera.fullstack.base.api.util.StreamUtils;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
@@ -36,7 +35,6 @@ import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.event.Level;
 
 @DisplayName("Helm Client Tests")
 @JCovalentLoggingSupport
@@ -56,6 +54,14 @@ class HelmClientTest {
 
     private static HelmClient defaultClient;
     private static final int INSTALL_TIMEOUT = 10;
+
+    private static final List<String> expectedMessages = List.of(
+            "Call exiting with exitCode: 0",
+            "ResponseAsList exiting with exitCode: 0",
+            "Install complete",
+            "ResponseAs exiting with exitCode: 0");
+
+    private record ChartInstallOptionsTestParameters(InstallChartOptions options, List<String> expectedMessages) {}
 
     @BeforeAll
     static void beforeAll() {
@@ -146,26 +152,22 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        assertThatLogEntriesHasMessages(loggingOutput.allEntries(),
-                List.of("Call exiting with exitCode: 0",
-                        "ResponseAsList exiting with exitCode: 0",
-                        "Install complete")
-        );
+        assertThatLogEntriesHasMessages(loggingOutput.allEntries(), expectedMessages);
         loggingOutput.writeLogStream(System.out);
     }
 
     // TODO move into util class?
-    private void assertThatLogEntriesHasMessages(List<LogEntry> logEntries, List<String> messages) {
+    private static void assertThatLogEntriesHasMessages(List<LogEntry> logEntries, List<String> messages) {
         assertThat(logEntries).isNotNull();
         for (String message : messages) {
-            assertThat(logEntries).haveAtLeastOne(new Condition<>(
-                    entry -> entry.message().contains(message),
-                    "message contains '" + message + "'"
-            ));
+            assertThat(logEntries)
+                    .haveAtLeastOne(new Condition<>(
+                            entry -> entry.message().contains(message), "message contains '" + message + "'"));
         }
     }
 
-    private static void testChartInstallWithCleanup(InstallChartOptions options) {
+    private static void testChartInstallWithCleanup(
+            InstallChartOptions options, List<String> expectedMessages, final LoggingOutput loggingOutput) {
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
@@ -178,116 +180,144 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
+        assertThatLogEntriesHasMessages(loggingOutput.allEntries(), expectedMessages);
+        loggingOutput.writeLogStream(System.out);
     }
 
     @ParameterizedTest
     @Timeout(INSTALL_TIMEOUT)
     @MethodSource
     @DisplayName("Parameterized Chart Installation with Options Executes Successfully")
-    void testChartInstallOptions(InstallChartOptions options) {
+    void testChartInstallOptions(ChartInstallOptionsTestParameters parameters, final LoggingOutput loggingOutput) {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-        testChartInstallWithCleanup(options);
+        testChartInstallWithCleanup(parameters.options(), parameters.expectedMessages(), loggingOutput);
     }
 
-    static Stream<Named<InstallChartOptions>> testChartInstallOptions() {
+    static Stream<Named<ChartInstallOptionsTestParameters>> testChartInstallOptions() {
         return Stream.of(
                 named(
                         "Atomic Chart Installation Executes Successfully",
-                        InstallChartOptions.builder()
-                                .atomic(true)
-                                .createNamespace(true)
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .atomic(true)
+                                        .createNamespace(true)
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Combination of Options Executes Successfully",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .dependencyUpdate(true)
-                                .description("Test install chart with options")
-                                .enableDNS(true)
-                                .force(true)
-                                .skipCrds(true)
-                                .timeout("3m0s")
-                                .username("username")
-                                .password("password")
-                                .version("1.18.0")
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .dependencyUpdate(true)
+                                        .description("Test install chart with options")
+                                        .enableDNS(true)
+                                        .force(true)
+                                        .skipCrds(true)
+                                        .timeout("3m0s")
+                                        .username("username")
+                                        .password("password")
+                                        .version("1.18.0")
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Dependency Updates",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .dependencyUpdate(true)
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .dependencyUpdate(true)
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Description",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .description("Test install chart with options")
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .description("Test install chart with options")
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with DNS Enabled",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .enableDNS(true)
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .enableDNS(true)
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Forced Chart Installation",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .force(true)
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .force(true)
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Password",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .password("password")
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .password("password")
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart From Repository",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .repo(HAPROXYTECH_REPOSITORY.url())
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .repo(HAPROXYTECH_REPOSITORY.url())
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart Skipping CRDs",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .skipCrds(true)
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .skipCrds(true)
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Timeout",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .timeout("60s")
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .timeout("60s")
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Username",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .username("username")
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .username("username")
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Specific Version",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .version("1.18.0")
-                                .build()),
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .version("1.18.0")
+                                        .build(),
+                                expectedMessages)),
                 named(
                         "Install Chart with Wait",
-                        InstallChartOptions.builder()
-                                .createNamespace(true)
-                                .waitFor(true)
-                                .build()));
+                        new ChartInstallOptionsTestParameters(
+                                InstallChartOptions.builder()
+                                        .createNamespace(true)
+                                        .waitFor(true)
+                                        .build(),
+                                expectedMessages)));
     }
 
     @Test
     @DisplayName("Install Chart with Provenance Validation")
     @Disabled("Provenance validation is not supported in our unit tests due to lack of signed charts.")
-    void testInstallChartWithProvenanceValidation() {
+    void testInstallChartWithProvenanceValidation(final LoggingOutput loggingOutput) {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options =
                 InstallChartOptions.builder().createNamespace(true).verify(true).build();
 
-        testChartInstallWithCleanup(options);
+        testChartInstallWithCleanup(options, expectedMessages, loggingOutput);
     }
 }
