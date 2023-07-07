@@ -19,15 +19,20 @@ package com.hedera.fullstack.helm.client.test.software;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
+import com.hedera.fullstack.base.api.logging.LogEntryBuilder;
 import com.hedera.fullstack.base.api.resource.ResourceLoader;
+import com.hedera.fullstack.base.api.util.LoggingUtils;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.resource.HelmSoftwareLoader;
+import com.jcovalent.junit.logging.JCovalentLoggingSupport;
+import com.jcovalent.junit.logging.LoggingOutput;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,9 +40,11 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.slf4j.event.Level;
 
 @DisplayName("Helm Software Loader Test")
 @Execution(ExecutionMode.CONCURRENT)
+@JCovalentLoggingSupport
 class HelmSoftwareLoaderTest {
     @Test
     @DisplayName("Linux: Install Supported Helm Version")
@@ -53,8 +60,14 @@ class HelmSoftwareLoaderTest {
     @EnabledOnOs(
             value = {OS.MAC},
             architectures = {"x86_64", "amd64", "arm64", "aarch64"})
-    void testInstallSupportedVersion_Darwin() {
+    void testInstallSupportedVersion_Darwin(LoggingOutput loggingOutput) {
         installHelmAndVerify(OS.MAC);
+        LoggingUtils.assertThatLogEntriesHaveMessages(
+                loggingOutput.allEntries(),
+                List.of(LogEntryBuilder.builder()
+                        .level(Level.DEBUG)
+                        .message("Loading Helm executable from JAR file")
+                        .build()));
     }
 
     @Test
