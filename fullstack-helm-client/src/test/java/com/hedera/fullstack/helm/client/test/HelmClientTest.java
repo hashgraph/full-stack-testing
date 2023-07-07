@@ -20,6 +20,8 @@ import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptio
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Named.named;
 
+import com.hedera.fullstack.base.api.logging.LogEntryBuilder;
+import com.hedera.fullstack.base.api.util.LoggingUtils;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
@@ -31,10 +33,10 @@ import com.jcovalent.junit.logging.LogEntry;
 import com.jcovalent.junit.logging.LoggingOutput;
 import java.util.List;
 import java.util.stream.Stream;
-import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.event.Level;
 
 @DisplayName("Helm Client Tests")
 @JCovalentLoggingSupport
@@ -55,13 +57,25 @@ class HelmClientTest {
     private static HelmClient defaultClient;
     private static final int INSTALL_TIMEOUT = 10;
 
-    private static final List<String> expectedMessages = List.of(
-            "Call exiting with exitCode: 0",
-            "ResponseAsList exiting with exitCode: 0",
-            "Install complete",
-            "ResponseAs exiting with exitCode: 0");
+    private static final List<LogEntry> EXPECTED_LOG_ENTRIES = List.of(
+            LogEntryBuilder.builder()
+                    .level(Level.DEBUG)
+                    .message("Call exiting with exitCode: 0")
+                    .build(),
+            LogEntryBuilder.builder()
+                    .level(Level.DEBUG)
+                    .message("ResponseAsList exiting with exitCode: 0")
+                    .build(),
+            LogEntryBuilder.builder()
+                    .level(Level.DEBUG)
+                    .message("Install complete")
+                    .build(),
+            LogEntryBuilder.builder()
+                    .level(Level.DEBUG)
+                    .message("ResponseAs exiting with exitCode: 0")
+                    .build());
 
-    private record ChartInstallOptionsTestParameters(InstallChartOptions options, List<String> expectedMessages) {}
+    private record ChartInstallOptionsTestParameters(InstallChartOptions options, List<LogEntry> expectedLogEntries) {}
 
     @BeforeAll
     static void beforeAll() {
@@ -117,7 +131,7 @@ class HelmClientTest {
 
     @Test
     @DisplayName("Repository Remove Executes With Error")
-    void testRepositoryRemoveCommand_WithError() {
+    void testRepositoryRemoveCommand_WithError(final LoggingOutput loggingOutput) {
         removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
 
         int existingRepoCount = defaultClient.listRepositories().size();
@@ -132,6 +146,20 @@ class HelmClientTest {
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
                 .withStackTraceContaining(expectedMessage);
+        LoggingUtils.assertThatLogEntriesHaveMessages(
+                loggingOutput.allEntries(),
+                List.of(
+                        LogEntryBuilder.builder()
+                                .level(Level.WARN)
+                                .message("Call exiting with exitCode: 1")
+                                .build(),
+                        LogEntryBuilder.builder()
+                                .level(Level.WARN)
+                                .message(expectedMessage)
+                                .build()));
+
+        // TODO remove write to stdout before merge
+        loggingOutput.writeLogStream(System.out);
     }
 
     @Test
@@ -152,23 +180,13 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        assertThatLogEntriesHasMessages(loggingOutput.allEntries(), expectedMessages);
+        LoggingUtils.assertThatLogEntriesHaveMessages(loggingOutput.allEntries(), EXPECTED_LOG_ENTRIES);
         // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
 
-    // TODO move into util class?
-    private static void assertThatLogEntriesHasMessages(List<LogEntry> logEntries, List<String> messages) {
-        assertThat(logEntries).isNotNull();
-        for (String message : messages) {
-            assertThat(logEntries)
-                    .haveAtLeastOne(new Condition<>(
-                            entry -> entry.message().contains(message), "message contains '" + message + "'"));
-        }
-    }
-
     private static void testChartInstallWithCleanup(
-            InstallChartOptions options, List<String> expectedMessages, final LoggingOutput loggingOutput) {
+            InstallChartOptions options, List<LogEntry> expectedLogEntries, final LoggingOutput loggingOutput) {
         try {
             assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
@@ -181,7 +199,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        assertThatLogEntriesHasMessages(loggingOutput.allEntries(), expectedMessages);
+        LoggingUtils.assertThatLogEntriesHaveMessages(loggingOutput.allEntries(), expectedLogEntries);
         // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
@@ -192,7 +210,7 @@ class HelmClientTest {
     @DisplayName("Parameterized Chart Installation with Options Executes Successfully")
     void testChartInstallOptions(ChartInstallOptionsTestParameters parameters, final LoggingOutput loggingOutput) {
         removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
-        testChartInstallWithCleanup(parameters.options(), parameters.expectedMessages(), loggingOutput);
+        testChartInstallWithCleanup(parameters.options(), parameters.expectedLogEntries(), loggingOutput);
     }
 
     static Stream<Named<ChartInstallOptionsTestParameters>> testChartInstallOptions() {
@@ -204,7 +222,7 @@ class HelmClientTest {
                                         .atomic(true)
                                         .createNamespace(true)
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Combination of Options Executes Successfully",
                         new ChartInstallOptionsTestParameters(
@@ -220,7 +238,7 @@ class HelmClientTest {
                                         .password("password")
                                         .version("1.18.0")
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Dependency Updates",
                         new ChartInstallOptionsTestParameters(
@@ -228,7 +246,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .dependencyUpdate(true)
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Description",
                         new ChartInstallOptionsTestParameters(
@@ -236,7 +254,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .description("Test install chart with options")
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with DNS Enabled",
                         new ChartInstallOptionsTestParameters(
@@ -244,7 +262,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .enableDNS(true)
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Forced Chart Installation",
                         new ChartInstallOptionsTestParameters(
@@ -252,7 +270,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .force(true)
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Password",
                         new ChartInstallOptionsTestParameters(
@@ -260,7 +278,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .password("password")
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart From Repository",
                         new ChartInstallOptionsTestParameters(
@@ -268,7 +286,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .repo(HAPROXYTECH_REPOSITORY.url())
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart Skipping CRDs",
                         new ChartInstallOptionsTestParameters(
@@ -276,7 +294,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .skipCrds(true)
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Timeout",
                         new ChartInstallOptionsTestParameters(
@@ -284,7 +302,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .timeout("60s")
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Username",
                         new ChartInstallOptionsTestParameters(
@@ -292,7 +310,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .username("username")
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Specific Version",
                         new ChartInstallOptionsTestParameters(
@@ -300,7 +318,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .version("1.18.0")
                                         .build(),
-                                expectedMessages)),
+                                EXPECTED_LOG_ENTRIES)),
                 named(
                         "Install Chart with Wait",
                         new ChartInstallOptionsTestParameters(
@@ -308,7 +326,7 @@ class HelmClientTest {
                                         .createNamespace(true)
                                         .waitFor(true)
                                         .build(),
-                                expectedMessages)));
+                                EXPECTED_LOG_ENTRIES)));
     }
 
     @Test
@@ -320,6 +338,6 @@ class HelmClientTest {
         final InstallChartOptions options =
                 InstallChartOptions.builder().createNamespace(true).verify(true).build();
 
-        testChartInstallWithCleanup(options, expectedMessages, loggingOutput);
+        testChartInstallWithCleanup(options, EXPECTED_LOG_ENTRIES, loggingOutput);
     }
 }
