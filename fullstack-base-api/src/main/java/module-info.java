@@ -1,6 +1,7 @@
 module com.hedera.fullstack.base.api {
     requires com.jcovalent.junit.logging;
     requires org.slf4j;
+    requires org.assertj.core;
 
     exports com.hedera.fullstack.base.api.functional;
     exports com.hedera.fullstack.base.api.io;

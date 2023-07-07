@@ -16,4 +16,31 @@
 
 package com.hedera.fullstack.base.api.util;
 
-public class LoggingUtils {}
+import static org.assertj.core.api.Assertions.*;
+
+import com.jcovalent.junit.logging.LogEntry;
+import java.util.List;
+import org.assertj.core.api.Condition;
+
+public class LoggingUtils {
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private LoggingUtils() {}
+
+    /**
+     * Asserts that the given log entries contain the expected log entries only matching the level and message.
+     * @param logEntries the log entries to check
+     * @param expectedLogEntries the expected log entries
+     */
+    public static void assertThatLogEntriesHaveMessages(List<LogEntry> logEntries, List<LogEntry> expectedLogEntries) {
+        assertThat(logEntries).isNotNull();
+        for (LogEntry logEntry : expectedLogEntries) {
+            assertThat(logEntries)
+                    .haveAtLeastOne(new Condition<>(
+                            entry -> entry.level() == logEntry.level()
+                                    && entry.message().contains(logEntry.message()),
+                            "message contains '" + logEntry.message() + "'"));
+        }
+    }
+}
