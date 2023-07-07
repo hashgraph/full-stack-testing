@@ -17,11 +17,10 @@
 package com.hedera.fullstack.helm.client.test;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
+import static com.jcovalent.junit.logging.assertj.LoggingOutputAssert.assertThatLogEntriesHaveMessages;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Named.named;
 
-import com.hedera.fullstack.base.api.logging.LogEntryBuilder;
-import com.hedera.fullstack.base.api.util.LoggingUtils;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
@@ -30,6 +29,7 @@ import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntry;
+import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
 import java.util.List;
 import java.util.stream.Stream;
@@ -146,8 +146,8 @@ class HelmClientTest {
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
                 .withStackTraceContaining(expectedMessage);
-        LoggingUtils.assertThatLogEntriesHaveMessages(
-                loggingOutput.allEntries(),
+        assertThatLogEntriesHaveMessages(
+                loggingOutput,
                 List.of(
                         LogEntryBuilder.builder()
                                 .level(Level.WARN)
@@ -180,7 +180,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        LoggingUtils.assertThatLogEntriesHaveMessages(loggingOutput.allEntries(), EXPECTED_LOG_ENTRIES);
+        assertThatLogEntriesHaveMessages(loggingOutput, EXPECTED_LOG_ENTRIES);
         // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
@@ -199,7 +199,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        LoggingUtils.assertThatLogEntriesHaveMessages(loggingOutput.allEntries(), expectedLogEntries);
+        assertThatLogEntriesHaveMessages(loggingOutput, expectedLogEntries);
         // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
