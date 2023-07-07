@@ -153,6 +153,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
         assertThatLogEntriesHasMessages(loggingOutput.allEntries(), expectedMessages);
+        // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
 
@@ -181,6 +182,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
         assertThatLogEntriesHasMessages(loggingOutput.allEntries(), expectedMessages);
+        // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
 
