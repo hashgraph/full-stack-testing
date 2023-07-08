@@ -50,14 +50,14 @@ function test_systemctl() {
 
     echo "'${cmd}' => ${status} (expected: 0)"
 
-    if [ "${status}" != 0 ]; then
+    if [ "${status}" != "${EX_OK}" ]; then
       systemctl_all_nodes=1
       break
     fi
   done
 
   # assert 0
-  [ "${systemctl_all_nodes}" != 0 ] || return "${EX_ERR}"
+  [ "${systemctl_all_nodes}" = "${EX_OK}" ] || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -68,6 +68,12 @@ function run_tests() {
 
   test_systemctl
   local test_systemctl_status="$?"
+
+  echo ""
+  echo "Test status"
+  echo "-------------------------------------------------------------"
+  echo "test_node_total_status: ${test_node_total_status}"
+  echo "test_systemctl_status: ${test_systemctl_status}"
 
   # assert that all tests returned 0(OK)
   [ "${test_node_total_status}" = "${EX_OK}" ] && \
