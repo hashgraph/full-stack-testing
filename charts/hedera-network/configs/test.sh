@@ -57,7 +57,7 @@ function test_systemctl() {
   done
 
   # assert 0
-  [ ${systemctl_all_nodes} != 0 ] || return "${EX_ERR}"
+  [ "${systemctl_all_nodes}" != 0 ] || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -70,8 +70,8 @@ function run_tests() {
   local test_systemctl_status="$?"
 
   # assert that all tests returned 0(OK)
-  [ ${test_node_total_status} = ${EX_OK} ] && \
-  [ ${test_systemctl_status} = ${EX_OK} ] || return "${EX_ERR}"
+  [ "${test_node_total_status}" = "${EX_OK}" ] && \
+  [ "${test_systemctl_status}" = "${EX_OK}" ] || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
