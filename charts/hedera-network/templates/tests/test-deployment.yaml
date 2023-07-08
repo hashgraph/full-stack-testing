@@ -10,7 +10,7 @@ spec:
     - name: test-cfg
       configMap:
         name: tester-cfg
-        defaultMode: 0777
+        defaultMode: 0777 # we need the test files to be executable
   containers:
     - name: tester
       image: bitnami/kubectl:latest
