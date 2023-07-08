@@ -357,7 +357,7 @@ public final class HelmExecution {
 
         if (exitCode() != 0) {
             LOGGER.atWarn()
-                    .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                    .setMessage("Call failed with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                     .addArgument(this::exitCode)
                     .addArgument(standardOutput)
                     .addArgument(standardError)

@@ -73,6 +73,10 @@ class HelmClientTest {
             LogEntryBuilder.builder()
                     .level(Level.DEBUG)
                     .message("ResponseAs exiting with exitCode: 0")
+                    .build(),
+            LogEntryBuilder.builder()
+            .level(Level.DEBUG)
+                    .message("Helm command: repo list")
                     .build());
 
     private record ChartInstallOptionsTestParameters(InstallChartOptions options, List<LogEntry> expectedLogEntries) {}
@@ -151,7 +155,7 @@ class HelmClientTest {
                 List.of(
                         LogEntryBuilder.builder()
                                 .level(Level.WARN)
-                                .message("Call exiting with exitCode: 1")
+                                .message("Call failed with exitCode: 1")
                                 .build(),
                         LogEntryBuilder.builder()
                                 .level(Level.WARN)
