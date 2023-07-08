@@ -32,7 +32,7 @@ function test_node_total() {
 
 function test_systemctl() {
   # test that systemctl status is ready in node containers
-  local systemctl_all_nodes=0
+  local systemctl_all_nodes="${EX_ERR}" # by default set to error status
 
   echo "-------------------------------------------------------------"
   echo "Checking systemctl is running in all network node containers"
@@ -51,9 +51,11 @@ function test_systemctl() {
     echo "'${cmd}' => ${status} (expected: 0)"
 
     if [ "${status}" != "${EX_OK}" ]; then
-      systemctl_all_nodes=1
-      break
+      systemctl_all_nodes="${EX_ERR}"
+      break # break at first error
     fi
+
+    systemctl_all_nodes="${EX_OK}"
   done
 
   # assert 0
@@ -63,21 +65,25 @@ function test_systemctl() {
 }
 
 function run_tests() {
+  local test_node_total_status
+  local test_systemctl_status
+
   test_node_total
-  local test_node_total_status="$?"
+  local status="$?"
+  [ "${status}" = "${EX_OK}" ] && test_node_total_status="PASS" || test_node_total_status="FAIL"
 
   test_systemctl
-  local test_systemctl_status="$?"
+  local status="$?"
+  [ "${status}" = "${EX_OK}" ] && test_systemctl_status="PASS" || test_systemctl_status="FAIL"
 
   echo ""
-  echo "Test status"
+  echo "Test results"
   echo "-------------------------------------------------------------"
-  echo "test_node_total_status: ${test_node_total_status}"
-  echo "test_systemctl_status: ${test_systemctl_status}"
+  echo "test_node_total: ${test_node_total_status}"
+  echo "test_systemctl: ${test_systemctl_status}"
 
-  # assert that all tests returned 0(OK)
-  [ "${test_node_total_status}" = "${EX_OK}" ] && \
-  [ "${test_systemctl_status}" = "${EX_OK}" ] || return "${EX_ERR}"
+  [ "${test_node_total_status}" = "PASS" ] && \
+  [ "${test_systemctl_status}" = "PASS" ] || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
