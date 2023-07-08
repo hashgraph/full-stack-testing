@@ -44,15 +44,21 @@ function test_systemctl() {
   for node in "${nodes[@]}"
   do
     local cmd="kubectl exec ${node} -c root-container -- systemctl status --no-pager"
+
+    kubectl exec "${node}" -c root-container -- systemctl status --no-pager
     local status="$?"
+
     echo "'${cmd}' => ${status} (expected: 0)"
+
     if [ "${status}" != 0 ]; then
       systemctl_all_nodes=1
+      break
     fi
   done
 
   # assert 0
-  [ ${systemctl_all_nodes} = 0 ] | return "${EX_ERR}"
+  [ ${systemctl_all_nodes} != 0 ] | return "${EX_ERR}"
+
   return "${EX_OK}"
 }
 

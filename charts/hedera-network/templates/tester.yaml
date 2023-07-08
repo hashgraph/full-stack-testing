@@ -8,13 +8,18 @@ kind: Role
 metadata:
   name: tester-role
 rules:
-  - apiGroups: [""]
+  - apiGroups: [ "" ]
     resources:
       - pods
+      - pods/log
     verbs:
       - get
       - list
-      - delete
+  - apiGroups: [ "" ]
+    resources:
+      - pods/exec
+    verbs:
+      - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
