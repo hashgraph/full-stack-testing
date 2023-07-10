@@ -307,7 +307,8 @@ public final class HelmExecution {
                     .readAll();
         } catch (final Exception e) {
             LOGGER.atWarn()
-                    .setMessage("ResponseAsList failed to deserialize response into class: {}\n\tresponse: {}")
+                    .setMessage(
+                            "ResponseAsList failed to deserialize the output into a list of the specified class: {}\n\tresponse: {}")
                     .addArgument(responseClass.getName())
                     .addArgument(standardOutput)
                     .setCause(e)
@@ -357,7 +358,7 @@ public final class HelmExecution {
 
         if (exitCode() != 0) {
             LOGGER.atWarn()
-                    .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
+                    .setMessage("Call failed with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
                     .addArgument(this::exitCode)
                     .addArgument(standardOutput)
                     .addArgument(standardError)

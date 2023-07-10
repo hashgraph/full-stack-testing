@@ -35,13 +35,13 @@ dependencies {
     api(platform("org.assertj:assertj-bom:3.24.2"))
     api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
     api(platform("org.mockito:mockito-bom:5.3.1"))
-    api(platform("org.apache.logging.log4j:log4j-bom:2.20.0"))
 }
 
 dependencies.constraints {
     api("org.slf4j:slf4j-api:2.0.7")
     api("org.slf4j:slf4j-nop:2.0.7")
     api("org.slf4j:slf4j-simple:2.0.7")
+    api("com.jcovalent.junit:jcovalent-junit-logging:0.2.0")
 
     for (p in rootProject.childProjects) {
         val isPublished = p.value.findProperty("mavenPublishingEnabled")?.toString()?.toBoolean() ?: false
