@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.assert4j.extensions;
+package com.hedera.fullstack.assertj.extensions;
 
 public class Dummy {}

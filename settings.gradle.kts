@@ -25,7 +25,7 @@ include(":fullstack-alerting-api")
 
 include(":fullstack-alerting-core")
 
-include(":fullstack-assert4j-extensions")
+include(":fullstack-assertj-extensions")
 
 include(":fullstack-bom")
 
