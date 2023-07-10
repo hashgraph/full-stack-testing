@@ -67,9 +67,14 @@ class HelmExecutionTest {
         assertThat(exception.getMessage()).contains("Execution of the Helm command failed with exit code: 1");
         LoggingOutputAssert.assertThatLogEntriesHaveMessages(
                 loggingOutput,
-                List.of(LogEntryBuilder.builder()
-                        .level(Level.WARN)
-                        .message("Call failed with exitCode: 1")
-                        .build()));
+                List.of(
+                        LogEntryBuilder.builder()
+                                .level(Level.WARN)
+                                .message("Call failed with exitCode: 1")
+                                .build(),
+                        LogEntryBuilder.builder()
+                                .level(Level.DEBUG)
+                                .message("Call exiting with exitCode: 1")
+                                .build()));
     }
 }
