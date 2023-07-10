@@ -1,56 +1,72 @@
-{{ range $nodeName, $nodeConfig := ($.Values.hedera.nodes) }}
+{{ range $nodeConfig := ($.Values.hedera.nodes) }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: haproxy-{{ $nodeName }}
+  name: haproxy-{{ $nodeConfig.name }}
 spec:
   replicas: {{ $.Values.haproxyReplicaCount }}
   selector:
     matchLabels:
-      app: haproxy-{{ $nodeName }}
+      app: haproxy-{{ $nodeConfig.name }}
   template:
     metadata:
       labels:
-        app: haproxy-{{ $nodeName }}
+        app: haproxy-{{ $nodeConfig.name }}
     spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: haproxy-config-{{ $nodeConfig.name }}
       containers:
       - name: haproxy
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.haproxy }}
         imagePullPolicy: Always
+        volumeMounts:
+          - name: config-volume
+            # https://hub.docker.com/_/haproxy/
+            mountPath: /usr/local/etc/haproxy/haproxy.cfg
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: envoy-proxy-{{ $nodeName }}
+  name: envoy-proxy-{{ $nodeConfig.name }}
 spec:
   replicas: {{ $.Values.envoyProxyReplicaCount }}
   selector:
     matchLabels:
-      app: envoy-proxy-{{ $nodeName }}
+      app: envoy-proxy-{{ $nodeConfig.name }}
   template:
     metadata:
       labels:
-        app: envoy-proxy-{{ $nodeName }}
+        app: envoy-proxy-{{ $nodeConfig.name }}
     spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: envoy-proxy-config-{{ $nodeConfig.name }}
       containers:
       - name: envoy-proxy
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.envoyproxy }}
         imagePullPolicy: Always
+        volumeMounts:
+          - name: config-volume
+            # https://www.envoyproxy.io/docs/envoy/v1.26.2/start/docker
+            mountPath: /etc/envoy/envoy.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: json-rpc-relay-{{ $nodeName }}
+  name: json-rpc-relay-{{ $nodeConfig.name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: json-rpc-relay-{{ $nodeName }}
+      app: json-rpc-relay-{{ $nodeConfig.name }}
   template:
     metadata:
       labels:
-        app: json-rpc-relay-{{ $nodeName }}
+        app: json-rpc-relay-{{ $nodeConfig.name }}
     spec:
       containers:
       - name: json-rpc-relay
