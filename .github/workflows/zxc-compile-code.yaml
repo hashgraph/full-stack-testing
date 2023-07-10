@@ -68,6 +68,11 @@ on:
         type: string
         required: false
         default: "Compiles"
+      enable-helm-test:
+        description: "Helm Chart Test Enabled"
+        type: boolean
+        required: false
+        default: false
     secrets:
       sonar-token:
         description: "The SonarCloud access token used by the SonarQube agent to report an analysis."
@@ -120,7 +125,7 @@ jobs:
 
       - name: Setup Kind
         uses: helm/kind-action@fa81e57adff234b2908110485695db0f181f3c67 # pin@v1
-        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-helm-test ) && !cancelled() }}
         with:
           verbosity: 3
           wait: 120s
@@ -328,3 +333,8 @@ jobs:
           path: |
             snyk-*.html
             snyk-*.json
+
+      - name: Helm Chart Test
+        id: helm-chart-test
+        if: ${{ inputs.enable-helm-test && !cancelled() && !failure() }}
+        run: helm install fst ./charts/hedera-network;sleep 30;helm test fst

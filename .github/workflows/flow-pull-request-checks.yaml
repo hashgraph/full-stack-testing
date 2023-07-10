@@ -32,38 +32,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Code
-    uses: ./.github/workflows/zxc-compile-code.yaml
-    with:
-      enable-javadoc: true
+#  build:
+#    name: Code
+#    uses: ./.github/workflows/zxc-compile-code.yaml
+#    with:
+#      enable-javadoc: true
+#
+#  spotless:
+#    name: Spotless
+#    uses: ./.github/workflows/zxc-compile-code.yaml
+#    with:
+#      custom-job-label: "Check"
+#      enable-javadoc: false
+#      enable-spotless-check: true
+#
+#  unit-tests:
+#    name: Unit Tests
+#    uses: ./.github/workflows/zxc-compile-code.yaml
+#    with:
+#      custom-job-label: Standard
+#      enable-javadoc: false
+#      enable-unit-tests: true
+#      enable-sonar-analysis: true
+#    secrets:
+#      sonar-token: ${{ secrets.SONAR_TOKEN }}
+#      codecov-token: ${{ secrets.CODECOV_TOKEN }}
+#
+#  snyk-scan:
+#    name: Snyk Scan
+#    uses: ./.github/workflows/zxc-compile-code.yaml
+#    with:
+#      custom-job-label: Standard
+#      enable-javadoc: false
+#      enable-snyk-scan: true
+#    secrets:
+#      snyk-token: ${{ secrets.SNYK_TOKEN }}
 
-  spotless:
-    name: Spotless
-    uses: ./.github/workflows/zxc-compile-code.yaml
-    with:
-      custom-job-label: "Check"
-      enable-javadoc: false
-      enable-spotless-check: true
-
-  unit-tests:
-    name: Unit Tests
+  helm-chart-test:
+    name: Helm Chart Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
       enable-javadoc: false
-      enable-unit-tests: true
-      enable-sonar-analysis: true
-    secrets:
-      sonar-token: ${{ secrets.SONAR_TOKEN }}
-      codecov-token: ${{ secrets.CODECOV_TOKEN }}
-
-  snyk-scan:
-    name: Snyk Scan
-    uses: ./.github/workflows/zxc-compile-code.yaml
-    with:
-      custom-job-label: Standard
-      enable-javadoc: false
-      enable-snyk-scan: true
-    secrets:
-      snyk-token: ${{ secrets.SNYK_TOKEN }}
+      enable-helm-test: true
