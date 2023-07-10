@@ -16,7 +16,6 @@
 
 package com.hedera.fullstack.helm.client.test.software;
 
-import static com.jcovalent.junit.logging.assertj.LoggingOutputAssert.assertThatLogEntriesHaveMessages;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
@@ -26,6 +25,7 @@ import com.hedera.fullstack.helm.client.resource.HelmSoftwareLoader;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
+import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,9 +62,8 @@ class HelmSoftwareLoaderTest {
             architectures = {"x86_64", "amd64", "arm64", "aarch64"})
     void testInstallSupportedVersion_Darwin(LoggingOutput loggingOutput) {
         installHelmAndVerify(OS.MAC);
-        assertThatLogEntriesHaveMessages(
-                loggingOutput,
-                List.of(LogEntryBuilder.builder()
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(LogEntryBuilder.builder()
                         .level(Level.DEBUG)
                         .message("Loading Helm executable from JAR file")
                         .build()));

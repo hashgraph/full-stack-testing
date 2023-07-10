@@ -307,7 +307,8 @@ public final class HelmExecution {
                     .readAll();
         } catch (final Exception e) {
             LOGGER.atWarn()
-                    .setMessage("ResponseAsList failed to deserialize response into class: {}\n\tresponse: {}")
+                    .setMessage(
+                            "ResponseAsList failed to deserialize the output into a list of the specified class: {}\n\tresponse: {}")
                     .addArgument(responseClass.getName())
                     .addArgument(standardOutput)
                     .setCause(e)

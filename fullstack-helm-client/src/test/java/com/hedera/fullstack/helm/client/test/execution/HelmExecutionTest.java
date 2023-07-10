@@ -67,9 +67,8 @@ class HelmExecutionTest {
         });
 
         assertThat(exception.getMessage()).contains("Execution of the Helm command failed with exit code: 1");
-        LoggingOutputAssert.assertThatLogEntriesHaveMessages(
-                loggingOutput,
-                List.of(
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(
                         LogEntryBuilder.builder()
                                 .level(Level.WARN)
                                 .message("Call failed with exitCode: 1")
@@ -98,16 +97,45 @@ class HelmExecutionTest {
 
         assertThat(exception.getMessage())
                 .contains("Failed to deserialize the output into a list of the specified class");
-        LoggingOutputAssert.assertThatLogEntriesHaveMessages(
-                loggingOutput,
-                List.of(
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(
                         LogEntryBuilder.builder()
                                 .level(Level.WARN)
-                                .message("ResponseAsList failed to deserialize response into class")
+                                .message(
+                                        "ResponseAsList failed to deserialize the output into a list of the specified class")
                                 .build(),
                         LogEntryBuilder.builder()
                                 .level(Level.DEBUG)
                                 .message("ResponseAsList exiting with exitCode: 0")
+                                .build()));
+    }
+
+    @Test
+    @DisplayName("Test response as throws exception and logs warning message")
+    void testResponseAsWarnMessage(final LoggingOutput loggingOutput) throws InterruptedException, IOException {
+        doReturn(inputStreamMock).when(processMock).getInputStream();
+        doReturn(inputStreamMock).when(processMock).getErrorStream();
+        final HelmExecution helmExecution = Mockito.spy(new HelmExecution(processMock));
+        final Duration timeout = Duration.ofSeconds(1);
+        doReturn(0).when(helmExecution).exitCode();
+        doReturn(true).when(helmExecution).waitFor(any(Duration.class));
+        doReturn(inputStreamMock).when(helmExecution).standardOutput();
+        doReturn(inputStreamMock).when(helmExecution).standardError();
+
+        HelmParserException exception = assertThrows(HelmParserException.class, () -> {
+            helmExecution.responseAs(Repository.class, timeout);
+        });
+
+        assertThat(exception.getMessage()).contains("Failed to deserialize the output into the specified class");
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(
+                        LogEntryBuilder.builder()
+                                .level(Level.WARN)
+                                .message("ResponseAs failed to deserialize response into class")
+                                .build(),
+                        LogEntryBuilder.builder()
+                                .level(Level.DEBUG)
+                                .message("ResponseAs exiting with exitCode: 0")
                                 .build()));
     }
 }

@@ -17,7 +17,6 @@
 package com.hedera.fullstack.helm.client.test;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
-import static com.jcovalent.junit.logging.assertj.LoggingOutputAssert.assertThatLogEntriesHaveMessages;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Named.named;
 
@@ -31,6 +30,7 @@ import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntry;
 import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
+import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.*;
@@ -150,9 +150,8 @@ class HelmClientTest {
         assertThatException()
                 .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
                 .withStackTraceContaining(expectedMessage);
-        assertThatLogEntriesHaveMessages(
-                loggingOutput,
-                List.of(
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(
                         LogEntryBuilder.builder()
                                 .level(Level.WARN)
                                 .message("Call failed with exitCode: 1")
@@ -184,7 +183,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        assertThatLogEntriesHaveMessages(loggingOutput, EXPECTED_LOG_ENTRIES);
+        LoggingOutputAssert.assertThat(loggingOutput).hasAtLeastOneEntry(EXPECTED_LOG_ENTRIES);
         // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
@@ -203,7 +202,7 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
-        assertThatLogEntriesHaveMessages(loggingOutput, expectedLogEntries);
+        LoggingOutputAssert.assertThat(loggingOutput).hasAtLeastOneEntry(expectedLogEntries);
         // TODO remove write log before merging
         loggingOutput.writeLogStream(System.out);
     }
