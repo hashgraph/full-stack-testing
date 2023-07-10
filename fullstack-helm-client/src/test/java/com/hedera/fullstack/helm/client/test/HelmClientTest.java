@@ -75,7 +75,7 @@ class HelmClientTest {
                     .message("ResponseAs exiting with exitCode: 0")
                     .build(),
             LogEntryBuilder.builder()
-            .level(Level.DEBUG)
+                    .level(Level.DEBUG)
                     .message("Helm command: repo list")
                     .build());
 
