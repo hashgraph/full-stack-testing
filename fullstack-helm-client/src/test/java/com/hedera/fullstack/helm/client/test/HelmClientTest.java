@@ -160,9 +160,6 @@ class HelmClientTest {
                                 .level(Level.WARN)
                                 .message(expectedMessage)
                                 .build()));
-
-        // TODO remove write to stdout before merge
-        loggingOutput.writeLogStream(System.out);
     }
 
     @Test
@@ -184,8 +181,6 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
         LoggingOutputAssert.assertThat(loggingOutput).hasAtLeastOneEntry(EXPECTED_LOG_ENTRIES);
-        // TODO remove write log before merging
-        loggingOutput.writeLogStream(System.out);
     }
 
     private static void testChartInstallWithCleanup(
@@ -203,8 +198,6 @@ class HelmClientTest {
             suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
         }
         LoggingOutputAssert.assertThat(loggingOutput).hasAtLeastOneEntry(expectedLogEntries);
-        // TODO remove write log before merging
-        loggingOutput.writeLogStream(System.out);
     }
 
     @ParameterizedTest
