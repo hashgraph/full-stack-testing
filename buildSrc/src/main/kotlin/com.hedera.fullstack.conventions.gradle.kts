@@ -34,7 +34,7 @@ plugins {
 }
 
 repositories {
-    mavenLocal()
+    // mavenLocal() // uncomment to use local maven repository
     // Use Maven Central for dependencies
     mavenCentral()
 }
