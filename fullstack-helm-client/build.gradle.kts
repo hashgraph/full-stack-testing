@@ -33,8 +33,9 @@ dependencies {
         testImplementation(gav("org.junit.jupiter.api"))
         testImplementation(gav("org.junit.jupiter.params"))
         testImplementation(gav("org.assertj.core"))
-        runtimeOnly(gav("org.apache.logging.log4j"))
-        runtimeOnly(gav("org.apache.logging.log4j.slf4j2.impl"))
+        testImplementation(gav("com.jcovalent.junit.logging"))
+        testImplementation(gav("org.mockito"))
+        testImplementation(gav("org.mockito.junit.jupiter"))
     }
 }
 
