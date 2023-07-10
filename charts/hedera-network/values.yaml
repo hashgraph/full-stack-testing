@@ -79,6 +79,8 @@ mirror:
     csvStatsDir: /opt/hgcapp/recordstream/uploader-stats/
     bucketPath: /recordstream
     bucketName: "dev"
+    compression: true
+    sidecar: true
   recordStreamSideCar:
     watchDir: /opt/hgcapp/sidecar
     bucketPath: /recordstreamsidecar
