@@ -1,12 +1,12 @@
-{{ range $nodeName, $nodeConfig := ($.Values.hedera.nodes) }}
+{{ range $nodeConfig := ($.Values.hedera.nodes) }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-network-{{ $nodeName }}
+  name: network-{{ $nodeConfig.name }}-service
 spec:
   selector:
-    app: network-{{ $nodeName }}
+    app: network-{{ $nodeConfig.name }}
   ports:
   - protocol: TCP
     port: 50211
