@@ -19,8 +19,9 @@ plugins {
 }
 
 repositories {
-    gradlePluginPortal()
+    // mavenLocal() // uncomment to use local maven repository
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
