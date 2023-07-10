@@ -16,6 +16,7 @@ function test_node_total() {
   echo "-------------------------------------------------------------"
   echo "Checking total number of network node containers"
   echo "-------------------------------------------------------------"
+  kubectl wait --for=condition=ready pod -l type=network-node --timeout=120s || return "${EX_ERR}"
 
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
@@ -76,7 +77,7 @@ function run_tests() {
   local status="$?"
   [ "${status}" = "${EX_OK}" ] && test_systemctl_status="PASS" || test_systemctl_status="FAIL"
 
-  echo ""
+  echo "-------------------------------------------------------------"
   echo "Test results"
   echo "-------------------------------------------------------------"
   echo "test_node_total: ${test_node_total_status}"
