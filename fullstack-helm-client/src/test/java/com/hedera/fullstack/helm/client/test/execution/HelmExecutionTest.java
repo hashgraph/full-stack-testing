@@ -22,7 +22,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 
 import com.hedera.fullstack.helm.client.HelmExecutionException;
+import com.hedera.fullstack.helm.client.HelmParserException;
 import com.hedera.fullstack.helm.client.execution.HelmExecution;
+import com.hedera.fullstack.helm.client.model.Repository;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
@@ -75,6 +77,37 @@ class HelmExecutionTest {
                         LogEntryBuilder.builder()
                                 .level(Level.DEBUG)
                                 .message("Call exiting with exitCode: 1")
+                                .build()));
+    }
+
+    @Test
+    @DisplayName("Test response as list throws exception and logs warning message")
+    void testResponseAsListWarnMessage(final LoggingOutput loggingOutput) throws InterruptedException, IOException {
+        doReturn(inputStreamMock).when(processMock).getInputStream();
+        doReturn(inputStreamMock).when(processMock).getErrorStream();
+        final HelmExecution helmExecution = Mockito.spy(new HelmExecution(processMock));
+        final Duration timeout = Duration.ofSeconds(1);
+        doReturn(0).when(helmExecution).exitCode();
+        doReturn(true).when(helmExecution).waitFor(any(Duration.class));
+        doReturn(inputStreamMock).when(helmExecution).standardOutput();
+        doReturn(inputStreamMock).when(helmExecution).standardError();
+
+        HelmParserException exception = assertThrows(HelmParserException.class, () -> {
+            helmExecution.responseAsList(Repository.class, timeout);
+        });
+
+        assertThat(exception.getMessage())
+                .contains("Failed to deserialize the output into a list of the specified class");
+        LoggingOutputAssert.assertThatLogEntriesHaveMessages(
+                loggingOutput,
+                List.of(
+                        LogEntryBuilder.builder()
+                                .level(Level.WARN)
+                                .message("ResponseAsList failed to deserialize response into class")
+                                .build(),
+                        LogEntryBuilder.builder()
+                                .level(Level.DEBUG)
+                                .message("ResponseAsList exiting with exitCode: 0")
                                 .build()));
     }
 }
