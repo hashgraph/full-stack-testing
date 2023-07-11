@@ -90,7 +90,7 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
-      - name: Expand Shallow Clone for SonarQube and Spotless
+      - name: Expand Shallow Clone for SonarQube
         if: ${{ inputs.enable-sonar-analysis && !cancelled() }}
         run: git fetch --unshallow --no-recurse-submodules
 
@@ -114,6 +114,8 @@ jobs:
         uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
         with:
           script: |
+            let runId = (context.payload != null && context.payload.workflow_run != null) ? context.payload.workflow_run.id : context.runId;
+            
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
