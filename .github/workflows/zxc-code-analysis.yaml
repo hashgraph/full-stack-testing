@@ -116,12 +116,6 @@ jobs:
         with:
           name: Coverage Reports
 
-      - name: Unzip Coverage Reports
-        if: ${{ (inputs.enable-codecov-analysis || inputs.enable-sonar-analysis) && !cancelled() && !failure() }}
-        run: |
-          unzip coverage_reports.zip
-          rm coverage_reports.zip
-
       - name: Publish To Codecov
         if: ${{ inputs.enable-codecov-analysis && !cancelled() && !failure() }}
         uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # pin@v3
