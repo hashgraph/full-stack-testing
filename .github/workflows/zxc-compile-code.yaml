@@ -105,9 +105,26 @@ jobs:
           verbosity: 3
           wait: 120s
 
+      - name: Setup Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # pin@v3.5
+        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        with:
+          version: "v3.12.1" # helm version
+
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
-        run: kubectl config current-context
+        run: |
+          kubectl config set-context --current --namespace=default
+          kubectl config get-contexts
+
+      - name: Helm Chart Test
+        id: helm-chart-test
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run: |
+          kubectl config get-contexts
+          helm install fst ./charts/hedera-network
+          helm test fst
+          kubectl logs network-test
 
       - name: Compile
         id: gradle-build

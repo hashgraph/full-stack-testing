@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "network-test"
+  annotations:
+    "helm.sh/hook": test
+spec:
+  serviceAccountName: tester
+  volumes:
+    - name: test-cfg
+      configMap:
+        name: tester-cfg
+        defaultMode: 0777 # we need the test files to be executable
+  containers:
+    - name: tester
+      image: bitnami/kubectl:latest
+      volumeMounts:
+        - mountPath: /scripts/test.sh
+          name: test-cfg
+          subPath: test.sh
+      command:
+        - "/bin/bash"
+        - "-c"
+        - /scripts/test.sh
+        #- "while true;do echo sleeping; sleep 10;done"
+  restartPolicy: Never
