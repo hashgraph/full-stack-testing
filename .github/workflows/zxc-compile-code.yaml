@@ -134,7 +134,7 @@ jobs:
         uses: azure/setup-helm@v3
         if: ${{ inputs.enable-helm-test && !cancelled() }}
         with:
-          version: "v3.5.0<version>"
+          version: "v3.12.1"
 
 #      - name: Setup Kubectl
 #        if : ${{ inputs.enable-unit-tests && !cancelled() }}
