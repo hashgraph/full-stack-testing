@@ -345,5 +345,7 @@ jobs:
         id: helm-chart-test
         if: ${{ inputs.enable-helm-test && !cancelled() && !failure() }}
         run: |
+          kubectl config get-contexts
+          kubectl get namespaces
           helm install fst ./charts/hedera-network
           helm test fst
