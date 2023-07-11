@@ -131,10 +131,10 @@ jobs:
           wait: 120s
 
       - name: Setup Helm
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # pin@v3.5
         if: ${{ inputs.enable-helm-test && !cancelled() }}
         with:
-          version: "v3.12.1"
+          version: "v3.12.1" # helm version
 
 #      - name: Setup Kubectl
 #        if : ${{ inputs.enable-unit-tests && !cancelled() }}
@@ -344,6 +344,6 @@ jobs:
       - name: Helm Chart Test
         id: helm-chart-test
         if: ${{ inputs.enable-helm-test && !cancelled() && !failure() }}
-        run:
+        run: |
           helm install fst ./charts/hedera-network
           helm test fst
