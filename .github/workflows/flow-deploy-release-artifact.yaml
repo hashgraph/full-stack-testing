@@ -54,7 +54,7 @@ jobs:
       version: ${{ steps.tag.outputs.version }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
         with:
           fetch-depth: 0
 
@@ -109,7 +109,7 @@ jobs:
       - prepare-release
     steps:
       - name: Checkout repository
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # pin@v2
@@ -153,7 +153,7 @@ jobs:
     if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
         with:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           fetch-depth: 0
