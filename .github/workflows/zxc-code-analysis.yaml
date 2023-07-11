@@ -113,7 +113,7 @@ jobs:
         if: ${{ (inputs.enable-sonar-analysis || inputs.enable-codecov-analysis) && !cancelled() }}
         with:
           path: '**/jacocoTestReport.xml'
-          key: unit-test-jacoco-rid-${{ github.event.workflow_run.id }}
+          key: unit-test-jacoco-rid-${{ github.event.workflow_run.id || github.run_id }}
           fail-on-cache-miss: true
 
       - name: Publish To Codecov
