@@ -1,15 +1,5 @@
-{{- define "hedera.user.id" -}}
-2000
-{{- end }}
-
-{{- define "hedera.user.name" -}}
-hedera
-{{- end }}
-
-{{- define "hedera.group.id" -}}
-2000
-{{- end }}
-
-{{- define "hedera.group.name" -}}
-hedera
+{{ - define "hedera.security.context" -}}
+securityContext:
+    runAsUser: 2000
+    runAsGroup: 2000
 {{- end }}
