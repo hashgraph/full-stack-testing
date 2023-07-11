@@ -87,6 +87,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v3
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
 
       - name: Expand Shallow Clone for SonarQube and Spotless
         if: ${{ (inputs.enable-sonar-analysis || inputs.enable-spotless-check) && !cancelled() }}
