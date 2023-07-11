@@ -347,5 +347,6 @@ jobs:
         run: |
           kubectl config get-contexts
           kubectl get namespaces
+          kubectl config view | grep context
           helm install fst ./charts/hedera-network
           helm test fst
