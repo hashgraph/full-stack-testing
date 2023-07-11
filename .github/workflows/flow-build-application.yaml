@@ -77,9 +77,21 @@ jobs:
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
       enable-javadoc: ${{ github.event_name == 'push' || github.event.inputs.enable-javadoc == 'true' }}
       enable-unit-tests: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
-      enable-sonar-analysis: ${{ github.event_name == 'push' || github.event.inputs.enable-sonar-analysis == 'true' }}
       enable-spotless-check: ${{ github.event_name == 'push' || github.event.inputs.enable-spotless-check == 'true' }}
+
+  analyze:
+    name: Analyze
+    uses: ./.github/workflows/zxc-code-analysis.yaml
+    needs:
+      - code
+    if: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
+    with:
+      java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
+      java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
+      gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
       enable-snyk-scan: ${{ github.event_name == 'push' || github.event.inputs.enable-snyk-scan == 'true' }}
+      enable-sonar-analysis: ${{ github.event_name == 'push' || github.event.inputs.enable-sonar-analysis == 'true' }}
+      enable-codecov-analysis: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
       snyk-token: ${{ secrets.SNYK_TOKEN }}
