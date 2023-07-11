@@ -14,48 +14,46 @@
 # limitations under the License.
 ##
 
-name: "PR Checks"
+name: "PR Analysis"
 on:
-  workflow_dispatch:
-  pull_request:
+  workflow_run:
+    workflows:
+      - "PR Checks"
     types:
-      - opened
-      - reopened
-      - synchronize
+      - completed
 
 defaults:
   run:
     shell: bash
 
 concurrency:
-  group: pr-checks-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  group: pr-analysis-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Code
-    uses: ./.github/workflows/zxc-compile-code.yaml
-    with:
-      enable-javadoc: true
-
-  spotless:
-    name: Spotless
-    uses: ./.github/workflows/zxc-compile-code.yaml
-    with:
-      custom-job-label: "Check"
-      enable-spotless-check: true
-
-  unit-tests:
-    name: Unit Tests
-    uses: ./.github/workflows/zxc-compile-code.yaml
+  code-cov:
+    name: CodeCov
+    uses: ./.github/workflows/zxc-code-analysis.yaml
     with:
       custom-job-label: Standard
-      enable-unit-tests: true
+      enable-codecov-analysis: true
+    secrets:
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
-  helm-chart-test:
-    name: Helm Chart Tests
-    uses: ./.github/workflows/zxc-compile-code.yaml
+  sonar-scan:
+    name: Sonar Scan
+    uses: ./.github/workflows/zxc-code-analysis.yaml
     with:
       custom-job-label: Standard
-      enable-javadoc: false
-      enable-helm-test: true
+      enable-sonar-analysis: true
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
+
+  snyk-scan:
+    name: Snyk Scan
+    uses: ./.github/workflows/zxc-code-analysis.yaml
+    with:
+      custom-job-label: Standard
+      enable-snyk-scan: true
+    secrets:
+      snyk-token: ${{ secrets.SNYK_TOKEN }}
