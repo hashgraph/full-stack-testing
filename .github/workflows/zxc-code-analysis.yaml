@@ -112,6 +112,7 @@ jobs:
 
       - name: Download Coverage Reports
         uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        if: ${{ (inputs.enable-codecov-analysis || inputs.enable-sonar-analysis) && !cancelled() && !failure() }}
         with:
           script: |
             let runId = (context.payload != null && context.payload.workflow_run != null) ? context.payload.workflow_run.id : context.runId;
@@ -119,7 +120,7 @@ jobs:
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               run_id: context.payload.workflow_run.id,
+               run_id: runId,
             });
             let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "Coverage Reports"
@@ -134,12 +135,13 @@ jobs:
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/coverage_reports.zip`, Buffer.from(download.data));
 
       - name: Unzip Coverage Reports
+        if: ${{ (inputs.enable-codecov-analysis || inputs.enable-sonar-analysis) && !cancelled() && !failure() }}
         run: |
           unzip coverage_reports.zip
           rm coverage_reports.zip
 
       - name: Publish To Codecov
-        if: ${{ inputs.enable-codecov-analysis && !cancelled() }}
+        if: ${{ inputs.enable-codecov-analysis && !cancelled() && !failure() }}
         uses: codecov/codecov-action@eaaf4bedf32dbdc6b720b63067d99c4d77d6047d # pin@v3
         env:
           CODECOV_TOKEN: ${{ secrets.codecov-token }}
@@ -148,7 +150,7 @@ jobs:
         id: sonar-cloud
         env:
           IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
-        if: ${{ inputs.enable-sonar-analysis && !cancelled() }}
+        if: ${{ inputs.enable-sonar-analysis && !cancelled() && !failure() }}
         run: |
           SONAR_OPTS="-Dsonar.branch.name=${{ github.ref_name }}"
           if [[ "${IS_PULL_REQUEST}" == true ]]; then
@@ -163,7 +165,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.access-token }}
           SONAR_TOKEN: ${{ secrets.sonar-token }}
           SONAR_OPTS: ${{ steps.sonar-cloud.outputs.options }}
-        if: ${{ inputs.enable-sonar-analysis && !cancelled() }}
+        if: ${{ inputs.enable-sonar-analysis && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: sonar --info --scan ${{ steps.sonar-cloud.outputs.options }}
@@ -171,25 +173,25 @@ jobs:
       - name: Setup Snyk
         env:
           SNYK_TOKEN: ${{ secrets.snyk-token }}
-        if: ${{ inputs.enable-snyk-scan && !cancelled() }}
+        if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         run: npm install -g snyk snyk-to-html @wcj/html-to-markdown-cli
 
       - name: Snyk Scan
         id: snyk
         env:
           SNYK_TOKEN: ${{ secrets.snyk-token }}
-        if: ${{ inputs.enable-snyk-scan && !cancelled() }}
+        if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         run: snyk test --all-sub-projects --severity-threshold=high --json-file-output=snyk-test.json
 
       - name: Snyk Code
         id: snyk-code
         env:
           SNYK_TOKEN: ${{ secrets.snyk-token }}
-        if: ${{ inputs.enable-snyk-scan && !cancelled() }}
+        if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         run: snyk code test --severity-threshold=high --json-file-output=snyk-code.json
 
       - name: Publish Snyk Results
-        if: ${{ inputs.enable-snyk-scan && !cancelled() }}
+        if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         run: |
           if [[ -f snyk-test.json ]]; then
             snyk-to-html -i snyk-test.json -o snyk-test.html --summary
@@ -205,7 +207,7 @@ jobs:
 
       - name: Publish Snyk Reports
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v3
-        if: ${{ inputs.enable-snyk-scan && !cancelled() }}
+        if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         with:
           name: Snyk Reports
           path: |
