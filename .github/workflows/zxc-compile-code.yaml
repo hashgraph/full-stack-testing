@@ -144,7 +144,10 @@ jobs:
 
       - name: Kubernetes Cluster Info
         if: ${{ (inputs.enable-unit-tests || inputs.enable-helm-test ) && !cancelled() }}
-        run: kubectl config current-context
+        run: |
+          kubectl config set-context --current --namespace=default
+          kubectl config get-contexts
+#          kubectl config current-context
 
       - name: Compile
         id: gradle-build
@@ -346,7 +349,5 @@ jobs:
         if: ${{ inputs.enable-helm-test && !cancelled() && !failure() }}
         run: |
           kubectl config get-contexts
-          kubectl get namespaces
-          kubectl config view | grep context
           helm install fst ./charts/hedera-network
           helm test fst
