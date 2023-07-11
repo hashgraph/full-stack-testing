@@ -34,6 +34,7 @@ jobs:
   codecov:
     name: CodeCov
     uses: ./.github/workflows/zxc-code-analysis.yaml
+    if: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name || github.actor == 'dependabot[bot]' }}
     with:
       custom-job-label: Standard
       enable-codecov-analysis: true
@@ -43,6 +44,7 @@ jobs:
   sonar:
     name: Sonar Scan
     uses: ./.github/workflows/zxc-code-analysis.yaml
+    if: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name || github.actor == 'dependabot[bot]' }}
     with:
       custom-job-label: Standard
       enable-sonar-analysis: true
@@ -52,6 +54,7 @@ jobs:
   snyk:
     name: Snyk Scan
     uses: ./.github/workflows/zxc-code-analysis.yaml
+    if: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name || github.actor == 'dependabot[bot]' }}
     with:
       custom-job-label: Standard
       enable-snyk-scan: true
