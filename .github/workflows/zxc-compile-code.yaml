@@ -89,17 +89,20 @@ jobs:
 
       - name: Setup Java
         uses: actions/setup-java@1df8dbefe2a8cbc99770194893dd902763bee34b # pin@v3
+        if: ${{ !inputs.enable-helm-test && !cancelled() }}
         with:
           distribution: ${{ inputs.java-distribution }}
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # pin@v2
+        if: ${{ !inputs.enable-helm-test && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
       - name: Setup Node
         uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # pin@v3
+        if: ${{ !inputs.enable-helm-test && !cancelled() }}
         with:
           node-version: ${{ inputs.node-version }}
 
@@ -126,6 +129,7 @@ jobs:
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # pin@v2
+        if: ${{ !inputs.enable-helm-test && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
