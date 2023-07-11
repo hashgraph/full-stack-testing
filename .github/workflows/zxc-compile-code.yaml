@@ -193,3 +193,4 @@ jobs:
           kubectl config get-contexts
           helm install fst ./charts/hedera-network
           helm test fst
+          kubectl logs network-test
