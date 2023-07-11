@@ -78,7 +78,6 @@ metadata:
 data:
   config.yaml:
   {{- .Files.Get "configs/otel-collector-config.yaml" | toYaml | nindent 4 }}
-{{ end }}
 ---
 # Configmaps for envoy and haproxy, one for each network node
 {{- range $nodeConfig := ($.Values.hedera.nodes) }}
