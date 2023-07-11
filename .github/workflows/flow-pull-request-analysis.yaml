@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  code-cov:
+  codecov:
     name: CodeCov
     uses: ./.github/workflows/zxc-code-analysis.yaml
     with:
@@ -40,7 +40,7 @@ jobs:
     secrets:
       codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
-  sonar-scan:
+  sonar:
     name: Sonar Scan
     uses: ./.github/workflows/zxc-code-analysis.yaml
     with:
@@ -49,7 +49,7 @@ jobs:
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
 
-  snyk-scan:
+  snyk:
     name: Snyk Scan
     uses: ./.github/workflows/zxc-code-analysis.yaml
     with:

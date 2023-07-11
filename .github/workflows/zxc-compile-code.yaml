@@ -130,13 +130,6 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: spotlessCheck --scan
 
-      - name: Cache JaCoCo Analysis
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
-        if: ${{ inputs.enable-unit-tests && !cancelled() }}
-        with:
-          path: '**/jacocoTestReport.xml'
-          key: unit-test-jacoco-rid-${{ github.run_id }}
-
       - name: Unit Testing
         id: gradle-test
         uses: gradle/gradle-build-action@3fbe033aaae657f011f88f29be9e65ed26bd29ef # pin@v2
@@ -160,6 +153,13 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: jacocoTestReport --scan
+
+      - name: Publish Jacoco Coverage Report
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v3
+        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        with:
+          name: Coverage Reports
+          path: '**/jacocoTestReport.xml'
 
       - name: Publish Test Reports
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # pin@v3
