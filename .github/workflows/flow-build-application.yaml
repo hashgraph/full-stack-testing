@@ -86,6 +86,7 @@ jobs:
       - code
     if: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
     with:
+      custom-job-label: Source Code
       java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
       java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}

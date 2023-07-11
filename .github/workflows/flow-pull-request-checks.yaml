@@ -51,3 +51,39 @@ jobs:
     with:
       custom-job-label: Standard
       enable-unit-tests: true
+
+  codecov:
+    name: CodeCov
+    uses: ./.github/workflows/zxc-code-analysis.yaml
+    needs:
+      - unit-tests
+    if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
+    with:
+      custom-job-label: Standard
+      enable-codecov-analysis: true
+    secrets:
+      codecov-token: ${{ secrets.CODECOV_TOKEN }}
+
+  sonar:
+    name: Sonar Scan
+    uses: ./.github/workflows/zxc-code-analysis.yaml
+    needs:
+      - unit-tests
+    if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
+    with:
+      custom-job-label: Standard
+      enable-sonar-analysis: true
+    secrets:
+      sonar-token: ${{ secrets.SONAR_TOKEN }}
+
+  snyk:
+    name: Snyk Scan
+    uses: ./.github/workflows/zxc-code-analysis.yaml
+    needs:
+      - unit-tests
+    if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
+    with:
+      custom-job-label: Standard
+      enable-snyk-scan: true
+    secrets:
+      snyk-token: ${{ secrets.SNYK_TOKEN }}
