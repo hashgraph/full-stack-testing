@@ -115,7 +115,7 @@ jobs:
         with:
           script: |
             let runId = (context.payload != null && context.payload.workflow_run != null) ? context.payload.workflow_run.id : context.runId;
-            
+
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
