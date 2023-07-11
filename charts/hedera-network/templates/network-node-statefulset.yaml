@@ -32,8 +32,8 @@ spec:
           image: {{ $.Values.infrastructure.docker.images.root }}
           command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
           securityContext:
-            runAsUser: {{ $.Values.hedera.user }}
-            runAsGroup: {{ $.Values.hedera.group }}
+            runAsUser: {{ include "hedera.user.id" $ }}
+            runAsGroup: {{ include "hedera.group.id" $ }}
           volumeMounts:
             - name: hgcapp-storage
               mountPath: /opt/hgcapp/
@@ -60,8 +60,8 @@ spec:
       - name: account-balances-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.hedera.user }}
-          runAsGroup: {{ $.Values.hedera.group }}
+          runAsUser: {{ include "hedera.user.id" $ }}
+          runAsGroup: {{ include "hedera.group.id" $ }}
         command:
           - /usr/bin/env
           - python3.7
@@ -84,8 +84,8 @@ spec:
       - name: event-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.hedera.user }}
-          runAsGroup: {{ $.Values.hedera.group }}
+          runAsUser: {{ include "hedera.user.id" $ }}
+          runAsGroup: {{ include "hedera.group.id" $ }}
         command:
           - /usr/bin/env
           - python3.7
@@ -108,8 +108,8 @@ spec:
       - name: record-stream-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.hedera.user }}
-          runAsGroup: {{ $.Values.hedera.group }}
+          runAsUser: {{ include "hedera.user.id" $ }}
+          runAsGroup: {{ include "hedera.group.id" $ }}
         command:
           - /usr/bin/env
           - python3.7
@@ -134,8 +134,8 @@ spec:
       - name: record-sidecar-uploader
         image: {{ $.Values.infrastructure.docker.images.mirroruploader }}
         securityContext:
-          runAsUser: {{ $.Values.hedera.user }}
-          runAsGroup: {{ $.Values.hedera.group }}
+          runAsUser: {{ include "hedera.user.id" $ }}
+          runAsGroup: {{ include "hedera.group.id" $ }}
         command:
           - /usr/bin/env
           - python3.7
@@ -163,8 +163,8 @@ spec:
       - name: backup-uploader
         image: {{ $.Values.infrastructure.docker.images.backupUploader }}
         securityContext:
-          runAsUser: {{ $.Values.hedera.user }}
-          runAsGroup: {{ $.Values.hedera.user }}
+          runAsUser: {{ include "hedera.user.id" $ }}
+          runAsGroup: {{ include "hedera.group.id" $ }}
         volumeMounts:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
