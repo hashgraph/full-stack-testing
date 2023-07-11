@@ -37,7 +37,6 @@ jobs:
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       enable-javadoc: true
-      enable-helm-test: false
 
   spotless:
     name: Spotless
@@ -45,7 +44,6 @@ jobs:
     with:
       custom-job-label: "Check"
       enable-spotless-check: true
-      enable-helm-test: false
 
   unit-tests:
     name: Unit Tests
@@ -53,4 +51,3 @@ jobs:
     with:
       custom-job-label: Standard
       enable-unit-tests: true
-      enable-helm-test: true
