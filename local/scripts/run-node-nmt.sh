@@ -213,7 +213,7 @@ function run_node_nmt() {
     echo "Run Preflight in ${pod}"
     echo "--------------------------------------------------------------"
     kubectl exec "${pod}" -c root-container --  \
-      node-mgmt-tool -VV preflight -j 17.0.2 -df -i "${NMT_PROFILE}" -k 10m -m 10m || return "${EX_ERR}"
+      node-mgmt-tool -VV preflight -j 17.0.2 -df -i "${NMT_PROFILE}" -k 1g -m 1g || return "${EX_ERR}"
 
     echo ""
     echo "Run Install in ${pod}"
