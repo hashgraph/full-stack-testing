@@ -150,6 +150,7 @@ function verify_network_state() {
   done
 
   if [[ "${status}" != *ACTIVE* ]]; then
+    kubectl exec "${pod}" -c root-container -- docker logs swirlds-node
     echo "::error title=Node Management Tools Error::The network is not operational."
     exit 67
   fi
@@ -252,10 +253,9 @@ function run_node_nmt() {
     echo ""
     echo "Checking logs in ${pod}"
     echo "-------------------------------------------------------------"
-    verify_network_state || return "${EX_ERR}"
+    verify_network_state "${pod}" || return "${EX_ERR}"
   done
 
 }
 
-# run_node_nmt || exit 1
-verify_network_state $1
+run_node_nmt || exit 1
