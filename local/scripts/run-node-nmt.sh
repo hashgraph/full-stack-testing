@@ -18,7 +18,7 @@ NMT_TAG="${NMT_RELEASE_TAG:-v2.0.0-alpha.0}"
 NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/releases/tags/${NMT_TAG}"
 NMT_INSTALLER="node-mgmt-tools-installer-${NMT_TAG}.run"
 NMT_INSTALLER_PATH="${SCRIPT_DIR}/${NMT_INSTALLER}"
-NMT_PROFILE=jrs
+NMT_PROFILE=main
 
 PLATFORM_TAG="${PLATFORM_RELEASE_TAG:-v0.39.1}"
 PLATFORM_INSTALLER="build-${PLATFORM_TAG}.zip"
@@ -26,6 +26,10 @@ PLATFORM_INSTALLER_PATH="${SCRIPT_DIR}/build-${PLATFORM_TAG}.zip"
 
 # Fetch NMT release
 function fetch_nmt() {
+  echo ""
+  echo "Fetching NMT ${NMT_TAG}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   if [[ -f "${NMT_INSTALLER_PATH}" ]];then
     echo "Found NMT installer: ${NMT_INSTALLER_PATH}"
     return "${EX_OK}"
@@ -50,6 +54,10 @@ function fetch_nmt() {
 
 # Fetch platform build.zip file
 function fetch_platform_build() {
+  echo ""
+  echo "Fetching Platform ${PLATFORM_TAG}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   if [[ -f "${PLATFORM_INSTALLER_PATH}" ]];then
     echo "Found Platform installer: ${PLATFORM_INSTALLER_PATH}"
     return "${EX_OK}"
@@ -61,9 +69,14 @@ function fetch_platform_build() {
 
 # Copy NMT into root-container
 function copy_nmt() {
+  echo ""
+  echo "Copying NMT to ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   local pod="$1"
   if [ -z "${pod}" ]; then
     echo "ERROR: 'copy_nmt' - pod name is required"
+    return "${EX_ERR}"
   fi
 
   echo "Copying ${NMT_INSTALLER_PATH} -> ${pod}:${HEDERA_HOME_DIR}"
@@ -74,9 +87,14 @@ function copy_nmt() {
 
 # Copy platform installer into root-container
 function copy_platform() {
+  echo ""
+  echo "Copying Platform to ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   local pod="$1"
   if [ -z "${pod}" ]; then
     echo "ERROR: 'copy_platform' - pod name is required"
+    return "${EX_ERR}"
   fi
 
   echo "Copying ${PLATFORM_INSTALLER_PATH} -> ${pod}:${HEDERA_HOME_DIR}"
@@ -85,21 +103,71 @@ function copy_platform() {
   return "${EX_OK}"
 }
 
+# copy files and set ownership to hedera:hedera
+function copy_files() {
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'copy_files' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  local srcDir="$2"
+  if [ -z "${srcDir}" ]; then
+    echo "ERROR: 'copy_files' - src path is required"
+    return "${EX_ERR}"
+  fi
+
+  local file="$3"
+  if [ -z "${file}" ]; then
+    echo "ERROR: 'copy_files' - file path is required"
+    return "${EX_ERR}"
+  fi
+
+  local dstDir="$4"
+  if [ -z "${dstDir}" ]; then
+    echo "ERROR: 'copy_files' - dstDir path is required"
+    return "${EX_ERR}"
+  fi
+
+  local mode=0755
+
+  echo ""
+  echo "Copying ${srcDir}/${file} -> ${pod}:${dstDir}/"
+  kubectl cp "$srcDir/${file}" "${pod}:${dstDir}/" -c root-container || return "${EX_ERR}"
+
+  echo "Changing ownership of ${pod}:${dstDir}/${file}"
+  kubectl exec "${pod}" -c root-container -- chown hedera:hedera "${dstDir}/${file}" || return "${EX_ERR}"
+
+  echo "Changing permission to ${mode} of ${pod}:${dstDir}/${file}"
+  kubectl exec "${pod}" -c root-container -- chmod "${mode}" "${dstDir}/${file}" || return "${EX_ERR}"
+
+  echo ""
+  kubectl exec "${pod}" -c root-container -- ls -la "${dstDir}/${file}" || return "${EX_ERR}"
+
+  return "${EX_OK}"
+}
+
 # Copy hedera keys
 function copy_hedera_keys() {
+  echo ""
+  echo "Copy hedera TLS keys to ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   local pod="$1"
   if [ -z "${pod}" ]; then
     echo "ERROR: 'copy_hedera_keys' - pod name is required"
+    return "${EX_ERR}"
   fi
 
+  local srcDir="${SCRIPT_DIR}/../network-node"
+  local dstDir="${HAPI_PATH}"
   local files=( \
-    "${SCRIPT_DIR}/../demo-keys/hedera.key" \
-    "${SCRIPT_DIR}/../demo-keys/hedera.crt" \
+    "hedera.key" \
+    "hedera.crt" \
   )
 
   for file in "${files[@]}"; do
-    echo "Copying ${file} -> ${pod}:${HAPI_PATH}"
-    kubectl cp "$file" "${pod}":"${HAPI_PATH}" -c root-container || return "${EX_ERR}"
+    copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
   done
 
   return "${EX_OK}"
@@ -107,30 +175,72 @@ function copy_hedera_keys() {
 
 # Copy node keys
 function copy_node_keys() {
+  echo ""
+  echo "Copy node gossip keys to ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   local node="$1"
   if [ -z "${node}" ]; then
     echo "ERROR: 'copy_node_keys' - node name is required"
+    return "${EX_ERR}"
   fi
 
   local pod="$2"
   if [ -z "${pod}" ]; then
     echo "ERROR: 'copy_node_keys' - pod name is required"
+    return "${EX_ERR}"
   fi
 
+  local srcDir="${SCRIPT_DIR}/../network-node/data/keys"
+  local dstDir="${HAPI_PATH}/data/keys"
   local files=( \
-    "${SCRIPT_DIR}/../demo-keys/${node}/private-${node}.pfx" \
-    "${SCRIPT_DIR}/../demo-keys/public.pfx" \
+    "private-${node}.pfx" \
+    "public.pfx" \
   )
 
   for file in "${files[@]}"; do
-    echo "Copying ${file} -> ${pod}:${HAPI_PATH}/data/keys"
-    kubectl cp "$file" "${pod}":"${HAPI_PATH}/data/keys" -c root-container || return "${EX_ERR}"
+    copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
+  done
+
+
+  return "${EX_OK}"
+}
+
+# Copy config files
+function copy_config_files() {
+  echo ""
+  echo "Copy config files to ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'copy_config_files' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  local srcDir="${SCRIPT_DIR}/../network-node"
+  local dstDir="${HAPI_PATH}"
+  local files=( \
+    "config.txt" \
+    "settings.txt" \
+    "log4j2.xml" \
+    "data/config/api-permission.properties" \
+    "data/config/application.properties" \
+    "data/config/bootstrap.properties" \
+  )
+
+  for file in "${files[@]}"; do
+    copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
   done
 
   return "${EX_OK}"
 }
 
 function verify_network_state() {
+  echo ""
+  echo "Checking logs in ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
   local pod="$1"
   sleep 5
   attempts=0
@@ -151,111 +261,159 @@ function verify_network_state() {
 
   if [[ "${status}" != *ACTIVE* ]]; then
     kubectl exec "${pod}" -c root-container -- docker logs swirlds-node
-    echo "::error title=Node Management Tools Error::The network is not operational."
-    exit 67
-  fi
-
-}
-
-function run_node_nmt() {
-  if [[ "${#NODE_NAMES[*]}" -le 1 ]]; then
-    echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
+    echo "ERROR: <<< The network is not operational. >>>"
     return "${EX_ERR}"
   fi
 
-  echo ""
-  echo "Fetching NMT ${NMT_TAG}"
-  echo "--------------------------------------------------------------"
-  fetch_nmt || return "${EX_ERR}"
+  return "$EX_OK"
+}
 
+function ls_path() {
   echo ""
-  echo "Fetching Platform ${PLATFORM_TAG}"
-  echo "--------------------------------------------------------------"
-  fetch_platform_build || return "${EX_ERR}"
+  echo "Displaying contents of ${path} from ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
 
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'ls_path' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  local path="$2"
+  if [ -z "${path}" ]; then
+    echo "ERROR: 'ls_path' - path is required"
+    return "${EX_ERR}"
+  fi
+
+  kubectl exec "${pod}" -c root-container -- ls -al "${path}"
+}
+
+function cleanup_path() {
+  echo ""
+  echo "Cleanup pod directory ${HGCAPP_DIR} in ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'ls_path' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  local path="$2"
+  if [ -z "${path}" ]; then
+    echo "ERROR: 'ls_path' - path is required"
+    return "${EX_ERR}"
+  fi
+
+  kubectl exec "${pod}" -c root-container -- bash -c "rm -rf ${path}" || return "${EX_ERR}"
+  return "${EX_OK}"
+}
+
+function install_nmt() {
+  echo ""
+  echo "Install NMT to ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'ls_path' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  cleanup_path "${pod}" "${HGCAPP_DIR}/*" || return "${EX_ERR}"
+  kubectl exec "${pod}" -c root-container -- chmod +x "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" || return "${EX_ERR}"
+  kubectl exec "${pod}" -c root-container -- "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" --accept -- -fg || return "${EX_ERR}"
+
+  return "${EX_OK}"
+}
+
+function nmt_preflight() {
+  echo ""
+  echo "Run Preflight in ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'ls_path' - pod name is required"
+    return "${EX_ERR}"
+  fi
+  kubectl exec "${pod}" -c root-container --  \
+    node-mgmt-tool -VV preflight -j 17.0.2 -df -i "${NMT_PROFILE}" -k 1g -m 1g || return "${EX_ERR}"
+
+  kubectl exec "${pod}" -c root-container --  \
+    node-mgmt-tool -VV install \
+    -p "${HEDERA_HOME_DIR}/${PLATFORM_INSTALLER}" \
+    -n "${node_name}" \
+    -x "${PLATFORM_TAG}" \
+    || return "${EX_ERR}"
+
+  return "${EX_OK}"
+}
+
+function nmt_install() {
+  echo ""
+  echo "Run Install in ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'ls_path' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  kubectl exec "${pod}" -c root-container --  \
+    node-mgmt-tool -VV install \
+    -p "${HEDERA_HOME_DIR}/${PLATFORM_INSTALLER}" \
+    -n "${node_name}" \
+    -x "${PLATFORM_TAG}" \
+    || return "${EX_ERR}"
+
+  return "${EX_OK}"
+}
+
+function nmt_start() {
+  echo ""
+  echo "Starting platform node in ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'ls_path' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  kubectl exec "${pod}" -c root-container -- node-mgmt-tool -VV start
+  return "${EX_OK}"
+}
+
+function run_node_nmt() {
+  if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
+    echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
+    return "${EX_ERR}"
+  fi
   echo ""
   echo "Processing nodes ${NODE_NAMES[*]}"
-  echo "--------------------------------------------------------------"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  fetch_nmt || return "${EX_ERR}"
+  fetch_platform_build || return "${EX_ERR}"
+
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
-
-    # copy NMT and platform code into the root container
-    echo ""
-    echo "Copying NMT to ${pod}"
-    echo "--------------------------------------------------------------"
     copy_nmt "${pod}" || return "${EX_ERR}"
-
-    echo ""
-    echo "Copying Platform to ${pod}"
-    echo "--------------------------------------------------------------"
     copy_platform "${pod}" || return "${EX_ERR}"
-
-    echo ""
-    echo "Displaying contents of ${HEDERA_HOME_DIR} from ${pod}"
-    echo "--------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container -- ls -al "${HEDERA_HOME_DIR}"
-
-    # Cleanup
-    echo ""
-    echo "Cleanup pod directory ${HGCAPP_DIR} in ${pod}"
-    echo "--------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container -- bash -c "rm -rf ${HGCAPP_DIR}/*" || return "${EX_ERR}"
-
-    # Install NMT
-    echo ""
-    echo "Install NMT to ${pod}"
-    echo "--------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container -- chmod +x "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" || return "${EX_ERR}"
-    kubectl exec "${pod}" -c root-container -- "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" --accept -- -fg || return "${EX_ERR}"
-
-    # Install platform software
-    echo ""
-    echo "Run Preflight in ${pod}"
-    echo "--------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container --  \
-      node-mgmt-tool -VV preflight -j 17.0.2 -df -i "${NMT_PROFILE}" -k 1g -m 1g || return "${EX_ERR}"
-
-    echo ""
-    echo "Run Install in ${pod}"
-    echo "--------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container --  \
-      node-mgmt-tool -VV install \
-      -p "${HEDERA_HOME_DIR}/${PLATFORM_INSTALLER}" \
-      -n "${node_name}" \
-      -x "${PLATFORM_TAG}" \
-      || return "${EX_ERR}"
-
-    echo ""
-    echo "Copy hedery TLS keys to ${pod}"
-    echo "--------------------------------------------------------------"
-    copy_hedera_keys "${pod}" || return "${EX_ERR}"
-
-    echo ""
-    echo "Displaying contents of ${HAPI_PATH} from ${pod}"
-    echo "--------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container -- ls -al "${HAPI_PATH}"
-
-    echo ""
-    echo "Copy node gossip keys to ${pod}"
-    echo "--------------------------------------------------------------"
-    copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
-
-    echo ""
-    echo "Displaying contents of ${HAPI_PATH}/data/keys from ${pod}"
-    echo "-------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container -- ls -al "${HAPI_PATH}/data/keys"
-
-    echo ""
-    echo "Starting platform in ${pod}"
-    echo "-------------------------------------------------------------"
-    kubectl exec "${pod}" -c root-container -- node-mgmt-tool -VV start
-
-    echo ""
-    echo "Checking logs in ${pod}"
-    echo "-------------------------------------------------------------"
-    verify_network_state "${pod}" || return "${EX_ERR}"
+    ls_path "${pod}" "${HEDERA_HOME_DIR}" || return "${EX_ERR}"
+    install_nmt "${pod}" || return "${EX_ERR}"
+    nmt_preflight "${pod}" || return "${EX_ERR}"
+#    nmt_install "${pod}" || return "${EX_ERR}"
+#    copy_hedera_keys "${pod}" || return "${EX_ERR}"
+#    copy_config_files "${pod}" || return "${EX_ERR}"
+#    ls_path "${pod}" "${HAPI_PATH}/"
+#    copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
+#    ls_path "${pod}" "${HAPI_PATH}/data/keys/"
+#    nmt_start "${pod}" || return "${EX_ERR}"
+#    verify_network_state "${pod}" || return "${EX_ERR}"
   done
-
 }
 
 run_node_nmt || exit 1
