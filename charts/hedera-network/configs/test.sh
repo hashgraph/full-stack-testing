@@ -11,7 +11,7 @@ function get_pod_list() {
 
 function test_node_total() {
   # set test expectations
-  local expected_node_total=3
+  local expected_node_total=4
 
   echo "-------------------------------------------------------------"
   echo "Checking total number of network node containers"
