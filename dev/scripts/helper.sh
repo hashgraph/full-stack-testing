@@ -522,6 +522,7 @@ function stop_nodes() {
   echo "-----------------------------------------------------------------------------------------------------"
 
   for node_name in "${NODE_NAMES[@]}";do
+    local pod="network-${node_name}-0" # pod name
     nmt_stop "${pod}" || return "${EX_ERR}"
   done
 
