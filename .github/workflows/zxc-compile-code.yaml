@@ -124,10 +124,7 @@ jobs:
           kubectl config get-contexts
           helm install fst ./charts/hedera-network
           helm test fst
-          helm test fst &> deploy.log &
-          kubectl wait --for=jsonpath='{.status.phase}'=Running pod/network-test --timeout=300s 
-          kubectl logs -f network-test
-          cat deploy.log
+          kubectl logs network-test
 
       - name: Compile
         id: gradle-build
