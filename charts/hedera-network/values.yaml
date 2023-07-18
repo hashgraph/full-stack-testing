@@ -1,6 +1,4 @@
 hedera:
-  user: 2000
-  group: 2000
   # TODO: do we need an easy way (to avoid repetition) to create multiple notes if they all have the same configuration?
   nodes:
     - name: node-1
