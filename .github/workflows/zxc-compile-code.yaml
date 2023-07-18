@@ -99,7 +99,7 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - name: Setup Kind
-        uses: helm/kind-action@fa81e57adff234b2908110485695db0f181f3c67 # pin@v1
+        uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # pin@v1
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
           verbosity: 3
