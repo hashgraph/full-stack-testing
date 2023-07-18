@@ -101,7 +101,7 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
@@ -136,7 +136,7 @@ jobs:
           echo "options=${SONAR_OPTS}" >> "${GITHUB_OUTPUT}"
 
       - name: SonarCloud Scan
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         env:
           GITHUB_TOKEN: ${{ secrets.access-token }}
           SONAR_TOKEN: ${{ secrets.sonar-token }}

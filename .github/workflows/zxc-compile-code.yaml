@@ -89,7 +89,7 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
@@ -128,20 +128,20 @@ jobs:
 
       - name: Compile
         id: gradle-build
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
 
       - name: Javadoc
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         if: ${{ inputs.enable-javadoc && steps.gradle-build.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: javadoc --scan
 
       - name: Spotless Check
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         if: ${{ inputs.enable-spotless-check && steps.gradle-build.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -149,7 +149,7 @@ jobs:
 
       - name: Unit Testing
         id: gradle-test
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -165,7 +165,7 @@ jobs:
           junit_files: "**/build/test-results/test/TEST-*.xml"
 
       - name: Jacoco Coverage Report
-        uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # pin@v2
+        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
