@@ -508,5 +508,5 @@ secring.*
 
 ### Ignore Helm resources
 **/src/main/resources/software/**
-dev/scripts/.env
+dev/.env
 *.run

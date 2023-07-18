@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# load template.env file
+# load .env file
 set -a
-source "${SCRIPT_DIR}/.env"
+source ".env"
 set +a
+
+KCTL=/usr/local/bin/kubectl
 
 EX_OK=0
 EX_ERR=1
@@ -104,7 +106,7 @@ function copy_nmt() {
   fi
 
   echo "Copying ${NMT_INSTALLER_PATH} -> ${pod}:${HEDERA_HOME_DIR}"
-  kubectl cp "${NMT_INSTALLER_PATH}" "${pod}":"${HEDERA_HOME_DIR}" -c root-container || return "${EX_ERR}"
+  "${KCTL}" cp "${NMT_INSTALLER_PATH}" "${pod}":"${HEDERA_HOME_DIR}" -c root-container || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -122,7 +124,7 @@ function copy_platform() {
   fi
 
   echo "Copying ${PLATFORM_INSTALLER_PATH} -> ${pod}:${HEDERA_HOME_DIR}"
-  kubectl cp "${PLATFORM_INSTALLER_PATH}" "${pod}":"${HEDERA_HOME_DIR}" -c root-container || return "${EX_ERR}"
+  "${KCTL}" cp "${PLATFORM_INSTALLER_PATH}" "${pod}":"${HEDERA_HOME_DIR}" -c root-container || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -157,13 +159,13 @@ function copy_files() {
 
   echo ""
   echo "Copying ${srcDir}/${file} -> ${pod}:${dstDir}/"
-  kubectl cp "$srcDir/${file}" "${pod}:${dstDir}/" -c root-container || return "${EX_ERR}"
+  "${KCTL}" cp "$srcDir/${file}" "${pod}:${dstDir}/" -c root-container || return "${EX_ERR}"
 
   echo "Changing ownership of ${pod}:${dstDir}/${file}"
-  kubectl exec "${pod}" -c root-container -- chown hedera:hedera "${dstDir}/${file}" || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- chown hedera:hedera "${dstDir}/${file}" || return "${EX_ERR}"
 
   echo "Changing permission to ${mode} of ${pod}:${dstDir}/${file}"
-  kubectl exec "${pod}" -c root-container -- chmod "${mode}" "${dstDir}/${file}" || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- chmod "${mode}" "${dstDir}/${file}" || return "${EX_ERR}"
 
   echo ""
   ls_path "${pod}" "${dstDir}/"
@@ -314,10 +316,6 @@ function copy_docker_files() {
 }
 
 function ls_path() {
-  echo ""
-  echo "Displaying contents of ${path} from ${pod}"
-  echo "-----------------------------------------------------------------------------------------------------"
-
   local pod="$1"
   if [ -z "${pod}" ]; then
     echo "ERROR: 'ls_path' - pod name is required"
@@ -330,7 +328,12 @@ function ls_path() {
     return "${EX_ERR}"
   fi
 
-  kubectl exec "${pod}" -c root-container -- ls -al "${path}"
+  echo ""
+  echo "Displaying contents of ${path} from ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  echo "Running: "${KCTL}" exec ${pod} -c root-container -- ls -al ${path}"
+  "${KCTL}" exec "${pod}" -c root-container -- ls -al "${path}"
 }
 
 function cleanup_path() {
@@ -350,7 +353,7 @@ function cleanup_path() {
     return "${EX_ERR}"
   fi
 
-  kubectl exec "${pod}" -c root-container -- bash -c "rm -rf ${path}" || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "rm -rf ${path}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
@@ -366,8 +369,8 @@ function install_nmt() {
   fi
 
   cleanup_path "${pod}" "${HGCAPP_DIR}/*" || return "${EX_ERR}"
-  kubectl exec "${pod}" -c root-container -- chmod +x "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" || return "${EX_ERR}"
-  kubectl exec "${pod}" -c root-container -- sudo "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" --accept -- -fg || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- chmod +x "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- sudo "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" --accept -- -fg || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -383,7 +386,7 @@ function nmt_preflight() {
     return "${EX_ERR}"
   fi
 
-  kubectl exec "${pod}" -c root-container --  \
+  "${KCTL}" exec "${pod}" -c root-container --  \
     node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 1g -m 1g || return "${EX_ERR}"
 
   return "${EX_OK}"
@@ -400,7 +403,7 @@ function nmt_install() {
     return "${EX_ERR}"
   fi
 
-  kubectl exec "${pod}" -c root-container --  \
+  "${KCTL}" exec "${pod}" -c root-container --  \
     node-mgmt-tool -VV install \
     -p "${HEDERA_HOME_DIR}/${PLATFORM_INSTALLER}" \
     -n "${node_name}" \
@@ -421,7 +424,7 @@ function nmt_start() {
     return "${EX_ERR}"
   fi
 
-  kubectl exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
@@ -436,7 +439,7 @@ function nmt_stop() {
     return "${EX_ERR}"
   fi
 
-  kubectl exec "${pod}" -c root-container -- node-mgmt-tool -VV stop  || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV stop  || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
@@ -458,13 +461,13 @@ function verify_network_state() {
     sleep 5
     attempts=$((attempts + 1))
     set +e
-    status="$(kubectl exec "${pod}" -c root-container -- sudo cat "${HAPI_PATH}/${LOG_PATH}/hgcaa.log" "${HAPI_PATH}/${LOG_PATH}/swirlds.log" | grep "ACTIVE")"
+    status="$("${KCTL}" exec "${pod}" -c root-container -- sudo cat "${HAPI_PATH}/${LOG_PATH}/hgcaa.log" "${HAPI_PATH}/${LOG_PATH}/swirlds.log" | grep "ACTIVE")"
     set -e
     printf "Checking network status (Attempt #${attempts})... >>>>>\n %s\n <<<<<\n" "${status}"
   done
 
   if [[ "${status}" != *ACTIVE* ]]; then
-    kubectl exec "${pod}" -c root-container -- docker logs swirlds-node
+    "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node
     echo "ERROR: <<< The network is not operational. >>>"
     return "${EX_ERR}"
   fi

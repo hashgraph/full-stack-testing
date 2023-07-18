@@ -2,7 +2,7 @@ SCRIPTS_DIR=$(PWD)/scripts
 
 .PHONY: setup
 setup:
-	cp "${SCRIPTS_DIR}/template.env" "${SCRIPTS_DIR}/.env"
+	cp "${SCRIPTS_DIR}/template.env" ".env"
 
 .PHONY: setup-cluster
 setup-cluster:
@@ -31,11 +31,11 @@ destroy:
 
 .PHONY: start
 start:
-	source "${SCRIPTS_DIR}/start-node-nmt.sh" && start_nodes
+	source "${SCRIPTS_DIR}/helper.sh" && start_nodes
 
 .PHONY: stop
 stop:
-	source "${SCRIPTS_DIR}/start-node-nmt.sh" && stop_nodes
+	source "${SCRIPTS_DIR}/helper.sh" && stop_nodes
 
 .PHONY: gen-keys
 gen-keys:
