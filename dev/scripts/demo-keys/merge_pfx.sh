@@ -16,21 +16,23 @@
 # DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
 #
 
-n=${1}
+dir=${1}
+n=${2}
+rm -f "${dir}/public.pfx"
 # signing cert of $n
-keytool -exportcert -alias "s-${n}" -keystore "./${n}/public-${n}.pfx" -storetype "pkcs12" -storepass "password" |
-  keytool -importcert -alias "s-${n}" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt || exit 1
+keytool -exportcert -alias "s-${n}" -keystore "${dir}/public-${n}.pfx" -storetype "pkcs12" -storepass "password" |
+  keytool -importcert -alias "s-${n}" -keystore "${dir}/public.pfx" -storetype "pkcs12" -storepass "password" -noprompt || exit 1
 
 # agreement cert of $n
-keytool -exportcert -alias "a-${n}" -keystore "./${n}/public-${n}.pfx" -storetype "pkcs12" -storepass "password" |
-  keytool -importcert -alias "a-${n}" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt || exit 1
+keytool -exportcert -alias "a-${n}" -keystore "${dir}/public-${n}.pfx" -storetype "pkcs12" -storepass "password" |
+  keytool -importcert -alias "a-${n}" -keystore "${dir}/public.pfx" -storetype "pkcs12" -storepass "password" -noprompt || exit 1
 
 # encryption cert of ${n}
-keytool -exportcert -alias "e-${n}" -keystore "./${n}/public-${n}.pfx" -storetype "pkcs12" -storepass "password" |
-  keytool -importcert -alias "e-${n}" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt || exit 1
+keytool -exportcert -alias "e-${n}" -keystore "${dir}/public-${n}.pfx" -storetype "pkcs12" -storepass "password" |
+  keytool -importcert -alias "e-${n}" -keystore "${dir}/public.pfx" -storetype "pkcs12" -storepass "password" -noprompt || exit 1
 
 
 echo "-----------------------------"
 echo "public.pfx"
 echo "-----------------------------"
-keytool -list -keystore "public.pfx" -storetype "pkcs12" -storepass "password"
+keytool -list -keystore "${dir}/public.pfx" -storetype "pkcs12" -storepass "password"

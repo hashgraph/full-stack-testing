@@ -19,6 +19,7 @@ spec:
         app: network-{{ $node.name }}
         type: network-node
     spec:
+      terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}

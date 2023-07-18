@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
+KEYS_DIR="$1"
+[[ ! "${KEYS_DIR}" ]] && echo "ERROR: KEYS_DIR is required" && exit 1
+
+shift 1
 nodes=("$@")
 [[ ! "${nodes}" ]] && echo "ERROR: Node list is required" && exit 1
+
 
 EX_OK=0
 EX_ERR=1
@@ -16,7 +21,7 @@ function combine_node_public_key() {
   node="$1"
   [[ ! "${node}" ]] && echo "ERROR: Node name is missing" && return "$EX_ERR"
   echo "Combining public key for node: ${node}"
-  docker run --rm -v "${SCRIPT_DIR}":/keys --workdir /keys eclipse-temurin:17.0.2_8-jre bash ./merge_pfx.sh "${node}" || return "${EX_ERR}"
+  docker run --rm -v "${SCRIPT_DIR}":/keys --workdir /keys eclipse-temurin:17.0.2_8-jre bash ./merge_pfx.sh "${KEYS_DIR}" "${node}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
