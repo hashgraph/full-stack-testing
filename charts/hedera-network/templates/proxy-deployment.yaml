@@ -18,6 +18,9 @@ spec:
         - name: config-volume
           configMap:
             name: haproxy-config-{{ $nodeConfig.name }}
+        - name: ofac-volume
+          configMap:
+            name: ofac-config
       containers:
       - name: haproxy
         image: {{ $.Values.infrastructure.docker.registry }}/{{ $.Values.infrastructure.docker.images.haproxy }}
@@ -25,7 +28,9 @@ spec:
         volumeMounts:
           - name: config-volume
             # https://hub.docker.com/_/haproxy/
-            mountPath: /usr/local/etc/haproxy/haproxy.cfg
+            mountPath: /usr/local/etc/haproxy
+          - name: ofac-volume
+            mountPath: /var/opt/ofac/
 ---
 apiVersion: apps/v1
 kind: Deployment

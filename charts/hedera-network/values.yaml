@@ -62,7 +62,7 @@ infrastructure:
     images:
       root: ghcr.io/hashgraph/full-stack-testing/ubi8-init-dind:0.1.2
       envoyproxy: envoyproxy/envoy:v1.26-latest
-      haproxy: haproxy:lts-alpine3.18
+      haproxy: haproxy:2.4-alpine
       jsonrpcrelay: jsonrpcrelay
       mirroruploader: gcr.io/hedera-registry/uploader-mirror:1.3.0
       backupUploader: gcr.io/hedera-registry/hedera-backups:0.6.0
