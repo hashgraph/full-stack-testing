@@ -57,7 +57,7 @@ spec:
         volumeMounts:
           - name: config-volume
             # https://www.envoyproxy.io/docs/envoy/v1.26.2/start/docker
-            mountPath: /etc/envoy/envoy.yaml
+            mountPath: /etc/envoy
 ---
 apiVersion: apps/v1
 kind: Deployment
