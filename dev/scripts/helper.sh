@@ -570,6 +570,7 @@ function start_nodes() {
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
     nmt_start "${pod}" || return "${EX_ERR}"
+    log_time
     verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
     log_time
   done
@@ -607,6 +608,27 @@ function verify_nodes() {
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
     verify_network_state "${pod}" "${MAX_ATTEMPTS}"
+    log_time
+  done
+
+  return "${EX_OK}"
+}
+
+
+# copy all node keys
+function replace_keys() {
+  if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
+    echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
+    return "${EX_ERR}"
+  fi
+  echo ""
+  echo "Processing nodes ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  for node_name in "${NODE_NAMES[@]}";do
+    local pod="network-${node_name}-0" # pod name
+    copy_hedera_keys "${pod}" || return "${EX_ERR}"
+    copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
     log_time
   done
 
