@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+start_time=$(date +%s.%N)
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # load .env file
@@ -33,6 +34,12 @@ OPENJDK_VERSION="${OPENJDK_VERSION:-17.0.2}"
 OPENJDK_INSTALLER="openjdk-${OPENJDK_VERSION}_linux-x64_bin.tar.gz"
 OPENJDK_INSTALLER_DIR="${SCRIPT_DIR}/../resources/jdk"
 OPENJDK_INSTALLER_PATH="${OPENJDK_INSTALLER_DIR}/${OPENJDK_INSTALLER}"
+
+function log_time() {
+  duration=$(echo "$(date +%s.%N) - ${start_time}" | bc)
+  execution_time=$(printf "%.2f seconds" "${duration}")
+  echo "<<< Script Execution Time: ${execution_time} >>>"
+}
 
 # Fetch NMT release
 function fetch_nmt() {
@@ -545,6 +552,7 @@ function setup_nodes() {
     ls_path "${pod}" "${HAPI_PATH}/"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
+    log_time
   done
 
   return "${EX_OK}"
@@ -561,13 +569,9 @@ function start_nodes() {
 
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
-
-    verify_network_state "${pod}" 3
-    local status="$?"
-    if [ "${status}" != "${EX_OK}" ]; then
-      nmt_start "${pod}" || return "${EX_ERR}"
-      verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
-    fi
+    nmt_start "${pod}" || return "${EX_ERR}"
+    verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
+    log_time
   done
 
   return "${EX_OK}"
@@ -585,6 +589,7 @@ function stop_nodes() {
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
     nmt_stop "${pod}" || return "${EX_ERR}"
+    log_time
   done
 
   return "${EX_OK}"
@@ -602,6 +607,7 @@ function verify_nodes() {
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
     verify_network_state "${pod}" "${MAX_ATTEMPTS}"
+    log_time
   done
 
   return "${EX_OK}"

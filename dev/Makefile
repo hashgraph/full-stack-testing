@@ -55,3 +55,8 @@ restart: stop-nodes destroy-network deploy-network start-nodes
 .PHONY: prep-address-book
 prep-address-book:
 	source "${SCRIPTS_DIR}/helper.sh" && prep_address_book
+
+.PHONY: run-func
+run-func:
+	source "${SCRIPTS_DIR}/helper.sh" && ${FUNC}
+
