@@ -1,0 +1,10 @@
+###############################################################################################
+# Configuration file
+###############################################################################################
+swirld, hedera
+app, HederaNode.jar
+# address, <NODE_ID>, <NODE_NAME>, <INTERNAL_IP>, <INTERNAL_PORT>, <EXTERNAL_IP>, <EXTERNAL_PORT>, <ACCOUNT_ID>
+address, 0, node0, 1, 127.0.0.1, 50111, $node0_IP, 50111, 0.0.0
+address, 1, node1, 1, 127.0.0.1, 50111, $node1_IP, 50111, 0.0.1
+address, 2, node2, 1, 127.0.0.1, 50111, $node2_IP, 50111, 0.0.2
+address, 3, node3, 1, 127.0.0.1, 50111, $node3_IP, 50111, 0.0.3

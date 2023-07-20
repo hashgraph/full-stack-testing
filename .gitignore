@@ -510,3 +510,4 @@ secring.*
 **/src/main/resources/software/**
 dev/.env
 *.run
+dev/network-node/config.txt

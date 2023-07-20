@@ -3,7 +3,7 @@ csvFileName,                                   MainNetStats
 csvOutputFolder,                               data/stats
 doUpnp,                                        false
 enableEventStreaming,                          false
-eventsLogDir,                                  /opt/hgcapp/eventStreams
+eventsLogDir,                                  /opt/hgcapp/eventsStreams
 eventsLogPeriod,                               5
 maxEventQueueForCons,                          1000
 maxOutgoingSyncs,                              8

@@ -252,13 +252,49 @@ function copy_node_keys() {
   return "${EX_OK}"
 }
 
+# prepare address book using all nodes pod IP and store as config.txt
+function prep_address_book() {
+  echo ""
+  echo "Preparing address book"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local node_IP=""
+  cp "${SCRIPT_DIR}/../network-node/config.template" "${SCRIPT_DIR}/../network-node/config.txt"
+  for node_name in "${NODE_NAMES[@]}";do
+    local pod="network-${node_name}-0" # pod name
+    POD_IP=$("${KCTL}" get pod "${pod}" -o jsonpath='{.status.podIP}' | xargs)
+    if [ -z "${POD_IP}" ]; then
+      echo "Could not detect pod IP for ${pod}"
+      return "${EX_ERR}"
+    fi
+
+    # render template
+    node_IP="${node_name}_IP"
+    echo "${node_IP}: ${POD_IP}"
+#    echo "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt"
+    config_content=$(bash -c "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt")
+    echo "${config_content}" > "${SCRIPT_DIR}/../network-node/config.txt"
+  done
+
+  echo ""
+  cat "${SCRIPT_DIR}/../network-node/config.txt"
+
+  return "${EX_OK}"
+}
+
 # Copy config files
 function copy_config_files() {
   echo ""
-  echo "Copy config files to ${pod}"
+  echo "Copy config to ${pod}"
   echo "-----------------------------------------------------------------------------------------------------"
 
-  local pod="$1"
+  local node="$1"
+  if [ -z "${node}" ]; then
+    echo "ERROR: 'copy_config_files' - node name is required"
+    return "${EX_ERR}"
+  fi
+
+  local pod="$2"
   if [ -z "${pod}" ]; then
     echo "ERROR: 'copy_config_files' - pod name is required"
     return "${EX_ERR}"
@@ -410,6 +446,9 @@ function nmt_install() {
     -x "${PLATFORM_VERSION}" \
     || return "${EX_ERR}"
 
+  "${KCTL}" exec "${pod}" -c root-container --  \
+    docker images && docker ps -a
+
   return "${EX_OK}"
 }
 
@@ -445,37 +484,37 @@ function nmt_stop() {
 
 function verify_network_state() {
   echo ""
-  echo "Checking logs in ${pod}"
+  echo "Checking network status in ${pod}"
   echo "-----------------------------------------------------------------------------------------------------"
 
   local pod="$1"
+  local max_attempts="$2"
   sleep 5
   local attempts=0
   local status=""
 
-  LOG_PATH="output"
-  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="logs"
+  LOG_PATH="output/hgcaa.log"
+  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="logs/stdout.log"
 
-  printf "Checking network state in: %s" "${pod}"
-  while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${status}" != *ACTIVE* ]]; do
+  while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
     sleep 5
     attempts=$((attempts + 1))
     set +e
-    status="$("${KCTL}" exec "${pod}" -c root-container -- sudo cat "${HAPI_PATH}/${LOG_PATH}/hgcaa.log" "${HAPI_PATH}/${LOG_PATH}/swirlds.log" | grep "ACTIVE")"
+    status="$("${KCTL}" exec "${pod}" -c root-container -- sudo cat "${HAPI_PATH}/${LOG_PATH}" | grep "Now current platform status = ACTIVE")"
     set -e
-    printf "Checking network status (Attempt #${attempts})... >>>>>\n %s\n <<<<<\n" "${status}"
+    printf "Network status in ${pod} (Attempt #${attempts})... >>>>>\n %s\n <<<<<\n" "${status}"
   done
 
   if [[ "${status}" != *ACTIVE* ]]; then
-    "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node
-    echo "ERROR: <<< The network is not operational. >>>"
+    "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node > "${pod}-swirlds-node.log"
+    echo "ERROR: <<< The network is not operational in ${pod}. >>>"
     return "${EX_ERR}"
   fi
 
   return "$EX_OK"
 }
 
-function start_nodes() {
+function setup_nodes() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
@@ -487,6 +526,7 @@ function start_nodes() {
   fetch_nmt || return "${EX_ERR}"
   fetch_platform_build || return "${EX_ERR}"
   fetch_jdk || return "${EX_ERR}"
+  prep_address_book || return "${EX_ERR}"
 
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
@@ -501,12 +541,33 @@ function start_nodes() {
     ls_path "${pod}" "${NMT_DIR}/images/network-node-base/" || return "${EX_ERR}"
     nmt_install "${pod}" || return "${EX_ERR}"
     copy_hedera_keys "${pod}" || return "${EX_ERR}"
-    copy_config_files "${pod}" || return "${EX_ERR}"
+    copy_config_files "${node_name}" "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HAPI_PATH}/"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
-    nmt_start "${pod}" || return "${EX_ERR}"
-    verify_network_state "${pod}" || return "${EX_ERR}"
+  done
+
+  return "${EX_OK}"
+}
+
+function start_nodes() {
+  if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
+    echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
+    return "${EX_ERR}"
+  fi
+  echo ""
+  echo "Processing nodes ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  for node_name in "${NODE_NAMES[@]}";do
+    local pod="network-${node_name}-0" # pod name
+
+    verify_network_state "${pod}" 3
+    local status="$?"
+    if [ "${status}" != "${EX_OK}" ]; then
+      nmt_start "${pod}" || return "${EX_ERR}"
+      verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
+    fi
   done
 
   return "${EX_OK}"
@@ -524,6 +585,23 @@ function stop_nodes() {
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
     nmt_stop "${pod}" || return "${EX_ERR}"
+  done
+
+  return "${EX_OK}"
+}
+
+function verify_nodes() {
+  if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
+    echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
+    return "${EX_ERR}"
+  fi
+  echo ""
+  echo "Processing nodes ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  for node_name in "${NODE_NAMES[@]}";do
+    local pod="network-${node_name}-0" # pod name
+    verify_network_state "${pod}" "${MAX_ATTEMPTS}"
   done
 
   return "${EX_OK}"

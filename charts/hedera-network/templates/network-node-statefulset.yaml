@@ -55,6 +55,11 @@ spec:
         volumeMounts:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
+        env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
 
   {{- if $node.sidecars.accountBalancesUploader }}
       # Account Balance Uploader

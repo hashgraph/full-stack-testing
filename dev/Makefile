@@ -22,21 +22,36 @@ helm-test-logs:
 	@kubectl wait --for=jsonpath='{.status.phase}'=Running pod/network-test --timeout=300s && \
 	kubectl logs -f network-test
 
-.PHONY: deploy
-deploy: deploy-chart helm-test-logs
+.PHONY: deploy-network
+deploy-network: deploy-chart helm-test-logs
 
-.PHONY: destroy
-destroy:
+.PHONY: destroy-network
+destroy-network:
 	@echo ">> Uninstalling helm chart..." && helm uninstall fst && sleep 10
 
-.PHONY: start
-start:
+.PHONY: setup-nodes
+setup-nodes:
+	source "${SCRIPTS_DIR}/helper.sh" && setup_nodes
+
+.PHONY: start-nodes
+start-nodes:
 	source "${SCRIPTS_DIR}/helper.sh" && start_nodes
 
-.PHONY: stop
-stop:
+.PHONY: verify-nodes
+verify-nodes:
+	source "${SCRIPTS_DIR}/helper.sh" && verify_nodes
+
+.PHONY: stop-nodes
+stop-nodes:
 	source "${SCRIPTS_DIR}/helper.sh" && stop_nodes
 
 .PHONY: gen-keys
 gen-keys:
 	"${SCRIPTS_DIR}./demo-keys/gen-public-pfx.sh"  node0 node1 node2 node3
+
+.PHONY: restart
+restart: stop-nodes destroy-network deploy-network start-nodes
+
+.PHONY: prep-address-book
+prep-address-book:
+	source "${SCRIPTS_DIR}/helper.sh" && prep_address_book
