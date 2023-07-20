@@ -521,7 +521,8 @@ function verify_network_state() {
   return "$EX_OK"
 }
 
-function setup_nodes() {
+###################################### Functions To Run For All Nodes ##################################################
+function setup_node_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
@@ -558,7 +559,7 @@ function setup_nodes() {
   return "${EX_OK}"
 }
 
-function start_nodes() {
+function start_node_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
@@ -578,7 +579,7 @@ function start_nodes() {
   return "${EX_OK}"
 }
 
-function stop_nodes() {
+function stop_node_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
@@ -596,7 +597,7 @@ function stop_nodes() {
   return "${EX_OK}"
 }
 
-function verify_nodes() {
+function verify_node_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
@@ -616,7 +617,7 @@ function verify_nodes() {
 
 
 # copy all node keys
-function replace_keys() {
+function replace_keys_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"

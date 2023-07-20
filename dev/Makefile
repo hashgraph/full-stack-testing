@@ -31,19 +31,19 @@ destroy-network:
 
 .PHONY: setup-nodes
 setup-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && setup_nodes
+	source "${SCRIPTS_DIR}/helper.sh" && setup_node_all
 
 .PHONY: start-nodes
 start-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && start_nodes
+	source "${SCRIPTS_DIR}/helper.sh" && start_node_all
 
 .PHONY: verify-nodes
 verify-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && verify_nodes
+	source "${SCRIPTS_DIR}/helper.sh" && verify_node_all
 
 .PHONY: stop-nodes
 stop-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && stop_nodes
+	source "${SCRIPTS_DIR}/helper.sh" && stop_node_all
 
 .PHONY: gen-keys
 gen-keys:
