@@ -100,6 +100,31 @@ function fetch_jdk() {
   return "${EX_OK}"
 }
 
+function reset_node() {
+  echo ""
+  echo "Resetting node ${pod}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'reset_nmt' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  # best effort clean up of docker env
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker stop \$(docker ps -aq)" || true
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker rm -f \$(docker ps -aq)" || true
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker rmi -f \$(docker images -aq)" || true
+
+  "${KCTL}" exec "${pod}" -c root-container -- rm -rf "${NMT_DIR}" || true
+  "${KCTL}" exec "${pod}" -c root-container -- rm -rf "${HAPI_PATH}" || true
+
+  ls_path "${pod}" "${HGCAPP_DIR}"
+  set_permission "${pod}" "${HGCAPP_DIR}"
+
+  return "${EX_OK}"
+}
+
 # Copy NMT into root-container
 function copy_nmt() {
   echo ""
@@ -136,6 +161,33 @@ function copy_platform() {
   return "${EX_OK}"
 }
 
+function set_permission() {
+  local pod="$1"
+  if [ -z "${pod}" ]; then
+    echo "ERROR: 'set_permission' - pod name is required"
+    return "${EX_ERR}"
+  fi
+
+  local path="$2"
+  if [ -z "${path}" ]; then
+    echo "ERROR: 'set_permission' - path is required"
+    return "${EX_ERR}"
+  fi
+
+  local mode=0755
+
+  echo "Changing ownership of ${pod}:${path}"
+  "${KCTL}" exec "${pod}" -c root-container -- chown -R hedera:hedera "${path}" || return "${EX_ERR}"
+
+  echo "Changing permission to ${mode} of ${pod}:${path}"
+  "${KCTL}" exec "${pod}" -c root-container -- chmod -R "${mode}" "${path}" || return "${EX_ERR}"
+
+  echo ""
+  ls_path "${pod}" "${path}"
+
+  return "${EX_OK}"
+}
+
 # copy files and set ownership to hedera:hedera
 function copy_files() {
   local pod="$1"
@@ -162,20 +214,11 @@ function copy_files() {
     return "${EX_ERR}"
   fi
 
-  local mode=0755
-
   echo ""
   echo "Copying ${srcDir}/${file} -> ${pod}:${dstDir}/"
   "${KCTL}" cp "$srcDir/${file}" "${pod}:${dstDir}/" -c root-container || return "${EX_ERR}"
 
-  echo "Changing ownership of ${pod}:${dstDir}/${file}"
-  "${KCTL}" exec "${pod}" -c root-container -- chown hedera:hedera "${dstDir}/${file}" || return "${EX_ERR}"
-
-  echo "Changing permission to ${mode} of ${pod}:${dstDir}/${file}"
-  "${KCTL}" exec "${pod}" -c root-container -- chmod "${mode}" "${dstDir}/${file}" || return "${EX_ERR}"
-
-  echo ""
-  ls_path "${pod}" "${dstDir}/"
+  set_permission "${pod}" "${dstDir}/${file}"
 
   return "${EX_OK}"
 }
@@ -265,22 +308,37 @@ function prep_address_book() {
   echo "Preparing address book"
   echo "-----------------------------------------------------------------------------------------------------"
 
-  local node_IP=""
   cp "${SCRIPT_DIR}/../network-node/config.template" "${SCRIPT_DIR}/../network-node/config.txt"
+
+  local node_IP=""
+  local node_id=0
+  local internal_port=50211
+  local external_port=50211
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
+    echo "${KCTL} get pod ${pod} -o jsonpath='{.status.podIP}' | xargs"
     POD_IP=$("${KCTL}" get pod "${pod}" -o jsonpath='{.status.podIP}' | xargs)
     if [ -z "${POD_IP}" ]; then
       echo "Could not detect pod IP for ${pod}"
       return "${EX_ERR}"
     fi
 
+    echo "pod IP: ${POD_IP}"
+
     # render template
-    node_IP="${node_name}_IP"
-    echo "${node_IP}: ${POD_IP}"
+    local account="0.0.${node_id}"
+    local internal_ip="${POD_IP}"
+    local external_ip="${POD_IP}"
+    local node_stake=1
+    echo "address, ${node_id}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}" >> "${SCRIPT_DIR}/../network-node/config.txt"
+#    node_ip="${node_name}_IP"
+#    echo "${node_IP}: ${POD_IP}"
 #    echo "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt"
-    config_content=$(bash -c "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt")
-    echo "${config_content}" > "${SCRIPT_DIR}/../network-node/config.txt"
+#    config_content=$(bash -c "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt")
+#    echo "${config_content}" > "${SCRIPT_DIR}/../network-node/config.txt"
+
+     # increment node id
+     node_id=$((node_id+1))
   done
 
   echo ""
@@ -504,10 +562,10 @@ function verify_network_state() {
   [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="logs/stdout.log"
 
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
-    sleep 5
+    sleep 10
     attempts=$((attempts + 1))
     set +e
-    status="$("${KCTL}" exec "${pod}" -c root-container -- sudo cat "${HAPI_PATH}/${LOG_PATH}" | grep "Now current platform status = ACTIVE")"
+    status="$("${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node | grep "Now current platform status = ACTIVE")"
     set -e
     printf "Network status in ${pod} (Attempt #${attempts})... >>>>>\n %s\n <<<<<\n" "${status}"
   done
@@ -538,11 +596,14 @@ function setup_node_all() {
 
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
+    reset_node "${pod}"
     copy_nmt "${pod}" || return "${EX_ERR}"
     copy_platform "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HEDERA_HOME_DIR}" || return "${EX_ERR}"
     install_nmt "${pod}" || return "${EX_ERR}"
+    ls_path "${pod}" "${HGCAPP_DIR}" || return "${EX_ERR}"
     nmt_preflight "${pod}" || return "${EX_ERR}"
+    #set_permission "${pod}" "${HGCAPP_DIR}"
     copy_jdk "${pod}" || return "${EX_ERR}"
     copy_docker_files "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${NMT_DIR}/images/main-network-node/" || return "${EX_ERR}"
@@ -630,6 +691,23 @@ function replace_keys_all() {
     local pod="network-${node_name}-0" # pod name
     copy_hedera_keys "${pod}" || return "${EX_ERR}"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
+    log_time
+  done
+
+  return "${EX_OK}"
+}
+function reset_nodes() {
+  if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
+    echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
+    return "${EX_ERR}"
+  fi
+  echo ""
+  echo "Processing nodes ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
+  echo "-----------------------------------------------------------------------------------------------------"
+
+  for node_name in "${NODE_NAMES[@]}";do
+    local pod="network-${node_name}-0" # pod name
+    reset_node "${pod}" || return "${EX_ERR}"
     log_time
   done
 
