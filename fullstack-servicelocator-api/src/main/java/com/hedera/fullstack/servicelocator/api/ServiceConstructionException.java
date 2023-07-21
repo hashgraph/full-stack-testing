@@ -17,7 +17,7 @@
 package com.hedera.fullstack.servicelocator.api;
 
 /**
- * Exception thrown when a service cannot be constructed by a ServiceLocator.
+ * Exception thrown when a service cannot be constructed by a ServiceSupplier.
  */
 public class ServiceConstructionException extends RuntimeException {
 

@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.servicelocator.api;
+package com.hedera.fullstack.base.api.reflect;
 
-public interface ServiceLocator {}
+/**
+ * Reflection utilities for constructing instances of classes.
+ */
+public final class Construction {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
+    private Construction() {}
+}

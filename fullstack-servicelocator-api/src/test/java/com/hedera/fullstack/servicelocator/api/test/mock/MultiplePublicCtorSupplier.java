@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.servicelocator.api;
+package com.hedera.fullstack.servicelocator.api.test.mock;
 
-public interface ServiceLocator {}
+import com.hedera.fullstack.servicelocator.api.ServiceSupplier;
+
+public class MultiplePublicCtorSupplier extends ServiceSupplier<MultiplePublicCtorService> {
+    public MultiplePublicCtorSupplier() {
+        super(MultiplePublicCtorService.class);
+    }
+
+    public MultiplePublicCtorSupplier(Class<MultiplePublicCtorService> serviceClass) {
+        super(serviceClass);
+    }
+}
