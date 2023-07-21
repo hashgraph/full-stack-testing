@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.classloader.api;
+package com.hedera.fullstack.servicelocator.core;
 
 public class Dummy {}

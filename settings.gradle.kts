@@ -31,10 +31,6 @@ include(":fullstack-bom")
 
 include(":fullstack-base-api")
 
-include(":fullstack-classloader-api")
-
-include(":fullstack-classloader-core")
-
 include(":fullstack-configuration-api")
 
 include(":fullstack-configuration-core")
@@ -66,6 +62,10 @@ include(":fullstack-reporting-core")
 include(":fullstack-resource-generator-api")
 
 include(":fullstack-resource-generator-core")
+
+include(":fullstack-servicelocator-api")
+
+include(":fullstack-servicelocator-core")
 
 include(":fullstack-test-toolkit-api")
 
