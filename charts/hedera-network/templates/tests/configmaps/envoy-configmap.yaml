@@ -1,0 +1,12 @@
+# Configmaps for envoy one for each network node
+# This will change, we plan to only have envoy for a network node only if specified in the config
+{{- range $nodeConfig := ($.Values.hedera.nodes) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: envoy-proxy-config-{{ $nodeConfig.name }}
+data:
+  envoy.yaml: |
+    {{- tpl ($.Files.Get "configs/envoy.yaml") (dict "nodeConfig" $nodeConfig "Template" $.Template) | nindent 4 }}
+---
+{{ end }}
