@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- monitorInterval="600" , if any change to log level will be effective after 10 minute -->
-<Configuration status="WARN" monitorInterval="600">
+<Configuration status="TRACE" monitorInterval="600">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
       <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %-4L %c{1} - %m{nolookups}%n"/>
