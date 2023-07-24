@@ -1,12 +1,15 @@
 ###############################################################################################
 # Configuration file
 ###############################################################################################
-swirld, hedera
+swirld, 123
 app, HederaNode.jar
 ###################################### ADDRESS BOOK ###########################################
 # Format:
-# address, <NODE_ID>, <NODE_NAME>, <NODE_STAKE_AMOUNT>, <INTERNAL_IP>, <INTERNAL_PORT>, <EXTERNAL_IP>, <EXTERNAL_PORT>, <ACCOUNT_ID>
+# address, <NODE_ID>, <NODE_NICK_NAME>, <NODE_NAME>, <NODE_STAKE_AMOUNT>, <INTERNAL_IP>, <INTERNAL_PORT>, <EXTERNAL_IP>, <EXTERNAL_PORT>, <ACCOUNT_ID>
 #
 # Example:
-# address, 0, node0, 1, <POD_IP>, 50211, <POD_IP>, 50211, 0.0.0
-##############################################################################################
+#address, 0, node0000, node0000, 2685636917, 10.128.0.27, 30124, 35.223.93.31, 30124, 0.0.3
+#address, 1, node0001, node0001, 15745067016, 10.128.0.26, 30125, 35.238.137.246, 30125, 0.0.4
+#address, 2, node0002, node0002, 15152326407, 10.128.0.15, 30126, 34.68.231.89, 30126, 0.0.5
+#address, 3, node0003, node0003, 16416969660, 10.128.0.4, 30127, 35.238.246.241, 30127, 0.0.6
+#nextNodeId, 4
