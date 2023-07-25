@@ -18,14 +18,14 @@ HAPI_PATH="${HGCAPP_DIR}/services-hedera/HapiApp2.0"
 HEDERA_HOME_DIR="/home/hedera"
 NODE_NAMES="${NODE_NAMES}"
 
-NMT_VERSION="${NMT_RELEASE_TAG:-v2.0.0-alpha.0}"
+NMT_VERSION="${NMT_VERSION:-v2.0.0-alpha.0}"
 NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/releases/tags/${NMT_VERSION}"
 NMT_INSTALLER="node-mgmt-tools-installer-${NMT_VERSION}.run"
 NMT_INSTALLER_DIR="${SCRIPT_DIR}/../resources/nmt"
 NMT_INSTALLER_PATH="${NMT_INSTALLER_DIR}/${NMT_INSTALLER}"
 NMT_PROFILE=${NMT_PROFILE:-jrs}
 
-PLATFORM_VERSION="${PLATFORM_RELEASE_TAG:-v0.39.1}"
+PLATFORM_VERSION="${PLATFORM_VERSION:-v0.39.1}"
 PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
@@ -331,7 +331,7 @@ function prep_address_book() {
     local internal_ip="${POD_IP}"
     local external_ip="${POD_IP}"
     local node_stake=1
-    echo "address, ${node_id}, ${node_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}" >> "${config_file}"
+    echo "address, ${node_id}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}" >> "${config_file}"
 #    node_ip="${node_name}_IP"
 #    echo "${node_IP}: ${POD_IP}"
 #    echo "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt"
@@ -491,7 +491,7 @@ function nmt_preflight() {
   fi
 
   "${KCTL}" exec "${pod}" -c root-container --  \
-    node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 1g -m 1g || return "${EX_ERR}"
+    node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 2g -m 2g || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -565,7 +565,7 @@ function verify_network_state() {
   [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="logs/stdout.log"
 
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
-    sleep 10
+    sleep 15
     attempts=$((attempts + 1))
     set +e
     status="$("${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node | grep "Now current platform status = ACTIVE")"
