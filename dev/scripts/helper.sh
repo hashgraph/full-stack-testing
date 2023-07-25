@@ -331,7 +331,7 @@ function prep_address_book() {
     local internal_ip="${POD_IP}"
     local external_ip="${POD_IP}"
     local node_stake=1
-    echo "address, ${node_id}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}" >> "${config_file}"
+    echo "address, ${node_id}, ${node_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}" >> "${config_file}"
 #    node_ip="${node_name}_IP"
 #    echo "${node_IP}: ${POD_IP}"
 #    echo "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt"
@@ -342,7 +342,7 @@ function prep_address_book() {
      node_id=$((node_id+1))
   done
 
-  echo "nextNodeId, ${node_id}" >> "${config_file}"
+#  echo "nextNodeId, ${node_id}" >> "${config_file}"
 
   echo ""
   cat "${SCRIPT_DIR}/../network-node/config.txt"
