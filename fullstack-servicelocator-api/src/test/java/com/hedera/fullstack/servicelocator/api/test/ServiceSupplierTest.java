@@ -19,7 +19,7 @@ package com.hedera.fullstack.servicelocator.api.test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.hedera.fullstack.servicelocator.api.ServiceConstructionException;
+import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
 import com.hedera.fullstack.servicelocator.api.test.mock.MultiplePublicCtorService;
 import com.hedera.fullstack.servicelocator.api.test.mock.MultiplePublicCtorSupplier;
 import java.io.ByteArrayInputStream;
@@ -54,7 +54,7 @@ class ServiceSupplierTest {
         final OutputStream outputStreamValue = new ByteArrayOutputStream();
 
         assertThatThrownBy(() -> supplier.newServiceInstance(outputStreamValue))
-                .isInstanceOf(ServiceConstructionException.class)
+                .isInstanceOf(ClassConstructionException.class)
                 .hasMessageContaining(
                         "No public constructor found for com.hedera.fullstack.servicelocator.api.test.mock.MultiplePublicCtorService");
     }
@@ -101,7 +101,7 @@ class ServiceSupplierTest {
     @DisplayName("MultiplePublicCtor: InputStream Argument Constructor")
     void mpcInputStreamArgumentConstructor() {
         final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
-        final InputStream inputStream = new ByteArrayInputStream(new byte[0]);
+        final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[0]);
         final MultiplePublicCtorService outputStreamArgSvc = supplier.newServiceInstance(inputStream);
 
         assertThat(outputStreamArgSvc).isNotNull();

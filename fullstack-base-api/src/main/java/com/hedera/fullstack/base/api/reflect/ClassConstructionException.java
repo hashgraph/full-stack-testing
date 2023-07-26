@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.servicelocator.api;
+package com.hedera.fullstack.base.api.reflect;
 
 /**
  * Exception thrown when a service cannot be constructed by a ServiceSupplier.
  */
-public class ServiceConstructionException extends RuntimeException {
+public class ClassConstructionException extends RuntimeException {
 
     /**
      * Constructs a new runtime exception with the specified detail message.
@@ -29,7 +29,7 @@ public class ServiceConstructionException extends RuntimeException {
      * @param message the detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      */
-    public ServiceConstructionException(final String message) {
+    public ClassConstructionException(final String message) {
         super(message);
     }
 
@@ -46,7 +46,7 @@ public class ServiceConstructionException extends RuntimeException {
      *                permitted, and indicates that the cause is nonexistent or
      *                unknown.)
      */
-    public ServiceConstructionException(final String message, final Throwable cause) {
+    public ClassConstructionException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }
