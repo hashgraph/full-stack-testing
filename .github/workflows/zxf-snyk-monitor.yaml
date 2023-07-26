@@ -41,7 +41,7 @@ jobs:
           java-version: 17.0.7
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
+        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
         with:
           gradle-version: wrapper
 
@@ -51,7 +51,7 @@ jobs:
           node-version: 16
 
       - name: Compile
-        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
+        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
         with:
           gradle-version: wrapper
           arguments: assemble --scan
