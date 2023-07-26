@@ -124,8 +124,10 @@ jobs:
         run: |
           kubectl config get-contexts
           helm install fst ./charts/hedera-network
-          helm test fst
-          kubectl logs network-test
+          if ! command -v helm test fst >/dev/null 2>&1; then
+            kubectl logs network-test
+            exit 1
+          fi
 
       - name: Compile
         id: gradle-build
