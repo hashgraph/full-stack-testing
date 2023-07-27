@@ -570,11 +570,19 @@ function nmt_start() {
     return "${EX_ERR}"
   fi
 
+  # remove old logs
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "rm -f ${HAPI_PATH}/logs/*" || true
+
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
   echo "Waiting 15s to let the containers start..."
   sleep 15
+
+  echo "Logs from swirlds-haveged..."
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged
+
+  echo "Logs from swirlds-node..."
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node
+
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
 
   return "${EX_OK}"
@@ -592,9 +600,16 @@ function nmt_stop() {
   fi
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV stop  || return "${EX_ERR}"
+
+  # cleanup
   echo "Waiting 15s to let the containers stop..."
   sleep 15
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
+  echo "Removing containers..."
+#  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker stop \$(docker ps -aq)" || true
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker rm -f \$(docker ps -aq)" || true
+  "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
+
 
   return "${EX_OK}"
 }
@@ -616,12 +631,12 @@ function verify_network_state() {
     sleep 5
     attempts=$((attempts + 1))
 
-    "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node
+    echo "Checking node status in ${pod} (Attempt #${attempts})..."
+    "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${LOG_PATH}"
 
     set +e
     status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "ACTIVE")"
     set -e
-    printf "Network status in ${pod} (Attempt #${attempts})... >>>>>\n %s\n <<<<<\n" "${status}"
   done
 
   if [[ "${status}" != *ACTIVE* ]]; then
@@ -657,7 +672,6 @@ function setup_node_all() {
     install_nmt "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HGCAPP_DIR}" || return "${EX_ERR}"
     nmt_preflight "${pod}" || return "${EX_ERR}"
-    #set_permission "${pod}" "${HGCAPP_DIR}"
     copy_jdk "${pod}" || return "${EX_ERR}"
     copy_docker_files "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${NMT_DIR}/images/main-network-node/" || return "${EX_ERR}"
@@ -668,6 +682,7 @@ function setup_node_all() {
     ls_path "${pod}" "${HAPI_PATH}/"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
+    set_permission "${pod}" "${HAPI_PATH}"
     log_time
   done
 
