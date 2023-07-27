@@ -5,7 +5,7 @@ TMP_DIR="${SCRIPT_DIR}/../temp"
 
 # load .env file
 set -a
-source ".env"
+source "${TMP_DIR}/.env"
 set +a
 
 KCTL=/usr/local/bin/kubectl
@@ -256,7 +256,7 @@ function copy_hedera_keys() {
     return "${EX_ERR}"
   fi
 
-  local srcDir="${SCRIPT_DIR}/../network-node"
+  local srcDir="${SCRIPT_DIR}/../local-node"
   local dstDir="${HAPI_PATH}"
   local files=( \
     "hedera.key" \
@@ -288,7 +288,7 @@ function copy_node_keys() {
     return "${EX_ERR}"
   fi
 
-  local srcDir="${SCRIPT_DIR}/../network-node/data/keys"
+  local srcDir="${SCRIPT_DIR}/../local-node/data/keys"
   local dstDir="${HAPI_PATH}/data/keys"
   local files=( \
     "private-${node}.pfx" \
@@ -350,8 +350,12 @@ function prep_address_book() {
     local external_ip="${SVC_IP}"
 
     # for v.40.* onward
-    local node_nick_name="${node_name}"
-    config_lines+=("address, ${node_seq}, ${node_nick_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}")
+    if [[ "${PLATFORM_PROFILE}" == v0.4* ]]; then
+      local node_nick_name="${node_name}"
+      config_lines+=("address, ${node_seq}, ${node_nick_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}")
+    else
+      config_lines+=("address, ${node_seq}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}")
+    fi
 
      # increment node id
      node_seq=$((node_seq+1))
@@ -361,14 +365,14 @@ function prep_address_book() {
 #  config_lines+=("nextNodeId, ${node_seq}")
 
   # write contents to config file
-  cp "${SCRIPT_DIR}/../network-node/config.template" "${config_file}"
+  cp "${SCRIPT_DIR}/../local-node/config.template" "${config_file}" || return "${EX_ERR}"
   for line in "${config_lines[@]}";do
-    echo "${line}" >> "${config_file}"
+    echo "${line}" >> "${config_file}" || return "${EX_ERR}"
   done
 
   # display config file contents
   echo ""
-  cat "${SCRIPT_DIR}/../network-node/config.txt"
+  cat "${TMP_DIR}/config.txt" || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -394,7 +398,7 @@ function copy_config_files() {
   # copy the correct log42j file locally before copying into the container
   local srcDir="${TMP_DIR}"
   local dstDir="${HAPI_PATH}"
-  cp -f "${SCRIPT_DIR}/../network-node/log4j2-${NMT_PROFILE}.xml" "${TMP_DIR}/log4j2.xml"
+  cp -f "${SCRIPT_DIR}/../local-node/log4j2-${NMT_PROFILE}.xml" "${TMP_DIR}/log4j2.xml" || return "${EX_ERR}"
   local files=( \
     "config.txt" \
     "log4j2.xml"
@@ -404,7 +408,7 @@ function copy_config_files() {
   done
 
   # copy files into the containers
-  local srcDir="${SCRIPT_DIR}/../network-node"
+  local srcDir="${SCRIPT_DIR}/../local-node"
   local files=( \
     "settings.txt" \
   )
@@ -414,7 +418,7 @@ function copy_config_files() {
 
 
   # copy config properties files
-  local srcDir="${SCRIPT_DIR}/../network-node/data/config"
+  local srcDir="${SCRIPT_DIR}/../local-node/data/config"
   local dstDir="${HAPI_PATH}/data/config"
   local files=( \
     "api-permission.properties" \
@@ -567,6 +571,10 @@ function nmt_start() {
   fi
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
+  echo "Waiting 15s to let the containers start..."
+  sleep 15
+  "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
+
   return "${EX_OK}"
 }
 
@@ -582,6 +590,10 @@ function nmt_stop() {
   fi
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV stop  || return "${EX_ERR}"
+  echo "Waiting 15s to let the containers stop..."
+  sleep 15
+  "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
+
   return "${EX_OK}"
 }
 
@@ -592,18 +604,17 @@ function verify_network_state() {
 
   local pod="$1"
   local max_attempts="$2"
-  sleep 5
   local attempts=0
   local status=""
 
-  LOG_PATH="output/hgcaa.log"
-  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="logs/stdout.log"
+  LOG_PATH="${HAPI_PATH}/output/swirlds.log"
+  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="${HAPI_PATH}/logs/swirlds.log"
 
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
-    sleep 15
+    sleep 5
     attempts=$((attempts + 1))
     set +e
-    status="$("${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node | grep "Now current platform status = ACTIVE")"
+    status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "ACTIVE")"
     set -e
     printf "Network status in ${pod} (Attempt #${attempts})... >>>>>\n %s\n <<<<<\n" "${status}"
   done
@@ -734,7 +745,7 @@ function replace_keys_all() {
 
   return "${EX_OK}"
 }
-function reset_nodes() {
+function reset_node_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"

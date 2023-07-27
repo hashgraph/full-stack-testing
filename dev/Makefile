@@ -1,8 +1,10 @@
 SCRIPTS_DIR=$(PWD)/scripts
+TMP_DIR="${SCRIPTS_DIR}/../temp"
 
 .PHONY: setup
 setup:
-	cp "${SCRIPTS_DIR}/template.env" ".env"
+	rm -f "${TMP_DIR}/*.*"
+	cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
 
 .PHONY: setup-cluster
 setup-cluster:
@@ -15,7 +17,7 @@ deploy-chart:
  	echo ">> Waiting for network to be ready (timeout=300s)..." && \
   	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l type=network-node --timeout=300s && \
  	echo ">> Running helm test..." && \
- 	helm test fst &> deploy.log &
+ 	helm test fst &> "${TMP_DIR}/deploy.log" &
 
 .PHONY: helm-test-logs
 helm-test-logs:
@@ -24,6 +26,8 @@ helm-test-logs:
 
 .PHONY: deploy-network
 deploy-network: deploy-chart helm-test-logs
+	kubectl get pods -o wide && \
+	kubectl get svc -o wide
 
 .PHONY: destroy-network
 destroy-network:
@@ -44,6 +48,10 @@ verify-nodes:
 .PHONY: stop-nodes
 stop-nodes:
 	source "${SCRIPTS_DIR}/helper.sh" && stop_node_all
+
+.PHONY: reset-nodes
+reset-nodes:
+	source "${SCRIPTS_DIR}/helper.sh" && reset_node_all
 
 .PHONY: gen-keys
 gen-keys:
