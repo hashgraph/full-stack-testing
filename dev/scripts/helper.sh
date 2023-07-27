@@ -573,6 +573,8 @@ function nmt_start() {
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
   echo "Waiting 15s to let the containers start..."
   sleep 15
+  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged
+  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
 
   return "${EX_OK}"
@@ -613,6 +615,9 @@ function verify_network_state() {
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
     sleep 5
     attempts=$((attempts + 1))
+
+    "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node
+
     set +e
     status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "ACTIVE")"
     set -e
