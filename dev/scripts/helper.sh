@@ -392,16 +392,21 @@ function copy_config_files() {
 
   local srcDir="${SCRIPT_DIR}/../network-node"
   local dstDir="${HAPI_PATH}"
+  # copy the correct log42j file locally before copying into the container
+  cp -f "${srcDir}/log4j2-${NMT_PROFILE}" "${srcDir}/log4j2.xml}"
+
+  # copy files into the containers
   local files=( \
     "config.txt" \
     "settings.txt" \
     "log4j2.xml"
   )
-
   for file in "${files[@]}"; do
     copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
   done
 
+
+  # copy config properties files
   local srcDir="${SCRIPT_DIR}/../network-node/data/config"
   local dstDir="${HAPI_PATH}/data/config"
   local files=( \
@@ -413,6 +418,7 @@ function copy_config_files() {
   for file in "${files[@]}"; do
     copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
   done
+
 
   return "${EX_OK}"
 }
