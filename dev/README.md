@@ -7,7 +7,7 @@ Below are few helper commands to start the hedera network in the local kubernete
 - `make start`: uses NMT to install platform in the network-node pods and starts the node.
 - `make stop`: uses NMT to stop nodes.
 - `make destroy-network`: uninstalls the helm chart
-- 
+- `make reset`: destroy the network, setup and start all nodes
 ## Prerequisite
 Some resources are stored in the bucket(SwirldsRegression org): `fst-resources`. 
 You will need access to it and have `gsutil` installed locally
