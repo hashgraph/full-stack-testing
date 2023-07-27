@@ -630,13 +630,15 @@ function verify_network_state() {
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
     sleep 5
     attempts=$((attempts + 1))
+    echo "========================================================="
 
     "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${LOG_PATH}"
 
     set +e
     status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "ACTIVE")"
     set -e
-    echo "Checking node status in ${pod} (Attempt #${attempts})..."
+    echo ""
+    echo "Node status in ${pod} (Attempt #${attempts})>>>"
     echo "${status}"
     echo "========================================================="
   done
