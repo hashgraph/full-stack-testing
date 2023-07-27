@@ -52,7 +52,8 @@ class ConstructionTest {
         assertThat(construction).isNotNull();
 
         assertThat(construction.hasConstructor((Object) new byte[100])).isTrue();
-        assertThat(construction.hasConstructor((Object) new byte[100], (Object) new byte[100])).isFalse();
+        assertThat(construction.hasConstructor((Object) new byte[100], (Object) new byte[100]))
+                .isFalse();
         assertThat(construction.hasConstructor(0)).isFalse();
     }
 
@@ -63,7 +64,8 @@ class ConstructionTest {
         assertThat(construction).isNotNull();
 
         assertThat(construction.hasConstructorStrict((Object) new byte[100])).isTrue();
-        assertThat(construction.hasConstructorStrict((Object) new byte[100], (Object) new byte[100])).isFalse();
+        assertThat(construction.hasConstructorStrict((Object) new byte[100], (Object) new byte[100]))
+                .isFalse();
         assertThat(construction.hasConstructorStrict(0)).isFalse();
     }
 

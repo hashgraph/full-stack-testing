@@ -16,20 +16,19 @@
 
 package com.hedera.fullstack.servicelocator.api.test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
 import com.hedera.fullstack.servicelocator.api.ServiceSupplier;
 import com.hedera.fullstack.servicelocator.api.test.mock.CtorService;
 import com.hedera.fullstack.servicelocator.api.test.mock.MultiplePublicCtorService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 @DisplayName("Service Supplier")
 class ServiceSupplierTest {
@@ -39,10 +38,7 @@ class ServiceSupplierTest {
     void mpcBasicInstantiation() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
 
-        assertThat(supplier)
-                .isNotNull()
-                .extracting(ServiceSupplier::type)
-                .isSameAs(MultiplePublicCtorService.class);
+        assertThat(supplier).isNotNull().extracting(ServiceSupplier::type).isSameAs(MultiplePublicCtorService.class);
 
         assertThatThrownBy(() -> new ServiceSupplier<>(null))
                 .isInstanceOf(NullPointerException.class)

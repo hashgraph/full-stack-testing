@@ -17,7 +17,6 @@
 package com.hedera.fullstack.servicelocator.api;
 
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
-
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -29,7 +28,6 @@ import java.util.stream.StreamSupport;
  * @param <S> the type of the service.
  */
 public interface ServiceLocator<S> extends Iterable<ServiceSupplier<S>> {
-
     /**
      * Loads and returns the first service found. This method requires the service implementations to have a zero
      * argument constructor.

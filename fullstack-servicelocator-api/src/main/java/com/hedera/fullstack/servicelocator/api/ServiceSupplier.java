@@ -18,7 +18,6 @@ package com.hedera.fullstack.servicelocator.api;
 
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
 import com.hedera.fullstack.base.api.reflect.Construction;
-
 import java.util.Objects;
 
 /**
