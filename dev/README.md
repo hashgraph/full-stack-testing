@@ -22,4 +22,7 @@ You will need access to it and have `gsutil` installed locally
 After this the network is ready for use.
 
 ### Stop node:
-- `make stop-nodes destroy-network`: stop the node and delete the network
+- `make stop-nodes`: stop the node and delete the network
+
+### Reset network:
+- `make reset`: destroys the network, deploys a new network and start nodes
