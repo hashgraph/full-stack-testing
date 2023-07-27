@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 start_time=$(date +%s.%N)
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+TMP_DIR="${SCRIPT_DIR}/../temp"
 
 # load .env file
 set -a
@@ -308,7 +309,7 @@ function prep_address_book() {
   echo "Preparing address book"
   echo "-----------------------------------------------------------------------------------------------------"
 
-  local config_file="${SCRIPT_DIR}/../network-node/config.txt"
+  local config_file="${TMP_DIR}/config.txt"
   local node_IP=""
   local node_seq="${NODE_SEQ:-0}" # this also used as the account ID suffix
   local account_id_prefix="${ACCOUNT_ID_PREFIX:-0.0}"
@@ -390,16 +391,22 @@ function copy_config_files() {
     return "${EX_ERR}"
   fi
 
-  local srcDir="${SCRIPT_DIR}/../network-node"
-  local dstDir="${HAPI_PATH}"
   # copy the correct log42j file locally before copying into the container
-  cp -f "${srcDir}/log4j2-${NMT_PROFILE}" "${srcDir}/log4j2.xml}"
-
-  # copy files into the containers
+  local srcDir="${TMP_DIR}"
+  local dstDir="${HAPI_PATH}"
+  cp -f "${SCRIPT_DIR}/../network-node/log4j2-${NMT_PROFILE}.xml" "${TMP_DIR}/log4j2.xml"
   local files=( \
     "config.txt" \
-    "settings.txt" \
     "log4j2.xml"
+  )
+  for file in "${files[@]}"; do
+    copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
+  done
+
+  # copy files into the containers
+  local srcDir="${SCRIPT_DIR}/../network-node"
+  local files=( \
+    "settings.txt" \
   )
   for file in "${files[@]}"; do
     copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
@@ -602,7 +609,7 @@ function verify_network_state() {
   done
 
   if [[ "${status}" != *ACTIVE* ]]; then
-    "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node > "${pod}-swirlds-node.log"
+    "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node > "${TMP_DIR}/${pod}-swirlds-node.log"
     echo "ERROR: <<< The network is not operational in ${pod}. >>>"
     return "${EX_ERR}"
   fi
