@@ -631,12 +631,14 @@ function verify_network_state() {
     sleep 5
     attempts=$((attempts + 1))
 
-    echo "Checking node status in ${pod} (Attempt #${attempts})..."
     "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${LOG_PATH}"
 
     set +e
     status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "ACTIVE")"
     set -e
+    echo "Checking node status in ${pod} (Attempt #${attempts})..."
+    echo "${status}"
+    echo "========================================================="
   done
 
   if [[ "${status}" != *ACTIVE* ]]; then
