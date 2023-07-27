@@ -16,18 +16,20 @@
 
 package com.hedera.fullstack.servicelocator.api.test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
+import com.hedera.fullstack.servicelocator.api.ServiceSupplier;
+import com.hedera.fullstack.servicelocator.api.test.mock.CtorService;
 import com.hedera.fullstack.servicelocator.api.test.mock.MultiplePublicCtorService;
-import com.hedera.fullstack.servicelocator.api.test.mock.MultiplePublicCtorSupplier;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Service Supplier")
 class ServiceSupplierTest {
@@ -35,22 +37,22 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: Basic Supplier Instantiation")
     void mpcBasicInstantiation() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
 
         assertThat(supplier)
                 .isNotNull()
-                .extracting(MultiplePublicCtorSupplier::getServiceClass)
+                .extracting(ServiceSupplier::type)
                 .isSameAs(MultiplePublicCtorService.class);
 
-        assertThatThrownBy(() -> new MultiplePublicCtorSupplier(null))
+        assertThatThrownBy(() -> new ServiceSupplier<>(null))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("serviceClass must not be null");
+                .hasMessageContaining("type must not be null");
     }
 
     @Test
     @DisplayName("MultiplePublicCtor: Constructor Not Found")
     void mpcConstructorNotFound() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
         final OutputStream outputStreamValue = new ByteArrayOutputStream();
 
         assertThatThrownBy(() -> supplier.newServiceInstance(outputStreamValue))
@@ -62,8 +64,8 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: Zero Argument Constructor")
     void mpcZeroArgumentConstructor() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
-        final MultiplePublicCtorService zeroArgSvc = supplier.newServiceInstance();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final CtorService zeroArgSvc = supplier.get();
 
         assertThat(zeroArgSvc).isNotNull();
         assertThat(zeroArgSvc.getStringValue()).isNull();
@@ -74,9 +76,9 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: String Argument Constructor")
     void mpcStringArgumentConstructor() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
         final String stringValue = "Hello World!";
-        final MultiplePublicCtorService stringArgSvc = supplier.newServiceInstance(stringValue);
+        final MultiplePublicCtorService stringArgSvc = supplier.cast(stringValue);
 
         assertThat(stringArgSvc).isNotNull();
         assertThat(stringArgSvc.getStringValue()).isEqualTo(stringValue);
@@ -87,9 +89,9 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: Int Argument Constructor")
     void mpcIntArgumentConstructor() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
         final int intValue = 42;
-        final MultiplePublicCtorService intArgSvc = supplier.newServiceInstance(intValue);
+        final CtorService intArgSvc = supplier.newServiceInstance(intValue);
 
         assertThat(intArgSvc).isNotNull();
         assertThat(intArgSvc.getStringValue()).isNull();
@@ -100,9 +102,9 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: InputStream Argument Constructor")
     void mpcInputStreamArgumentConstructor() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[0]);
-        final MultiplePublicCtorService outputStreamArgSvc = supplier.newServiceInstance(inputStream);
+        final CtorService outputStreamArgSvc = supplier.newServiceInstance(inputStream);
 
         assertThat(outputStreamArgSvc).isNotNull();
         assertThat(outputStreamArgSvc.getStringValue()).isNull();
@@ -113,10 +115,10 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: String and Int Argument Constructor")
     void mpcStringAndIntArgumentConstructor() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
         final String stringValue = "Hello World!";
         final int intValue = 42;
-        final MultiplePublicCtorService stringAndIntArgSvc = supplier.newServiceInstance(stringValue, intValue);
+        final CtorService stringAndIntArgSvc = supplier.newServiceInstance(stringValue, intValue);
 
         assertThat(stringAndIntArgSvc).isNotNull();
         assertThat(stringAndIntArgSvc.getStringValue()).isEqualTo(stringValue);
@@ -127,11 +129,11 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: String, Int, and InputStream Argument Constructor")
     void mpcStringIntAndInputStreamArgumentConstructor() {
-        final MultiplePublicCtorSupplier supplier = new MultiplePublicCtorSupplier();
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
         final String stringValue = "Hello World!";
         final int intValue = 42;
         final InputStream inputStream = new ByteArrayInputStream(new byte[0]);
-        final MultiplePublicCtorService stringIntAndInputStreamArgSvc =
+        final CtorService stringIntAndInputStreamArgSvc =
                 supplier.newServiceInstance(stringValue, intValue, inputStream);
 
         assertThat(stringIntAndInputStreamArgSvc).isNotNull();

@@ -18,6 +18,7 @@ package com.hedera.fullstack.servicelocator.api;
 
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
 import com.hedera.fullstack.base.api.reflect.Construction;
+
 import java.util.Objects;
 
 /**
@@ -26,48 +27,71 @@ import java.util.Objects;
  * to be implemented with a zero argument constructor in compliance with the Java ServiceLoader specification while
  * allowing actual service instances to be instantiated with a constructor that takes zero or more arguments.
  *
- * @param <T> the type of the service supplied by this ServiceSupplier.
+ * @param <S> the type of the service supplied by this ServiceSupplier.
  */
-public abstract class ServiceSupplier<T> {
-
+public final class ServiceSupplier<S> {
     /**
-     * The type of the service.
+     * The type of the service implementation.
      */
-    private final Class<T> serviceClass;
+    private final Class<? extends S> type;
 
     /**
      * The construction helper for the service.
      */
-    private final Construction<T> construction;
+    private final Construction<? extends S> construction;
 
     /**
      * Constructs a new ServiceSupplier for the given service implementation.
      *
-     * @param serviceClass the type of the service supplied by this ServiceSupplier.
+     * @param type the type of the service implementation.
      * @throws NullPointerException     if serviceClass is null.
      * @throws IllegalArgumentException if serviceClass is an interface, an abstract class, an array class, or
      *                                  has no accessible constructors.
      */
-    protected ServiceSupplier(final Class<T> serviceClass) {
-        this.serviceClass = Objects.requireNonNull(serviceClass, "serviceClass must not be null");
-        this.construction = Construction.of(serviceClass);
+    public ServiceSupplier(final Class<? extends S> type) {
+        this.type = Objects.requireNonNull(type, "type must not be null");
+        this.construction = Construction.of(type);
     }
 
     /**
-     * @return the type of the service supplied by this ServiceSupplier.
+     * @return the type of the service implementation.
      */
-    public Class<T> getServiceClass() {
-        return serviceClass;
+    public Class<? extends S> type() {
+        return type;
     }
 
     /**
-     * Constructs a new instance of the service declared by this ServiceSupplier.
+     * Constructs a new instance of the service implementation using the zero argument constructor.
+     *
+     * @return a new instance of the service declared by this ServiceSupplier.
+     * @throws ClassConstructionException if the service cannot be constructed or instantiated.
+     */
+    public S get() {
+        return construction.newInstance();
+    }
+
+    /**
+     * Constructs a new instance of the service implementation and casts the result to the specified type.
+     *
+     * @param <T>  the subclass or sub-interface to cast the service implement.
+     * @param args the arguments to pass to the service constructor.
+     * @return a new instance of the service declared by this ServiceSupplier.
+     * @throws ClassConstructionException if the service cannot be constructed or instantiated.
+     * @throws ClassCastException         if the service cannot be cast to the specified type.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends S> T cast(final Object... args) {
+        return (T) newServiceInstance(args);
+    }
+
+    /**
+     * Constructs a new instance of the service implementation.
      *
      * @param args the arguments to pass to the service constructor.
      * @return a new instance of the service declared by this ServiceSupplier.
      * @throws ClassConstructionException if the service cannot be constructed or instantiated.
      */
-    public T newServiceInstance(final Object... args) {
+    public S newServiceInstance(final Object... args) {
         return construction.newInstance(args);
     }
 }

@@ -16,4 +16,11 @@
 
 package com.hedera.fullstack.servicelocator.api;
 
-public interface ServiceLocator {}
+/**
+ * The service locator interface provides a pluggable implementation for loading service implementations.
+ *
+ * @param <S> the type of the service.
+ */
+public interface ServiceLocator<S> extends Iterable<ServiceSupplier<S>> {
+
+}

@@ -18,11 +18,10 @@ package com.hedera.fullstack.servicelocator.api.test.mock;
 
 import java.io.InputStream;
 
-public class MultiplePublicCtorService {
+public class MultiplePublicCtorService implements CtorService {
 
     private final String s;
     private final int i;
-
     private final InputStream is;
 
     public MultiplePublicCtorService() {
@@ -59,14 +58,17 @@ public class MultiplePublicCtorService {
         this.is = is;
     }
 
+    @Override
     public String getStringValue() {
         return s;
     }
 
+    @Override
     public int getIntValue() {
         return i;
     }
 
+    @Override
     public InputStream getInputStreamValue() {
         return is;
     }
