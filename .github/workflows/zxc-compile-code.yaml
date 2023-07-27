@@ -125,8 +125,8 @@ jobs:
           kubectl config get-contexts
           helm install fst ./charts/hedera-network
           helm test fst
-          TEST_STATUS=$?
-          if [ $TEST_STATUS -ne 0 ]; then
+          TEST_STATUS="${?}"
+          if [[ "${TEST_STATUS}" -ne 0 ]]; then
             kubectl logs network-test
             kubectl delete pod network-test
           fi
