@@ -1,6 +1,9 @@
 SCRIPTS_DIR=$(PWD)/scripts
 TMP_DIR="${SCRIPTS_DIR}/../temp"
 
+.PHONY: all
+all: setup setup-cluster reset
+
 .PHONY: setup
 setup:
 	rm -f "${TMP_DIR}/*.*"
@@ -32,9 +35,6 @@ deploy-network: deploy-chart helm-test-logs
 .PHONY: destroy-network
 destroy-network:
 	@echo ">> Uninstalling helm chart..." && helm uninstall fst && sleep 10
-
-.PHONY: reset-network
-reset-network: destroy-network deploy-network setup-nodes
 
 .PHONY: setup-nodes
 setup-nodes:
@@ -70,4 +70,13 @@ prep-address-book:
 .PHONY: run-func
 run-func:
 	source "${SCRIPTS_DIR}/helper.sh" && ${FUNC}
+
+.PHONY: start
+start: deploy-network setup-nodes start-nodes
+
+.PHONY: restart
+restart: stop-nodes start-nodes
+
+.PHONY: reset
+reset: destroy-network start
 
