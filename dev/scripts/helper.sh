@@ -309,41 +309,63 @@ function prep_address_book() {
   echo "-----------------------------------------------------------------------------------------------------"
 
   local config_file="${SCRIPT_DIR}/../network-node/config.txt"
-  cp "${SCRIPT_DIR}/../network-node/config.template" "${config_file}"
-
   local node_IP=""
-  local node_id=0
-  local internal_port=50211
-  local external_port=50211
+  local node_seq="${NODE_SEQ:-0}" # this also used as the account ID suffix
+  local account_id_prefix="${ACCOUNT_ID_PREFIX:-0.0}"
+  local internal_port="${INTERNAL_GOSSIP_PORT:-50111}"
+  local external_port="${EXTERNAL_GOSSIP_PORT:-50111}"
+  local ledger_name="${LEDGER_NAME:-123}"
+  local app_jar_file="${APP_NAME:-HederaNode.jar}"
+  local node_stake="${NODE_DEFAULT_STAKE:-1}"
+
+
+  # prepare config lines
+  local config_lines=()
+  config_lines+=("swirld, ${ledger_name}")
+  config_lines+=("app, ${app_jar_file}")
+
+  # prepare address book lines
+  local addresses=()
   for node_name in "${NODE_NAMES[@]}";do
     local pod="network-${node_name}-0" # pod name
     echo "${KCTL} get pod ${pod} -o jsonpath='{.status.podIP}' | xargs"
-    POD_IP=$("${KCTL}" get pod "${pod}" -o jsonpath='{.status.podIP}' | xargs)
+    local POD_IP=$("${KCTL}" get pod "${pod}" -o jsonpath='{.status.podIP}' | xargs)
     if [ -z "${POD_IP}" ]; then
       echo "Could not detect pod IP for ${pod}"
       return "${EX_ERR}"
     fi
 
-    echo "pod IP: ${POD_IP}"
+    echo "${KCTL} get svc network-${node_name}-service -o jsonpath='{.spec.clusterIP}' | xargs"
+    local SVC_IP=$("${KCTL}" get svc "network-${node_name}-service" -o jsonpath='{.spec.clusterIP}' | xargs)
+    if [ -z "${SVC_IP}" ]; then
+      echo "Could not detect service IP for ${pod}"
+      return "${EX_ERR}"
+    fi
 
-    # render template
-    local account="0.0.${node_id}"
+    echo "pod IP: ${POD_IP}, svc IP: ${SVC_IP}"
+
+    local account="${account_id_prefix}.${node_seq}"
     local internal_ip="${POD_IP}"
-    local external_ip="${POD_IP}"
-    local node_stake=1
-    echo "address, ${node_id}, ${node_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}" >> "${config_file}"
-#    node_ip="${node_name}_IP"
-#    echo "${node_IP}: ${POD_IP}"
-#    echo "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt"
-#    config_content=$(bash -c "${node_IP}=${POD_IP} envsubst '\$${node_IP}' < ${SCRIPT_DIR}/../network-node/config.txt")
-#    echo "${config_content}" > "${SCRIPT_DIR}/../network-node/config.txt"
+    local external_ip="${SVC_IP}"
+
+    # for v.40.* onward
+    local node_nick_name="${node_name}"
+    config_lines+=("address, ${node_seq}, ${node_nick_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}")
 
      # increment node id
-     node_id=$((node_id+1))
+     node_seq=$((node_seq+1))
   done
 
-#  echo "nextNodeId, ${node_id}" >> "${config_file}"
+# for v.41.* onward
+#  config_lines+=("nextNodeId, ${node_seq}")
 
+  # write contents to config file
+  cp "${SCRIPT_DIR}/../network-node/config.template" "${config_file}"
+  for line in "${config_lines[@]}";do
+    echo "${line}" >> "${config_file}"
+  done
+
+  # display config file contents
   echo ""
   cat "${SCRIPT_DIR}/../network-node/config.txt"
 
