@@ -313,6 +313,7 @@ function prep_address_book() {
   local node_IP=""
   local node_seq="${NODE_SEQ:-0}" # this also used as the account ID suffix
   local account_id_prefix="${ACCOUNT_ID_PREFIX:-0.0}"
+  local account_id_seq="${ACCOUNT_ID_SEQ:-3}"
   local internal_port="${INTERNAL_GOSSIP_PORT:-50111}"
   local external_port="${EXTERNAL_GOSSIP_PORT:-50111}"
   local ledger_name="${LEDGER_NAME:-123}"
@@ -345,7 +346,7 @@ function prep_address_book() {
 
     echo "pod IP: ${POD_IP}, svc IP: ${SVC_IP}"
 
-    local account="${account_id_prefix}.${node_seq}"
+    local account="${account_id_prefix}.${account_id_seq}"
     local internal_ip="${POD_IP}"
     local external_ip="${SVC_IP}"
 
@@ -359,6 +360,7 @@ function prep_address_book() {
 
      # increment node id
      node_seq=$((node_seq+1))
+     account_id_seq=$((account_id_seq+1))
   done
 
 # for v.41.* onward
