@@ -19,6 +19,7 @@ spec:
         app: network-{{ $node.name }}
         fullstack.hedera.com/type: network-node
     spec:
+      terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
@@ -52,6 +53,11 @@ spec:
         volumeMounts:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
+        env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
 
   {{- if $node.sidecars.accountBalancesUploader }}
       # Account Balance Uploader
