@@ -44,7 +44,7 @@ function test_systemctl() {
   echo "-------------------------------------------------------------"
 
   local attempts=0
-  local status="#{EX_ERR"
+  local status="${EX_ERR}"
   local MAX_ATTEMPTS=10
 
   for node in "${nodes[@]}"
@@ -56,7 +56,7 @@ function test_systemctl() {
     while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${status}" -ne "${EX_OK}" ]]; do
       attempts=$((attempts + 1))
       kubectl exec "${node}" -c root-container -- systemctl status --no-pager
-      status="$?"
+      status="${?}"
       echo "Checked systemctl status in ${node} (Attempt #${attempts})... >>>>> status: ${status} <<<<<"
       if [[ "${status}" -ne "${EX_OK}" ]]; then
         echo "Sleeping 5s..."
