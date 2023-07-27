@@ -12,7 +12,7 @@ KCTL=/usr/local/bin/kubectl
 
 EX_OK=0
 EX_ERR=1
-MAX_ATTEMPTS=10
+MAX_ATTEMPTS=60
 HGCAPP_DIR="/opt/hgcapp"
 NMT_DIR="${HGCAPP_DIR}/node-mgmt-tools"
 HAPI_PATH="${HGCAPP_DIR}/services-hedera/HapiApp2.0"
@@ -624,31 +624,37 @@ function verify_network_state() {
   local attempts=0
   local status=""
 
-  LOG_PATH="${HAPI_PATH}/output/swirlds.log"
-  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="${HAPI_PATH}/logs/swirlds.log"
+  LOG_PATH="${HAPI_PATH}/output/hgcaa.log"
+  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="${HAPI_PATH}/logs/hgcaa.log"
 
-  while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *ACTIVE* ]]; do
+  local status_pattern="ACTIVE"
+
+  while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *"${status_pattern}"* ]]; do
     sleep 5
-    attempts=$((attempts + 1))
-    echo "========================================================="
 
-    "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${LOG_PATH}"
+    attempts=$((attempts + 1))
+
+    echo "====================== ${pod}: Attempt# ${attempts}/${max_attempts} ==================================="
 
     set +e
-    status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "ACTIVE")"
+    status="$("${KCTL}" exec "${pod}" -c root-container -- cat "${LOG_PATH}" | grep "${status_pattern}" )"
     set -e
-    echo ""
-    echo "Node status in ${pod} (Attempt #${attempts})>>>"
-    echo "${status}"
-    echo "========================================================="
+
+    if [[ "${status}" != *"${status_pattern}"* ]]; then
+      # show swirlds.log to see what node is doing
+      "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${HAPI_PATH}/logs/swirlds.log"
+    else
+      echo "${status}"
+    fi
   done
 
-  if [[ "${status}" != *ACTIVE* ]]; then
+  if [[ "${status}" != *"${status_pattern}"* ]]; then
     "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node > "${TMP_DIR}/${pod}-swirlds-node.log"
     echo "ERROR: <<< The network is not operational in ${pod}. >>>"
     return "${EX_ERR}"
   fi
 
+  echo "====================== ${pod}: Status check complete ==================================="
   return "$EX_OK"
 }
 
@@ -706,9 +712,9 @@ function start_node_all() {
     local pod="network-${node_name}-0" # pod name
     nmt_start "${pod}" || return "${EX_ERR}"
     log_time
-    verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
-    log_time
   done
+
+  verify_node_all || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
