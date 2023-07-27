@@ -8,7 +8,16 @@ spec:
   selector:
     app: network-{{ $nodeConfig.name }}
   ports:
-  - protocol: TCP
-    port: 50211
+  - name: gossip
+    protocol: TCP
+    port: 50111 # gossip port
+    targetPort: 50111
+  - name: grpc-non-tls
+    protocol: TCP
+    port: 50211 # non-tls grpc client port
     targetPort: 50211
+  - name: grpc-tls
+    protocol: TCP
+    port: 50212 # tls grpc client port
+    targetPort: 50212
 {{- end }}
