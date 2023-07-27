@@ -16,7 +16,7 @@ function test_node_total() {
   echo "-------------------------------------------------------------"
   echo "Checking total number of network node containers"
   echo "-------------------------------------------------------------"
-  kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l type=network-node --timeout=300s || return "${EX_ERR}"
+  kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s || return "${EX_ERR}"
 
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array

@@ -95,13 +95,13 @@ jobs:
         run: git fetch --unshallow --no-recurse-submodules
 
       - name: Setup Java
-        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # pin@v3
+        uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # pin@v3
         with:
           distribution: ${{ inputs.java-distribution }}
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
+        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
@@ -136,7 +136,7 @@ jobs:
           echo "options=${SONAR_OPTS}" >> "${GITHUB_OUTPUT}"
 
       - name: SonarCloud Scan
-        uses: gradle/gradle-build-action@915a66c096a03101667f9df2e56c9efef558b165 # pin@v2
+        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
         env:
           GITHUB_TOKEN: ${{ secrets.access-token }}
           SONAR_TOKEN: ${{ secrets.sonar-token }}
