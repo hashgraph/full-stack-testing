@@ -81,6 +81,32 @@ public final class Construction<T> {
     }
 
     /**
+     * Determines the existence of a constructor which matches the given parameter types. This method is a corollary to
+     * the {@link #newInstance(Object...)} method.
+     *
+     * @param args the arguments which would be passed to the constructor. In this case the argument values are used
+     *             solely for finding a matching constructor.
+     * @return {@code true} if a matching constructor was found; otherwise, {@code false}.
+     * @see #newInstance(Object...)
+     */
+    public boolean hasConstructor(final Object... args) {
+        return hasConstructorInternal(determineArgumentTypes(args), false);
+    }
+
+    /**
+     * Determines the existence of a constructor which matches the given parameter types. This method is a corollary to
+     * the {@link #newInstanceStrict(Object...)} method.
+     *
+     * @param args the arguments which would be passed to the constructor. In this case the argument values are used
+     *             solely for finding a matching constructor.
+     * @return {@code true} if a matching constructor was found; otherwise, {@code false}.
+     * @see #newInstanceStrict(Object...)
+     */
+    public boolean hasConstructorStrict(final Object... args) {
+        return hasConstructorInternal(determineArgumentTypes(args), true);
+    }
+
+    /**
      * Constructs a new instance of the class represented by this construction helper.
      *
      * @param args the arguments to pass to the constructor. If the constructor takes no arguments, no arguments need
@@ -121,6 +147,24 @@ public final class Construction<T> {
         if (constructors.isEmpty()) {
             throw new IllegalArgumentException(
                     String.format("The class %s must have at least one accessible constructor", type.getName()));
+        }
+    }
+
+    /**
+     * Attempts to locate a constructor which matches the given parameter types. If {@code strict} matching is enabled,
+     * the parameter types must match exactly. Otherwise, the parameter types must be assignable from the given
+     * argument type.
+     *
+     * @param parameterTypes the parameter types of the constructor to locate.
+     * @param strict        whether to use strict parameter type matching rules.
+     * @return {@code true} if a matching constructor was found; otherwise, {@code false}.
+     */
+    private boolean hasConstructorInternal(final Class<?>[] parameterTypes, final boolean strict) {
+        try {
+            final Constructor<T> constructor = findConstructor(parameterTypes, strict);
+            return constructor != null;
+        } catch (final IllegalArgumentException e) {
+            return false;
         }
     }
 

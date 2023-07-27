@@ -46,6 +46,28 @@ class ConstructionTest {
     }
 
     @Test
+    @DisplayName("Certify that we can test for constructor existence on a JVM provided classes")
+    void existenceJvmClass() {
+        final Construction<ByteArrayInputStream> construction = Construction.of(ByteArrayInputStream.class);
+        assertThat(construction).isNotNull();
+
+        assertThat(construction.hasConstructor((Object) new byte[100])).isTrue();
+        assertThat(construction.hasConstructor((Object) new byte[100], (Object) new byte[100])).isFalse();
+        assertThat(construction.hasConstructor(0)).isFalse();
+    }
+
+    @Test
+    @DisplayName("Certify that we can test for constructor existence on a JVM provided classes")
+    void existenceStrictJvmClass() {
+        final Construction<ByteArrayInputStream> construction = Construction.of(ByteArrayInputStream.class);
+        assertThat(construction).isNotNull();
+
+        assertThat(construction.hasConstructorStrict((Object) new byte[100])).isTrue();
+        assertThat(construction.hasConstructorStrict((Object) new byte[100], (Object) new byte[100])).isFalse();
+        assertThat(construction.hasConstructorStrict(0)).isFalse();
+    }
+
+    @Test
     @DisplayName("Ensure Construction.of() throws exceptions correctly")
     void constructionOfThrowsExceptions() {
         assertThatThrownBy(() -> Construction.of(null))
