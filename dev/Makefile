@@ -15,7 +15,7 @@ deploy-chart:
 	@echo ">> Deploying helm chart..." && \
 	helm install fst ../charts/hedera-network && \
  	echo ">> Waiting for network to be ready (timeout=300s)..." && \
-  	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l type=network-node --timeout=300s && \
+  	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s && \
  	echo ">> Running helm test..." && \
  	helm test fst &> "${TMP_DIR}/deploy.log" &
 
@@ -32,6 +32,9 @@ deploy-network: deploy-chart helm-test-logs
 .PHONY: destroy-network
 destroy-network:
 	@echo ">> Uninstalling helm chart..." && helm uninstall fst && sleep 10
+
+.PHONY: reset-network
+reset-network: destroy-network deploy-network setup-nodes
 
 .PHONY: setup-nodes
 setup-nodes:
