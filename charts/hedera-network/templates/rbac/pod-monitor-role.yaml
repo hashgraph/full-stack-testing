@@ -1,12 +1,7 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: tester
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: tester-role
+  name: pod-monitoring-role
 rules:
   - apiGroups: [ "" ]
     resources:
@@ -24,11 +19,11 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: tester-role-binding
+  name: pod-monitoring-role-binding
 subjects:
   - kind: ServiceAccount
-    name: tester
+    name: pod-monitor
 roleRef:
   kind: Role
-  name: tester-role
+  name: pod-monitoring-role
   apiGroup: rbac.authorization.k8s.io

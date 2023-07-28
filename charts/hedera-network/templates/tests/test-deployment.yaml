@@ -5,7 +5,7 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
-  serviceAccountName: tester
+  serviceAccountName: pod-monitor
   volumes:
     - name: test-volume
       configMap:
