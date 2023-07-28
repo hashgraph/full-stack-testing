@@ -1,3 +1,17 @@
+# cloud configuration
+cloud:
+  buckets:
+    streamBucket: fst-streams
+    backupBucket: fst-backups
+  s3:
+    enabled: true
+  gcs:
+    enabled: true
+
+# reduce default termination grace period
+terminationGracePeriodSeconds: 10
+
+# hedera node configuration
 hedera:
   nodes:
     - name: node0
@@ -114,18 +128,3 @@ hedera:
             tag: "0.72.0"
             pullPolicy: IfNotPresent
           config: {}
-#        recordSidecarUploader:
-#          enabled: true
-
-# cloud configs
-cloud:
-  buckets:
-    streamBucket: fst-streams
-    backupBucket: fst-backups
-  s3:
-    enabled: true
-  gcs:
-    enabled: true
-
-# reduce default termination grace period
-terminationGracePeriodSeconds: 10
