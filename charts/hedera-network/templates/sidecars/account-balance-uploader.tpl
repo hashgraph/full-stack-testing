@@ -50,4 +50,8 @@
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets
+  {{- with $balanceUploader.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}

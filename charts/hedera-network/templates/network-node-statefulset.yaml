@@ -25,14 +25,14 @@ spec:
         - name: hgcapp-storage # change me
           emptyDir: {}
         {{- if $node.sidecars.otelCollector.enabled }}
-        - name: otel-collector-config
+        - name: otel-collector-volume
           configMap:
-            name: otel-collector-config
+            name: otel-collector-cm
         {{- end }}
       initContainers:
       # Init Container
       - name: init-container
-        image: {{ $.Values.infrastructure.docker.images.root }}
+        image: "{{ $node.root.image.registry }}/{{ $node.root.image.repository }}:{{ $node.root.image.tag | default $.Chart.AppVersion }}"
         command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
         {{- include "hedera.security.context" . | nindent 8}}
         volumeMounts:
@@ -41,7 +41,7 @@ spec:
       containers:
       # Root Container
       - name: root-container
-        image: {{ $.Values.infrastructure.docker.images.root }}
+        image: "{{ $node.root.image.registry }}/{{ $node.root.image.repository }}:{{ $node.root.image.tag | default $.Chart.AppVersion }}"
         securityContext: # need to run as root with privileged mode
           runAsUser: 0
           runAsGroup: 0

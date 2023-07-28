@@ -5,13 +5,15 @@
   image: "{{ $otel.image.registry }}/{{ $otel.image.repository }}:{{ $otel.image.tag | default $chart.AppVersion }}"
   imagePullPolicy: {{ $otel.image.pullPolicy }}
   ports:
-    {{- range $key, $port := $otel.ports }}
-    {{- if $port.enabled }}
-    - name: {{ $key }}
-      containerPort: {{ $port.containerPort }}
-      protocol: {{ $port.protocol }}
-    {{- end }}
-    {{- end }}
+    - name: healthcheck
+      containerPort: 13133
+      protocol: TCP
+    - name: metrics
+      containerPort: 8888
+      protocol: TCP
+    - name: otlp
+      containerPort: 4317
+      protocol: TCP
   livenessProbe:
     httpGet:
       path: /
@@ -20,12 +22,13 @@
     httpGet:
       path: /
       port: healthcheck
+  volumeMounts:
+    - name: otel-collector-volume
+      mountPath: /etc/otel-collector-config.yaml
+      subPath: config.yaml #key in the configmap
+      readOnly: true
   {{- with $otel.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
-  {{- end }}
-  {{- with $otel.volumes }}
-  volumeMounts:
-    {{- toYaml . | nindent 4}}
   {{- end }}
 {{- end -}}

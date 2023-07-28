@@ -56,4 +56,8 @@
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets
+  {{- with $recordStream.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end }}
