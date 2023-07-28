@@ -25,6 +25,7 @@ ENV JAVA_HOME /opt/java/openjdk
 ENV PATH $JAVA_HOME/bin:$PATH
 
 # Define Application Environment Variables
+ENV APP_HOME="/opt/hgcapp/services-hedera/HapiApp2.0"
 ENV JAVA_HEAP_MIN=""
 ENV JAVA_HEAP_MAX=""
 ENV JAVA_OPTS=""
@@ -97,19 +98,18 @@ RUN mkdir -p "/opt/hgcapp" && \
     mkdir -p "/opt/hgcapp/services-hedera/HapiApp2.0/data/upgrade"
 
 # Add the entrypoint script and systemd service file
-ADD entrypoint.sh /opt/hgcapp/services-hedera/HapiApp2.0/
+ADD entrypoint.sh /etc/network-node/
 ADD network-node.service /usr/lib/systemd/system/
 
 # Ensure proper file permissions
-RUN chmod -R +x /opt/hgcapp/services-hedera/HapiApp2.0/entrypoint.sh && \
-    chown -R 2000:2000 /opt/hgcapp/services-hedera/HapiApp2.0
+RUN chmod -R +x /etc/network-node/entrypoint.sh && \
+    chown -R 2000:2000 /opt/hgcapp/
 
 RUN mkdir /etc/network-node && \
     touch /etc/network-node/application.env && \
     echo "JAVA_HOME=\"${JAVA_HOME}\"" >> /etc/network-node/java.env && \
     echo "PATH=\"${PATH}\"" >> /etc/network-node/java.env && \
     chown -R 2000:2000 /etc/network-node
-
 
 # Expose TCP/UDP Port Definitions
 EXPOSE 50111/tcp 50211/tcp 50212/tcp
