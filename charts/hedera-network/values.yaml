@@ -74,7 +74,7 @@ infrastructure:
   docker:
     registry: docker.io
     images:
-      root: ghcr.io/hashgraph/full-stack-testing/ubi8-init-dind:0.1.2
+      root: ghcr.io/hashgraph/full-stack-testing/ubi8-init-java17:0.3.0
       envoyproxy: envoyproxy/envoy:v1.21.1
       haproxy: haproxy:2.4-alpine
       jsonrpcrelay: ghcr.io/hashgraph/hedera-json-rpc-relay:0.28.0
