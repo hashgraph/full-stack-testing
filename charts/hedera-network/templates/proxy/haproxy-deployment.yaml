@@ -15,20 +15,20 @@ spec:
         app: haproxy-{{ $node.name }}
     spec:
       volumes:
-        - name: config-volume
+        - name: haproxy-config-volume
           configMap:
             name: haproxy-cm-{{ $node.name }}
-        - name: ofac-volume
+        - name: haproxy-ofac-volume
           configMap:
-            name: ofac-cm
+            name: haproxy-ofac-cm
       containers:
       - name: haproxy
         image: "{{ $node.haproxy.image.registry }}/{{ $node.haproxy.image.repository }}:{{ $node.haproxy.image.tag | default $.Chart.AppVersion }}"
         imagePullPolicy: Always
         volumeMounts:
-          - name: config-volume
+          - name: haproxy-config-volume
             # https://hub.docker.com/_/haproxy/
             mountPath: /usr/local/etc/haproxy
-          - name: ofac-volume
+          - name: haproxy-ofac-volume
             mountPath: /var/opt/ofac/
 {{- end }}
