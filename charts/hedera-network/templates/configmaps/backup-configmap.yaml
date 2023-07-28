@@ -3,5 +3,4 @@ kind: ConfigMap
 metadata:
   name: backup-config
 data:
-  BACKUP_UPLOADER_BUCKET_1: {{ .Values.sidecars.backup.bucket1 }}
-  BACKUP_UPLOADER_BUCKET_2: {{ .Values.sidecars.backup.bucket2 }}
+  BACKUP_UPLOADER_BUCKET_1: {{ .Values.backupUploaderBucket }}

@@ -155,9 +155,8 @@ sidecars:
         mountPath: /etc/otel-collector-config.yaml
         subPath: config.yaml #key in the configmap
         readOnly: true
-  backup:
-    bucket1: backup-1
-    bucket2: backup-2
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
+# the bucket to use for the hedera network node(s) backup uploader
+backupUploaderBucket: backup-bucket
