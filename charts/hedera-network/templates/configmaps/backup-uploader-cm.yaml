@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: backup-config
+  name: backup-uploader-cm
 data:
   BACKUP_UPLOADER_BUCKET_1: {{ .Values.sidecars.backup.bucket1 }}
   BACKUP_UPLOADER_BUCKET_2: {{ .Values.sidecars.backup.bucket2 }}
