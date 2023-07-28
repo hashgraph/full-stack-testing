@@ -117,8 +117,7 @@ hedera:
               cpu: 100m
               memory: 1G
           config:
-            bucket1: "backup"
-            bucket2: ""
+            backupBucket: "backup"
         otelCollector:
           enabled: true
           nameOverride: "otel-collector"

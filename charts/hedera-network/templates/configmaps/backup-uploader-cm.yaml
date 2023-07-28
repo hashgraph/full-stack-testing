@@ -4,6 +4,5 @@ kind: ConfigMap
 metadata:
   name: backup-uploader-cm
 data:
-  BACKUP_UPLOADER_BUCKET_1: "{{ $node.sidecars.backupUploader.config.bucket1 }}"
-  BACKUP_UPLOADER_BUCKET_2: "{{ $node.sidecars.backupUploader.config.bucket2 }}"
+  BACKUP_UPLOADER_BUCKET_1: "{{ $node.sidecars.backupUploader.config.backupBucket}}"
 {{- end }}
