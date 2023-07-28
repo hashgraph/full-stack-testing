@@ -4,4 +4,4 @@ metadata:
   name: otel-collector-cm
 data:
   config.yaml: |
-  {{- .Files.Get "configs/otel-collector-config.yaml" | nindent 4 }}
+  {{- .Files.Get "config-files/otel-collector-config.yaml" | nindent 4 }}

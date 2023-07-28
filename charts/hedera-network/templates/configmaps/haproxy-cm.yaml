@@ -7,7 +7,7 @@ metadata:
   name: haproxy-cm-{{ $node.name }}
 data:
   haproxy.cfg: |
-    {{- tpl ($.Files.Get "configs/haproxy.cfg") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}
+    {{- tpl ($.Files.Get "config-files/haproxy.cfg") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}
 ---
 {{ end }}
 apiVersion: v1
@@ -16,4 +16,4 @@ metadata:
   name: haproxy-ofac-cm
 data:
   ofacBlock.acl: |
-    {{- .Files.Get "configs/ofacBlock.acl" | nindent 4  }}
+    {{- .Files.Get "config-files/ofacBlock.acl" | nindent 4  }}

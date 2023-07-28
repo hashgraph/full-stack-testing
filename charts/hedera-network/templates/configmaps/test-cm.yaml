@@ -5,4 +5,4 @@ metadata:
 data:
   test.sh: |
     {{- $total_nodes := len $.Values.hedera.nodes -}}
-    {{- tpl ($.Files.Get "configs/test.sh") ( dict "total_nodes" $total_nodes "Template" $.Template ) | nindent 4 }}
+    {{- tpl ($.Files.Get "config-files/test.sh") ( dict "total_nodes" $total_nodes "Template" $.Template ) | nindent 4 }}
