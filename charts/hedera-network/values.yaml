@@ -119,11 +119,11 @@ hedera:
             repository: "otel/opentelemetry-collector-contrib"
             tag: "0.72.0"
             pullPolicy: IfNotPresent
-          resources:
-            requests:
-              cpu: 100m
-              memory: 1G
-            limits:
-              cpu: 100m
-              memory: 1G
+#          resources:
+#            requests:
+#              cpu: 100m
+#              memory: 1G
+#            limits:
+#              cpu: 100m
+#              memory: 1G
           config: {}
