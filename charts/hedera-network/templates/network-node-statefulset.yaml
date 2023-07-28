@@ -24,7 +24,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if $node.sidecars.otel.enabled }}
+        {{- if $node.sidecars.otelCollector.enabled }}
         - name: otel-collector-config
           configMap:
             name: otel-collector-config

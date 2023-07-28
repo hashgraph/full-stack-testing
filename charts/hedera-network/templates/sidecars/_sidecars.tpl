@@ -2,6 +2,7 @@
 {{- $recordStream := .node.sidecars.recordStreamUploader -}}
 {{- $eventStream := .node.sidecars.eventStreamUploader -}}
 {{- $balanceUploader := .node.sidecars.accountBalanceUploader -}}
+{{- $otel := .node.sidecars.otelCollector -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
   {{- if $recordStream.enabled -}}
@@ -18,5 +19,10 @@
   # Sidecar: Account Balance Uploader
   {{- $data := dict "balanceUploader" $balanceUploader "cloud" $cloud "chart" $chart -}}
   {{ include "sidecars.account-balance-uploader" $data | nindent 0 }}
+  {{- end }}
+  {{- if $otel.enabled }}
+  # Sidecar: OTel Collector
+  {{- $data := dict "otel" $otel "chart" $chart -}}
+  {{ include "sidecars.otel-collector" $data | nindent 0 }}
   {{- end }}
 {{- end }}

@@ -1,7 +1,8 @@
 {{- define "sidecars.otel-collector" -}}
-{{- $otel := .Values.sidecars.otel -}}
-- name: otel-collector
-  image: "{{ $otel.image.repository }}:{{ $otel.image.tag }}"
+{{- $otel := .otel -}}
+{{- $chart := .chart -}}
+- name: {{ $otel.nameOverride | default "otel-collector" }}
+  image: "{{ $otel.image.registry }}/{{ $otel.image.repository }}:{{ $otel.image.tag | default $chart.AppVersion }}"
   imagePullPolicy: {{ $otel.image.pullPolicy }}
   ports:
     {{- range $key, $port := $otel.ports }}

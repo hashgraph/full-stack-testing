@@ -81,8 +81,39 @@ hedera:
             signature:
               require: true
               prioritize: true
-        otel:
+        otelCollector:
           enabled: true
+          nameOverride: "otel-collector"
+          image:
+            registry: docker.io
+            repository: "otel/opentelemetry-collector-contrib"
+            tag: "0.72.0"
+            pullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          ports:
+            otlp:
+              enabled: true
+              containerPort: 4317
+              protocol: TCP
+            metrics:
+              enabled: true
+              containerPort: 8888
+              protocol: TCP
+            healthcheck:
+              enabled: true
+              containerPort: 13133
+              protocol: TCP
+          volumes:
+            - name: otel-collector-config
+              mountPath: /etc/otel-collector-config.yaml
+              subPath: config.yaml #key in the configmap
+              readOnly: true
 #        backupUploader:
 #          enabled: true
 #        accountBalancesUploader:
@@ -211,35 +242,6 @@ sidecars:
   recordStreamUploader:
     enabled: true
   otel:
-    image:
-      repository: "otel/opentelemetry-collector-contrib"
-      tag: "0.72.0"
-      pullPolicy: IfNotPresent
-    resources:
-#      limits:
-#        cpu: 100m
-#        memory: 128Mi
-#      requests:
-#        cpu: 100m
-#        memory: 128Mi
-    ports:
-#      otlp:
-#        enabled: true
-#        containerPort: 4317
-#        protocol: TCP
-#      metrics:
-#        enabled: true
-#        containerPort: 8888
-#        protocol: TCP
-      healthcheck:
-        enabled: true
-        containerPort: 13133
-        protocol: TCP
-    volumes:
-      - name: otel-collector-config
-        mountPath: /etc/otel-collector-config.yaml
-        subPath: config.yaml #key in the configmap
-        readOnly: true
   backup:
     bucket1: backup-1
     bucket2: backup-2

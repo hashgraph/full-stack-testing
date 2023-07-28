@@ -2,7 +2,7 @@
 {{- $balanceUploader := .balanceUploader -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
-- name: {{ $balanceUploader.nameOverride | default "event-stream-balanceUploader" }}
+- name: {{ $balanceUploader.nameOverride | default "account-balance-uploader" }}
   image: "{{ $balanceUploader.image.registry }}/{{ $balanceUploader.image.repository }}:{{ $balanceUploader.image.tag | default $chart.AppVersion }}"
   imagePullPolicy: {{$balanceUploader.image.pullPolicy}}
   {{- include "hedera.security.context" $ | nindent 2 }}
