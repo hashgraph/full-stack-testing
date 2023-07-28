@@ -123,7 +123,7 @@ jobs:
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
           kubectl config get-contexts
-          helm install fst ./charts/hedera-network --values ./charts/nodes.yaml
+          helm install fst ./charts/hedera-network --values ./charts/hedera-network/nodes.yaml
           helm test fst
           TEST_STATUS="${?}"
           if [[ "${TEST_STATUS}" -ne 0 ]]; then
