@@ -65,8 +65,6 @@ include(":fullstack-resource-generator-core")
 
 include(":fullstack-service-locator")
 
-include(":fullstack-service-locator-java-sls")
-
 include(":fullstack-test-toolkit-api")
 
 include(":fullstack-validator-api")

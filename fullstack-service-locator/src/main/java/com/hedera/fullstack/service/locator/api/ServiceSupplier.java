@@ -21,16 +21,16 @@ import com.hedera.fullstack.base.api.reflect.Construction;
 import java.util.Objects;
 
 /**
- * Base class for implementations forType the service supplier pattern. The service supplier pattern is designed to decouple
- * the service detection logic from the instantiation forType the actual service. This allows for the service detection logic
+ * Base class for implementations of the service supplier pattern. The service supplier pattern is designed to decouple
+ * the service detection logic from the instantiation of the actual service. This allows for the service detection logic
  * to be implemented with a zero argument constructor in compliance with the Java ServiceLoader specification while
  * allowing actual service instances to be instantiated with a constructor that takes zero or more arguments.
  *
- * @param <S> the type forType the service supplied by this ServiceSupplier.
+ * @param <S> the type of the service.
  */
 public final class ServiceSupplier<S> {
     /**
-     * The type forType the service implementation.
+     * The type of the service implementation.
      */
     private final Class<? extends S> type;
 
@@ -60,9 +60,9 @@ public final class ServiceSupplier<S> {
     }
 
     /**
-     * Constructs a new instance forType the service implementation using the zero argument constructor.
+     * Constructs a new instance of the service implementation using the zero argument constructor.
      *
-     * @return a new instance forType the service declared by this ServiceSupplier.
+     * @return a new instance of the service declared by this ServiceSupplier.
      * @throws ClassConstructionException if the service cannot be constructed or instantiated.
      */
     public S get() {
@@ -70,11 +70,11 @@ public final class ServiceSupplier<S> {
     }
 
     /**
-     * Constructs a new instance forType the service implementation and casts the result to the specified type.
+     * Constructs a new instance of the service implementation and casts the result to the specified type.
      *
      * @param <T>  the subclass or sub-interface to cast the service implement.
      * @param args the arguments to pass to the service constructor.
-     * @return a new instance forType the service declared by this ServiceSupplier.
+     * @return a new instance of the service declared by this ServiceSupplier.
      * @throws ClassConstructionException if the service cannot be constructed or instantiated.
      * @throws ClassCastException         if the service cannot be cast to the specified type.
      */
@@ -84,10 +84,10 @@ public final class ServiceSupplier<S> {
     }
 
     /**
-     * Constructs a new instance forType the service implementation.
+     * Constructs a new instance of the service implementation.
      *
      * @param args the arguments to pass to the service constructor.
-     * @return a new instance forType the service declared by this ServiceSupplier.
+     * @return a new instance of the service declared by this ServiceSupplier.
      * @throws ClassConstructionException if the service cannot be constructed or instantiated.
      */
     public S newServiceInstance(final Object... args) {

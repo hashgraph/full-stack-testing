@@ -22,7 +22,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
 import com.hedera.fullstack.service.locator.api.ServiceSupplier;
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
-import com.hedera.fullstack.service.locator.test.mock.MultiplePublicCtorService;
+import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -36,9 +37,9 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: Basic Supplier Instantiation")
     void mpcBasicInstantiation() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
 
-        assertThat(supplier).isNotNull().extracting(ServiceSupplier::type).isSameAs(MultiplePublicCtorService.class);
+        assertThat(supplier).isNotNull().extracting(ServiceSupplier::type).isSameAs(MockCtorService.class);
 
         assertThatThrownBy(() -> new ServiceSupplier<>(null))
                 .isInstanceOf(NullPointerException.class)
@@ -48,19 +49,19 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: Constructor Not Found")
     void mpcConstructorNotFound() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final OutputStream outputStreamValue = new ByteArrayOutputStream();
 
         assertThatThrownBy(() -> supplier.newServiceInstance(outputStreamValue))
                 .isInstanceOf(ClassConstructionException.class)
                 .hasMessageContaining(
-                        "No public constructor found for com.hedera.fullstack.service.locator.test.mock.MultiplePublicCtorService");
+                        "No public constructor found for com.hedera.fullstack.service.locator.test.mock.MockCtorService");
     }
 
     @Test
     @DisplayName("MultiplePublicCtor: Zero Argument Constructor")
     void mpcZeroArgumentConstructor() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final CtorService zeroArgSvc = supplier.get();
 
         assertThat(zeroArgSvc).isNotNull();
@@ -72,9 +73,9 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: String Argument Constructor")
     void mpcStringArgumentConstructor() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final String stringValue = "Hello World!";
-        final MultiplePublicCtorService stringArgSvc = supplier.cast(stringValue);
+        final MockCtorService stringArgSvc = supplier.cast(stringValue);
 
         assertThat(stringArgSvc).isNotNull();
         assertThat(stringArgSvc.getStringValue()).isEqualTo(stringValue);
@@ -85,7 +86,7 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: Int Argument Constructor")
     void mpcIntArgumentConstructor() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final int intValue = 42;
         final CtorService intArgSvc = supplier.newServiceInstance(intValue);
 
@@ -98,7 +99,7 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: InputStream Argument Constructor")
     void mpcInputStreamArgumentConstructor() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[0]);
         final CtorService outputStreamArgSvc = supplier.newServiceInstance(inputStream);
 
@@ -111,7 +112,7 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: String and Int Argument Constructor")
     void mpcStringAndIntArgumentConstructor() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final String stringValue = "Hello World!";
         final int intValue = 42;
         final CtorService stringAndIntArgSvc = supplier.newServiceInstance(stringValue, intValue);
@@ -125,7 +126,7 @@ class ServiceSupplierTest {
     @Test
     @DisplayName("MultiplePublicCtor: String, Int, and InputStream Argument Constructor")
     void mpcStringIntAndInputStreamArgumentConstructor() {
-        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MultiplePublicCtorService.class);
+        final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final String stringValue = "Hello World!";
         final int intValue = 42;
         final InputStream inputStream = new ByteArrayInputStream(new byte[0]);

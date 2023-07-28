@@ -16,13 +16,13 @@
 
 package com.hedera.fullstack.service.locator.test.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
-import com.hedera.fullstack.service.locator.test.mock.MultiplePublicCtorService;
+import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Service Locator")
 class ServiceLocatorTest {
@@ -34,7 +34,7 @@ class ServiceLocatorTest {
         assertThat(locator).isNotNull();
         assertThat(locator.findFirst()).isPresent().hasValueSatisfying(s -> assertThat(s)
                 .isInstanceOf(CtorService.class)
-                .isInstanceOf(MultiplePublicCtorService.class));
+                .isInstanceOf(MockCtorService.class));
     }
 
     @Test

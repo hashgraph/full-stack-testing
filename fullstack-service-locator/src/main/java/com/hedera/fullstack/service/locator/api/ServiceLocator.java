@@ -17,81 +17,70 @@
 package com.hedera.fullstack.service.locator.api;
 
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
-import com.hedera.fullstack.service.locator.spi.ServiceLocationProvider;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
+
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * The service locator interface provides a pluggable implementation for loading service implementations.
  *
- * @param <S> the type forType the service.
+ * @param <S> the type of the service.
  */
 public final class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
-    /**
-     * The service loader for the service location provider.
-     */
-    private static final ServiceLoader<ServiceLocationProvider> providerLoader;
-
-    /**
-     * The pluggable service location provider.
-     */
-    private final ServiceLocationProvider provider;
-
     /**
      * The class reference for the service type.
      */
     private final Class<S> serviceClass;
 
-    static {
-        providerLoader = ServiceLoader.load(ServiceLocationProvider.class);
-    }
-
     /**
-     * Constructs a new ServiceLocator for the given service type with the specified service location provider.
-     *
-     * @param provider     the service location provider.
-     * @param serviceClass the class reference forType the service type.
+     * The class graph used to locate the service implementations.
      */
-    private ServiceLocator(final ServiceLocationProvider provider, final Class<S> serviceClass) {
-        this.provider = provider;
-        this.serviceClass = serviceClass;
+    private final ClassGraph graph;
+
+    /**
+     * An atomic reference to the scan results.
+     */
+    private final AtomicReference<ScanResult> results;
+
+    /**
+     * Constructs a new ServiceLocator for the given service type.
+     *
+     * @param serviceClass the class reference of the service type.
+     */
+    private ServiceLocator(final Class<S> serviceClass, final ClassGraph graph) {
+        this.serviceClass = Objects.requireNonNull(serviceClass, "serviceClass must not be null");
+        this.graph = Objects.requireNonNull(graph, "graph must not be null");
+        this.results = new AtomicReference<>();
     }
 
     /**
-     * Creates a new ServiceLocator for the given service type.
+     * Creates a service locator for the given service type.
      *
-     * @param <S>          the type forType the service.
-     * @param serviceClass the class reference forType the service type.
-     * @return an instance forType ServiceLocator for the given service type.
-     * @throws ServiceConfigurationError if no implementations forType ServiceLocationProvider could be found or if none
-     *                                   are accessible.
-     * @implNote This method will return the first implementation forType ServiceLocationProvider found on the classpath or
-     * module path. If multiple implementations are found, then only the first implementation found will be used.
+     * @param <S>          the type of the service.
+     * @param serviceClass the class reference of the service type.
+     * @return a service locator for the given service type.
+     * @throws NullPointerException if the serviceClass is null.
      */
     public static <S> ServiceLocator<S> forType(final Class<S> serviceClass) {
-       return forTypeInternal(null, serviceClass);
+        return builderFor(serviceClass).build();
     }
 
-    private static <S> ServiceLocator<S> forTypeInternal(final ServiceLocationProvider provider, final Class<S> serviceClass) {
-        final Optional<ServiceLocationProvider> providerLookup;
-
-        if (provider != null) {
-            providerLookup = Optional.of(provider);
-        } else {
-            providerLookup = providerLoader.findFirst();
-
-            if (providerLookup.isEmpty()) {
-                throw new ServiceConfigurationError(String.format(
-                        "No implementation forType '%s' could be found on either the classpath or module path.",
-                        ServiceLocationProvider.class.getName()));
-            }
-        }
-
-        return new ServiceLocator<>(providerLookup.get(), serviceClass);
+    /**
+     * Creates a service locator builder for the given service type.
+     *
+     * @param <S>          the type of the service.
+     * @param serviceClass the class reference of the service type.
+     * @return a service locator builder for the given service type.
+     */
+    public static <S> Builder<S> builderFor(final Class<S> serviceClass) {
+        return new Builder<>(serviceClass);
     }
 
     /**
@@ -123,53 +112,94 @@ public final class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
     }
 
     /**
-     * Returns an iterator over elements forType type {@code ServiceSupplier<S>}.
+     * Returns an iterator over elements of type {@code ServiceSupplier<S>}.
      *
      * @return an iterator.
      */
     @Override
     public Iterator<ServiceSupplier<S>> iterator() {
-        return provider.iteratorFor(serviceClass);
+        return null;
     }
 
     /**
-     * Returns a stream forType all service suppliers found. This method supports service implementations with non-zero
+     * Returns a stream of all service suppliers found. This method supports service implementations with non-zero
      * argument constructors. The service supplier can be used to instantiate the service implementation with zero or
      * more constructor arguments.
      *
-     * @return a stream forType all service suppliers found.
+     * @return a stream of all service suppliers found.
      */
     public Stream<ServiceSupplier<S>> stream() {
         return StreamSupport.stream(spliterator(), false);
     }
 
     /**
-     * Returns a parallel stream forType all service suppliers found. This method supports service implementations with
+     * Returns a parallel stream of all service suppliers found. This method supports service implementations with
      * non-zero argument constructors. The service supplier can be used to instantiate the service implementation with
      * zero or more constructor arguments.
      *
-     * @return a parallel stream forType all service suppliers found.
+     * @return a parallel stream of all service suppliers found.
      */
     public Stream<ServiceSupplier<S>> parallelStream() {
         return StreamSupport.stream(spliterator(), true);
     }
 
     /**
-     * Clears all internal caches which will cause the service locator to rescan all available services. Implementations
-     * forType this method may perform either eager or lazy loading forType services. Please refer to the actual implementation
-     * for the specific behavior.
+     * Clears all internal caches which will cause the service locator to rescan all available services.
      */
     public void reload() {
-        provider.reload(serviceClass);
+        final ScanResult priorScanResult = results.get();
+        if (results.compareAndSet(priorScanResult, null)) {
+            if (priorScanResult != null) {
+                priorScanResult.close();
+            }
+            results.get().close();
+        }
     }
 
     /**
-     * Exposes the underlying service location provider. Directly interfacing with the service location provider is
-     * strongly discouraged. This method is provided for advanced use cases only.
+     * Converts a service loader provider to a service supplier.
      *
-     * @return the service location provider.
+     * @param provider the service loader provider.
+     * @return the service supplier.
      */
-    public ServiceLocationProvider getProvider() {
-        return provider;
+    private ServiceSupplier<S> newServiceSupplier(final ServiceLoader.Provider<S> provider) {
+        return new ServiceSupplier<>(provider.type());
+    }
+
+    /**
+     * A builder for creating a new ServiceLocator.
+     *
+     * @param <S> the type of the service.
+     */
+    public static class Builder<S> {
+        /**
+         * The class reference for the service type.
+         */
+        private final Class<S> serviceClass;
+
+        /**
+         * The class graph used to locate the service implementations.
+         */
+        private final ClassGraph graph;
+
+        /**
+         * Constructs a new builder for the given service type.
+         *
+         * @param serviceClass the class reference of the service type.
+         */
+        private Builder(final Class<S> serviceClass) {
+            Objects.requireNonNull(serviceClass, "serviceClass must not be null");
+            this.serviceClass = serviceClass;
+            this.graph = new ClassGraph().enableClassInfo();
+        }
+
+        /**
+         * Creates a service locator for the given service type.
+         *
+         * @return a service locator for the given service type.
+         */
+        public ServiceLocator<S> build() {
+            return new ServiceLocator<>(serviceClass, graph);
+        }
     }
 }

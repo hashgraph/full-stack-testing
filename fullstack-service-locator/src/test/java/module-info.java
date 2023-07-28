@@ -17,6 +17,6 @@ module com.hedera.fullstack.service.locator.test {
 
     uses CtorService;
 
-    provides com.hedera.fullstack.service.locator.spi.ServiceLocationProvider with
-            com.hedera.fullstack.service.locator.test.mock.MultiplePublicCtorProvider;
+    provides com.hedera.fullstack.service.locator.test.mock.CtorService with
+            com.hedera.fullstack.service.locator.test.mock.MockCtorService;
 }

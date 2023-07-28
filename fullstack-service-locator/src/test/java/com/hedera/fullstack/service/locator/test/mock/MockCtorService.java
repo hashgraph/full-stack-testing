@@ -18,41 +18,41 @@ package com.hedera.fullstack.service.locator.test.mock;
 
 import java.io.InputStream;
 
-public class MultiplePublicCtorService implements CtorService {
+public class MockCtorService implements CtorService {
 
     private final String s;
     private final int i;
     private final InputStream is;
 
-    public MultiplePublicCtorService() {
+    public MockCtorService() {
         this(null, 0, null);
     }
 
-    public MultiplePublicCtorService(final String s) {
+    public MockCtorService(final String s) {
         this(s, 0, null);
     }
 
-    public MultiplePublicCtorService(final int i) {
+    public MockCtorService(final int i) {
         this(null, i, null);
     }
 
-    public MultiplePublicCtorService(String s, int i) {
+    public MockCtorService(String s, int i) {
         this(s, i, null);
     }
 
-    public MultiplePublicCtorService(InputStream is) {
+    public MockCtorService(InputStream is) {
         this(null, 0, is);
     }
 
-    public MultiplePublicCtorService(String s, InputStream is) {
+    public MockCtorService(String s, InputStream is) {
         this(s, 0, is);
     }
 
-    public MultiplePublicCtorService(int i, InputStream is) {
+    public MockCtorService(int i, InputStream is) {
         this(null, i, is);
     }
 
-    public MultiplePublicCtorService(String s, int i, InputStream is) {
+    public MockCtorService(String s, int i, InputStream is) {
         this.s = s;
         this.i = i;
         this.is = is;
