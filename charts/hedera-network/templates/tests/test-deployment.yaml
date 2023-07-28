@@ -7,16 +7,16 @@ metadata:
 spec:
   serviceAccountName: tester
   volumes:
-    - name: test-cfg
+    - name: test-config
       configMap:
-        name: tester-cfg
+        name: test-cm
         defaultMode: 0777 # we need the test files to be executable
   containers:
     - name: tester
       image: bitnami/kubectl:latest
       volumeMounts:
         - mountPath: /scripts/test.sh
-          name: test-cfg
+          name: test-config
           subPath: test.sh
       command:
         - "/bin/bash"

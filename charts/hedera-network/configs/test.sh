@@ -3,7 +3,7 @@
 EX_OK=0
 EX_ERR=1
 
-TOTAL_NODES=1
+TOTAL_NODES="{{ .total_nodes }}"
 
 function get_pod_list() {
   local pattern=$1

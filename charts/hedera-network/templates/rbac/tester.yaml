@@ -32,11 +32,3 @@ roleRef:
   kind: Role
   name: tester-role
   apiGroup: rbac.authorization.k8s.io
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tester-cfg
-data:
-  test.sh: |
-    {{- .Files.Get "configs/test.sh" | nindent 4 }}
