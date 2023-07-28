@@ -57,5 +57,5 @@ spec:
               fieldRef:
                 fieldPath: status.podIP
       # Sidecars
-      {{- include "sidecars" $node | nindent 6 }}
+      {{- include "sidecars" (dict "node" $node "cloud" $.Values.cloud "chart" $.Chart ) | nindent 6 }}
 {{ end }}

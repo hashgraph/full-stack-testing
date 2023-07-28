@@ -1,0 +1,34 @@
+{{ range $index, $node := ($.Values.hedera.nodes) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy-{{ $node.name }}
+spec:
+  replicas: {{ $node.haproxy.replica }}
+  selector:
+    matchLabels:
+      app: haproxy-{{ $node.name }}
+  template:
+    metadata:
+      labels:
+        app: haproxy-{{ $node.name }}
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: haproxy-config-{{ $node.name }}
+        - name: ofac-volume
+          configMap:
+            name: ofac-config
+      containers:
+      - name: haproxy
+        image: "{{ $node.haproxy.image.registry }}/{{ $node.haproxy.image.repository }}:{{ $node.haproxy.image.tag | default $.Chart.AppVersion }}"
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: config-volume
+            # https://hub.docker.com/_/haproxy/
+            mountPath: /usr/local/etc/haproxy
+          - name: ofac-volume
+            mountPath: /var/opt/ofac/
+{{- end }}

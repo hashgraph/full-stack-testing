@@ -1,5 +1,5 @@
 {{- define "sidecars" -}}
-{{- $recordStream := .sidecars.recordStreamUploader -}}
+{{- $recordStream := .node.sidecars.recordStreamUploader -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
   {{- if $recordStream.enabled -}}

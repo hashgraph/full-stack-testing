@@ -1,0 +1,29 @@
+{{ range $index, $node := ($.Values.hedera.nodes) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy-proxy-{{ $node.name }}
+spec:
+  replicas: {{ $node.envoyProxy.replica }}
+  selector:
+    matchLabels:
+      app: envoy-proxy-{{ $node.name }}
+  template:
+    metadata:
+      labels:
+        app: envoy-proxy-{{ $node.name }}
+    spec:
+      volumes:
+        - name: config-volume
+          configMap:
+            name: envoy-proxy-config-{{ $node.name }}
+      containers:
+      - name: envoy-proxy
+        image: "{{ $node.envoyProxy.image.registry }}/{{ $node.envoyProxy.image.repository }}:{{ $node.envoyProxy.image.tag | default $.Chart.AppVersion }}"
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: config-volume
+            # https://www.envoyproxy.io/docs/envoy/v1.26.2/start/docker
+            mountPath: /etc/envoy
+{{- end }}

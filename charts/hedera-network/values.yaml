@@ -8,15 +8,29 @@ hedera:
         limits:
           cpu: 100m
           memory: 1G
+      haproxy:
+        image:
+          registry: docker.io
+          repository: haproxy
+          tag: "2.4-alpine"  # Defaults to the chart's app version if empty
+          pullPolicy: IfNotPresent
+        replica: 1
+      envoyProxy:
+        image:
+          registry: docker.io
+          repository: envoyproxy/envoy
+          tag: "v1.21.1"  # Defaults to the chart's app version if empty
+          pullPolicy: IfNotPresent
+        replica: 1
       sidecars:
         recordStreamUploader:
           enabled: true
-          nameOverride: ""
+          nameOverride: "record-stream-uploader"
           image:
             registry: gcr.io
             repository: hedera-registry/uploader-mirror
-            pullPolicy: IfNotPresent
             tag: "1.3.0"  # Defaults to the chart's app version if empty
+            pullPolicy: IfNotPresent
           config:
             debug: true
             compression: true
