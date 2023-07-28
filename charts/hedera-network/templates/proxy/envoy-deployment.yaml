@@ -17,7 +17,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: envoy-proxy-config-{{ $node.name }}
+            name: envoy-proxy-cm-{{ $node.name }}
       containers:
       - name: envoy-proxy
         image: "{{ $node.envoyProxy.image.registry }}/{{ $node.envoyProxy.image.repository }}:{{ $node.envoyProxy.image.tag | default $.Chart.AppVersion }}"

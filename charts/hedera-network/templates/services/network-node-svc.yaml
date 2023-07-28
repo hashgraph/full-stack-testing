@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: network-{{ $nodeConfig.name }}-service
+  name: network-{{ $nodeConfig.name }}-svc
 spec:
   selector:
     app: network-{{ $nodeConfig.name }}

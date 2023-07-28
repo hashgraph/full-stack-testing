@@ -17,10 +17,10 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: haproxy-config-{{ $node.name }}
+            name: haproxy-cm-{{ $node.name }}
         - name: ofac-volume
           configMap:
-            name: ofac-config
+            name: ofac-cm
       containers:
       - name: haproxy
         image: "{{ $node.haproxy.image.registry }}/{{ $node.haproxy.image.repository }}:{{ $node.haproxy.image.tag | default $.Chart.AppVersion }}"

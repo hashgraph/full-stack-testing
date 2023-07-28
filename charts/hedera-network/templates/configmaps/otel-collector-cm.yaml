@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: otel-collector-cm
 data:
-  config.yaml:
-  {{- .Files.Get "configs/otel-collector-config.yaml" | toYaml | nindent 4 }}
+  config.yaml: |
+  {{- .Files.Get "configs/otel-collector-config.yaml" | nindent 4 }}

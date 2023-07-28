@@ -34,7 +34,9 @@
     - name: STREAM_SIG_EXTENSION
       value: "rcd_sig"
     - name: STREAM_EXTENSION
-      value: {{ $recordStream.config.compression | ternary "rcd.gz" "rcd" }}
+      value: "{{ $recordStream.config.compression | ternary "rcd.gz" "rcd" }}"
+    - name: SIG_EXTENSION
+      value: "{{ $recordStream.config.compression | ternary "rcd_sig.gz" "rcd_sig" }}"
     - name: RECORD_STREAM_COMPRESSION
       value: "{{ $recordStream.config.compression }}"
     - name: RECORD_STREAM_SIDECAR
@@ -43,8 +45,6 @@
       value: "{{ $recordStream.config.signature.require }}"
     - name: SIG_PRIORITIZE
       value: "{{ $recordStream.config.signature.prioritize }}"
-    - name: SIG_EXTENSION
-      value: "rcd_sig"
     - name: BUCKET_PATH
       value: "/recordstream"
     - name: BUCKET_NAME
