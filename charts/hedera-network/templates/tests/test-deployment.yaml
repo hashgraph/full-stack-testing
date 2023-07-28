@@ -4,6 +4,8 @@ metadata:
   name: "network-test"
   annotations:
     "helm.sh/hook": test
+    # add hook-failed once bug is fixed that prevents it from getting logs
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   serviceAccountName: pod-monitor
   volumes:
