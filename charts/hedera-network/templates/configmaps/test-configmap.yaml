@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: tester-cfg
-data:
-  test.sh: |
-    {{- .Files.Get "configs/test.sh" | nindent 4 }}

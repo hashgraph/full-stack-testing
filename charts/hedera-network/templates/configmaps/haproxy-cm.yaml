@@ -1,19 +1,19 @@
 # Create a haproxy configmap for each network node
 # This will change in the future, we plan create a haproxy for a given network node only if specified in the config
-{{- range $nodeConfig := ($.Values.hedera.nodes) }}
+{{- range $index, $node := ($.Values.hedera.nodes) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: haproxy-config-{{ $nodeConfig.name }}
+  name: haproxy-cm-{{ $node.name }}
 data:
   haproxy.cfg: |
-    {{- tpl ($.Files.Get "configs/haproxy.cfg") (dict "nodeConfig" $nodeConfig "Template" $.Template) | nindent 4 }}
+    {{- tpl ($.Files.Get "config-files/haproxy.cfg") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}
 ---
 {{ end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ofac-config
+  name: haproxy-ofac-cm
 data:
   ofacBlock.acl: |
-    {{- .Files.Get "configs/ofacBlock.acl" | nindent 4  }}
+    {{- .Files.Get "config-files/ofacBlock.acl" | nindent 4  }}

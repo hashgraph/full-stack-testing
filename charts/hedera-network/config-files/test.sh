@@ -3,6 +3,8 @@
 EX_OK=0
 EX_ERR=1
 
+TOTAL_NODES="{{ .total_nodes }}"
+
 function get_pod_list() {
   local pattern=$1
   local resp=$(kubectl get pods -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}' | grep "${pattern}")
@@ -11,7 +13,6 @@ function get_pod_list() {
 
 function test_node_total() {
   # set test expectations
-  local expected_node_total=4
 
   echo "-------------------------------------------------------------"
   echo "Checking total number of network node containers"
@@ -23,11 +24,11 @@ function test_node_total() {
   echo "Nodes: " "${nodes[@]}"
   local node_total=${#nodes[@]}
 
-  echo "Total network node: ${node_total} (expected: ${expected_node_total})"
+  echo "Total network node: ${node_total} (expected: ${TOTAL_NODES})"
   echo ""
 
   # assert true
-  if [[ "${node_total}" -ne "${expected_node_total}" ]]; then
+  if [[ "${node_total}" -ne "${TOTAL_NODES}" ]]; then
     return "${EX_ERR}"
   fi
 
