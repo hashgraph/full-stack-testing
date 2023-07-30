@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-cm
+data:
+  test.sh: |
+    {{- $total_nodes := len $.Values.hedera.nodes -}}
+    {{- tpl ($.Files.Get "config-files/test.sh") ( dict "total_nodes" $total_nodes "Template" $.Template ) | nindent 4 }}

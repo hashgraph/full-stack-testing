@@ -1,0 +1,8 @@
+{{- range $index, $node := ($.Values.hedera.nodes) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-uploader-cm
+data:
+  BACKUP_UPLOADER_BUCKET_1: "{{ $node.sidecars.backupUploader.config.backupBucket}}"
+{{- end }}

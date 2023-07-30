@@ -512,3 +512,4 @@ dev/.env
 *.run
 dev/local-node/config.txt
 dev/temp/.env
+charts/deleteme.yaml
