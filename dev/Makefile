@@ -1,4 +1,5 @@
 SCRIPTS_DIR=$(PWD)/scripts
+CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 
 TMP_DIR=${SCRIPTS_DIR}/../temp
@@ -19,7 +20,7 @@ setup-cluster:
 deploy-chart:
 	@echo ">> Deploying helm chart..." && \
 	echo "" && \
-	helm install fst ../charts/hedera-network
+	helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml"
 
 .PHONY: helm-test
 helm-test: setup deploy-chart
