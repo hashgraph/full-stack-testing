@@ -120,16 +120,9 @@ jobs:
 
       - name: Helm Chart Test
         id: helm-chart-test
+        working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: |
-          kubectl config get-contexts
-          helm install fst ./charts/hedera-network --values ./charts/hedera-network/nodes.yaml
-          helm test fst
-          TEST_STATUS="${?}"
-          if [[ "${TEST_STATUS}" -ne 0 ]]; then
-            kubectl logs network-test
-            kubectl delete pod network-test
-          fi
+        run: make test
 
       - name: Compile
         id: gradle-build

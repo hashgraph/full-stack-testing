@@ -18,8 +18,8 @@
 
 set -eo pipefail
 
-SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-cd "${SCRIPT_PATH}" || exit 64
+[[ -n "${APP_HOME}" ]] || exit 63
+cd "${APP_HOME}" || exit 64
 
 if [[ -z "${JAVA_OPTS}" ]]; then
   JAVA_OPTS=""
@@ -35,8 +35,8 @@ if [[ -n "${JAVA_HEAP_MAX}" ]]; then
   JAVA_HEAP_OPTS="${JAVA_HEAP_OPTS} -Xmx${JAVA_HEAP_MAX}"
 fi
 
-if [[ ! -d "${SCRIPT_PATH}/output" ]]; then
- mkdir -p "${SCRIPT_PATH}/output"
+if [[ ! -d "${APP_HOME}/logs" ]]; then
+ mkdir -p "${APP_HOME}/logs"
 fi
 
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BEGIN USER IDENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"

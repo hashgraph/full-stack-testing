@@ -1,60 +1,80 @@
 SCRIPTS_DIR=$(PWD)/scripts
-TMP_DIR="${SCRIPTS_DIR}/../temp"
+CHART_DIR=$(PWD)/../charts/hedera-network
+SCRIPT_NAME=direct-install.sh
+
+TMP_DIR=${SCRIPTS_DIR}/../temp
 
 .PHONY: all
 all: setup setup-cluster reset
 
 .PHONY: setup
 setup:
-	rm -f "${TMP_DIR}/*.*"
-	cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
+	@rm -f "${TMP_DIR}/"*.*
+	@cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
 
 .PHONY: setup-cluster
 setup-cluster:
-	kind create cluster -n fst
+	@kind create cluster -n fst
 
 .PHONY: deploy-chart
 deploy-chart:
 	@echo ">> Deploying helm chart..." && \
-	helm install fst ../charts/hedera-network && \
- 	echo ">> Waiting for network to be ready (timeout=300s)..." && \
-  	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s && \
- 	echo ">> Running helm test..." && \
- 	helm test fst &> "${TMP_DIR}/deploy.log" &
+	echo "" && \
+	helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml"
 
-.PHONY: helm-test-logs
-helm-test-logs:
-	@kubectl wait --for=jsonpath='{.status.phase}'=Running pod/network-test --timeout=300s && \
-	kubectl logs -f network-test
+.PHONY: helm-test
+helm-test: setup deploy-chart
+	@echo "" && \
+	echo ">> Running helm test..." && \
+	echo "" && \
+	helm test fst --logs
 
 .PHONY: deploy-network
-deploy-network: deploy-chart helm-test-logs
+deploy-network: deploy-chart
+	@echo "" && \
+	echo ">> Pod Information...." && \
+	echo "" && \
 	kubectl get pods -o wide && \
+	echo "" && \
+    echo ">> Service Information...." && \
+    echo "" && \
 	kubectl get svc -o wide
 
+.PHONY: destroy-test-container
+destroy-test-container:
+	@echo "" && \
+	echo ">> Deleting test container..." && \
+	kubectl delete pod network-test || true
+
 .PHONY: destroy-network
-destroy-network:
-	@echo ">> Uninstalling helm chart..." && helm uninstall fst && sleep 10
+destroy-network: destroy-test-container
+	@echo "" && \
+	echo ">> Uninstalling helm chart..." && \
+ 	helm uninstall fst && \
+ 	sleep 10
+
+.PHONY: test
+test: deploy-network helm-test destroy-network
 
 .PHONY: setup-nodes
 setup-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && setup_node_all
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
 
 .PHONY: start-nodes
 start-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && start_node_all
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
 
 .PHONY: verify-nodes
 verify-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && verify_node_all
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && verify_node_all
 
 .PHONY: stop-nodes
 stop-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && stop_node_all
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && stop_node_all
 
 .PHONY: reset-nodes
 reset-nodes:
-	source "${SCRIPTS_DIR}/helper.sh" && reset_node_all
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && reset_node_all
 
 .PHONY: gen-keys
 gen-keys:
@@ -65,11 +85,11 @@ restart: stop-nodes destroy-network deploy-network start-nodes
 
 .PHONY: prep-address-book
 prep-address-book:
-	source "${SCRIPTS_DIR}/helper.sh" && prep_address_book
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && prep_address_book
 
 .PHONY: run-func
 run-func:
-	source "${SCRIPTS_DIR}/helper.sh" && ${FUNC}
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && ${FUNC}
 
 .PHONY: start
 start: deploy-network setup-nodes start-nodes
