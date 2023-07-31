@@ -345,8 +345,8 @@ function prep_address_book() {
       return "${EX_ERR}"
     fi
 
-    echo "${KCTL} get svc network-${node_name}-service -o jsonpath='{.spec.clusterIP}' | xargs"
-    local SVC_IP=$("${KCTL}" get svc "network-${node_name}-service" -o jsonpath='{.spec.clusterIP}' | xargs)
+    echo "${KCTL} get svc network-${node_name}-svc -o jsonpath='{.spec.clusterIP}' | xargs"
+    local SVC_IP=$("${KCTL}" get svc "network-${node_name}-svc" -o jsonpath='{.spec.clusterIP}' | xargs)
     if [ -z "${SVC_IP}" ]; then
       echo "Could not detect service IP for ${pod}"
       return "${EX_ERR}"
