@@ -105,7 +105,7 @@ ADD network-node.service /usr/lib/systemd/system/
 RUN chmod -R +x /etc/network-node/entrypoint.sh && \
     chown -R 2000:2000 /opt/hgcapp/
 
-RUN mkdir /etc/network-node && \
+RUN mkdir -p /etc/network-node && \
     touch /etc/network-node/application.env && \
     echo "JAVA_HOME=\"${JAVA_HOME}\"" >> /etc/network-node/java.env && \
     echo "PATH=\"${PATH}\"" >> /etc/network-node/java.env && \
