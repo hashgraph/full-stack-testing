@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
