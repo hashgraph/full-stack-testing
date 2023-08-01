@@ -732,3 +732,20 @@ function reset_node_all() {
 
   return "${EX_OK}"
 }
+
+function set_application_env() {
+   local pod="${1}"
+
+    echo ""
+    echo "Populating values in /etc/network-node/application.env ${pod}"
+    echo "-----------------------------------------------------------------------------------------------------"
+
+    if [ -z "${pod}" ]; then
+      echo "ERROR: 'reset_nmt' - pod name is required"
+      return "${EX_ERR}"
+    fi
+
+    # best effort clean up of docker env
+    "${KCTL}" exec "${pod}" -c root-container -- bash -c "echo APP_HOME=/opt/hgcapp/services-hedera/HapiApp2.0 > /etc/network-node/application.env" || true
+    return "${EX_OK}"
+}

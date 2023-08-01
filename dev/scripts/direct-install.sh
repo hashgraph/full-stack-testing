@@ -68,6 +68,7 @@ function setup_node_all() {
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
     set_permission "${pod}" "${HAPI_PATH}"
 
+    set_application_env "${pod}"
     unzip_build "${pod}"
   done
 }
