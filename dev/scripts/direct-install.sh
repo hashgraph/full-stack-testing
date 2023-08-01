@@ -4,7 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly SCRIPT_DIR
 
 # shellcheck source=./helper.sh
-source "${SCRIPT_DIR}/helper.sh"
+. "${SCRIPT_DIR}/helper.sh"
 
 function create_hapi_directories() {
   local pod="${1}"

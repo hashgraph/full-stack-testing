@@ -7,7 +7,7 @@ readonly start_time TMP_DIR
 # load .env file
 set -a
 # shellcheck source=./../temp/.env
-source "${TMP_DIR}/.env"
+. "${TMP_DIR}/.env"
 set +a
 
 KCTL="$(command -v kubectl)"
