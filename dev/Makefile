@@ -20,7 +20,11 @@ setup-cluster:
 deploy-chart:
 	@echo ">> Deploying helm chart..." && \
 	echo "" && \
-	helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml"
+	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
+		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" --set hedera.nodes[0].root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
+	else \
+		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" ; \
+	fi \
 
 .PHONY: helm-test
 helm-test: setup deploy-chart
