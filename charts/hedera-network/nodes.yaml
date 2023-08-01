@@ -14,8 +14,8 @@ hedera:
       root:
         image:
           registry: ghcr.io
-          repository: hashgraph/full-stack-testing/ubi8-init-dind
-          tag: "0.3.0"  # Defaults to the chart's app version if empty
+          repository: hashgraph/full-stack-testing/ubi8-init-java17
+          tag: "0.4.0"  # Defaults to the chart's app version if empty
           pullPolicy: IfNotPresent
       haproxy:
         image:
