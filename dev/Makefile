@@ -12,8 +12,6 @@ all: setup setup-cluster reset
 setup:
 	@rm -f "${TMP_DIR}/"*.*
 	@cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
-	@echo "created .env file in ${TMP_DIR}"
-	@cat "${TMP_DIR}/.env"
 
 .PHONY: setup-cluster
 setup-cluster:
