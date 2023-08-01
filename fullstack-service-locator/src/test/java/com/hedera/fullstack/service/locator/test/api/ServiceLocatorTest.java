@@ -19,6 +19,7 @@ package com.hedera.fullstack.service.locator.test.api;
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
 import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
+import com.hedera.fullstack.service.locator.test.mock.MockLocator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +31,7 @@ class ServiceLocatorTest {
     @Test
     @DisplayName("MultiplePublicCtor: Provider is loaded correctly")
     void mpcProviderIsLoadedCorrectly() {
-        final ServiceLocator<CtorService> locator = ServiceLocator.forType(CtorService.class);
+        final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.findFirst()).isPresent().hasValueSatisfying(s -> assertThat(s)
                 .isInstanceOf(CtorService.class)
@@ -40,7 +41,7 @@ class ServiceLocatorTest {
     @Test
     @DisplayName("MultiplePublicCtor: Provider returns correct number of implementations")
     void mpcProviderReturnsCorrectNumberOfImplementations() {
-        final ServiceLocator<CtorService> locator = ServiceLocator.forType(CtorService.class);
+        final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.stream().count()).isEqualTo(1);
     }
@@ -48,7 +49,7 @@ class ServiceLocatorTest {
     @Test
     @DisplayName("MultiplePublicCtor: Provider returns valid supplier")
     void mpcProviderReturnsValidSupplier() {
-        final ServiceLocator<CtorService> locator = ServiceLocator.forType(CtorService.class);
+        final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.findFirstSupplier()).isPresent().hasValueSatisfying(s -> assertThat(s)
                 .isNotNull()
@@ -61,7 +62,7 @@ class ServiceLocatorTest {
     @Test
     @DisplayName("MultiplePublicCtor: Provider has working parallel stream support")
     void mpcProviderHasWorkingParallelStreamSupport() {
-        final ServiceLocator<CtorService> locator = ServiceLocator.forType(CtorService.class);
+        final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.parallelStream().count()).isEqualTo(1);
     }
@@ -69,7 +70,7 @@ class ServiceLocatorTest {
     @Test
     @DisplayName("MultiplePublicCtor: Provider has working reload support")
     void mpcProviderHasWorkingReloadSupport() {
-        final ServiceLocator<CtorService> locator = ServiceLocator.forType(CtorService.class);
+        final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.stream().count()).isEqualTo(1);
         locator.reload();

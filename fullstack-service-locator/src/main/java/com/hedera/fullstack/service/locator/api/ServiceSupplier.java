@@ -21,10 +21,9 @@ import com.hedera.fullstack.base.api.reflect.Construction;
 import java.util.Objects;
 
 /**
- * Base class for implementations of the service supplier pattern. The service supplier pattern is designed to decouple
- * the service detection logic from the instantiation of the actual service. This allows for the service detection logic
- * to be implemented with a zero argument constructor in compliance with the Java ServiceLoader specification while
- * allowing actual service instances to be instantiated with a constructor that takes zero or more arguments.
+ * The service supplier pattern is designed to decouple the service detection logic from the instantiation of the actual
+ * service. This allows for the service detection logic to be in compliance with the Java ServiceLoader specification
+ * while allowing actual service instances to be instantiated with a constructor that takes zero or more arguments.
  *
  * @param <S> the type of the service.
  */

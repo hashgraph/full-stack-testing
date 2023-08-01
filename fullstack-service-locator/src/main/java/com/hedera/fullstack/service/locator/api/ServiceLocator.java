@@ -29,58 +29,31 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * The service locator interface provides a pluggable implementation for loading service implementations.
+ * The service locator base class provides a set of utility methods which wrap the basic functionality of the Java
+ * ServiceLoader implementation.
  *
  * @param <S> the type of the service.
  */
-public final class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
+public abstract class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
     /**
      * The class reference for the service type.
      */
     private final Class<S> serviceClass;
 
     /**
-     * The class graph used to locate the service implementations.
+     * The JVM service loader instance used to find the service implementations.
      */
-    private final ClassGraph graph;
-
-    /**
-     * An atomic reference to the scan results.
-     */
-    private final AtomicReference<ScanResult> results;
+    private final ServiceLoader<S> serviceLoader;
 
     /**
      * Constructs a new ServiceLocator for the given service type.
      *
      * @param serviceClass the class reference of the service type.
+     * @throws NullPointerException if serviceClass or serviceLoader is null.
      */
-    private ServiceLocator(final Class<S> serviceClass, final ClassGraph graph) {
+    protected ServiceLocator(final Class<S> serviceClass, final ServiceLoader<S> serviceLoader) {
         this.serviceClass = Objects.requireNonNull(serviceClass, "serviceClass must not be null");
-        this.graph = Objects.requireNonNull(graph, "graph must not be null");
-        this.results = new AtomicReference<>();
-    }
-
-    /**
-     * Creates a service locator for the given service type.
-     *
-     * @param <S>          the type of the service.
-     * @param serviceClass the class reference of the service type.
-     * @return a service locator for the given service type.
-     * @throws NullPointerException if the serviceClass is null.
-     */
-    public static <S> ServiceLocator<S> forType(final Class<S> serviceClass) {
-        return builderFor(serviceClass).build();
-    }
-
-    /**
-     * Creates a service locator builder for the given service type.
-     *
-     * @param <S>          the type of the service.
-     * @param serviceClass the class reference of the service type.
-     * @return a service locator builder for the given service type.
-     */
-    public static <S> Builder<S> builderFor(final Class<S> serviceClass) {
-        return new Builder<>(serviceClass);
+        this.serviceLoader = Objects.requireNonNull(serviceLoader, "graph must not be null");
     }
 
     /**
@@ -118,7 +91,7 @@ public final class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
      */
     @Override
     public Iterator<ServiceSupplier<S>> iterator() {
-        return null;
+        return new WrappedIterator<>(serviceLoader.stream().iterator(), this::newServiceSupplier);
     }
 
     /**
@@ -147,13 +120,7 @@ public final class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
      * Clears all internal caches which will cause the service locator to rescan all available services.
      */
     public void reload() {
-        final ScanResult priorScanResult = results.get();
-        if (results.compareAndSet(priorScanResult, null)) {
-            if (priorScanResult != null) {
-                priorScanResult.close();
-            }
-            results.get().close();
-        }
+        serviceLoader.reload();
     }
 
     /**
@@ -166,40 +133,4 @@ public final class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
         return new ServiceSupplier<>(provider.type());
     }
 
-    /**
-     * A builder for creating a new ServiceLocator.
-     *
-     * @param <S> the type of the service.
-     */
-    public static class Builder<S> {
-        /**
-         * The class reference for the service type.
-         */
-        private final Class<S> serviceClass;
-
-        /**
-         * The class graph used to locate the service implementations.
-         */
-        private final ClassGraph graph;
-
-        /**
-         * Constructs a new builder for the given service type.
-         *
-         * @param serviceClass the class reference of the service type.
-         */
-        private Builder(final Class<S> serviceClass) {
-            Objects.requireNonNull(serviceClass, "serviceClass must not be null");
-            this.serviceClass = serviceClass;
-            this.graph = new ClassGraph().enableClassInfo();
-        }
-
-        /**
-         * Creates a service locator for the given service type.
-         *
-         * @return a service locator for the given service type.
-         */
-        public ServiceLocator<S> build() {
-            return new ServiceLocator<>(serviceClass, graph);
-        }
-    }
 }

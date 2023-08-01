@@ -27,7 +27,7 @@ import java.util.function.Function;
  * @param <T> the type of the original iterator.
  * @param <R> the type of the values to be returned by this iterator.
  */
-public class WrappedIterator<T, R> implements Iterator<R> {
+class WrappedIterator<T, R> implements Iterator<R> {
 
     /**
      * The original iterator that is being wrapped.
