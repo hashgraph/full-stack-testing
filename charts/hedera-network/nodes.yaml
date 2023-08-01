@@ -6,10 +6,10 @@ hedera:
     - name: node0
       resources:
         requests:
-          cpu: 100m
+          cpu: 1
           memory: 1G
         limits:
-          cpu: 100m
+          cpu: 1
           memory: 1G
       root:
         image:
