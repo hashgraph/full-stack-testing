@@ -64,7 +64,7 @@ destroy-network: destroy-test-container
 test: deploy-network setup-nodes start-nodes helm-test destroy-network
 
 .PHONY: setup-nodes
-setup-nodes:
+setup-nodes: setup
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
 
 .PHONY: start-nodes
