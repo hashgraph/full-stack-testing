@@ -7,13 +7,14 @@ hedera:
       resources:
         requests:
           cpu: 1
-          memory: 1G
+          memory: 2G
         limits:
           cpu: 1
-          memory: 1G
+          memory: 2G
       root:
         image:
           registry: ghcr.io
+          # repository: hashgraph/full-stack-testing/ubi8-init-dind
           repository: hashgraph/full-stack-testing/ubi8-init-java17
           tag: "0.4.0"  # Defaults to the chart's app version if empty
           pullPolicy: IfNotPresent
