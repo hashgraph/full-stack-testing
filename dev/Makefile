@@ -54,7 +54,7 @@ destroy-network: destroy-test-container
  	sleep 10
 
 .PHONY: test
-test: deploy-network helm-test destroy-network
+test: deploy-network setup-nodes start-nodes helm-test destroy-network
 
 .PHONY: setup-nodes
 setup-nodes:
