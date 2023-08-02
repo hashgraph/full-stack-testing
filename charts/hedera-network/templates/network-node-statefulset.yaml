@@ -1,7 +1,11 @@
 
 {{ range $index, $node := $.Values.hedera.nodes }}
 {{- $root := $node.root | default $.Values.defaults.root -}}
-{{- $sidecars := $node.sidecars | default $.Values.defaults.sidecars }}
+{{- $recordStream := ($node.sidecars).recordStreamUploader | default $.Values.defaults.sidecars.recordStreamUploader -}}
+{{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
+{{- $balanceUploader := ($node.sidecars).accountBalanceUploader | default $.Values.defaults.sidecars.accountBalanceUploader -}}
+{{- $backupUploader := ($node.sidecars).backupUploader | default $.Values.defaults.sidecars.backupUploader -}}
+{{- $otel := ($node.sidecars).otelCollector | default $.Values.defaults.sidecars.otelCollector -}}
 {{- $resources := $node.resources | default $.Values.defaults.resources }}
 {{- $cloud := $.Values.cloud }}
 ---
@@ -27,7 +31,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if $sidecars.otelCollector.enabled }}
+        {{- if $otel.enabled }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm
@@ -60,5 +64,13 @@ spec:
         env:
           {{- include "default-env-vars" . | nindent 10 }}
       # Sidecars
-      {{- include "sidecars" (dict "sidecars" $sidecars "cloud" $.Values.cloud "chart" $.Chart ) | nindent 6 }}
+      {{- include "sidecars" (dict
+        "recordStream" $recordStream
+        "bakupUploader" $backupUploader
+        "balanceUploader" $balanceUploader
+        "eventStream" $eventStream
+        "recordStream" $recordStream
+        "cloud" $.Values.cloud
+        "chart" $.Chart
+        ) | nindent 6 }}
 {{ end }}

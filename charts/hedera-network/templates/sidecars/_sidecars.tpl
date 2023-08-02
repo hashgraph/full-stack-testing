@@ -1,11 +1,11 @@
 {{- define "sidecars" -}}
-{{- $recordStream := .sidecars.recordStreamUploader -}}
-{{- $eventStream := .sidecars.eventStreamUploader -}}
-{{- $balanceUploader := .sidecars.accountBalanceUploader -}}
-{{- $backupUploader := .sidecars.backupUploader -}}
-{{- $otel := .sidecars.otelCollector -}}
-{{- $cloud := .cloud -}}
-{{- $chart := .chart -}}
+{{- $recordStream := .recordStream | default dict -}}
+{{- $eventStream := .eventStream | default dict -}}
+{{- $balanceUploader := .balanceUploader | default dict -}}
+{{- $backupUploader := .backupUploader | default dict -}}
+{{- $otel := .otel | default dict -}}
+{{- $cloud := .cloud | required "context must include 'cloud'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
   {{- if $recordStream.enabled -}}
   # Sidecar: Record Stream Uploader
   {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart -}}
