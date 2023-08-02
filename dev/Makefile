@@ -1,3 +1,4 @@
+SHELL=/bin/bash
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
@@ -20,7 +21,11 @@ setup-cluster:
 deploy-chart:
 	@echo ">> Deploying helm chart..." && \
 	echo "" && \
-	helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml"
+	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
+		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" --set hedera.nodes[0].root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
+	else \
+		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" ; \
+	fi \
 
 .PHONY: helm-test
 helm-test: setup deploy-chart
@@ -54,10 +59,10 @@ destroy-network: destroy-test-container
  	sleep 10
 
 .PHONY: test
-test: deploy-network helm-test destroy-network
+test: deploy-network setup-nodes start-nodes helm-test destroy-network
 
 .PHONY: setup-nodes
-setup-nodes:
+setup-nodes: setup
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
 
 .PHONY: start-nodes

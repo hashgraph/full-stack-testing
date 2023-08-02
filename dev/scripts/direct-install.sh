@@ -68,6 +68,8 @@ function setup_node_all() {
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
     set_permission "${pod}" "${HAPI_PATH}"
 
+    # TODO remove set_application_env after 0.5.0 docker image is published
+    set_application_env "${pod}"
     unzip_build "${pod}"
   done
 }

@@ -6,16 +6,17 @@ hedera:
     - name: node0
       resources:
         requests:
-          cpu: 100m
-          memory: 1G
+          cpu: 1
+          memory: 2G
         limits:
-          cpu: 100m
-          memory: 1G
+          cpu: 1
+          memory: 2G
       root:
         image:
           registry: ghcr.io
-          repository: hashgraph/full-stack-testing/ubi8-init-dind
-          tag: "0.3.0"  # Defaults to the chart's app version if empty
+          # repository: hashgraph/full-stack-testing/ubi8-init-dind
+          repository: hashgraph/full-stack-testing/ubi8-init-java17
+          tag: "0.4.0"  # Defaults to the chart's app version if empty
           pullPolicy: IfNotPresent
       haproxy:
         image:
