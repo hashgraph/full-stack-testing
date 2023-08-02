@@ -24,5 +24,5 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReadinessChecks {
-    Class<ReadinessCheck>[] value();
+    Class<? extends ReadinessCheck>[] value();
 }
