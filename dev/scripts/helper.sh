@@ -338,6 +338,9 @@ function prep_address_book() {
   local addresses=()
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
+    while [[ $(kubectl get pod ${pod} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+      echo "waiting for pod" && sleep 1
+    done
     echo "${KCTL} get pod ${pod} -o jsonpath='{.status.podIP}' | xargs"
     local POD_IP=$("${KCTL}" get pod "${pod}" -o jsonpath='{.status.podIP}' | xargs)
     if [ -z "${POD_IP}" ]; then
@@ -731,4 +734,22 @@ function reset_node_all() {
   done
 
   return "${EX_OK}"
+}
+
+# TODO remove set_application_env after 0.5.0 docker image is published
+function set_application_env() {
+   local pod="${1}"
+
+    echo ""
+    echo "Populating values in /etc/network-node/application.env ${pod}"
+    echo "-----------------------------------------------------------------------------------------------------"
+
+    if [ -z "${pod}" ]; then
+      echo "ERROR: 'reset_nmt' - pod name is required"
+      return "${EX_ERR}"
+    fi
+
+    # best effort clean up of docker env
+    "${KCTL}" exec "${pod}" -c root-container -- bash -c "echo APP_HOME=/opt/hgcapp/services-hedera/HapiApp2.0 > /etc/network-node/application.env" || true
+    return "${EX_OK}"
 }
