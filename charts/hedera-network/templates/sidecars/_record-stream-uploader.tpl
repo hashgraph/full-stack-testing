@@ -1,11 +1,12 @@
 {{- define "sidecars.record-stream-uploader" }}
-{{- $recordStream := .recordStream -}}
-{{- $cloud := .cloud -}}
-{{- $chart := .chart -}}
+{{- $recordStream := .recordStream | required "context must include 'recordStream'!" -}}
+{{- $cloud := .cloud | required "context must include 'cloud'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ $recordStream.nameOverride | default "record-stream-uploader" }}
-  image: "{{ $recordStream.image.registry }}/{{ $recordStream.image.repository }}:{{ $recordStream.image.tag | default $chart.AppVersion }}"
-  imagePullPolicy: {{$recordStream.image.pullPolicy}}
-  {{- include "hedera.security.context" $ | nindent 2 }}
+  image: {{ include "container.image" (dict "image" $recordStream.image "Chart" $chart) }}
+  imagePullPolicy: {{ include "images.pullPolicy" $recordStream.image }}
+  securityContext:
+    {{- include "hedera.security.context" . | nindent 4 }}
   command:
     - /usr/bin/env
     - python3.7

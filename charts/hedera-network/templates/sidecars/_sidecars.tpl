@@ -1,9 +1,9 @@
 {{- define "sidecars" -}}
-{{- $recordStream := .node.sidecars.recordStreamUploader -}}
-{{- $eventStream := .node.sidecars.eventStreamUploader -}}
-{{- $balanceUploader := .node.sidecars.accountBalanceUploader -}}
-{{- $backupUploader := .node.sidecars.backupUploader -}}
-{{- $otel := .node.sidecars.otelCollector -}}
+{{- $recordStream := .sidecars.recordStreamUploader -}}
+{{- $eventStream := .sidecars.eventStreamUploader -}}
+{{- $balanceUploader := .sidecars.accountBalanceUploader -}}
+{{- $backupUploader := .sidecars.backupUploader -}}
+{{- $otel := .sidecars.otelCollector -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
   {{- if $recordStream.enabled -}}

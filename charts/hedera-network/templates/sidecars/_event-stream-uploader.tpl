@@ -1,11 +1,12 @@
 {{- define "sidecars.event-stream-uploader" }}
-{{- $eventStream := .eventStream -}}
-{{- $cloud := .cloud -}}
-{{- $chart := .chart -}}
+{{- $eventStream := .eventStream | required "context must include 'eventStream'!"  -}}
+{{- $cloud := .cloud | required "context must include 'cloud'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ $eventStream.nameOverride | default "event-stream-uploader" }}
-  image: "{{ $eventStream.image.registry }}/{{ $eventStream.image.repository }}:{{ $eventStream.image.tag | default $chart.AppVersion }}"
-  imagePullPolicy: {{$eventStream.image.pullPolicy}}
-  {{- include "hedera.security.context" $ | nindent 2 }}
+  image: {{ include "container.image" (dict "image" $eventStream.image "Chart" $chart) }}
+  imagePullPolicy: {{ include "images.pullPolicy" $eventStream.image }}
+  securityContext:
+    {{- include "hedera.security.context" . | nindent 4 }}
   command:
     - /usr/bin/env
     - python3.7

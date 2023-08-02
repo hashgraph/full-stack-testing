@@ -1,5 +1,8 @@
 
 {{ range $index, $node := $.Values.hedera.nodes }}
+{{- $root := $node.root | default $.Values.defaults.root -}}
+{{- $sidecars := $node.sidecars | default $.Values.defaults.sidecars }}
+{{- $resources := $node.resources | default $.Values.defaults.resources }}
 {{- $cloud := $.Values.cloud }}
 ---
 apiVersion: apps/v1
@@ -24,7 +27,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if $node.sidecars.otelCollector.enabled }}
+        {{- if $sidecars.otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm
@@ -32,30 +35,30 @@ spec:
       initContainers:
       # Init Container
       - name: init-container
-        image: "{{ $node.root.image.registry }}/{{ $node.root.image.repository }}:{{ $node.root.image.tag | default $.Chart.AppVersion }}"
+        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart) }}
+        imagePullPolicy: {{ include "images.pullPolicy" $root.image }}
         command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
-        {{- include "hedera.security.context" . | nindent 8}}
+        securityContext:
+          {{- include "hedera.security.context" . | nindent 10 }}
         volumeMounts:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
       containers:
       # Root Container
-      - name: root-container
-        image: "{{ $node.root.image.registry }}/{{ $node.root.image.repository }}:{{ $node.root.image.tag | default $.Chart.AppVersion }}"
+      - name: {{ $root.nameOverride | default "root-container" }}
+        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart) }}
+        imagePullPolicy: {{ include "images.pullPolicy" $root.image }}
         securityContext: # need to run as root with privileged mode
-          runAsUser: 0
-          runAsGroup: 0
-          privileged: true
+          {{- include "root.security.context.privileged" . | nindent 10 }}
+        {{- with $resources }}
         resources:
-          {{- toYaml $node.resources | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         volumeMounts:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
         env:
-          - name: POD_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
+          {{- include "default-env-vars" . | nindent 10 }}
       # Sidecars
-      {{- include "sidecars" (dict "node" $node "cloud" $.Values.cloud "chart" $.Chart ) | nindent 6 }}
+      {{- include "sidecars" (dict "sidecars" $sidecars "cloud" $.Values.cloud "chart" $.Chart ) | nindent 6 }}
 {{ end }}

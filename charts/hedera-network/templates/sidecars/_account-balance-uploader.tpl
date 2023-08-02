@@ -1,11 +1,12 @@
 {{- define "sidecars.account-balance-uploader" }}
-{{- $balanceUploader := .balanceUploader -}}
-{{- $cloud := .cloud -}}
-{{- $chart := .chart -}}
+{{- $balanceUploader := .balanceUploader | required "context must include 'balanceUploader'!" -}}
+{{- $cloud := .cloud | required "context must include 'cloud'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ $balanceUploader.nameOverride | default "account-balance-uploader" }}
-  image: "{{ $balanceUploader.image.registry }}/{{ $balanceUploader.image.repository }}:{{ $balanceUploader.image.tag | default $chart.AppVersion }}"
-  imagePullPolicy: {{$balanceUploader.image.pullPolicy}}
-  {{- include "hedera.security.context" $ | nindent 2 }}
+  image: {{ include "container.image" (dict "image" $balanceUploader.image "Chart" $chart) }}
+  imagePullPolicy: {{ include "images.pullPolicy" $balanceUploader.image }}
+  securityContext:
+    {{- include "hedera.security.context" . | nindent 4 }}
   command:
     - /usr/bin/env
     - python3.7
