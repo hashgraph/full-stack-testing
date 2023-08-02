@@ -16,16 +16,16 @@ terminationGracePeriodSeconds: 10
 defaults:
   resources:
     requests:
-      cpu: 100m
-      memory: 1G
+      cpu: 1
+      memory: 2G
     limits:
-      cpu: 100m
-      memory: 1G
+      cpu: 1
+      memory: 2G
   root: # root container
     image:
       registry: ghcr.io
-      repository: hashgraph/full-stack-testing/ubi8-init-dind
-      tag: "0.3.0"
+      repository: hashgraph/full-stack-testing/ubi8-init-java17
+      tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
       pullPolicy: IfNotPresent
   haproxy:
     image:
