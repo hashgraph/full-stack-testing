@@ -1,4 +1,7 @@
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
+import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
+import com.hedera.fullstack.service.locator.test.mock.MockSingleCtorService;
+import org.slf4j.spi.SLF4JServiceProvider;
 
 module com.hedera.fullstack.service.locator.test {
     exports com.hedera.fullstack.service.locator.test.mock;
@@ -14,9 +17,12 @@ module com.hedera.fullstack.service.locator.test {
     requires com.hedera.fullstack.service.locator;
     requires org.assertj.core;
     requires org.junit.jupiter.api;
+    requires org.slf4j;
 
     uses CtorService;
+    uses SLF4JServiceProvider;
 
-    provides com.hedera.fullstack.service.locator.test.mock.CtorService with
-            com.hedera.fullstack.service.locator.test.mock.MockCtorService;
+    provides CtorService with
+            MockCtorService,
+            MockSingleCtorService;
 }

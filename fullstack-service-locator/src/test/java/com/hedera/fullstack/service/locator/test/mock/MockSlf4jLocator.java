@@ -18,13 +18,15 @@ package com.hedera.fullstack.service.locator.test.mock;
 
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import java.util.ServiceLoader;
+import org.slf4j.spi.SLF4JServiceProvider;
 
-public class MockLocator extends ServiceLocator<CtorService> {
-    private MockLocator(final Class<CtorService> serviceClass, final ServiceLoader<CtorService> serviceLoader) {
+public class MockSlf4jLocator extends ServiceLocator<SLF4JServiceProvider> {
+    private MockSlf4jLocator(
+            Class<SLF4JServiceProvider> serviceClass, ServiceLoader<SLF4JServiceProvider> serviceLoader) {
         super(serviceClass, serviceLoader);
     }
 
-    public static ServiceLocator<CtorService> create() {
-        return new MockLocator(CtorService.class, ServiceLoader.load(CtorService.class));
+    public static ServiceLocator<SLF4JServiceProvider> create() {
+        return new MockSlf4jLocator(SLF4JServiceProvider.class, ServiceLoader.load(SLF4JServiceProvider.class));
     }
 }

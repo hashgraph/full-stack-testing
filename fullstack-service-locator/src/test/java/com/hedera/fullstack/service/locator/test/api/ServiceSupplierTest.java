@@ -23,7 +23,6 @@ import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
 import com.hedera.fullstack.service.locator.api.ServiceSupplier;
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
 import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

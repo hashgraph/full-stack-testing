@@ -17,14 +17,10 @@
 package com.hedera.fullstack.service.locator.api;
 
 import com.hedera.fullstack.base.api.reflect.ClassConstructionException;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
-
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -132,5 +128,4 @@ public abstract class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> 
     private ServiceSupplier<S> newServiceSupplier(final ServiceLoader.Provider<S> provider) {
         return new ServiceSupplier<>(provider.type());
     }
-
 }

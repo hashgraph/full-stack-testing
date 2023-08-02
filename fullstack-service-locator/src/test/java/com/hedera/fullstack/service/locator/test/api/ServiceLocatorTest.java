@@ -16,6 +16,8 @@
 
 package com.hedera.fullstack.service.locator.test.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
 import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
@@ -23,14 +25,11 @@ import com.hedera.fullstack.service.locator.test.mock.MockLocator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @DisplayName("Service Locator")
 class ServiceLocatorTest {
-
     @Test
-    @DisplayName("MultiplePublicCtor: Provider is loaded correctly")
-    void mpcProviderIsLoadedCorrectly() {
+    @DisplayName("CtorService: Service is loaded correctly")
+    void svcIsLoadedCorrectly() {
         final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.findFirst()).isPresent().hasValueSatisfying(s -> assertThat(s)
@@ -39,16 +38,16 @@ class ServiceLocatorTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Provider returns correct number of implementations")
-    void mpcProviderReturnsCorrectNumberOfImplementations() {
+    @DisplayName("CtorService: Locator returns correct number of implementations")
+    void locatorReturnsCorrectNumberOfImplementations() {
         final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
-        assertThat(locator.stream().count()).isEqualTo(1);
+        assertThat(locator.stream().count()).isEqualTo(2);
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Provider returns valid supplier")
-    void mpcProviderReturnsValidSupplier() {
+    @DisplayName("CtorService: Locator returns valid supplier")
+    void locatorReturnsValidSupplier() {
         final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
         assertThat(locator.findFirstSupplier()).isPresent().hasValueSatisfying(s -> assertThat(s)
@@ -60,20 +59,20 @@ class ServiceLocatorTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Provider has working parallel stream support")
-    void mpcProviderHasWorkingParallelStreamSupport() {
+    @DisplayName("CtorService: Locator has working parallel stream support")
+    void locatorHasWorkingParallelStreamSupport() {
         final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
-        assertThat(locator.parallelStream().count()).isEqualTo(1);
+        assertThat(locator.parallelStream().count()).isEqualTo(2);
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Provider has working reload support")
-    void mpcProviderHasWorkingReloadSupport() {
+    @DisplayName("CtorService: Locator has working reload support")
+    void locatorHasWorkingReloadSupport() {
         final ServiceLocator<CtorService> locator = MockLocator.create();
         assertThat(locator).isNotNull();
-        assertThat(locator.stream().count()).isEqualTo(1);
+        assertThat(locator.stream().count()).isEqualTo(2);
         locator.reload();
-        assertThat(locator.stream().count()).isEqualTo(1);
+        assertThat(locator.stream().count()).isEqualTo(2);
     }
 }

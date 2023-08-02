@@ -29,11 +29,6 @@ import java.util.Objects;
  */
 public final class ServiceSupplier<S> {
     /**
-     * The type of the service implementation.
-     */
-    private final Class<? extends S> type;
-
-    /**
      * The construction helper for the service.
      */
     private final Construction<? extends S> construction;
@@ -47,7 +42,7 @@ public final class ServiceSupplier<S> {
      *                                  has no accessible constructors.
      */
     public ServiceSupplier(final Class<? extends S> type) {
-        this.type = Objects.requireNonNull(type, "type must not be null");
+        Objects.requireNonNull(type, "type must not be null");
         this.construction = Construction.of(type);
     }
 
@@ -55,7 +50,7 @@ public final class ServiceSupplier<S> {
      * @return the type of the service implementation.
      */
     public Class<? extends S> type() {
-        return type;
+        return construction.type();
     }
 
     /**

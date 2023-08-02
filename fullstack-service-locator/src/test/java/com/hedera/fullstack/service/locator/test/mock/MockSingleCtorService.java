@@ -16,15 +16,35 @@
 
 package com.hedera.fullstack.service.locator.test.mock;
 
-import com.hedera.fullstack.service.locator.api.ServiceLocator;
-import java.util.ServiceLoader;
+import java.io.InputStream;
 
-public class MockLocator extends ServiceLocator<CtorService> {
-    private MockLocator(final Class<CtorService> serviceClass, final ServiceLoader<CtorService> serviceLoader) {
-        super(serviceClass, serviceLoader);
+public class MockSingleCtorService implements CtorService {
+    private final String s;
+    private final int i;
+    private final InputStream is;
+
+    public MockSingleCtorService() {
+        this(null, 0, null);
     }
 
-    public static ServiceLocator<CtorService> create() {
-        return new MockLocator(CtorService.class, ServiceLoader.load(CtorService.class));
+    public MockSingleCtorService(final String s, final int i, final InputStream is) {
+        this.s = s;
+        this.i = i;
+        this.is = is;
+    }
+
+    @Override
+    public String getStringValue() {
+        return s;
+    }
+
+    @Override
+    public int getIntValue() {
+        return i;
+    }
+
+    @Override
+    public InputStream getInputStreamValue() {
+        return is;
     }
 }

@@ -18,7 +18,7 @@ package com.hedera.fullstack.base.api.reflect;
 
 import static com.hedera.fullstack.base.api.reflect.ReflectionUtils.*;
 
-import com.hedera.fullstack.base.api.collections.Pair;
+import com.hedera.fullstack.base.api.collections.KeyValuePair;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -42,7 +42,7 @@ public final class Construction<T> {
     /**
      * A cached list of constructors for the class represented by this construction helper.
      */
-    private final List<Pair<Constructor<T>, Class<?>[]>> constructors;
+    private final List<KeyValuePair<Constructor<T>, Class<?>[]>> constructors;
 
     /**
      * Instantiates a construction helper for the given class.
@@ -78,6 +78,13 @@ public final class Construction<T> {
         c.initialize();
 
         return c;
+    }
+
+    /**
+     * @return the type of the service implementation.
+     */
+    public Class<T> type() {
+        return this.type;
     }
 
     /**
@@ -140,7 +147,7 @@ public final class Construction<T> {
 
         for (final Constructor<?> c : ctors) {
             if (Modifier.isPublic(c.getModifiers())) {
-                constructors.add(Pair.of((Constructor<T>) c, c.getParameterTypes()));
+                constructors.add(KeyValuePair.of((Constructor<T>) c, c.getParameterTypes()));
             }
         }
 
@@ -199,10 +206,10 @@ public final class Construction<T> {
      * @return the constructor for the class with the given parameter types.
      */
     private Constructor<T> findConstructor(final Class<?>[] parameterTypes, final boolean strict) {
-        for (final Pair<Constructor<T>, Class<?>[]> pair : constructors) {
-            final Class<?>[] cpt = pair.getValue();
+        for (final KeyValuePair<Constructor<T>, Class<?>[]> pair : constructors) {
+            final Class<?>[] cpt = pair.value();
             if (isMatchingTypeArray(cpt, parameterTypes, strict)) {
-                return pair.getKey();
+                return pair.key();
             }
         }
 
