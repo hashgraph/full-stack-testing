@@ -20,7 +20,7 @@ setup-cluster:
 deploy-chart:
 	@echo ">> Deploying helm chart..." && \
 	echo "" && \
-	helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml"
+	helm install fst ../charts/hedera-network
 
 .PHONY: helm-test
 helm-test: setup deploy-chart
