@@ -76,7 +76,6 @@ function setup_node_all() {
 
 
 function start_node_all() {
-  set -x
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
