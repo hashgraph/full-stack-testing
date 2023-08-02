@@ -29,6 +29,6 @@ privileged: true
 {{- define "container.image" -}}
 {{- $reg := .image.registry | default "gcr.io" -}}
 {{- $repo := .image.repository | default "" -}}
-{{- $tag := .image.tag | default .Chart.Version -}}
+{{- $tag := .image.tag | default .Chart.AppVersion -}}
 {{ $reg }}/{{ $repo }}:{{ $tag }}
 {{- end }}
