@@ -1,5 +1,5 @@
 {{- define "sidecars.backup-uploader "}}
-{{- $backupUploader := .backupUploader | required "context must include 'backupUploder'!" -}}
+{{- $backupUploader := .backupUploader | required "context must include 'backupUploader'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ $backupUploader.nameOverride | default "backup-uploader" }}
   image: {{ include "container.image" (dict "image" $backupUploader.image "Chart" $chart) }}
