@@ -736,6 +736,7 @@ function reset_node_all() {
   return "${EX_OK}"
 }
 
+# TODO remove set_application_env after 0.5.0 docker image is published
 function set_application_env() {
    local pod="${1}"
 
