@@ -22,3 +22,11 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "0.40.2"
+
+# helm dependency update
+dependencies:
+  - name: tenant
+    version: 5.0.6
+    repository: https://operator.min.io/
+    # TODO:  is this a good enough name, if we want to group enable/disable the uploader sidecars as a group
+    condition: hedera.uploaderSidecars

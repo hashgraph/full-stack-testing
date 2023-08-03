@@ -15,6 +15,9 @@
     - /opt/hgcapp/recordstream
     - --csv-stats-directory
     - /opt/hgcapp/recordstream/uploader-stats
+    - --debug
+    - --s3-endpoint
+    - http://myminio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/

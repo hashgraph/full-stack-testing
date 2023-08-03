@@ -13,6 +13,9 @@
     - --linux
     - --watch-directory
     - /opt/hgcapp/events
+    - --debug
+    - --s3-endpoint
+    - http://myminio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/
