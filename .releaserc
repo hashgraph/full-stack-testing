@@ -25,7 +25,8 @@
       "@semantic-release/git",
       {
         "assets": [
-          "gradle.properties"
+          "gradle.properties",
+          "charts/hedera-network-/Chart.yaml"
         ]
       }
     ]
