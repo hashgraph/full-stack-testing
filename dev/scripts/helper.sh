@@ -683,6 +683,9 @@ function verify_network_state() {
     set -e
 
     if [[ "${status}" != *"${status_pattern}"* ]]; then
+      "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/logs"
+      "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/output"
+      
       # show swirlds.log to see what node is doing
       "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${HAPI_PATH}/logs/swirlds.log"
     else
