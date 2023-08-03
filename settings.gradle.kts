@@ -63,9 +63,7 @@ include(":fullstack-resource-generator-api")
 
 include(":fullstack-resource-generator-core")
 
-include(":fullstack-servicelocator-api")
-
-include(":fullstack-servicelocator-core")
+include(":fullstack-service-locator")
 
 include(":fullstack-test-toolkit-api")
 
