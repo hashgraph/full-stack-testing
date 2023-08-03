@@ -601,11 +601,13 @@ function nmt_start() {
 
   local attempts=0
   local max_attempts=$MAX_ATTEMPTS
-  local status=""
+  local status=$("${KCTL}" exec "${pod}" -c root-container -- docker ps -q)
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" = "" ]]; do
-    "${KCTL}" exec "${pod}" -c root-container -- docker ps || return "${EX_ERR}"
     echo ">> Waiting 5s to let the containers start ${pod}: Attempt# ${attempts}/${max_attempts} ..."
     sleep 5
+
+    "${KCTL}" exec "${pod}" -c root-container -- docker ps || return "${EX_ERR}"
+
     status=$("${KCTL}" exec "${pod}" -c root-container -- docker ps -q)
     attempts=$((attempts + 1))
   done
