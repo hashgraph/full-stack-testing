@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-start_time="$(date +%s.%N)"
+start_time=$(date +%s)
 TMP_DIR="${SCRIPT_DIR}/../temp"
 
 readonly start_time TMP_DIR
@@ -39,10 +39,16 @@ readonly OPENJDK_INSTALLER_DIR="${SCRIPT_DIR}/../resources/jdk"
 readonly OPENJDK_INSTALLER_PATH="${OPENJDK_INSTALLER_DIR}/${OPENJDK_INSTALLER}"
 
 function log_time() {
-  local duration execution_time
-  duration=$(echo "$(date +%s.%N) - ${start_time}" | bc)
+  local end_time duration execution_time
+
+  local func_name=$1
+
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
   execution_time=$(printf "%.2f seconds" "${duration}")
-  echo "<<< Script Execution Time: ${execution_time} >>>"
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo "<<< ${func_name} execution took: ${execution_time} >>>"
+  echo "-----------------------------------------------------------------------------------------------------"
 }
 
 # Fetch NMT release
@@ -546,7 +552,7 @@ function nmt_preflight() {
   fi
 
   "${KCTL}" exec "${pod}" -c root-container -- \
-    node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 2g -m 2g || return "${EX_ERR}"
+    node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 256m -m 512m || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -592,16 +598,45 @@ function nmt_start() {
   "${KCTL}" exec "${pod}" -c root-container -- bash -c "rm -f ${HAPI_PATH}/logs/*" || true
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
-  echo "Waiting 15s to let the containers start..."
-  sleep 15
 
-  echo "Logs from swirlds-haveged..."
-  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged
+  local attempts=0
+  local max_attempts=$MAX_ATTEMPTS
+  local status=$("${KCTL}" exec "${pod}" -c root-container -- docker ps -q)
+  while [[ "${attempts}" -lt "${max_attempts}" && "${status}" = "" ]]; do
+    echo ">> Waiting 5s to let the containers start ${pod}: Attempt# ${attempts}/${max_attempts} ..."
+    sleep 5
 
-  echo "Logs from swirlds-node..."
-  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node
+    "${KCTL}" exec "${pod}" -c root-container -- docker ps || return "${EX_ERR}"
 
+    status=$("${KCTL}" exec "${pod}" -c root-container -- docker ps -q)
+    attempts=$((attempts + 1))
+  done
+
+  if [[ -z "${status}" ]]; then
+    echo "ERROR: Containers didn't start"
+    return "${EX_ERR}"
+  fi
+
+  sleep 20
+  echo "Containers started..."
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
+  sleep 10
+
+  local podState podStateErr
+  podState="$("${KCTL}" exec "${pod}" -c root-container -- docker ps -a -f 'name=swirlds-node' --format '{{.State}}')"
+  podStateErr="${?}"
+
+  if [[ "${podStateErr}" -ne 0 || -z "${podState}" || "${podState}" != "running" ]]; then
+    echo "ERROR: 'nmt_start' - swirlds-node container is not running"
+    return "${EX_ERR}"
+  fi
+
+  echo "Fetching logs from swirlds-haveged..."
+
+  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged || return "${EX_ERR}"
+
+  echo "Fetching logs from swirlds-node..."
+  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node  || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -660,6 +695,9 @@ function verify_network_state() {
     set -e
 
     if [[ "${status}" != *"${status_pattern}"* ]]; then
+      "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/logs"
+      "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/output"
+
       # show swirlds.log to see what node is doing
       "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${HAPI_PATH}/logs/swirlds.log"
     else
@@ -683,14 +721,14 @@ function verify_node_all() {
     return "${EX_ERR}"
   fi
   echo ""
-  echo "Processing nodes ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
+  echo "Verifying node status ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
   echo "-----------------------------------------------------------------------------------------------------"
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     verify_network_state "${pod}" "${MAX_ATTEMPTS}"
-    log_time
+    log_time "verify_network_state"
   done
 
   return "${EX_OK}"
@@ -711,7 +749,7 @@ function replace_keys_all() {
     local pod="network-${node_name}-0" # pod name
     copy_hedera_keys "${pod}" || return "${EX_ERR}"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "replace_keys"
   done
 
   return "${EX_OK}"
@@ -730,7 +768,7 @@ function reset_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     reset_node "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "reset_node"
   done
 
   return "${EX_OK}"
