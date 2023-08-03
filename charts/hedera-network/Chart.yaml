@@ -24,4 +24,4 @@ version: 0.1.0
 appVersion: "0.40.2"
 
 # This is range of versions of Kubernetes server that is supported by this chart.
-kubeVersion: ">=1.28.0"
+kubeVersion: ">=1.25.0"
