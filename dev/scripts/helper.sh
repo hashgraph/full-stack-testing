@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-start_time="$(date +%s.%N)"
+start_time=$(date +%s)
 TMP_DIR="${SCRIPT_DIR}/../temp"
 
 readonly start_time TMP_DIR
@@ -39,8 +39,9 @@ readonly OPENJDK_INSTALLER_DIR="${SCRIPT_DIR}/../resources/jdk"
 readonly OPENJDK_INSTALLER_PATH="${OPENJDK_INSTALLER_DIR}/${OPENJDK_INSTALLER}"
 
 function log_time() {
-  local duration execution_time
-  duration=$(echo "$(date +%s.%N) - ${start_time}" | bc)
+  local end_time duration execution_time
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
   execution_time=$(printf "%.2f seconds" "${duration}")
   echo "<<< Script Execution Time: ${execution_time} >>>"
 }
