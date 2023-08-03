@@ -599,8 +599,15 @@ function nmt_start() {
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
 
-  echo "Waiting 15s to let the containers start..."
-  sleep 15
+  local attempts=0
+  local max_attempts=$MAX_ATTEMPTS
+  local status=""
+  while [[ "${attempts}" -lt "${max_attempts}" && "${status}" = "" ]]; do
+    echo ">> Waiting 5s to let the containers start..."
+    sleep 5
+    status=$("${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -aq")
+    echo "${status}"
+  done
 
   echo "Logs from swirlds-haveged..."
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged || return "${EX_ERR}"
