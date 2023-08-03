@@ -592,14 +592,15 @@ function nmt_start() {
   "${KCTL}" exec "${pod}" -c root-container -- bash -c "rm -f ${HAPI_PATH}/logs/*" || true
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
+
   echo "Waiting 15s to let the containers start..."
   sleep 15
 
   echo "Logs from swirlds-haveged..."
-  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged
+  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged || return "${EX_ERR}"
 
   echo "Logs from swirlds-node..."
-  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node
+  "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node  || return "${EX_ERR}"
 
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
 
