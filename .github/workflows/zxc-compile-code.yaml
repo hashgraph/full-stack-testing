@@ -18,11 +18,6 @@ name: "ZXC: Compile Code"
 on:
   workflow_call:
     inputs:
-      enable-javadoc:
-        description: "Javadoc Enabled"
-        type: boolean
-        required: false
-        default: false
       enable-unit-tests:
         description: "Unit Testing Enabled"
         type: boolean
@@ -146,13 +141,6 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
-
-      - name: Javadoc
-        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
-        if: ${{ inputs.enable-javadoc && steps.gradle-build.conclusion == 'success' && !cancelled() }}
-        with:
-          gradle-version: ${{ inputs.gradle-version }}
-          arguments: javadoc --scan
 
       - name: Spotless Check
         uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
