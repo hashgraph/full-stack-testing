@@ -40,10 +40,15 @@ readonly OPENJDK_INSTALLER_PATH="${OPENJDK_INSTALLER_DIR}/${OPENJDK_INSTALLER}"
 
 function log_time() {
   local end_time duration execution_time
+
+  local func_name=$1
+
   end_time=$(date +%s)
   duration=$((end_time - start_time))
   execution_time=$(printf "%.2f seconds" "${duration}")
-  echo "<<< Script Execution Time: ${execution_time} >>>"
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo "<<< ${func_name} execution took: ${execution_time} >>>"
+  echo "-----------------------------------------------------------------------------------------------------"
 }
 
 # Fetch NMT release
@@ -692,7 +697,7 @@ function verify_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     verify_network_state "${pod}" "${MAX_ATTEMPTS}"
-    log_time
+    log_time "verify_network_state"
   done
 
   return "${EX_OK}"
@@ -713,7 +718,7 @@ function replace_keys_all() {
     local pod="network-${node_name}-0" # pod name
     copy_hedera_keys "${pod}" || return "${EX_ERR}"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "replace_keys"
   done
 
   return "${EX_OK}"
@@ -732,7 +737,7 @@ function reset_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     reset_node "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "reset_node"
   done
 
   return "${EX_OK}"
