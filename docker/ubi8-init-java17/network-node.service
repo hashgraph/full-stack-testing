@@ -8,7 +8,7 @@ Restart=no
 User=hedera
 Group=hedera
 
-
+PassEnvironment=JAVA_HOME PATH APP_HOME
 EnvironmentFile=/etc/network-node/java.env
 EnvironmentFile=/etc/network-node/application.env
 
