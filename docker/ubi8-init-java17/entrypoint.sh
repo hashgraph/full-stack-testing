@@ -18,7 +18,11 @@
 
 set -eo pipefail
 
-[[ -n "${APP_HOME}" ]] || exit 63
+if [[ -z "${APP_HOME}" ]]; then
+  echo "ERROR: APP_HOME is not defined, but is required!"
+  exit 63
+fi
+
 cd "${APP_HOME}" || exit 64
 
 if [[ -z "${JAVA_OPTS}" ]]; then
