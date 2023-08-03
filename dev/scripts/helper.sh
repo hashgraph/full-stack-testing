@@ -552,7 +552,7 @@ function nmt_preflight() {
   fi
 
   "${KCTL}" exec "${pod}" -c root-container -- \
-    node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 2g -m 2g || return "${EX_ERR}"
+    node-mgmt-tool -VV preflight -j "${OPENJDK_VERSION}" -df -i "${NMT_PROFILE}" -k 256m -m 512m || return "${EX_ERR}"
 
   return "${EX_OK}"
 }
@@ -617,7 +617,7 @@ function nmt_start() {
     return "${EX_ERR}"
   fi
 
-  sleep 45
+  sleep 20
   echo "Containers started..."
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
   sleep 10
@@ -626,7 +626,7 @@ function nmt_start() {
   podState="$("${KCTL}" exec "${pod}" -c root-container -- docker ps -a -f 'name=swirlds-node' --format '{{.State}}')"
   podStateErr="${?}"
 
-  if [[ "${podStateErr}" -ne 0 || -z "${podState}" ]]; then
+  if [[ "${podStateErr}" -ne 0 || -z "${podState}" || "${podState}" != "running" ]]; then
     echo "ERROR: 'nmt_start' - swirlds-node container is not running"
     return "${EX_ERR}"
   fi
