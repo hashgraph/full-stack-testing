@@ -617,10 +617,22 @@ function nmt_start() {
     return "${EX_ERR}"
   fi
 
+  sleep 45
   echo "Containers started..."
   "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
+  sleep 10
+
+  local podState podStateErr
+  podState="$("${KCTL}" exec "${pod}" -c root-container -- docker ps -a -f 'name=swirlds-node' --format '{{.State}}')"
+  podStateErr="${?}"
+
+  if [[ "${podStateErr}" -ne 0 || -z "${podState}" ]]; then
+    echo "ERROR: 'nmt_start' - swirlds-node container is not running"
+    return "${EX_ERR}"
+  fi
 
   echo "Fetching logs from swirlds-haveged..."
+
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged || return "${EX_ERR}"
 
   echo "Fetching logs from swirlds-node..."
@@ -685,7 +697,7 @@ function verify_network_state() {
     if [[ "${status}" != *"${status_pattern}"* ]]; then
       "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/logs"
       "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/output"
-      
+
       # show swirlds.log to see what node is doing
       "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${HAPI_PATH}/logs/swirlds.log"
     else
