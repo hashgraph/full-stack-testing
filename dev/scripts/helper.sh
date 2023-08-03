@@ -603,10 +603,10 @@ function nmt_start() {
   local max_attempts=$MAX_ATTEMPTS
   local status=""
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" = "" ]]; do
-    echo ">> Waiting 5s to let the containers start..."
+    "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -a"
+    echo ">> Waiting 5s to let the containers start ${pod}: Attempt# ${attempts}/${max_attempts} ..."
     sleep 5
     status=$("${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -aq")
-    echo "${status}"
   done
 
   echo "Logs from swirlds-haveged..."
