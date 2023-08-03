@@ -610,6 +610,11 @@ function nmt_start() {
     attempts=$((attempts + 1))
   done
 
+  if [[ -z "${status}" ]]; then
+    echo "ERROR: Containers didn't start"
+    return "${EX_ERR}"
+  fi
+
   echo "Logs from swirlds-haveged..."
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged || return "${EX_ERR}"
 
