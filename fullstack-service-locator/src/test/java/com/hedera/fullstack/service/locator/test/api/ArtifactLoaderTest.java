@@ -16,16 +16,20 @@
 
 package com.hedera.fullstack.service.locator.test.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.hedera.fullstack.base.api.resource.ResourceLoader;
 import com.hedera.fullstack.service.locator.api.ArtifactLoader;
-import java.io.IOException;
-import java.net.URLClassLoader;
-import java.nio.file.Path;
+import com.hedera.fullstack.service.locator.api.ServiceLocator;
+import com.hedera.fullstack.service.locator.test.mock.MockSlf4jLocator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.spi.SLF4JServiceProvider;
+
+import java.io.IOException;
+import java.net.URLClassLoader;
+import java.nio.file.Path;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Artifact Loader")
 class ArtifactLoaderTest {
@@ -42,7 +46,7 @@ class ArtifactLoaderTest {
     }
 
     @Test
-    @DisplayName("Logback: Artifacts dynamically loaded")
+    @DisplayName("Logback: Artifacts dynamically loaded successfully")
     void logbackDynamicLoading() {
         final ArtifactLoader artifactLoader = ArtifactLoader.from(JAR_PATH);
         assertThat(artifactLoader).isNotNull();
@@ -50,5 +54,19 @@ class ArtifactLoaderTest {
         assertThat(artifactLoader.moduleLayer()).isNotNull();
         assertThat(artifactLoader.classPath()).isNotEmpty();
         assertThat(artifactLoader.modulePath()).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Logback: Artifacts dynamically loaded can be used by Service Loader")
+    void logbackDynamicServiceLoading() {
+        final ArtifactLoader artifactLoader = ArtifactLoader.from(JAR_PATH);
+        assertThat(artifactLoader).isNotNull();
+
+        final ServiceLocator<SLF4JServiceProvider> serviceLocator = MockSlf4jLocator.create(artifactLoader);
+        assertThat(serviceLocator).isNotNull();
+
+        final SLF4JServiceProvider serviceProvider = serviceLocator.findFirst().orElseThrow();
+        assertThat(serviceProvider).isNotNull().extracting(Object::getClass).extracting(Class::getName)
+                .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
     }
 }
