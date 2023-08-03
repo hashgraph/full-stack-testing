@@ -603,10 +603,10 @@ function nmt_start() {
   local max_attempts=$MAX_ATTEMPTS
   local status=""
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" = "" ]]; do
-    "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -a"
+    "${KCTL}" exec "${pod}" -c root-container -- docker ps || return "${EX_ERR}"
     echo ">> Waiting 5s to let the containers start ${pod}: Attempt# ${attempts}/${max_attempts} ..."
     sleep 5
-    status=$("${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -aq")
+    status=$("${KCTL}" exec "${pod}" -c root-container -- docker ps -q)
     attempts=$((attempts + 1))
   done
 
@@ -616,15 +616,13 @@ function nmt_start() {
   fi
 
   echo "Containers started..."
-  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -a"
+  "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
 
   echo "Fetching logs from swirlds-haveged..."
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-haveged || return "${EX_ERR}"
 
   echo "Fetching logs from swirlds-node..."
   "${KCTL}" exec "${pod}" -c root-container -- docker logs --tail 10 swirlds-node  || return "${EX_ERR}"
-
-  "${KCTL}" exec "${pod}" -c root-container -- docker ps -a || return "${EX_ERR}"
 
   return "${EX_OK}"
 }

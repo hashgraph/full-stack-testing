@@ -28,7 +28,7 @@ deploy-chart:
 	fi \
 
 .PHONY: helm-test
-helm-test: setup deploy-chart
+helm-test:
 	@echo "" && \
 	echo ">> Running helm test..." && \
 	echo "" && \
@@ -59,7 +59,7 @@ destroy-network: destroy-test-container
  	sleep 10
 
 .PHONY: test
-test: deploy-network setup-nodes start-nodes helm-test destroy-network
+test: setup deploy-network helm-test setup-nodes start-nodes destroy-network
 
 .PHONY: setup-nodes
 setup-nodes: setup
