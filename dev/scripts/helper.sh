@@ -607,6 +607,7 @@ function nmt_start() {
     echo ">> Waiting 5s to let the containers start ${pod}: Attempt# ${attempts}/${max_attempts} ..."
     sleep 5
     status=$("${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -aq")
+    attempts=$((attempts + 1))
   done
 
   echo "Logs from swirlds-haveged..."
