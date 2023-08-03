@@ -89,7 +89,7 @@ function start_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     start_service "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "start_node"
   done
 
   verify_node_all || return "${EX_ERR}"
@@ -110,7 +110,7 @@ function stop_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     stop_service "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "stop_node"
   done
 
   return "${EX_OK}"
