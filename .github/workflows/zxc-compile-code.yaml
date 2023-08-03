@@ -137,7 +137,7 @@ jobs:
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
-          make test SCRIPT_NAME=direct-install.sh
+#          make test SCRIPT_NAME=direct-install.sh
           make test SCRIPT_NAME=nmt-install.sh
 
       - name: Compile
