@@ -3,4 +3,5 @@ module com.hedera.fullstack.service.locator {
 
     requires com.hedera.fullstack.base.api;
     requires io.github.classgraph;
+    requires org.slf4j;
 }

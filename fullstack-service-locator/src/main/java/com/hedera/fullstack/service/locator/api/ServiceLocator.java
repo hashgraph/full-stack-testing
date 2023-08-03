@@ -31,10 +31,6 @@ import java.util.stream.StreamSupport;
  * @param <S> the type of the service.
  */
 public abstract class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> {
-    /**
-     * The class reference for the service type.
-     */
-    private final Class<S> serviceClass;
 
     /**
      * The JVM service loader instance used to find the service implementations.
@@ -44,11 +40,9 @@ public abstract class ServiceLocator<S> implements Iterable<ServiceSupplier<S>> 
     /**
      * Constructs a new ServiceLocator for the given service type.
      *
-     * @param serviceClass the class reference of the service type.
      * @throws NullPointerException if serviceClass or serviceLoader is null.
      */
-    protected ServiceLocator(final Class<S> serviceClass, final ServiceLoader<S> serviceLoader) {
-        this.serviceClass = Objects.requireNonNull(serviceClass, "serviceClass must not be null");
+    protected ServiceLocator(final ServiceLoader<S> serviceLoader) {
         this.serviceLoader = Objects.requireNonNull(serviceLoader, "graph must not be null");
     }
 

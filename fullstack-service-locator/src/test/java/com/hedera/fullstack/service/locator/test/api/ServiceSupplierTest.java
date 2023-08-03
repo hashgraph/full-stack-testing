@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class ServiceSupplierTest {
 
     @Test
-    @DisplayName("MultiplePublicCtor: Basic Supplier Instantiation")
+    @DisplayName("CtorService: Basic Supplier Instantiation")
     void mpcBasicInstantiation() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
 
@@ -46,7 +46,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Constructor Not Found")
+    @DisplayName("CtorService: Constructor Not Found")
     void mpcConstructorNotFound() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final OutputStream outputStreamValue = new ByteArrayOutputStream();
@@ -58,7 +58,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Zero Argument Constructor")
+    @DisplayName("CtorService: Zero Argument Constructor")
     void mpcZeroArgumentConstructor() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final CtorService zeroArgSvc = supplier.get();
@@ -70,7 +70,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: String Argument Constructor")
+    @DisplayName("CtorService: String Argument Constructor")
     void mpcStringArgumentConstructor() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final String stringValue = "Hello World!";
@@ -83,7 +83,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: Int Argument Constructor")
+    @DisplayName("CtorService: Int Argument Constructor")
     void mpcIntArgumentConstructor() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final int intValue = 42;
@@ -96,7 +96,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: InputStream Argument Constructor")
+    @DisplayName("CtorService: InputStream Argument Constructor")
     void mpcInputStreamArgumentConstructor() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final ByteArrayInputStream inputStream = new ByteArrayInputStream(new byte[0]);
@@ -109,7 +109,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: String and Int Argument Constructor")
+    @DisplayName("CtorService: String and Int Argument Constructor")
     void mpcStringAndIntArgumentConstructor() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final String stringValue = "Hello World!";
@@ -123,7 +123,7 @@ class ServiceSupplierTest {
     }
 
     @Test
-    @DisplayName("MultiplePublicCtor: String, Int, and InputStream Argument Constructor")
+    @DisplayName("CtorService: String, Int, and InputStream Argument Constructor")
     void mpcStringIntAndInputStreamArgumentConstructor() {
         final ServiceSupplier<CtorService> supplier = new ServiceSupplier<>(MockCtorService.class);
         final String stringValue = "Hello World!";

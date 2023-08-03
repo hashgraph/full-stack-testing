@@ -20,11 +20,11 @@ import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import java.util.ServiceLoader;
 
 public class MockLocator extends ServiceLocator<CtorService> {
-    private MockLocator(final Class<CtorService> serviceClass, final ServiceLoader<CtorService> serviceLoader) {
-        super(serviceClass, serviceLoader);
+    private MockLocator(final ServiceLoader<CtorService> serviceLoader) {
+        super(serviceLoader);
     }
 
     public static ServiceLocator<CtorService> create() {
-        return new MockLocator(CtorService.class, ServiceLoader.load(CtorService.class));
+        return new MockLocator(ServiceLoader.load(CtorService.class));
     }
 }

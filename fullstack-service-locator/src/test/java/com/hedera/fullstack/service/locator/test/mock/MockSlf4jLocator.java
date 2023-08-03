@@ -21,12 +21,11 @@ import java.util.ServiceLoader;
 import org.slf4j.spi.SLF4JServiceProvider;
 
 public class MockSlf4jLocator extends ServiceLocator<SLF4JServiceProvider> {
-    private MockSlf4jLocator(
-            Class<SLF4JServiceProvider> serviceClass, ServiceLoader<SLF4JServiceProvider> serviceLoader) {
-        super(serviceClass, serviceLoader);
+    private MockSlf4jLocator(ServiceLoader<SLF4JServiceProvider> serviceLoader) {
+        super(serviceLoader);
     }
 
     public static ServiceLocator<SLF4JServiceProvider> create() {
-        return new MockSlf4jLocator(SLF4JServiceProvider.class, ServiceLoader.load(SLF4JServiceProvider.class));
+        return new MockSlf4jLocator(ServiceLoader.load(SLF4JServiceProvider.class));
     }
 }
