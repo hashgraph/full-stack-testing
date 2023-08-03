@@ -1,11 +1,12 @@
 {{ range $index, $node := ($.Values.hedera.nodes) }}
+{{- $haproxy := $node.haproxy | default $.Values.defaults.haproxy -}}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: haproxy-{{ $node.name }}
 spec:
-  replicas: {{ $node.haproxy.replica }}
+  replicas: {{ $haproxy.replica }}
   selector:
     matchLabels:
       app: haproxy-{{ $node.name }}
@@ -23,12 +24,16 @@ spec:
             name: haproxy-ofac-cm
       containers:
       - name: haproxy
-        image: "{{ $node.haproxy.image.registry }}/{{ $node.haproxy.image.repository }}:{{ $node.haproxy.image.tag | default $.Chart.AppVersion }}"
-        imagePullPolicy: Always
+        image: {{ include "container.image" (dict "image" $haproxy.image "Chart" $.Chart) }}
+        imagePullPolicy: {{ include "images.pullPolicy" $haproxy.image }}
         volumeMounts:
           - name: haproxy-config-volume
             # https://hub.docker.com/_/haproxy/
             mountPath: /usr/local/etc/haproxy
           - name: haproxy-ofac-volume
             mountPath: /var/opt/ofac/
+        {{- with $haproxy.resources }}
+        resources:
+          {{- toYaml . | nindent 4 }}
+        {{- end }}
 {{- end }}

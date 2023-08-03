@@ -1,9 +1,11 @@
 {{- define "sidecars.otel-collector" -}}
-{{- $otel := .otel -}}
-{{- $chart := .chart -}}
+{{- $otel := .otel | required "context must include 'otel'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ $otel.nameOverride | default "otel-collector" }}
-  image: "{{ $otel.image.registry }}/{{ $otel.image.repository }}:{{ $otel.image.tag | default $chart.AppVersion }}"
-  imagePullPolicy: {{ $otel.image.pullPolicy }}
+  image: {{ include "container.image" (dict "image" $otel.image "Chart" $chart) }}
+  imagePullPolicy: {{ include "images.pullPolicy" $otel.image }}
+  securityContext:
+    {{- include "root.security.context" . | nindent 4 }}
   ports:
     - name: healthcheck
       containerPort: 13133

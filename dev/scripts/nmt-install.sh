@@ -43,7 +43,7 @@ function setup_node_all() {
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
     set_permission "${pod}" "${HAPI_PATH}"
-    log_time
+    log_time "setup_node"
   done
 
   return "${EX_OK}"
@@ -62,7 +62,7 @@ function start_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     nmt_start "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "start_node"
   done
 
   verify_node_all || return "${EX_ERR}"
@@ -83,7 +83,7 @@ function stop_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     nmt_stop "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "stop_node"
   done
 
   return "${EX_OK}"
