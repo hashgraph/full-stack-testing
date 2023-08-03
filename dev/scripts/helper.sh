@@ -598,6 +598,7 @@ function nmt_start() {
   "${KCTL}" exec "${pod}" -c root-container -- bash -c "rm -f ${HAPI_PATH}/logs/*" || true
 
   "${KCTL}" exec "${pod}" -c root-container -- node-mgmt-tool -VV start || return "${EX_ERR}"
+  "${KCTL}" exec "${pod}" -c root-container -- bash -c "docker ps -a"
 
   local attempts=0
   local max_attempts=$MAX_ATTEMPTS
