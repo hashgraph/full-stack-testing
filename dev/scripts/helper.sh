@@ -706,7 +706,7 @@ function verify_node_all() {
     return "${EX_ERR}"
   fi
   echo ""
-  echo "Processing nodes ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
+  echo "Verifying node status ${NODE_NAMES[*]} ${#NODE_NAMES[@]}"
   echo "-----------------------------------------------------------------------------------------------------"
 
   local node_name
