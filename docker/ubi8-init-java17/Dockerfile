@@ -107,9 +107,6 @@ RUN chmod -R +x /etc/network-node/entrypoint.sh && \
 
 RUN mkdir -p /etc/network-node && \
     touch /etc/network-node/application.env && \
-    echo "APP_HOME=/opt/hgcapp/services-hedera/HapiApp2.0" >> /etc/network-node/application.env && \
-    echo "JAVA_HOME=\"${JAVA_HOME}\"" >> /etc/network-node/java.env && \
-    echo "PATH=\"${PATH}\"" >> /etc/network-node/java.env && \
     chown -R 2000:2000 /etc/network-node
 
 # Expose TCP/UDP Port Definitions
