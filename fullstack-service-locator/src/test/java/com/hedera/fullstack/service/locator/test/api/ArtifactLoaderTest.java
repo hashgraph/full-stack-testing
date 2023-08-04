@@ -16,20 +16,19 @@
 
 package com.hedera.fullstack.service.locator.test.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.hedera.fullstack.base.api.resource.ResourceLoader;
 import com.hedera.fullstack.service.locator.api.ArtifactLoader;
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import com.hedera.fullstack.service.locator.test.mock.MockSlf4jLocator;
+import java.io.IOException;
+import java.net.URLClassLoader;
+import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.spi.SLF4JServiceProvider;
-
-import java.io.IOException;
-import java.net.URLClassLoader;
-import java.nio.file.Path;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Artifact Loader")
 class ArtifactLoaderTest {
@@ -66,7 +65,10 @@ class ArtifactLoaderTest {
         assertThat(serviceLocator).isNotNull();
 
         final SLF4JServiceProvider serviceProvider = serviceLocator.findFirst().orElseThrow();
-        assertThat(serviceProvider).isNotNull().extracting(Object::getClass).extracting(Class::getName)
+        assertThat(serviceProvider)
+                .isNotNull()
+                .extracting(Object::getClass)
+                .extracting(Class::getName)
                 .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
     }
 }
