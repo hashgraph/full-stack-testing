@@ -67,6 +67,9 @@ public class ReflectionUtilsTest {
                         new WrapperAsPrimitiveClassTestParameters(Float.class, float.class)),
                 named(
                         "Validate primitive for Double.class",
-                        new WrapperAsPrimitiveClassTestParameters(Double.class, double.class)));
+                        new WrapperAsPrimitiveClassTestParameters(Double.class, double.class)),
+                named(
+                        "Validate primitive for String.class",
+                        new WrapperAsPrimitiveClassTestParameters(String.class, String.class)));
     }
 }
