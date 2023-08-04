@@ -12,8 +12,7 @@
     - /usr/local/bin/mirror.py
     - --linux
     - --watch-directory
-    - /opt/hgcapp/accountbalance
-    - --debug
+    - /opt/hgcapp/accountBalances
     - --s3-endpoint
     - http://myminio-hl:9000
   volumeMounts:
@@ -43,7 +42,7 @@
     - name: SIG_PRIORITIZE
       value: "{{ $balanceUploader.config.signature.prioritize }}"
     - name: BUCKET_PATH
-      value: "/accountbalance"
+      value: "accountbalances"
     - name: BUCKET_NAME
       value: "{{ $cloud.buckets.streamBucket }}"
     - name: S3_ENABLE

@@ -12,10 +12,9 @@
     - /usr/local/bin/mirror.py
     - --linux
     - --watch-directory
-    - /opt/hgcapp/recordstream
+    - /opt/hgcapp/recordStreams
     - --csv-stats-directory
-    - /opt/hgcapp/recordstream/uploader-stats
-    - --debug
+    - /opt/hgcapp/recordStreams/uploader-stats
     - --s3-endpoint
     - http://myminio-hl:9000
   volumeMounts:
@@ -39,7 +38,7 @@
     - name: STREAM_EXTENSION
       value: "{{ $recordStream.config.compression | ternary "rcd.gz" "rcd" }}"
     - name: SIG_EXTENSION
-      value: "{{ $recordStream.config.compression | ternary "rcd_sig.gz" "rcd_sig" }}"
+      value: "rcd_sig"
     - name: RECORD_STREAM_COMPRESSION
       value: "{{ $recordStream.config.compression }}"
     - name: RECORD_STREAM_SIDECAR
@@ -49,7 +48,7 @@
     - name: SIG_PRIORITIZE
       value: "{{ $recordStream.config.signature.prioritize }}"
     - name: BUCKET_PATH
-      value: "/recordstream"
+      value: "recordstreams"
     - name: BUCKET_NAME
       value: "{{ $cloud.buckets.streamBucket }}"
     - name: S3_ENABLE

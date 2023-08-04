@@ -7,7 +7,7 @@ cloud:
   s3:
     enabled: true
   gcs:
-    enabled: true
+    enabled: false
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
@@ -30,7 +30,8 @@ tenant:
     accessKey: minio
     secretKey: minio123
     buckets:
-    - name: bucket1
+      - name: fst-streams
+      - name: fst-backups
       #objectLock: false        # optional
   tenant:
     name: myminio
@@ -41,3 +42,5 @@ tenant:
         size: 10Gi
     configuration:
       name: myminio-env-configuration
+    certificate:
+      requestAutoCert: false
