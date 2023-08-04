@@ -29,6 +29,52 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ReflectionUtilsTest {
     private record WrapperAsPrimitiveClassTestParameters(Class<?> wrapperClass, Class<?> primitiveClass) {}
 
+    private record PrimitiveAsWrapperClassTestParameters(Class<?> primitiveClass, Class<?> wrapperClass) {}
+
+    @ParameterizedTest
+    @MethodSource
+    @DisplayName("Test primitive as wrapper class")
+    void testPrimitiveAsWrapperClass(PrimitiveAsWrapperClassTestParameters parameters) {
+        Class<?> primitiveClass = parameters.primitiveClass();
+        Class<?> wrapperClass = parameters.wrapperClass();
+        Class<?> result = ReflectionUtils.primitiveAsWrapperClass(primitiveClass);
+        assertThat(result).isEqualTo(wrapperClass);
+    }
+
+    static Stream<Named<PrimitiveAsWrapperClassTestParameters>> testPrimitiveAsWrapperClass() {
+        return Stream.of(
+                named(
+                        "Validate wrapper for void.class",
+                        new PrimitiveAsWrapperClassTestParameters(void.class, Void.class)),
+                named(
+                        "Validate wrapper for boolean.class",
+                        new PrimitiveAsWrapperClassTestParameters(boolean.class, Boolean.class)),
+                named(
+                        "Validate wrapper for byte.class",
+                        new PrimitiveAsWrapperClassTestParameters(byte.class, Byte.class)),
+                named(
+                        "Validate wrapper for char.class",
+                        new PrimitiveAsWrapperClassTestParameters(char.class, Character.class)),
+                named(
+                        "Validate wrapper for short.class",
+                        new PrimitiveAsWrapperClassTestParameters(short.class, Short.class)),
+                named(
+                        "Validate wrapper for int.class",
+                        new PrimitiveAsWrapperClassTestParameters(int.class, Integer.class)),
+                named(
+                        "Validate wrapper for long.class",
+                        new PrimitiveAsWrapperClassTestParameters(long.class, Long.class)),
+                named(
+                        "Validate wrapper for float.class",
+                        new PrimitiveAsWrapperClassTestParameters(float.class, Float.class)),
+                named(
+                        "Validate wrapper for double.class",
+                        new PrimitiveAsWrapperClassTestParameters(double.class, Double.class)),
+                named(
+                        "Validate wrapper for String.class",
+                        new PrimitiveAsWrapperClassTestParameters(String.class, String.class)));
+    }
+
     @ParameterizedTest
     @MethodSource
     @DisplayName("Test wrapper as primitive class")
