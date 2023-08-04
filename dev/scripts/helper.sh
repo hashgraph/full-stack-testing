@@ -33,11 +33,6 @@ readonly PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
 
-readonly OPENJDK_VERSION="${OPENJDK_VERSION:-17.0.2}"
-readonly OPENJDK_INSTALLER="openjdk-${OPENJDK_VERSION}_linux-x64_bin.tar.gz"
-readonly OPENJDK_INSTALLER_DIR="${SCRIPT_DIR}/../resources/jdk"
-readonly OPENJDK_INSTALLER_PATH="${OPENJDK_INSTALLER_DIR}/${OPENJDK_INSTALLER}"
-
 function log_time() {
   local end_time duration execution_time
 
@@ -92,21 +87,6 @@ function fetch_platform_build() {
   fi
 
   gsutil cp "gs://fst-resources/platform/${PLATFORM_INSTALLER}" "${PLATFORM_INSTALLER_PATH}" || return "${EX_ERR}"
-  return "${EX_OK}"
-}
-
-# Fetch OPENJDK
-function fetch_jdk() {
-  echo ""
-  echo "Fetching OPENJDK ${OPENJDK_INSTALLER}"
-  echo "-----------------------------------------------------------------------------------------------------"
-
-  if [[ -f "${OPENJDK_INSTALLER_PATH}" ]]; then
-    echo "Found OPENJDK installer: ${OPENJDK_INSTALLER_PATH}"
-    return "${EX_OK}"
-  fi
-
-  gsutil cp "gs://fst-resources/jdk/${OPENJDK_INSTALLER}" "${OPENJDK_INSTALLER_PATH}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
@@ -233,27 +213,6 @@ function copy_files() {
   "${KCTL}" cp "$srcDir/${file}" "${pod}:${dstDir}/" -c root-container || return "${EX_ERR}"
 
   set_permission "${pod}" "${dstDir}/${file}"
-
-  return "${EX_OK}"
-}
-
-# Copy OPENJDK installer into root-container's node-mgmt-tools directory
-function copy_jdk() {
-  local pod="${1}"
-
-  echo ""
-  echo "Copying OPENJDK to ${pod}"
-  echo "-----------------------------------------------------------------------------------------------------"
-
-  if [ -z "${pod}" ]; then
-    echo "ERROR: 'copy_platform' - pod name is required"
-    return "${EX_ERR}"
-  fi
-
-  local srcDir="${SCRIPT_DIR}/../resources/jdk"
-  local file="${OPENJDK_INSTALLER}"
-  local dstDir="${HGCAPP_DIR}/node-mgmt-tools/images/network-node-base"
-  copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
 
   return "${EX_OK}"
 }

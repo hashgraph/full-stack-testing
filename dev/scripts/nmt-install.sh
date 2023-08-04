@@ -19,7 +19,6 @@ function setup_node_all() {
 
   fetch_nmt || return "${EX_ERR}"
   fetch_platform_build || return "${EX_ERR}"
-  fetch_jdk || return "${EX_ERR}"
   prep_address_book || return "${EX_ERR}"
 
   local node_name
@@ -32,7 +31,6 @@ function setup_node_all() {
     install_nmt "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${HGCAPP_DIR}" || return "${EX_ERR}"
     nmt_preflight "${pod}" || return "${EX_ERR}"
-    copy_jdk "${pod}" || return "${EX_ERR}"
     copy_docker_files "${pod}" || return "${EX_ERR}"
     ls_path "${pod}" "${NMT_DIR}/images/main-network-node/" || return "${EX_ERR}"
     ls_path "${pod}" "${NMT_DIR}/images/network-node-base/" || return "${EX_ERR}"
