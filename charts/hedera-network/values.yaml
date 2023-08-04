@@ -1,6 +1,4 @@
-# Except numbers use double quote for all values
-# This is because we need to be careful about booleans. All boolean values should be
-# defined as strings (so use double quotes).
+# WARNING: Except numbers use double quote for all values. This is because we need to be careful about booleans.
 
 # cloud configuration
 cloud:
