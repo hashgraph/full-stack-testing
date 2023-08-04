@@ -22,13 +22,13 @@ privileged: true
 {{- end }}
 
 {{- define "images.pullPolicy" -}}
-{{ .pullPolicy | default "IfNotPresent" }}
+{{ (.image).pullPolicy | default .defaults.image.pullPolicy }}
 {{- end }}
 
 
 {{- define "container.image" -}}
-{{- $reg := .image.registry | default "gcr.io" -}}
-{{- $repo := .image.repository | default "" -}}
-{{- $tag := .image.tag | default .Chart.AppVersion -}}
+{{- $reg := (.image).registry | default .defaults.image.registry -}}
+{{- $repo := (.image).repository | default .defaults.image.repository -}}
+{{- $tag := (.image).tag | default .Chart.AppVersion -}}
 {{ $reg }}/{{ $repo }}:{{ $tag }}
 {{- end }}

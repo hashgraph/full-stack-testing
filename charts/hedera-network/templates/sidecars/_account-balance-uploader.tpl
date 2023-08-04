@@ -1,10 +1,11 @@
 {{- define "sidecars.account-balance-uploader" }}
 {{- $balanceUploader := .balanceUploader | required "context must include 'balanceUploader'!" -}}
+{{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
-- name: {{ $balanceUploader.nameOverride | default "account-balance-uploader" }}
-  image: {{ include "container.image" (dict "image" $balanceUploader.image "Chart" $chart) }}
-  imagePullPolicy: {{ include "images.pullPolicy" $balanceUploader.image }}
+- name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
+  image: {{ include "container.image" (dict "image" $balanceUploader.image "Chart" $chart "defaults" $defaults ) }}
+  imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults) }}
   securityContext:
     {{- include "hedera.security.context" . | nindent 4 }}
   command:
@@ -19,35 +20,35 @@
       mountPath: /opt/hgcapp/
   env:
     - name: DEBUG
-      value: "{{ $balanceUploader.config.debug }}"
+      value: {{ default $defaults.config.debug ($balanceUploader.config).debug | quote }}
     - name: REAPER_ENABLE
-      value: "{{ $balanceUploader.config.reaper.enable }}"
+      value: {{ default $defaults.config.reaper.enable (($balanceUploader.config).reaper).enable | quote  }}
     - name: REAPER_MIN_KEEP
-      value: "{{ $balanceUploader.config.reaper.minKeep }}"
+      value: {{ default $defaults.config.reaper.minKeep (($balanceUploader.config).reaper).minKeep | quote }}
     - name: REAPER_INTERVAL
-      value: "{{ $balanceUploader.config.reaper.interval }}"
+      value: {{ default $defaults.config.reaper.interval (($balanceUploader.config).reaper).interval  | quote }}
     - name: REAPER_DEFAULT_BACKOFF
-      value: "{{ $balanceUploader.config.reaper.defaultBackoff }}"
+      value: {{ default $defaults.config.reaper.defaultBackoff (($balanceUploader.config).reaper).defaultBackoff | quote }}
     - name: STREAM_FILE_EXTENSION
       value: "pb"
     - name: STREAM_SIG_EXTENSION
       value: "pb_sig"
     - name: STREAM_EXTENSION
-      value: "{{ $balanceUploader.config.compression | ternary "pb.gz" "pb" }}"
+      value: {{ default $defaults.config.compression ($balanceUploader.config).compression | eq "true" | ternary "pb.gz" "pb" | quote }}
     - name: SIG_EXTENSION
-      value: "{{ $balanceUploader.config.compression | ternary "pb_sig.gz" "pb_sig" }}"
+      value: {{ default $defaults.config.compression ($balanceUploader.config).compression | eq "true" | ternary "pb_sig.gz" "pb_sig" | quote }}
     - name: SIG_REQUIRE
-      value: "{{ $balanceUploader.config.signature.require }}"
+      value: {{ default $defaults.config.signature.require (($balanceUploader.config).signature).require | quote }}
     - name: SIG_PRIORITIZE
-      value: "{{ $balanceUploader.config.signature.prioritize }}"
+      value: {{ default $defaults.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
       value: "/accountbalance"
     - name: BUCKET_NAME
-      value: "{{ $cloud.buckets.streamBucket }}"
+      value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: "{{ $cloud.s3.enabled }}"
+      value: {{ $cloud.s3.enable | quote }}
     - name: GCS_ENABLE
-      value: "{{ $cloud.gcs.enabled }}"
+      value: {{ $cloud.gcs.enable | quote }}
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets
