@@ -1,10 +1,11 @@
 {{- define "sidecars.event-stream-uploader" }}
 {{- $eventStream := .eventStream | required "context must include 'eventStream'!"  -}}
+{{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
-- name: {{ $eventStream.nameOverride | default "event-stream-uploader" }}
-  image: {{ include "container.image" (dict "image" $eventStream.image "Chart" $chart) }}
-  imagePullPolicy: {{ include "images.pullPolicy" $eventStream.image }}
+- name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
+  image: {{ include "container.image" (dict "image" $eventStream.image "Chart" $chart "defaults" $defaults) }}
+  imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
   securityContext:
     {{- include "hedera.security.context" . | nindent 4 }}
   command:
@@ -19,35 +20,35 @@
       mountPath: /opt/hgcapp/
   env:
     - name: DEBUG
-      value: "{{ $eventStream.config.debug }}"
+      value: {{ default $defaults.config.debug ($eventStream.config).debug | quote}}
     - name: REAPER_ENABLE
-      value: "{{ $eventStream.config.reaper.enable }}"
+      value: {{ default $defaults.config.reaper.enable (($eventStream.config).reaper).enable | quote }}
     - name: REAPER_MIN_KEEP
-      value: "{{ $eventStream.config.reaper.minKeep }}"
+      value: {{ default $defaults.config.reaper.minKeep (($eventStream.config).reaper).minKeep | quote }}
     - name: REAPER_INTERVAL
-      value: "{{ $eventStream.config.reaper.interval }}"
+      value: {{ default $defaults.config.reaper.interval (($eventStream.config).reaper).interval | quote }}
     - name: REAPER_DEFAULT_BACKOFF
-      value: "{{ $eventStream.config.reaper.defaultBackoff }}"
+      value: {{ default $defaults.config.reaper.defaultBackoff (($eventStream.config).reaper).defaultBackoff | quote }}
     - name: STREAM_FILE_EXTENSION
       value: "evts"
     - name: STREAM_SIG_EXTENSION
       value: "evts_sig"
     - name: STREAM_EXTENSION
-      value: "{{ $eventStream.config.compression | ternary "evts.gz" "evts" }}"
+      value: {{ default $defaults.config.compression ($eventStream.config).compression | eq "true" | ternary "evts.gz" "evts" | quote }}
     - name: SIG_EXTENSION
-      value: "{{ $eventStream.config.compression | ternary "evts_sig.gz" "evts_sig" }}"
+      value: {{ default $defaults.config.compression ($eventStream.config).compression | eq "true" | ternary "evts_sig.gz" "evts_sig" | quote }}
     - name: SIG_REQUIRE
-      value: "{{ $eventStream.config.signature.require }}"
+      value: {{ default $defaults.config.signature.require (($eventStream.config).signature).require | quote }}
     - name: SIG_PRIORITIZE
-      value: "{{ $eventStream.config.signature.prioritize }}"
+      value: {{ default $defaults.config.signature.prioritize (($eventStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
       value: "/events"
     - name: BUCKET_NAME
-      value: "{{ $cloud.buckets.streamBucket }}"
+      value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: "{{ $cloud.s3.enabled }}"
+      value: {{ $cloud.s3.enable | quote }}
     - name: GCS_ENABLE
-      value: "{{ $cloud.gcs.enabled }}"
+      value: {{ $cloud.gcs.enable | quote }}
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets

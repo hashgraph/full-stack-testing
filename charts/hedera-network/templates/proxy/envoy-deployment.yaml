@@ -1,12 +1,14 @@
 {{ range $index, $node := ($.Values.hedera.nodes) }}
-{{- $envoyProxy := $node.envoyProxy | default $.Values.defaults.envoyProxy -}}
+{{- $envoyProxy := $node.envoyProxy | default dict -}}
+{{- $defaults := $.Values.defaults.haproxy }}
+{{- if default $defaults.enable $envoyProxy.enable | eq "true" }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: envoy-proxy-{{ $node.name }}
 spec:
-  replicas: {{ $envoyProxy.replica }}
+  replicas: {{ default $defaults.replica $envoyProxy.replica }}
   selector:
     matchLabels:
       app: envoy-proxy-{{ $node.name }}
@@ -20,15 +22,16 @@ spec:
           configMap:
             name: envoy-proxy-cm-{{ $node.name }}
       containers:
-      - name: envoy-proxy
-        image: {{ include "container.image" (dict "image" $envoyProxy.image "Chart" $.Chart) }}
-        imagePullPolicy: {{ include "images.pullPolicy" $envoyProxy.image }}
+      - name: {{ default $defaults.nameOverride $envoyProxy.nameOverride }}
+        image: {{ include "container.image" (dict "image" $envoyProxy.image "Chart" $.Chart "defaults" $defaults ) }}
+        imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $envoyProxy.image "defaults" $defaults) }}
         volumeMounts:
           - name: config-volume
             # https://www.envoyproxy.io/docs/envoy/v1.26.2/start/docker
             mountPath: /etc/envoy
-        {{- with $envoyProxy.resources }}
+        {{- with default $defaults.resources $envoyProxy.resources }}
         resources:
-          {{- toYaml . | nindent 4 }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
+{{- end }}
 {{- end }}

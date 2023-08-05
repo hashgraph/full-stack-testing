@@ -5,9 +5,10 @@
 {{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
 {{- $balanceUploader := ($node.sidecars).accountBalanceUploader | default $.Values.defaults.sidecars.accountBalanceUploader -}}
 {{- $backupUploader := ($node.sidecars).backupUploader | default $.Values.defaults.sidecars.backupUploader -}}
-{{- $otel := ($node.sidecars).otelCollector | default $.Values.defaults.sidecars.otelCollector -}}
+{{- $otelCollector := ($node.sidecars).otelCollector | default $.Values.defaults.sidecars.otelCollector -}}
 {{- $resources := $node.resources | default $.Values.defaults.resources }}
 {{- $cloud := $.Values.cloud }}
+{{- $defaults := $.Values.defaults }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -31,7 +32,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if $otel.enabled }}
+        {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm
@@ -39,8 +40,8 @@ spec:
       initContainers:
       # Init Container
       - name: init-container
-        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart) }}
-        imagePullPolicy: {{ include "images.pullPolicy" $root.image }}
+        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
+        imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
         securityContext:
           {{- include "hedera.security.context" . | nindent 10 }}
@@ -50,8 +51,8 @@ spec:
       containers:
       # Root Container
       - name: {{ $root.nameOverride | default "root-container" }}
-        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart) }}
-        imagePullPolicy: {{ include "images.pullPolicy" $root.image }}
+        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
+        imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         securityContext: # need to run as root with privileged mode
           {{- include "root.security.context.privileged" . | nindent 10 }}
         {{- with $resources }}
@@ -66,11 +67,13 @@ spec:
       # Sidecars
       {{- include "sidecars" (dict
         "recordStream" $recordStream
-        "bakupUploader" $backupUploader
+        "backupUploader" $backupUploader
         "balanceUploader" $balanceUploader
         "eventStream" $eventStream
         "recordStream" $recordStream
+        "otelCollector" $otelCollector
         "cloud" $.Values.cloud
         "chart" $.Chart
+        "defaults" $defaults
         ) | nindent 6 }}
 {{ end }}
