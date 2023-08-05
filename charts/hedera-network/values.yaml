@@ -1,12 +1,14 @@
+# WARNING: Except numbers use double quote for all values. This is because we need to be careful about booleans.
+
 # cloud configuration
 cloud:
   buckets:
-    streamBucket: fst-streams
-    backupBucket: fst-backups
+    streamBucket: "fst-streams"
+    backupBucket: "fst-backups"
   s3:
-    enabled: true
+    enable: "true"
   gcs:
-    enabled: true
+    enable: "true"
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
@@ -23,102 +25,131 @@ defaults:
       memory: 2G
   root: # root container
     image:
-      registry: ghcr.io
-      repository: hashgraph/full-stack-testing/ubi8-init-java17
+      registry: "ghcr.io"
+      repository: "hashgraph/full-stack-testing/ubi8-init-java17"
       tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
-      pullPolicy: IfNotPresent
+      pullPolicy: "IfNotPresent"
+    resources: {}
   haproxy:
+    enable: "true"
+    nameOverride: "haproxy"
     image:
-      registry: docker.io
-      repository: haproxy
+      registry: "docker.io"
+      repository: "haproxy"
       tag: "2.4-alpine"
-      pullPolicy: IfNotPresent
+      pullPolicy: "IfNotPresent"
     replica: 1
+    resources: {}
   envoyProxy:
+    enable: "true"
+    nameOverride: "envoy-proxy"
     image:
-      registry: docker.io
-      repository: envoyproxy/envoy
+      registry: "docker.io"
+      repository: "envoyproxy/envoy"
       tag: "v1.21.1"
-      pullPolicy: IfNotPresent
+      pullPolicy: "IfNotPresent"
     replica: 1
+    resources: {}
   sidecars:
     recordStreamUploader:
-      enabled: true
+      enable: "true"
       nameOverride: "record-stream-uploader"
       image:
-        registry: gcr.io
-        repository: hedera-registry/uploader-mirror
+        registry: "gcr.io"
+        repository: "hedera-registry/uploader-mirror"
         tag: "1.3.0"
-        pullPolicy: IfNotPresent
+        pullPolicy: "IfNotPresent"
       config:
-        debug: true
-        compression: true
-        sidecar: true
+        debug: "true"
+        compression: "true"
+        sidecar: "true"
         reaper:
-          enable: true
+          enable: "true"
           minKeep: 1
           interval: 1
           defaultBackoff: 1
         signature:
-          require: true
-          prioritize: true
+          require: "true"
+          prioritize: "true"
+      resources: {}
     eventStreamUploader:
-      enabled: true
+      enable: "true"
       nameOverride: "event-stream-uploader"
       image:
-        registry: gcr.io
-        repository: hedera-registry/uploader-mirror
+        registry: "gcr.io"
+        repository: "hedera-registry/uploader-mirror"
         tag: "1.3.0"
-        pullPolicy: IfNotPresent
+        pullPolicy: "IfNotPresent"
       config:
-        debug: true
-        compression: true
+        debug: "true"
+        compression: "true"
         reaper:
-          enable: true
+          enable: "true"
           minKeep: 1
           interval: 1
           defaultBackoff: 1
         signature:
-          require: true
-          prioritize: true
+          require: "true"
+          prioritize: "true"
+      resources: {}
     accountBalanceUploader:
-      enabled: true
+      enable: "true"
       nameOverride: "account-balance-uploader"
       image:
         registry: gcr.io
         repository: hedera-registry/uploader-mirror
         tag: "1.3.0"  # Defaults to the chart's app version if empty
-        pullPolicy: IfNotPresent
+        pullPolicy: "IfNotPresent"
       config:
-        debug: true
-        compression: true
+        debug: "true"
+        compression: "true"
         reaper:
-          enable: true
+          enable: "true"
           minKeep: 1
           interval: 1
           defaultBackoff: 1
         signature:
-          require: true
-          prioritize: true
+          require: "true"
+          prioritize: "true"
+      resources: {}
     backupUploader:
-      enabled: true
+      enable: "true"
       nameOverride: "backup-uploader"
       image:
-        registry: gcr.io
+        registry: "gcr.io"
         repository: "hedera-registry/hedera-backups"
         tag: "0.6.0"
-        pullPolicy: IfNotPresent
+        pullPolicy: "IfNotPresent"
       config:
         backupBucket: "backup"
+      resources: {}
     otelCollector:
-      enabled: true
+      enable: "true"
       nameOverride: "otel-collector"
       image:
-        registry: docker.io
+        registry: "docker.io"
         repository: "otel/opentelemetry-collector-contrib"
         tag: "0.72.0"
-        pullPolicy: IfNotPresent
-      config: {}
+        pullPolicy: "IfNotPresent"
+      ports:
+        - name: healthcheck
+          containerPort: 13133
+          protocol: TCP
+        - name: metrics
+          containerPort: 8888
+          protocol: TCP
+        - name: otlp
+          containerPort: 4317
+          protocol: TCP
+      livenessProbe:
+        httpGet:
+          path: /
+          port: healthcheck
+      readinessProbe:
+        httpGet:
+          path: /
+          port: healthcheck
+      resources: {}
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section

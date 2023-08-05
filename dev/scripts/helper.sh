@@ -26,12 +26,14 @@ readonly NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/re
 readonly NMT_INSTALLER="node-mgmt-tools-installer-${NMT_VERSION}.run"
 readonly NMT_INSTALLER_DIR="${SCRIPT_DIR}/../resources/nmt"
 readonly NMT_INSTALLER_PATH="${NMT_INSTALLER_DIR}/${NMT_INSTALLER}"
-readonly NMT_PROFILE="${NMT_PROFILE:-jrs}"
+readonly NMT_PROFILE="jrs" # we only allow jrs profile
 
 readonly PLATFORM_VERSION="${PLATFORM_VERSION:-v0.39.1}"
 readonly PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
+
+readonly OPENJDK_VERSION="${OPENJDK_VERSION:-17.0.2}"
 
 function log_time() {
   local end_time duration execution_time
@@ -411,30 +413,6 @@ function copy_config_files() {
   return "${EX_OK}"
 }
 
-# Copy docker files
-function copy_docker_files() {
-  local pod="${1}"
-
-  echo ""
-  echo "Copy docker files to ${pod}"
-  echo "-----------------------------------------------------------------------------------------------------"
-
-  if [ -z "${pod}" ]; then
-    echo "ERROR: 'copy_docker_files' - pod name is required"
-    return "${EX_ERR}"
-  fi
-
-  local srcDir="${SCRIPT_DIR}/../resources/images/main-network-node"
-  local dstDir="${NMT_DIR}/images/main-network-node"
-  copy_files "${pod}" "${srcDir}" "Dockerfile" "${dstDir}" || return "${EX_ERR}"
-
-  local srcDir="${SCRIPT_DIR}/../resources/images/network-node-base"
-  local dstDir="${NMT_DIR}/images/network-node-base"
-  copy_files "${pod}" "${srcDir}" "Dockerfile" "${dstDir}" || return "${EX_ERR}"
-
-  return "${EX_OK}"
-}
-
 function ls_path() {
   local pod="${1}"
   local path="${2}"
@@ -637,9 +615,7 @@ function verify_network_state() {
   local attempts=0
   local status=""
 
-  local LOG_PATH="${HAPI_PATH}/output/hgcaa.log"
-  [[ "${NMT_PROFILE}" == jrs* ]] && LOG_PATH="${HAPI_PATH}/logs/hgcaa.log"
-
+  local LOG_PATH="${HAPI_PATH}/logs/hgcaa.log"
   local status_pattern="ACTIVE"
 
   while [[ "${attempts}" -lt "${max_attempts}" && "${status}" != *"${status_pattern}"* ]]; do
@@ -655,7 +631,6 @@ function verify_network_state() {
 
     if [[ "${status}" != *"${status_pattern}"* ]]; then
       "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/logs"
-      "${KCTL}" exec "${pod}" -c root-container -- ls -la "${HAPI_PATH}/output"
 
       # show swirlds.log to see what node is doing
       "${KCTL}" exec "${pod}" -c root-container -- tail -n 5 "${HAPI_PATH}/logs/swirlds.log"
