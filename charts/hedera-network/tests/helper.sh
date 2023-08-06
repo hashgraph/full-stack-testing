@@ -1,9 +1,9 @@
 #!/bin/bash
 
-EX_OK=0
-EX_ERR=1
+readonly EX_OK=0
+readonly EX_ERR=1
 
-TOTAL_NODES="{{ .total_nodes }}"
+readonly TOTAL_NODES="{{ .total_nodes }}"
 
 function get_pod_list() {
   local pattern=$1
@@ -24,7 +24,7 @@ function test_node_total() {
   echo "Nodes: " "${nodes[@]}"
   local node_total=${#nodes[@]}
 
-  echo "Total network node: ${node_total} (expected: ${TOTAL_NODES})"
+  echo "Total network node: ${node_total} (expected - ${TOTAL_NODES})"
   echo ""
 
   # assert true
@@ -72,30 +72,3 @@ function test_systemctl() {
 
   return "${EX_OK}"
 }
-
-function run_tests() {
-  local test_node_total_status
-  local test_systemctl_status
-
-  test_node_total
-  local status="$?"
-  [ "${status}" = "${EX_OK}" ] && test_node_total_status="PASS" || test_node_total_status="FAIL"
-
-  test_systemctl
-  local status="$?"
-  [ "${status}" = "${EX_OK}" ] && test_systemctl_status="PASS" || test_systemctl_status="FAIL"
-
-  echo "-------------------------------------------------------------"
-  echo "Test results"
-  echo "-------------------------------------------------------------"
-  echo "test_node_total: ${test_node_total_status}"
-  echo "test_systemctl: ${test_systemctl_status}"
-
-  [ "${test_node_total_status}" = "PASS" ] && \
-  [ "${test_systemctl_status}" = "PASS" ] || return "${EX_ERR}"
-
-  return "${EX_OK}"
-}
-
-run_tests
-
