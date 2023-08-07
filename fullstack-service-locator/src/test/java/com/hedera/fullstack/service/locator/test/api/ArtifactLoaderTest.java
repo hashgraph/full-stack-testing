@@ -22,15 +22,22 @@ import com.hedera.fullstack.base.api.resource.ResourceLoader;
 import com.hedera.fullstack.service.locator.api.ArtifactLoader;
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import com.hedera.fullstack.service.locator.test.mock.MockSlf4jLocator;
+import com.jcovalent.junit.logging.JCovalentLoggingSupport;
+import com.jcovalent.junit.logging.LogEntryBuilder;
+import com.jcovalent.junit.logging.LoggingOutput;
+import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.event.Level;
 import org.slf4j.spi.SLF4JServiceProvider;
 
 @DisplayName("Artifact Loader")
+@JCovalentLoggingSupport
 class ArtifactLoaderTest {
 
     private static final ResourceLoader<ArtifactLoaderTest> RESOURCE_LOADER =
@@ -70,5 +77,18 @@ class ArtifactLoaderTest {
                 .extracting(Object::getClass)
                 .extracting(Class::getName)
                 .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
+    }
+
+    @Test
+    @DisplayName("Logback: Artifacts dynamically loaded with an empty directory")
+    void logbackDynamicServiceLoadingEmptyDirectory(final LoggingOutput loggingOutput) {
+        final ArtifactLoader artifactLoader = ArtifactLoader.from(Path.of("no-modules"));
+        assertThat(artifactLoader).isNotNull();
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(
+                        LogEntryBuilder.builder()
+                                .level(Level.DEBUG)
+                                .message("No module path entries found, skipping module layer creation")
+                                .build()));
     }
 }
