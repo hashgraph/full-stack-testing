@@ -22,7 +22,5 @@ plugins {
 dependencies {
     // Bill of Materials
     implementation(platform(project(":fullstack-bom")))
-    javaModuleDependencies {
-        testImplementation(gav("com.jcovalent.junit.logging"))
-    }
+    javaModuleDependencies { testImplementation(gav("com.jcovalent.junit.logging")) }
 }
