@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.service.locator.test.mock;
 
+import com.hedera.fullstack.service.locator.api.ArtifactLoader;
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
 import java.util.ServiceLoader;
 import org.slf4j.spi.SLF4JServiceProvider;
@@ -27,5 +28,9 @@ public class MockSlf4jLocator extends ServiceLocator<SLF4JServiceProvider> {
 
     public static ServiceLocator<SLF4JServiceProvider> create() {
         return new MockSlf4jLocator(ServiceLoader.load(SLF4JServiceProvider.class));
+    }
+
+    public static ServiceLocator<SLF4JServiceProvider> create(final ArtifactLoader loader) {
+        return new MockSlf4jLocator(ServiceLoader.load(loader.moduleLayer(), SLF4JServiceProvider.class));
     }
 }

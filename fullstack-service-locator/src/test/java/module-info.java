@@ -15,6 +15,7 @@ module com.hedera.fullstack.service.locator.test {
 
     requires com.hedera.fullstack.base.api;
     requires com.hedera.fullstack.service.locator;
+    requires com.jcovalent.junit.logging;
     requires org.assertj.core;
     requires org.junit.jupiter.api;
     requires org.slf4j;
