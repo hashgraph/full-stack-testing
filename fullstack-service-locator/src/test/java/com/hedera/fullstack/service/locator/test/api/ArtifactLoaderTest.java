@@ -66,17 +66,7 @@ class ArtifactLoaderTest {
     @DisplayName("Logback: Artifacts dynamically loaded can be used by Service Loader")
     void logbackDynamicServiceLoading() {
         final ArtifactLoader artifactLoader = ArtifactLoader.from(JAR_PATH);
-        assertThat(artifactLoader).isNotNull();
-
-        final ServiceLocator<SLF4JServiceProvider> serviceLocator = MockSlf4jLocator.create(artifactLoader);
-        assertThat(serviceLocator).isNotNull();
-
-        final SLF4JServiceProvider serviceProvider = serviceLocator.findFirst().orElseThrow();
-        assertThat(serviceProvider)
-                .isNotNull()
-                .extracting(Object::getClass)
-                .extracting(Class::getName)
-                .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
+        assertServiceLocatorLoadedCorrectly(artifactLoader);
     }
 
     @Test
@@ -91,4 +81,26 @@ class ArtifactLoaderTest {
                                 .message("No module path entries found, skipping module layer creation")
                                 .build()));
     }
+
+    @Test
+    @DisplayName("Logback: Artifacts dynamically recursive folder loaded can be used by Service Loader")
+    void logbackDynamicServiceRecursiveFolderLoading() {
+        final ArtifactLoader artifactLoader = ArtifactLoader.from(true, Path.of("."));
+        assertServiceLocatorLoadedCorrectly(artifactLoader);
+    }
+
+    private void assertServiceLocatorLoadedCorrectly(ArtifactLoader artifactLoader) {
+        assertThat(artifactLoader).isNotNull();
+
+        final ServiceLocator<SLF4JServiceProvider> serviceLocator = MockSlf4jLocator.create(artifactLoader);
+        assertThat(serviceLocator).isNotNull();
+
+        final SLF4JServiceProvider serviceProvider = serviceLocator.findFirst().orElseThrow();
+        assertThat(serviceProvider)
+                .isNotNull()
+                .extracting(Object::getClass)
+                .extracting(Class::getName)
+                .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
+    }
+
 }
