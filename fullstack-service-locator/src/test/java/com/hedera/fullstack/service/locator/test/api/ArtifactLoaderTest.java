@@ -17,6 +17,7 @@
 package com.hedera.fullstack.service.locator.test.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.hedera.fullstack.base.api.resource.ResourceLoader;
 import com.hedera.fullstack.service.locator.api.ArtifactLoader;
@@ -75,11 +76,10 @@ class ArtifactLoaderTest {
         final ArtifactLoader artifactLoader = ArtifactLoader.from(Path.of("no-modules"));
         assertThat(artifactLoader).isNotNull();
         LoggingOutputAssert.assertThat(loggingOutput)
-                .hasAtLeastOneEntry(List.of(
-                        LogEntryBuilder.builder()
-                                .level(Level.DEBUG)
-                                .message("No module path entries found, skipping module layer creation")
-                                .build()));
+                .hasAtLeastOneEntry(List.of(LogEntryBuilder.builder()
+                        .level(Level.DEBUG)
+                        .message("No module path entries found, skipping module layer creation")
+                        .build()));
     }
 
     @Test
@@ -103,4 +103,10 @@ class ArtifactLoaderTest {
                 .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
     }
 
+    @Test
+    @DisplayName("Logback: Artifacts load fails with no paths")
+    void logbackDynamicServiceLoadingWithNoPaths(final LoggingOutput loggingOutput) {
+        Path[] emptyPaths = new Path[0];
+        assertThatThrownBy(() -> ArtifactLoader.from(emptyPaths)).isInstanceOf(IllegalArgumentException.class);
+    }
 }
