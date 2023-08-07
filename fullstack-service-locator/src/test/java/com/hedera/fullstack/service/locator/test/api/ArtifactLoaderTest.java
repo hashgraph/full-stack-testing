@@ -107,6 +107,6 @@ class ArtifactLoaderTest {
     @DisplayName("Logback: Artifacts load fails with no paths")
     void logbackDynamicServiceLoadingWithNoPaths(final LoggingOutput loggingOutput) {
         Path[] emptyPaths = new Path[0];
-        assertThatThrownBy(() -> ArtifactLoader.from(emptyPaths)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ArtifactLoader.from(null, emptyPaths)).isInstanceOf(IllegalArgumentException.class);
     }
 }
