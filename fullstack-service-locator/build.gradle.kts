@@ -19,8 +19,4 @@ plugins {
     id("com.hedera.fullstack.maven-publish")
 }
 
-dependencies {
-    // Bill of Materials
-    implementation(platform(project(":fullstack-bom")))
-    javaModuleDependencies { testImplementation(gav("com.jcovalent.junit.logging")) }
-}
+dependencies { implementation(platform(project(":fullstack-bom"))) }
