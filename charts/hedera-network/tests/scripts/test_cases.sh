@@ -1,34 +1,32 @@
 #!/bin/bash
 
-readonly EX_OK=0
-readonly EX_ERR=1
-
-readonly TOTAL_NODES="{{ .total_nodes }}"
-
-function get_pod_list() {
-  local pattern=$1
-  local resp=$(kubectl get pods -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}' | grep "${pattern}")
-  echo "${resp}"
-}
-
 function test_node_total() {
   # set test expectations
 
-  echo "-------------------------------------------------------------"
+  echo "----------------------------------------------------------------------------"
+  echo "Test case: test_node_total"
   echo "Checking total number of network node containers"
-  echo "-------------------------------------------------------------"
+  echo "Expected total nodes: ${TOTAL_NODES}"
+  echo "----------------------------------------------------------------------------"
+
   kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s || return "${EX_ERR}"
 
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
+
   echo "Nodes: " "${nodes[@]}"
   local node_total=${#nodes[@]}
 
-  echo "Total network node: ${node_total} (expected - ${TOTAL_NODES})"
+  local status="${FAIL}"
+  if [[ "${node_total}" -eq "${TOTAL_NODES}" ]]; then
+    status="${PASS}"
+  fi
+
+  echo ""
+  echo "[${status}] Total network node: ${node_total}; expected: ${TOTAL_NODES}"
   echo ""
 
-  # assert true
-  if [[ "${node_total}" -ne "${TOTAL_NODES}" ]]; then
+  if [[ "${status}" = "${FAIL}" ]]; then
     return "${EX_ERR}"
   fi
 
@@ -39,10 +37,11 @@ function test_systemctl() {
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
 
-  echo "-------------------------------------------------------------"
+  echo "---------------------------------------------------------------------------"
+  echo "Test case: test_systemctl"
   echo "Checking systemctl is running in all network node containers"
   echo "Nodes: " "${nodes[@]}" ", Total:" "${#nodes[@]}"
-  echo "-------------------------------------------------------------"
+  echo "---------------------------------------------------------------------------"
 
   local attempts=0
   local status="${EX_ERR}"
@@ -58,7 +57,7 @@ function test_systemctl() {
       attempts=$((attempts + 1))
       kubectl exec "${node}" -c root-container -- systemctl status --no-pager
       status="${?}"
-      echo "Checked systemctl status in ${node} (Attempt #${attempts})... >>>>> status: ${status} <<<<<"
+      echo "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${status} <<<<<"
       if [[ "${status}" -ne "${EX_OK}" ]]; then
         echo "Sleeping 5s..."
         sleep 5
