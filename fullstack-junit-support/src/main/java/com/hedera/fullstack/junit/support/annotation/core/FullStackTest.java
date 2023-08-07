@@ -25,5 +25,7 @@ import org.junit.jupiter.api.Test;
 @Target({ElementType.METHOD})
 @Test
 public @interface FullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+    TestExecutionMode mode() default TestExecutionMode.DEFAULT;
+
+    TestExecutorType executor() default TestExecutorType.JAVA_DIRECT;
 }

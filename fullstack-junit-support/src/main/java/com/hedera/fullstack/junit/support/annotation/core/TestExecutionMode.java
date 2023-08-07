@@ -25,7 +25,7 @@ public enum TestExecutionMode {
 
     /**
      * Timed execution mode will provision resources, start the application, wait for any readiness checks, start any
-     * monitors, and then wait for the {@link com.hedera.fullstack.junit.support.annotation.flow.MaxTestExecutionTime}
+     * monitors, and then wait for the {@link com.hedera.fullstack.junit.support.annotation.flow.WaitForDuration}
      * to expire before executing the test method.
      */
     TIMED_EXECUTION,
