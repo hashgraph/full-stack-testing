@@ -28,9 +28,15 @@ class Utils {
         }
 
         @JvmStatic
-        fun updateCommitizenVersion(project: Project, newVersion: SemVer) {
-            val czFile = File(project.projectDir, ".cz.toml")
-            updateStringInFile(czFile, "version =", "version = \"${newVersion}\"")
+        fun updateHelmChartVersion(project: Project, chartName: String, newVersion: SemVer) {
+            val manifestFile = File(project.rootProject.projectDir, "charts/${chartName}/Chart.yaml")
+            updateStringInFile(manifestFile, "version:", "version: $newVersion")
+        }
+
+        @JvmStatic
+        fun updateHelmChartAppVersion(project: Project, chartName: String, newVersion: SemVer) {
+            val manifestFile = File(project.rootProject.projectDir, "charts/${chartName}/Chart.yaml")
+            updateStringInFile(manifestFile, "appVersion:", "appVersion: \"${newVersion}\"")
         }
 
         private fun updateStringInFile(file: File, startsWith: String, newString: String) {

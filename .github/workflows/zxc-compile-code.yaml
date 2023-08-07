@@ -18,11 +18,6 @@ name: "ZXC: Compile Code"
 on:
   workflow_call:
     inputs:
-      enable-javadoc:
-        description: "Javadoc Enabled"
-        type: boolean
-        required: false
-        default: false
       enable-unit-tests:
         description: "Unit Testing Enabled"
         type: boolean
@@ -78,10 +73,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
-
-      - name: Expand Shallow Clone for SonarQube and Spotless
-        if: ${{ (inputs.enable-sonar-analysis || inputs.enable-unit-tests || inputs.enable-spotless-check) && !cancelled() }}
-        run: git fetch --unshallow --no-recurse-submodules
+        with:
+          fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
       - name: Setup Java
         uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # pin@v3
@@ -132,13 +125,15 @@ jobs:
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         uses: google-github-actions/setup-gcloud@d51b5346f85640ec2aa2fa057354d2b82c2fcbce # pin@v1
 
-      - name: Helm Chart Test
-        id: helm-chart-test
+      - name: Helm Chart Test (Direct Install)
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: |
-          make test SCRIPT_NAME=direct-install.sh
-          make test SCRIPT_NAME=nmt-install.sh
+        run: make test SCRIPT_NAME=direct-install.sh
+
+      - name: Helm Chart Test (NMT Install)
+        working-directory: dev
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run: make test SCRIPT_NAME=nmt-install.sh
 
       - name: Compile
         id: gradle-build
@@ -146,13 +141,6 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
-
-      - name: Javadoc
-        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
-        if: ${{ inputs.enable-javadoc && steps.gradle-build.conclusion == 'success' && !cancelled() }}
-        with:
-          gradle-version: ${{ inputs.gradle-version }}
-          arguments: javadoc --scan
 
       - name: Spotless Check
         uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2

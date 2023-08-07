@@ -8,8 +8,7 @@ Restart=no
 User=hedera
 Group=hedera
 
-
-EnvironmentFile=/etc/network-node/java.env
+PassEnvironment=JAVA_HOME JAVA_OPTS JAVA_HEAP_MIN JAVA_HEAP_MAX PATH APP_HOME
 EnvironmentFile=/etc/network-node/application.env
 
 WorkingDirectory=/opt/hgcapp/services-hedera/HapiApp2.0

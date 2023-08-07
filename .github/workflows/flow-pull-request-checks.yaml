@@ -35,8 +35,6 @@ jobs:
   build:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
-    with:
-      enable-javadoc: true
 
   spotless:
     name: Spotless

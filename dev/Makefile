@@ -22,13 +22,13 @@ deploy-chart:
 	@echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
-		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" --set hedera.nodes[0].root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
+		helm install fst ../charts/hedera-network --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
 	else \
-		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" ; \
+		helm install fst ../charts/hedera-network ; \
 	fi \
 
 .PHONY: helm-test
-helm-test: setup deploy-chart
+helm-test:
 	@echo "" && \
 	echo ">> Running helm test..." && \
 	echo "" && \
@@ -59,7 +59,7 @@ destroy-network: destroy-test-container
  	sleep 10
 
 .PHONY: test
-test: deploy-network setup-nodes start-nodes helm-test destroy-network
+test: setup deploy-network helm-test setup-nodes start-nodes destroy-network
 
 .PHONY: setup-nodes
 setup-nodes: setup
