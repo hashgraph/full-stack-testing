@@ -17,17 +17,28 @@
 package com.hedera.fullstack.service.locator.test.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.hedera.fullstack.base.api.resource.ResourceLoader;
 import com.hedera.fullstack.service.locator.api.ArtifactLoader;
+import com.hedera.fullstack.service.locator.api.ServiceLocator;
+import com.hedera.fullstack.service.locator.test.mock.MockSlf4jLocator;
+import com.jcovalent.junit.logging.JCovalentLoggingSupport;
+import com.jcovalent.junit.logging.LogEntryBuilder;
+import com.jcovalent.junit.logging.LoggingOutput;
+import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.event.Level;
+import org.slf4j.spi.SLF4JServiceProvider;
 
 @DisplayName("Artifact Loader")
+@JCovalentLoggingSupport
 class ArtifactLoaderTest {
 
     private static final ResourceLoader<ArtifactLoaderTest> RESOURCE_LOADER =
@@ -42,7 +53,7 @@ class ArtifactLoaderTest {
     }
 
     @Test
-    @DisplayName("Logback: Artifacts dynamically loaded")
+    @DisplayName("Logback: Artifacts dynamically loaded successfully")
     void logbackDynamicLoading() {
         final ArtifactLoader artifactLoader = ArtifactLoader.from(JAR_PATH);
         assertThat(artifactLoader).isNotNull();
@@ -50,5 +61,52 @@ class ArtifactLoaderTest {
         assertThat(artifactLoader.moduleLayer()).isNotNull();
         assertThat(artifactLoader.classPath()).isNotEmpty();
         assertThat(artifactLoader.modulePath()).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("Logback: Artifacts dynamically loaded can be used by Service Loader")
+    void logbackDynamicServiceLoading() {
+        final ArtifactLoader artifactLoader = ArtifactLoader.from(JAR_PATH);
+        assertServiceLocatorLoadedCorrectly(artifactLoader);
+    }
+
+    @Test
+    @DisplayName("Logback: Artifacts dynamically loaded with an empty directory")
+    void logbackDynamicServiceLoadingEmptyDirectory(final LoggingOutput loggingOutput) {
+        final ArtifactLoader artifactLoader = ArtifactLoader.from(Path.of("no-modules"));
+        assertThat(artifactLoader).isNotNull();
+        LoggingOutputAssert.assertThat(loggingOutput)
+                .hasAtLeastOneEntry(List.of(LogEntryBuilder.builder()
+                        .level(Level.DEBUG)
+                        .message("No module path entries found, skipping module layer creation")
+                        .build()));
+    }
+
+    @Test
+    @DisplayName("Logback: Artifacts dynamically recursive folder loaded can be used by Service Loader")
+    void logbackDynamicServiceRecursiveFolderLoading() {
+        final ArtifactLoader artifactLoader = ArtifactLoader.from(true, Path.of("."));
+        assertServiceLocatorLoadedCorrectly(artifactLoader);
+    }
+
+    private void assertServiceLocatorLoadedCorrectly(ArtifactLoader artifactLoader) {
+        assertThat(artifactLoader).isNotNull();
+
+        final ServiceLocator<SLF4JServiceProvider> serviceLocator = MockSlf4jLocator.create(artifactLoader);
+        assertThat(serviceLocator).isNotNull();
+
+        final SLF4JServiceProvider serviceProvider = serviceLocator.findFirst().orElseThrow();
+        assertThat(serviceProvider)
+                .isNotNull()
+                .extracting(Object::getClass)
+                .extracting(Class::getName)
+                .isEqualTo("ch.qos.logback.classic.spi.LogbackServiceProvider");
+    }
+
+    @Test
+    @DisplayName("Logback: Artifacts load fails with no paths")
+    void logbackDynamicServiceLoadingWithNoPaths(final LoggingOutput loggingOutput) {
+        Path[] emptyPaths = new Path[0];
+        assertThatThrownBy(() -> ArtifactLoader.from(null, emptyPaths)).isInstanceOf(IllegalArgumentException.class);
     }
 }

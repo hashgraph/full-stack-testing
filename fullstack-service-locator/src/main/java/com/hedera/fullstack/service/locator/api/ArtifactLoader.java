@@ -338,7 +338,7 @@ public final class ArtifactLoader {
         final ModuleFinder finder = ModuleFinder.of(modulePath.toArray(new Path[0]));
         try {
             final Configuration cfg =
-                    parentLayer.configuration().resolve(finder, ModuleFinder.of(), Collections.emptySet());
+                    parentLayer.configuration().resolveAndBind(finder, ModuleFinder.of(), Collections.emptySet());
             moduleLayer = parentLayer.defineModulesWithOneLoader(cfg, classLoader);
         } catch (LayerInstantiationException | SecurityException e) {
             LOGGER.atError().setCause(e).log("Failed to instantiate module layer, unable to load module path entries");
