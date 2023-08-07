@@ -640,7 +640,9 @@ function verify_network_state() {
   done
 
   if [[ "${status}" != *"${status_pattern}"* ]]; then
+    # capture the docker log in a local file for investigation
     "${KCTL}" exec "${pod}" -c root-container -- docker logs swirlds-node >"${TMP_DIR}/${pod}-swirlds-node.log"
+
     echo "ERROR: <<< The network is not operational in ${pod}. >>>"
     return "${EX_ERR}"
   fi
@@ -661,7 +663,7 @@ function verify_node_all() {
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
-    verify_network_state "${pod}" "${MAX_ATTEMPTS}"
+    verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
     log_time "verify_network_state"
   done
 
