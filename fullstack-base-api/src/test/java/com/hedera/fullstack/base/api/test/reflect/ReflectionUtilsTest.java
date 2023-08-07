@@ -41,11 +41,9 @@ public class ReflectionUtilsTest {
         assertThat(result).isEqualTo(wrapperClass);
     }
 
-    static Stream<Named<PrimitiveAsWrapperClassTestParameters>> testPrimitiveAsWrapperClass() {
+    static Stream<Argumenst> primitiveAndWrapperSupplier() {
         return Stream.of(
-                named(
-                        "Validate wrapper for void.class",
-                        new PrimitiveAsWrapperClassTestParameters(void.class, Void.class)),
+                arguments(named("void.class", void.class), named("Void.class", Void.class)),
                 named(
                         "Validate wrapper for boolean.class",
                         new PrimitiveAsWrapperClassTestParameters(boolean.class, Boolean.class)),
