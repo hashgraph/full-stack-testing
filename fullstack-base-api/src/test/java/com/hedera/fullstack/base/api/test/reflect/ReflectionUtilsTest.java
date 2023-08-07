@@ -83,37 +83,4 @@ public class ReflectionUtilsTest {
         assertThat(result).isEqualTo(primitiveClass);
     }
 
-    static Stream<Named<WrapperAsPrimitiveClassTestParameters>> testWrapperAsPrimitiveClass() {
-        return Stream.of(
-                named(
-                        "Validate primitive for Void.class",
-                        new WrapperAsPrimitiveClassTestParameters(Void.class, void.class)),
-                named(
-                        "Validate primitive for Boolean.class",
-                        new WrapperAsPrimitiveClassTestParameters(Boolean.class, boolean.class)),
-                named(
-                        "Validate primitive for Byte.class",
-                        new WrapperAsPrimitiveClassTestParameters(Byte.class, byte.class)),
-                named(
-                        "Validate primitive for Character.class",
-                        new WrapperAsPrimitiveClassTestParameters(Character.class, char.class)),
-                named(
-                        "Validate primitive for Short.class",
-                        new WrapperAsPrimitiveClassTestParameters(Short.class, short.class)),
-                named(
-                        "Validate primitive for Integer.class",
-                        new WrapperAsPrimitiveClassTestParameters(Integer.class, int.class)),
-                named(
-                        "Validate primitive for Long.class",
-                        new WrapperAsPrimitiveClassTestParameters(Long.class, long.class)),
-                named(
-                        "Validate primitive for Float.class",
-                        new WrapperAsPrimitiveClassTestParameters(Float.class, float.class)),
-                named(
-                        "Validate primitive for Double.class",
-                        new WrapperAsPrimitiveClassTestParameters(Double.class, double.class)),
-                named(
-                        "Validate primitive for String.class",
-                        new WrapperAsPrimitiveClassTestParameters(String.class, String.class)));
-    }
 }
