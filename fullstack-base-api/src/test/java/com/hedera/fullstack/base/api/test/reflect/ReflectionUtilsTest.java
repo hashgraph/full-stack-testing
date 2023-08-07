@@ -18,18 +18,29 @@ package com.hedera.fullstack.base.api.test.reflect;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Named.named;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.hedera.fullstack.base.api.reflect.ReflectionUtils;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class ReflectionUtilsTest {
-    private record WrapperAsPrimitiveClassTestParameters(Class<?> wrapperClass, Class<?> primitiveClass) {}
-
-    private record PrimitiveAsWrapperClassTestParameters(Class<?> primitiveClass, Class<?> wrapperClass) {}
+    static Stream<Arguments> primitiveAndWrapperSupplier() {
+        return Stream.of(
+                arguments(named("void.class", void.class), named("Void.class", Void.class)),
+                arguments(named("boolean.class", boolean.class), named("Boolean.class", Boolean.class)),
+                arguments(named("byte.class", byte.class), named("Byte.class", Byte.class)),
+                arguments(named("char.class", char.class), named("Character.class", Character.class)),
+                arguments(named("short.class", short.class), named("Short.class", Short.class)),
+                arguments(named("int.class", int.class), named("Integer.class", Integer.class)),
+                arguments(named("long.class", long.class), named("Long.class", Long.class)),
+                arguments(named("float.class", float.class), named("Float.class", Float.class)),
+                arguments(named("double.class", double.class), named("Double.class", Double.class)),
+                arguments(named("String.class", String.class), named("String.class", String.class)));
+    }
 
     @ParameterizedTest(name = "Validate wrapper for {0}")
     @MethodSource("primitiveAndWrapperSupplier")
@@ -39,38 +50,6 @@ public class ReflectionUtilsTest {
         assertThat(result).isEqualTo(wrapperClass);
     }
 
-    static Stream<Argumenst> primitiveAndWrapperSupplier() {
-        return Stream.of(
-                arguments(named("void.class", void.class), named("Void.class", Void.class)),
-                named(
-                        "Validate wrapper for boolean.class",
-                        new PrimitiveAsWrapperClassTestParameters(boolean.class, Boolean.class)),
-                named(
-                        "Validate wrapper for byte.class",
-                        new PrimitiveAsWrapperClassTestParameters(byte.class, Byte.class)),
-                named(
-                        "Validate wrapper for char.class",
-                        new PrimitiveAsWrapperClassTestParameters(char.class, Character.class)),
-                named(
-                        "Validate wrapper for short.class",
-                        new PrimitiveAsWrapperClassTestParameters(short.class, Short.class)),
-                named(
-                        "Validate wrapper for int.class",
-                        new PrimitiveAsWrapperClassTestParameters(int.class, Integer.class)),
-                named(
-                        "Validate wrapper for long.class",
-                        new PrimitiveAsWrapperClassTestParameters(long.class, Long.class)),
-                named(
-                        "Validate wrapper for float.class",
-                        new PrimitiveAsWrapperClassTestParameters(float.class, Float.class)),
-                named(
-                        "Validate wrapper for double.class",
-                        new PrimitiveAsWrapperClassTestParameters(double.class, Double.class)),
-                named(
-                        "Validate wrapper for String.class",
-                        new PrimitiveAsWrapperClassTestParameters(String.class, String.class)));
-    }
-
     @ParameterizedTest(name = "Validate primitive for {1}")
     @MethodSource("primitiveAndWrapperSupplier")
     @DisplayName("Test wrapper as primitive class")
@@ -78,5 +57,4 @@ public class ReflectionUtilsTest {
         Class<?> result = ReflectionUtils.wrapperAsPrimitiveClass(wrapperClass);
         assertThat(result).isEqualTo(primitiveClass);
     }
-
 }
