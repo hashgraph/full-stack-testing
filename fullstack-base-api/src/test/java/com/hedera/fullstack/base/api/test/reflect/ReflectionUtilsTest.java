@@ -35,8 +35,6 @@ public class ReflectionUtilsTest {
     @MethodSource("primitiveAndWrapperSupplier")
     @DisplayName("Test primitive as wrapper class")
     void testPrimitiveAsWrapperClass(Class<?> primitiveClass, Class<?> wrapperClass) {
-        Class<?> primitiveClass = parameters.primitiveClass();
-        Class<?> wrapperClass = parameters.wrapperClass();
         Class<?> result = ReflectionUtils.primitiveAsWrapperClass(primitiveClass);
         assertThat(result).isEqualTo(wrapperClass);
     }
