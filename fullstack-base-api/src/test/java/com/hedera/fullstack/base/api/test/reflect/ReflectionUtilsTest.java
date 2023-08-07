@@ -31,7 +31,7 @@ public class ReflectionUtilsTest {
 
     private record PrimitiveAsWrapperClassTestParameters(Class<?> primitiveClass, Class<?> wrapperClass) {}
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "Validate wrapper for {0}")
     @MethodSource("primitiveAndWrapperSupplier")
     @DisplayName("Test primitive as wrapper class")
     void testPrimitiveAsWrapperClass(PrimitiveAsWrapperClassTestParameters parameters) {
