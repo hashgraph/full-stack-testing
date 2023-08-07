@@ -78,7 +78,7 @@ public class ReflectionUtilsTest {
     @ParameterizedTest
     @MethodSource
     @DisplayName("Test wrapper as primitive class")
-    void testWrapperAsPrimitiveClass(WrapperAsPrimitiveClassTestParameters parameters) {
+    void testWrapperAsPrimitiveClass(Class<?> primitiveClass, Class<?> wrapperClass) {
         Class<?> wrapperClass = parameters.wrapperClass();
         Class<?> primitiveClass = parameters.primitiveClass();
         Class<?> result = ReflectionUtils.wrapperAsPrimitiveClass(wrapperClass);
