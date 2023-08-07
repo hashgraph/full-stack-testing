@@ -22,6 +22,6 @@ spec:
       command:
         - "/bin/bash"
         - "-c"
-        - /tests/run.sh
+        - /tests/basic_deployment_test.sh
         #- "while true;do echo sleeping; sleep 10;done"
   restartPolicy: Never

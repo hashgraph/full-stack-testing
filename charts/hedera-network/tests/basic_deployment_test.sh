@@ -6,7 +6,7 @@ readonly SCRIPT_DIR
 # shellcheck source=./helper.sh
 source "${SCRIPT_DIR}/helper.sh"
 
-function run_tests() {
+function test_basic_deployment() {
   local test_node_total_status
   local test_systemctl_status
 
@@ -31,8 +31,9 @@ function run_tests() {
 }
 
 echo "Test scripts: "
+echo "Test scripts: "
 echo "=========================="
 ls -la "${SCRIPT_DIR}"/
 
-run_tests
+test_basic_deployment
 
