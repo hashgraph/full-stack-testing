@@ -21,17 +21,17 @@ import com.hedera.fullstack.examples.monitors.LogErrorMonitor;
 import com.hedera.fullstack.examples.monitors.NodeLivenessMonitor;
 import com.hedera.fullstack.examples.readiness.NodeActiveReadinessCheck;
 import com.hedera.fullstack.examples.validators.NodeStatisticHealthValidator;
-import com.hedera.fullstack.junit.support.annotation.application.ApplicationNodes;
-import com.hedera.fullstack.junit.support.annotation.application.PlatformApplication;
-import com.hedera.fullstack.junit.support.annotation.core.FullStackSuite;
-import com.hedera.fullstack.junit.support.annotation.core.FullStackTest;
-import com.hedera.fullstack.junit.support.annotation.core.TestExecutionMode;
-import com.hedera.fullstack.junit.support.annotation.flow.MaxTestExecutionTime;
-import com.hedera.fullstack.junit.support.annotation.flow.WaitForDuration;
-import com.hedera.fullstack.junit.support.annotation.resource.ResourceShape;
-import com.hedera.fullstack.junit.support.annotation.validation.Monitors;
-import com.hedera.fullstack.junit.support.annotation.validation.ReadinessChecks;
-import com.hedera.fullstack.junit.support.annotation.validation.Validators;
+import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.application.PlatformApplication;
+import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
+import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
+import com.hedera.fullstack.junit.support.annotations.core.TestExecutionMode;
+import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
+import com.hedera.fullstack.junit.support.annotations.flow.WaitForDuration;
+import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
+import com.hedera.fullstack.junit.support.annotations.validation.Monitors;
+import com.hedera.fullstack.junit.support.annotations.validation.ReadinessChecks;
+import com.hedera.fullstack.junit.support.annotations.validation.Validators;
 import org.junit.jupiter.api.DisplayName;
 
 @FullStackSuite

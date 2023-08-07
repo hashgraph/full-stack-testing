@@ -17,16 +17,16 @@
 package com.hedera.fullstack.examples.signing;
 
 import com.hedera.fullstack.base.api.units.StorageUnits;
-import com.hedera.fullstack.junit.support.annotation.application.ApplicationNodes;
-import com.hedera.fullstack.junit.support.annotation.application.LabeledApplicationNode;
-import com.hedera.fullstack.junit.support.annotation.application.LabeledApplicationNodes;
-import com.hedera.fullstack.junit.support.annotation.core.FullStackSuite;
-import com.hedera.fullstack.junit.support.annotation.core.FullStackTest;
-import com.hedera.fullstack.junit.support.annotation.core.ParameterizedFullStackTest;
-import com.hedera.fullstack.junit.support.annotation.flow.MaxTestExecutionTime;
-import com.hedera.fullstack.junit.support.annotation.resource.LabeledResourceShape;
-import com.hedera.fullstack.junit.support.annotation.resource.LabeledResourceShapes;
-import com.hedera.fullstack.junit.support.annotation.resource.ResourceShape;
+import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.application.LabeledApplicationNode;
+import com.hedera.fullstack.junit.support.annotations.application.LabeledApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
+import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
+import com.hedera.fullstack.junit.support.annotations.core.ParameterizedFullStackTest;
+import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
+import com.hedera.fullstack.junit.support.annotations.resource.LabeledResourceShape;
+import com.hedera.fullstack.junit.support.annotations.resource.LabeledResourceShapes;
+import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
