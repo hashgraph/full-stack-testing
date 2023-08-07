@@ -16,6 +16,13 @@
 
 package com.hedera.fullstack.junit.support.annotations.core;
 
+/**
+ * The test execution mode determines how the test method will be executed. These options are mutually exclusive and
+ * may be set on the {@link FullStackTest} and {@link ParameterizedFullStackTest} annotations.
+ *
+ * @see FullStackSuite
+ * @see ParameterizedFullStackTest
+ */
 public enum TestExecutionMode {
     /**
      * The default behavior is to provision resources, start the application, wait for any readiness checks, and
@@ -31,7 +38,7 @@ public enum TestExecutionMode {
     TIMED_EXECUTION,
 
     /**
-     * Provision only mode will stage the resources, but not start the application, monitors, or wait for readiness.
+     * Provision only mode will stage the resources, but not start the application, monitors, or wait for readiness checks.
      * The test method will be executed immediately after the basic resources are provisioned.
      */
     PROVISION_ONLY,

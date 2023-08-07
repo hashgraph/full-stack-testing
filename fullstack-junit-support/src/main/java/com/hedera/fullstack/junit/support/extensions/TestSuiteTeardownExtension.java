@@ -16,16 +16,23 @@
 
 package com.hedera.fullstack.junit.support.extensions;
 
-import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestInstancePreDestroyCallback;
 
-public class TestInitializer implements BeforeEachCallback {
+/**
+ * Handles the test suite teardown and resource cleanup.
+ */
+public class TestSuiteTeardownExtension implements TestInstancePreDestroyCallback {
     /**
-     * Callback that is invoked <em>before</em> each test is executed.
+     * Callback for processing test instances before they are destroyed.
      *
      * @param context the current extension context; never {@code null}
      * @throws Exception if an error occurs during callback execution.
+     * @see ExtensionContext#getTestInstance()
+     * @see ExtensionContext#getRequiredTestInstance()
+     * @see ExtensionContext#getTestInstances()
+     * @see ExtensionContext#getRequiredTestInstances()
      */
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {}
+    public void preDestroyTestInstance(ExtensionContext context) throws Exception {}
 }

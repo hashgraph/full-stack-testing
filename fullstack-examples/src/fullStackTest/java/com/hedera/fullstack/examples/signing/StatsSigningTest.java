@@ -51,16 +51,10 @@ class StatsSigningTest {
             fileName = "StatsSigningTestingTool.jar",
             parameters = {"1", "3000", "0", "100", "-1", "10000", "5000"})
     @ReadinessChecks({
-            NodeActiveReadinessCheck.class,
+        NodeActiveReadinessCheck.class,
     })
-    @Monitors({
-            NodeLivenessMonitor.class,
-            LogErrorMonitor.class,
-            InvalidStateSignatureMonitor.class
-    })
-    @Validators({
-            NodeStatisticHealthValidator.class
-    })
+    @Monitors({NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class})
+    @Validators({NodeStatisticHealthValidator.class})
     @DisplayName("Basic 10k TPS - 20 minutes")
     void basic() {}
 }

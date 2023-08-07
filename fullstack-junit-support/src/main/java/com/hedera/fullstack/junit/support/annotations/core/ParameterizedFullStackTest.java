@@ -19,11 +19,21 @@ package com.hedera.fullstack.junit.support.annotations.core;
 import java.lang.annotation.*;
 import org.junit.jupiter.params.ParameterizedTest;
 
+/**
+ * One of the two primary annotations used to mark a test method to be executed as a full stack test case. The other
+ * annotation is {@link FullStackTest}. All test methods in a class bearing the {@link FullStackSuite}
+ * annotation must be annotated with either {@link FullStackTest} or {@link ParameterizedFullStackTest}.
+ *
+ * @see FullStackSuite
+ * @see FullStackTest
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @ParameterizedTest
 public @interface ParameterizedFullStackTest {
-    TestExecutionMode value() default TestExecutionMode.DEFAULT;
+    TestExecutionMode mode() default TestExecutionMode.DEFAULT;
+
+    TestExecutorType executor() default TestExecutorType.JAVA_DIRECT;
 }

@@ -16,18 +16,30 @@
 
 package com.hedera.fullstack.junit.support.annotations.core;
 
-import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
-import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
-import com.hedera.fullstack.junit.support.extensions.TestSuiteInitializer;
+import com.hedera.fullstack.junit.support.extensions.TestSetupExtension;
+import com.hedera.fullstack.junit.support.extensions.TestSuiteConfigurationExtension;
+import com.hedera.fullstack.junit.support.extensions.TestSuiteTeardownExtension;
+import com.hedera.fullstack.junit.support.extensions.TestTeardownExtension;
 import java.lang.annotation.*;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+/**
+ * The primary and mandatory annotation which must be applied to all test classes which are to be executed as part of
+ * a full stack test suite. This annotation is a meta-annotation which provides several JUnit Jupiter extensions.
+ * These extensions are responsible for setting up and tearing down the test suite, as well as setting up and tearing
+ * down each individual test.
+ * <p>
+ *     <b>NOTE: Any unit test bearing this annotation should only contain Full Stack driven unit tests. Combining
+ *     regular unit tests with Full Stack based unit tests in a single class is not supported.</b>
+ */
 @Inherited
 @Documented
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith({TestSuiteInitializer.class})
-@ApplicationNodes(4)
-@MaxTestExecutionTime(value = 45, unit = TimeUnit.MINUTES)
+@ExtendWith({
+    TestSuiteConfigurationExtension.class,
+    TestSuiteTeardownExtension.class,
+    TestSetupExtension.class,
+    TestTeardownExtension.class
+})
 public @interface FullStackSuite {}
