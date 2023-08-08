@@ -65,7 +65,7 @@ spec:
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       # Sidecars
-      {{- include "sidecars" (dict
+      {{- include "fullstack.sidecars" (dict
         "recordStream" $recordStream
         "backupUploader" $backupUploader
         "balanceUploader" $balanceUploader

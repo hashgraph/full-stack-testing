@@ -1,4 +1,4 @@
-{{- define "sidecars" -}}
+{{- define "fullstack.sidecars" -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" -}}
 {{- $recordStream := .recordStream | required "context must include 'recordStream'!"  -}}
 {{- $eventStream := .eventStream | required "context must include 'eventStream'!" -}}
