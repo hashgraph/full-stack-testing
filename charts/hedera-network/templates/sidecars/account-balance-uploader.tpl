@@ -2,6 +2,7 @@
 {{- $balanceUploader := .balanceUploader -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
+{{- $nodeId := .nodeId -}}
 - name: {{ $balanceUploader.nameOverride | default "account-balance-uploader" }}
   image: "{{ $balanceUploader.image.registry }}/{{ $balanceUploader.image.repository }}:{{ $balanceUploader.image.tag | default $chart.AppVersion }}"
   imagePullPolicy: {{$balanceUploader.image.pullPolicy}}
@@ -17,7 +18,8 @@
     - http://myminio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
-      mountPath: /opt/hgcapp/
+      mountPath: /opt/hgcapp/accountBalances
+      subPath: accountBalances/balance{{ $nodeId }}
   env:
     - name: DEBUG
       value: "{{ $balanceUploader.config.debug }}"

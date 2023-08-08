@@ -4,21 +4,22 @@
 {{- $balanceUploader := .node.sidecars.accountBalanceUploader -}}
 {{- $backupUploader := .node.sidecars.backupUploader -}}
 {{- $otel := .node.sidecars.otelCollector -}}
+{{- $nodeId := .node.id -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
   {{- if $recordStream.enabled -}}
   # Sidecar: Record Stream Uploader
-  {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart -}}
+  {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart "nodeId" $nodeId -}}
   {{ include "sidecars.record-stream-uploader" $data | nindent 0 }}
   {{- end }}
   {{- if $eventStream.enabled }}
   # Sidecar: Event Stream Uploader
-  {{- $data := dict "eventStream" $eventStream "cloud" $cloud "chart" $chart -}}
+  {{- $data := dict "eventStream" $eventStream "cloud" $cloud "chart" $chart "nodeId" $nodeId -}}
   {{ include "sidecars.event-stream-uploader" $data | nindent 0 }}
   {{- end }}
   {{- if $balanceUploader.enabled }}
   # Sidecar: Account Balance Uploader
-  {{- $data := dict "balanceUploader" $balanceUploader "cloud" $cloud "chart" $chart -}}
+  {{- $data := dict "balanceUploader" $balanceUploader "cloud" $cloud "chart" $chart "nodeId" $nodeId -}}
   {{ include "sidecars.account-balance-uploader" $data | nindent 0 }}
   {{- end }}
   {{- if $backupUploader.enabled }}

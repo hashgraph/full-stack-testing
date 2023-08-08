@@ -2,6 +2,7 @@
 {{- $recordStream := .recordStream -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
+{{- $nodeId := .nodeId -}}
 - name: {{ $recordStream.nameOverride | default "record-stream-uploader" }}
   image: "{{ $recordStream.image.registry }}/{{ $recordStream.image.repository }}:{{ $recordStream.image.tag | default $chart.AppVersion }}"
   imagePullPolicy: {{$recordStream.image.pullPolicy}}
@@ -19,7 +20,8 @@
     - http://myminio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
-      mountPath: /opt/hgcapp/
+      mountPath: /opt/hgcapp/recordStreams
+      subPath: recordStreams/record{{ $nodeId }}
   env:
     - name: DEBUG
       value: "{{ $recordStream.config.debug }}"

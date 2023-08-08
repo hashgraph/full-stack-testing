@@ -2,6 +2,7 @@
 {{- $eventStream := .eventStream -}}
 {{- $cloud := .cloud -}}
 {{- $chart := .chart -}}
+{{- $nodeId := .nodeId -}}
 - name: {{ $eventStream.nameOverride | default "event-stream-uploader" }}
   image: "{{ $eventStream.image.registry }}/{{ $eventStream.image.repository }}:{{ $eventStream.image.tag | default $chart.AppVersion }}"
   imagePullPolicy: {{$eventStream.image.pullPolicy}}
@@ -18,7 +19,8 @@
     - http://myminio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
-      mountPath: /opt/hgcapp/
+      mountPath: /opt/hgcapp/events
+      subPath: events/balance{{ $nodeId }}
   env:
     - name: DEBUG
       value: "{{ $eventStream.config.debug }}"

@@ -4,6 +4,7 @@
 hedera:
   nodes:
     - name: node0
+      id: 0.0.3
       resources:
         requests:
           cpu: 1

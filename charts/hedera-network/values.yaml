@@ -22,7 +22,7 @@ hedera:
 
 # This configured the minio tenant subchart
 # Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml
-tenant:
+minio-server:
   secrets:
     name: myminio-env-configuration
     # MinIO root user and password
@@ -32,7 +32,6 @@ tenant:
     buckets:
       - name: fst-streams
       - name: fst-backups
-      #objectLock: false        # optional
   tenant:
     name: myminio
     pools:
