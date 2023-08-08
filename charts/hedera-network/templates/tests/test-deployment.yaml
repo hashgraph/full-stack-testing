@@ -16,8 +16,8 @@ spec:
   containers:
     {{- $tester := $.Values.tester }}
     - name: tester
-      image: {{ include "container.image" (dict "image" $tester.image "Chart" $.Chart "defaults" $tester) }}
-      imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $tester.image "defaults" $tester) }}
+      image: {{ include "fullstack.container.image" (dict "image" $tester.image "Chart" $.Chart "defaults" $tester) }}
+      imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $tester.image "defaults" $tester) }}
       {{- with $tester.resources }}
       resources:
         {{- toYaml . | nindent 8 }}
