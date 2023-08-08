@@ -3,7 +3,7 @@ runAsUser: 2000
 runAsGroup: 2000
 {{- end }}
 
-{{- define "root.security.context" -}}
+{{- define "fullstack.root.security.context" -}}
 runAsUser: 0
 runAsGroup: 0
 {{- end }}

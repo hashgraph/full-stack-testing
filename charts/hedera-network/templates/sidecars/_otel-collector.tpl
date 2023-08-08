@@ -6,7 +6,7 @@
   image: {{ include "container.image" (dict "image" $otel.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $otel.image "defaults" $defaults) }}
   securityContext:
-    {{- include "root.security.context" . | nindent 4 }}
+    {{- include "fullstack.root.security.context" . | nindent 4 }}
   {{- with default $defaults.ports $otel.ports }}
   ports:
     {{- toYaml . | nindent 4 }}
