@@ -1,32 +1,32 @@
-{{- define "hedera.security.context" -}}
+{{- define "fullstack.hedera.security.context" -}}
 runAsUser: 2000
 runAsGroup: 2000
 {{- end }}
 
-{{- define "root.security.context" -}}
+{{- define "fullstack.root.security.context" -}}
 runAsUser: 0
 runAsGroup: 0
 {{- end }}
 
-{{- define "root.security.context.privileged" -}}
+{{- define "fullstack.root.security.context.privileged" -}}
 runAsUser: 0
 runAsGroup: 0
 privileged: true
 {{- end }}
 
-{{- define "default-env-vars" -}}
+{{- define "fullstack.defaultEnvVars" -}}
 - name: POD_IP
   valueFrom:
     fieldRef:
       fieldPath: status.podIP
 {{- end }}
 
-{{- define "images.pullPolicy" -}}
+{{- define "fullstack.images.pullPolicy" -}}
 {{ (.image).pullPolicy | default .defaults.image.pullPolicy }}
 {{- end }}
 
 
-{{- define "container.image" -}}
+{{- define "fullstack.container.image" -}}
 {{- $reg := (.image).registry | default .defaults.image.registry -}}
 {{- $repo := (.image).repository | default .defaults.image.repository -}}
 {{- $tag := (.image).tag | default .Chart.AppVersion -}}
