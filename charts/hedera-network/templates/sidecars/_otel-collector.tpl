@@ -1,4 +1,4 @@
-{{- define "sidecars.otel-collector" -}}
+{{- define "fullstack.sidecars.otelCollector" -}}
 {{- $otel := .otel | required "context must include 'otel'!" -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $chart := .chart | required "context must include 'chart'!" -}}

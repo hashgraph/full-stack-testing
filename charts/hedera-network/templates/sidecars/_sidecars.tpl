@@ -30,6 +30,6 @@
   {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}
   # Sidecar: OTel Collector
   {{- $data := dict "otel" $otelCollector "chart" $chart "defaults" $defaults.sidecars.otelCollector -}}
-  {{ include "sidecars.otel-collector" $data | nindent 0 }}
+  {{ include "fullstack.sidecars.otelCollector" $data | nindent 0 }}
   {{- end }}
 {{- end }}
