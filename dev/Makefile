@@ -1,8 +1,19 @@
+# Force the use of bash as the shell for more features
 SHELL=/bin/bash
+
+# Ensure we can catch error to run cleanup when multiple make commands are run in sequence.
+# Here we tell make to run all scripts as one-shell and also set 'pipefail' and 'errexit' flags.
+# https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
+SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
+.ONESHELL:
+
+# Here we tell make not to output the actual command before execution in order to reduce noise in the logs.
+.SILENT: setup setup-cluster deploy-chart helm-test deploy-network  destroy-test-container destroy-network test
+
+# Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
-
 TMP_DIR=${SCRIPTS_DIR}/../temp
 
 .PHONY: all
@@ -10,33 +21,33 @@ all: setup setup-cluster reset
 
 .PHONY: setup
 setup:
-	@rm -f "${TMP_DIR}/"*.*
-	@cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
+	rm -f "${TMP_DIR}/"*.*
+	cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
 
 .PHONY: setup-cluster
 setup-cluster:
-	@kind create cluster -n fst
+	kind create cluster -n fst
 
 .PHONY: deploy-chart
 deploy-chart:
-	@echo ">> Deploying helm chart..." && \
+	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
-		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" --set hedera.nodes[0].root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
+		helm install fst ../charts/hedera-network --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
 	else \
-		helm install fst ../charts/hedera-network --values "${CHART_DIR}/nodes.yaml" ; \
+		helm install fst ../charts/hedera-network ; \
 	fi \
 
 .PHONY: helm-test
-helm-test: setup deploy-chart
-	@echo "" && \
+helm-test:
+	echo "" && \
 	echo ">> Running helm test..." && \
 	echo "" && \
 	helm test fst --logs
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
-	@echo "" && \
+	echo "" && \
 	echo ">> Pod Information...." && \
 	echo "" && \
 	kubectl get pods -o wide && \
@@ -47,19 +58,27 @@ deploy-network: deploy-chart
 
 .PHONY: destroy-test-container
 destroy-test-container:
-	@echo "" && \
+	echo "" && \
 	echo ">> Deleting test container..." && \
 	kubectl delete pod network-test || true
 
 .PHONY: destroy-network
 destroy-network: destroy-test-container
-	@echo "" && \
+	echo "" && \
 	echo ">> Uninstalling helm chart..." && \
  	helm uninstall fst && \
  	sleep 10
 
 .PHONY: test
-test: deploy-network setup-nodes start-nodes helm-test destroy-network
+test:
+	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
+	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
+	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
+	function cleanup_test {
+		$(MAKE) destroy-network
+	}
+	trap cleanup_test EXIT # always destroy-network on exit
+	$(MAKE) setup deploy-network helm-test setup-nodes start-nodes
 
 .PHONY: setup-nodes
 setup-nodes: setup

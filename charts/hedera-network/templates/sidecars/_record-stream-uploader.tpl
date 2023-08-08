@@ -1,12 +1,14 @@
-{{- define "sidecars.record-stream-uploader" }}
-{{- $recordStream := .recordStream -}}
-{{- $cloud := .cloud -}}
-{{- $chart := .chart -}}
+{{- define "fullstack.sidecars.recordStreamUploader" }}
+{{- $recordStream := .recordStream | required "context must include 'recordStream'!" -}}
+{{- $defaults := .defaults | required "context must include 'defaults'!" }}
+{{- $cloud := .cloud | required "context must include 'cloud'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
 {{- $nodeId := .nodeId -}}
-- name: {{ $recordStream.nameOverride | default "record-stream-uploader" }}
-  image: "{{ $recordStream.image.registry }}/{{ $recordStream.image.repository }}:{{ $recordStream.image.tag | default $chart.AppVersion }}"
-  imagePullPolicy: {{$recordStream.image.pullPolicy}}
-  {{- include "hedera.security.context" $ | nindent 2 }}
+- name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
+  image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $chart "defaults" $defaults) }}
+  imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStream.image "defaults" $defaults) }}
+  securityContext:
+    {{- include "fullstack.hedera.security.context" . | nindent 4 }}
   command:
     - /usr/bin/env
     - python3.7
@@ -24,39 +26,39 @@
       subPath: recordStreams/record{{ $nodeId }}
   env:
     - name: DEBUG
-      value: "{{ $recordStream.config.debug }}"
+      value: {{ default $defaults.config.debug ($recordStream.config).debug | quote }}
     - name: REAPER_ENABLE
-      value: "{{ $recordStream.config.reaper.enable }}"
+      value: {{ default $defaults.config.reaper.enable (($recordStream.config).reaper).enable | quote }}
     - name: REAPER_MIN_KEEP
-      value: "{{ $recordStream.config.reaper.minKeep }}"
+      value: {{ default $defaults.config.reaper.minKeep (($recordStream.config).reaper).minKeep | quote }}
     - name: REAPER_INTERVAL
-      value: "{{ $recordStream.config.reaper.interval }}"
+      value: {{ default $defaults.config.reaper.interval (($recordStream.config).reaper).interval | quote }}
     - name: REAPER_DEFAULT_BACKOFF
-      value: "{{ $recordStream.config.reaper.defaultBackoff }}"
+      value: {{ default $defaults.config.reaper.defaultBackoff (($recordStream.config).reaper).defaultBackoff | quote }}
     - name: STREAM_FILE_EXTENSION
       value: "rcd"
     - name: STREAM_SIG_EXTENSION
       value: "rcd_sig"
     - name: STREAM_EXTENSION
-      value: "{{ $recordStream.config.compression | ternary "rcd.gz" "rcd" }}"
+      value: {{ default $defaults.config.compression ($recordStream.config).compression | eq "true" | ternary "rcd.gz" "rcd" | quote }}
     - name: SIG_EXTENSION
       value: "rcd_sig"
     - name: RECORD_STREAM_COMPRESSION
-      value: "{{ $recordStream.config.compression }}"
+      value: {{ default $defaults.config.compression $recordStream.config.compression | quote }}
     - name: RECORD_STREAM_SIDECAR
-      value: "{{ $recordStream.config.sidecar }}"
+      value: {{ default $defaults.config.sidecar $recordStream.config.sidecar | quote }}
     - name: SIG_REQUIRE
-      value: "{{ $recordStream.config.signature.require }}"
+      value: {{ default $defaults.config.signature.require (($recordStream.config).signature).require | quote }}
     - name: SIG_PRIORITIZE
-      value: "{{ $recordStream.config.signature.prioritize }}"
+      value: {{ default $defaults.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
       value: "recordstreams"
     - name: BUCKET_NAME
-      value: "{{ $cloud.buckets.streamBucket }}"
+      value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: "{{ $cloud.s3.enabled }}"
+      value: {{ $cloud.s3.enable | quote }}
     - name: GCS_ENABLE
-      value: "{{ $cloud.gcs.enabled }}"
+      value: {{ $cloud.gcs.enable | quote }}
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets

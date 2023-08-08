@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: test-cm
 data:
-  test.sh: |
-    {{- $total_nodes := len $.Values.hedera.nodes -}}
-    {{- tpl ($.Files.Get "config-files/test.sh") ( dict "total_nodes" $total_nodes "Template" $.Template ) | nindent 4 }}
+  {{- $total_nodes := len $.Values.hedera.nodes -}}
+  {{- range $path, $_ :=  .Files.Glob  "tests/*.sh" }}
+  {{ base $path }}: |
+  {{- tpl ($.Files.Get $path) ( dict "total_nodes" $total_nodes "Template" $.Template ) | nindent 4 }}
+  {{- end }}

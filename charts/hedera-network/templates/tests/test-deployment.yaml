@@ -17,12 +17,11 @@ spec:
     - name: tester
       image: bitnami/kubectl:latest
       volumeMounts:
-        - mountPath: /scripts/test.sh
+        - mountPath: /tests
           name: test-volume
-          subPath: test.sh
       command:
         - "/bin/bash"
         - "-c"
-        - /scripts/test.sh
+        - /tests/basic_deployment_test.sh
         #- "while true;do echo sleeping; sleep 10;done"
   restartPolicy: Never

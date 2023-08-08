@@ -68,15 +68,12 @@ function setup_node_all() {
     ls_path "${pod}" "${HAPI_PATH}/data/keys/"
     set_permission "${pod}" "${HAPI_PATH}"
 
-    # TODO remove set_application_env after 0.5.0 docker image is published
-    set_application_env "${pod}"
     unzip_build "${pod}"
   done
 }
 
 
 function start_node_all() {
-  set -x
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
     return "${EX_ERR}"
@@ -90,7 +87,7 @@ function start_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     start_service "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "start_node"
   done
 
   verify_node_all || return "${EX_ERR}"
@@ -111,7 +108,7 @@ function stop_node_all() {
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     stop_service "${pod}" || return "${EX_ERR}"
-    log_time
+    log_time "stop_node"
   done
 
   return "${EX_OK}"

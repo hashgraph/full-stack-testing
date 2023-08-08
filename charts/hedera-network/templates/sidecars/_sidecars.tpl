@@ -1,35 +1,36 @@
-{{- define "sidecars" -}}
-{{- $recordStream := .node.sidecars.recordStreamUploader -}}
-{{- $eventStream := .node.sidecars.eventStreamUploader -}}
-{{- $balanceUploader := .node.sidecars.accountBalanceUploader -}}
-{{- $backupUploader := .node.sidecars.backupUploader -}}
-{{- $otel := .node.sidecars.otelCollector -}}
+{{- define "fullstack.sidecars" -}}
+{{- $defaults := .defaults | required "context must include 'defaults'!" -}}
+{{- $recordStream := .recordStream | required "context must include 'recordStream'!"  -}}
+{{- $eventStream := .eventStream | required "context must include 'eventStream'!" -}}
+{{- $balanceUploader := .balanceUploader | required "context must include 'balanceUploader'!" -}}
+{{- $backupUploader := .backupUploader | required "context must include 'backupUploader'!" -}}
+{{- $otelCollector := .otelCollector | required "context must include 'otelCollector'!" -}}
+{{- $cloud := .cloud | required "context must include 'cloud'!" -}}
+{{- $chart := .chart | required "context must include 'chart'!" -}}
 {{- $nodeId := .node.id -}}
-{{- $cloud := .cloud -}}
-{{- $chart := .chart -}}
-  {{- if $recordStream.enabled -}}
+  {{- if default $defaults.sidecars.recordStreamUploader.enable  $recordStream.enable | eq "true" }}
   # Sidecar: Record Stream Uploader
-  {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart "nodeId" $nodeId -}}
-  {{ include "sidecars.record-stream-uploader" $data | nindent 0 }}
+  {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.recordStreamUploader  "nodeId" $nodeId -}}
+  {{ include "fullstack.sidecars.recordStreamUploader" $data | nindent 0 }}
   {{- end }}
-  {{- if $eventStream.enabled }}
+  {{- if default $defaults.sidecars.eventStreamUploader.enable  $eventStream.enable | eq "true" }}
   # Sidecar: Event Stream Uploader
-  {{- $data := dict "eventStream" $eventStream "cloud" $cloud "chart" $chart "nodeId" $nodeId -}}
-  {{ include "sidecars.event-stream-uploader" $data | nindent 0 }}
+  {{- $data := dict "eventStream" $eventStream "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.eventStreamUploader  "nodeId" $nodeId -}}
+  {{ include "fullstack.sidecars.eventStreamUploader" $data | nindent 0 }}
   {{- end }}
-  {{- if $balanceUploader.enabled }}
+  {{- if default $defaults.sidecars.accountBalanceUploader.enable $balanceUploader.enable | eq "true" }}
   # Sidecar: Account Balance Uploader
-  {{- $data := dict "balanceUploader" $balanceUploader "cloud" $cloud "chart" $chart "nodeId" $nodeId -}}
-  {{ include "sidecars.account-balance-uploader" $data | nindent 0 }}
+  {{- $data := dict "balanceUploader" $balanceUploader "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.accountBalanceUploader  "nodeId" $nodeId -}}
+  {{ include "fullstack.sidecars.accountBalanceUploader" $data | nindent 0 }}
   {{- end }}
-  {{- if $backupUploader.enabled }}
+  {{- if default $defaults.sidecars.backupUploader.enable  $backupUploader.enable | eq "true" }}
   # Sidecar: Backup Uploader
-  {{- $data := dict "backupUploader" $backupUploader "cloud" $cloud "chart" $chart -}}
-  {{ include "sidecars.backup-uploader " $data | nindent 0 }}
+  {{- $data := dict "backupUploader" $backupUploader "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.backupUploader -}}
+  {{ include "fullstack.sidecars.backupUploader " $data | nindent 0 }}
   {{- end }}
-  {{- if $otel.enabled }}
+  {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}
   # Sidecar: OTel Collector
-  {{- $data := dict "otel" $otel "chart" $chart -}}
-  {{ include "sidecars.otel-collector" $data | nindent 0 }}
+  {{- $data := dict "otel" $otelCollector "chart" $chart "defaults" $defaults.sidecars.otelCollector -}}
+  {{ include "fullstack.sidecars.otelCollector" $data | nindent 0 }}
   {{- end }}
 {{- end }}

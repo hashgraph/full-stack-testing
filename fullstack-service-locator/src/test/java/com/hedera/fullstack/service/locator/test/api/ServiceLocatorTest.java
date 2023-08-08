@@ -17,11 +17,14 @@
 package com.hedera.fullstack.service.locator.test.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.hedera.fullstack.service.locator.api.ServiceLocator;
+import com.hedera.fullstack.service.locator.api.ServiceSupplier;
 import com.hedera.fullstack.service.locator.test.mock.CtorService;
 import com.hedera.fullstack.service.locator.test.mock.MockCtorService;
 import com.hedera.fullstack.service.locator.test.mock.MockLocator;
+import java.util.Iterator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -74,5 +77,15 @@ class ServiceLocatorTest {
         assertThat(locator.stream().count()).isEqualTo(2);
         locator.reload();
         assertThat(locator.stream().count()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("CtorService: Locator's iterator removes entry")
+    void locatorIteratorRemovesEntry() {
+        final ServiceLocator<CtorService> locator = MockLocator.create();
+        assertThat(locator).isNotNull();
+        assertThat(locator.stream().count()).isEqualTo(2);
+        Iterator<ServiceSupplier<CtorService>> iterator = locator.iterator();
+        assertThatThrownBy(iterator::remove).isInstanceOf(UnsupportedOperationException.class);
     }
 }

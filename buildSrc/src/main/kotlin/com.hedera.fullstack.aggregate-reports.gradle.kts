@@ -42,27 +42,25 @@ sonarqube {
 tasks.register("githubVersionSummary") {
     group = "versioning"
     doLast {
-        val ghStepSummaryPath: String? = System.getenv("GITHUB_STEP_SUMMARY")
-        if (ghStepSummaryPath == null) {
-            throw IllegalArgumentException("This task may only be run in a Github Actions CI environment! Unable to locate the GITHUB_STEP_SUMMARY environment variable.")
-        }
+        val ghStepSummaryPath: String = System.getenv("GITHUB_STEP_SUMMARY")
+            ?: throw IllegalArgumentException("This task may only be run in a Github Actions CI environment! Unable to locate the GITHUB_STEP_SUMMARY environment variable.")
 
         val ghStepSummaryFile: File = File(ghStepSummaryPath)
         Utils.generateProjectVersionReport(rootProject, BufferedOutputStream(ghStepSummaryFile.outputStream()))
     }
 }
 
+val HEDERA_NETWORK_CHART = "hedera-network"
+
 tasks.register("versionAsSpecified") {
     group = "versioning"
     doLast {
         val verStr = findProperty("newVersion")?.toString()
-
-        if (verStr == null) {
-            throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
-        }
+            ?: throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
 
         val newVer = SemVer.parse(verStr)
-        Utils.updateCommitizenVersion(project, newVer)
+        Utils.updateHelmChartVersion(project, HEDERA_NETWORK_CHART, newVer)
+        Utils.updateHelmChartAppVersion(project, HEDERA_NETWORK_CHART, newVer)
         Utils.updateVersion(project, newVer)
     }
 }
@@ -73,7 +71,8 @@ tasks.register("versionAsSnapshot") {
         val currVer = SemVer.parse(project.version.toString())
         val newVer = SemVer(currVer.major, currVer.minor, currVer.patch, "SNAPSHOT")
 
-        Utils.updateCommitizenVersion(project, newVer)
+        Utils.updateHelmChartVersion(project, HEDERA_NETWORK_CHART, newVer)
+        Utils.updateHelmChartAppVersion(project, HEDERA_NETWORK_CHART, newVer)
         Utils.updateVersion(project, newVer)
     }
 }
