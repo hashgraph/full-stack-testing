@@ -16,15 +16,36 @@
 
 package com.hedera.fullstack.junit.support.annotations.flow;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Specifies the maximum time a test is permitted to execute before it is considered to have failed. This time is
+ * inclusive of all time spent in the test method and in {@link BeforeAll}, {@link BeforeEach}, {@link AfterEach}, and
+ * {@link AfterAll} methods declared by the test suite. For a parameterized test, the timeout applies separately to each
+ * invocation of the test method for each unique set of arguments.
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface MaxTestExecutionTime {
+    /**
+     * The maximum number of time units the test is permitted to execute before it is considered to have failed.
+     *
+     * @return the maximum number of time units.
+     */
     int value();
 
+    /**
+     * The time unit of the {@link #value()}. Defaults to {@link TimeUnit#SECONDS}.
+     *
+     * @return the time unit of the {@link #value()}.
+     */
     TimeUnit unit() default TimeUnit.SECONDS;
 }

@@ -29,8 +29,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * These extensions are responsible for setting up and tearing down the test suite, as well as setting up and tearing
  * down each individual test.
  * <p>
- *     <b>NOTE: Any unit test bearing this annotation should only contain Full Stack driven unit tests. Combining
- *     regular unit tests with Full Stack based unit tests in a single class is not supported.</b>
+ * <b>NOTE: Any unit test bearing this annotation should only contain Full Stack driven unit tests. Combining
+ * regular unit tests with Full Stack based unit tests in a single class is not supported.</b>
  */
 @Inherited
 @Documented

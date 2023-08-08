@@ -17,9 +17,8 @@
 package com.hedera.fullstack.junit.support.annotations.core;
 
 import com.hedera.fullstack.junit.support.annotations.flow.WaitForDuration;
-import org.junit.jupiter.api.Test;
-
 import java.lang.annotation.*;
+import org.junit.jupiter.api.Test;
 
 /**
  * One of the two primary annotations used to mark a test method to be executed as a full stack test case. The other

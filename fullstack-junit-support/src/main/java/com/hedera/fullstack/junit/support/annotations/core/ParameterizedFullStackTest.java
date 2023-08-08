@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.junit.support.annotations.core;
 
+import com.hedera.fullstack.junit.support.annotations.flow.WaitForDuration;
 import java.lang.annotation.*;
 import org.junit.jupiter.params.ParameterizedTest;
 
@@ -33,7 +34,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 @Target({ElementType.METHOD})
 @ParameterizedTest
 public @interface ParameterizedFullStackTest {
+    /**
+     * Please see the documentation for {@link FullStackTest#mode()} for a description of the supported execution flows.
+     *
+     * @see FullStackTest#mode()
+     * @return the execution flow used by this test.
+     */
     TestExecutionMode mode() default TestExecutionMode.DEFAULT;
 
+    /**
+     * Please see the documentation for {@link FullStackTest#executor()} for a description of the supported execution
+     * frameworks.
+     *
+     * @see FullStackTest#executor()
+     * @return the execution framework used by this test.
+     */
     TestExecutorType executor() default TestExecutorType.JAVA_DIRECT;
 }
