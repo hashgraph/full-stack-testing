@@ -16,12 +16,15 @@
 
 package com.hedera.fullstack.junit.support.annotations.core;
 
+import com.hedera.fullstack.junit.support.annotations.flow.WaitForDuration;
+
 /**
  * The test execution mode determines how the test method will be executed. These options are mutually exclusive and
  * may be set on the {@link FullStackTest} and {@link ParameterizedFullStackTest} annotations.
  *
  * @see FullStackSuite
  * @see ParameterizedFullStackTest
+ * @see WaitForDuration
  */
 public enum TestExecutionMode {
     /**
@@ -32,14 +35,14 @@ public enum TestExecutionMode {
 
     /**
      * Timed execution mode will provision resources, start the application, wait for any readiness checks, start any
-     * monitors, and then wait for the {@link com.hedera.fullstack.junit.support.annotations.flow.WaitForDuration}
-     * to expire before executing the test method.
+     * monitors, and then wait for the {@link WaitForDuration} to expire before executing the test method.
      */
     TIMED_EXECUTION,
 
     /**
      * Provision only mode will stage the resources, but not start the application, monitors, or wait for readiness checks.
-     * The test method will be executed immediately after the basic resources are provisioned.
+     * The test method will be executed immediately after the basic resources are provisioned. The provision only mode
+     * ignores the {@link WaitForDuration} annotation, if present.
      */
     PROVISION_ONLY,
 }

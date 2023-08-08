@@ -21,7 +21,7 @@ import com.hedera.fullstack.monitoring.api.Monitor;
 public @interface SuppressMonitors {
     Class<Monitor>[] value();
 
-    String[] nodeNames() default {};
+    String[] nodeLabels() default {};
 
     int[] nodeIndices() default {};
 }

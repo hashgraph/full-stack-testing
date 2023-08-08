@@ -16,15 +16,34 @@
 
 package com.hedera.fullstack.junit.support.annotations.flow;
 
+import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
+import com.hedera.fullstack.junit.support.annotations.core.TestExecutionMode;
+
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Instructs the test framework to wait for a specified duration before executing the test body. This only applies
+ * when the {@link FullStackTest#mode()} is {@link TestExecutionMode#TIMED_EXECUTION}. If the
+ * {@link FullStackTest#mode()} is set to any other value, then this annotation will be silently ignored.
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface WaitForDuration {
+    /**
+     * The amount of time units for which to wait before executing the test body.
+     *
+     * @return the number of time units.
+     */
     int value();
 
+    /**
+     * The time unit of the {@link #value()}. Defaults to {@link TimeUnit#SECONDS}.
+     *
+     * @return the time unit of the {@link #value()}.
+     * @see TimeUnit
+     */
     TimeUnit unit() default TimeUnit.SECONDS;
 }

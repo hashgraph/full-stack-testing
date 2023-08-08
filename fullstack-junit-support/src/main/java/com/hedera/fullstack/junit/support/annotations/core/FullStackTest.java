@@ -59,9 +59,8 @@ public @interface FullStackTest {
      * The {@link TestExecutionMode#PROVISION_ONLY} mode provisions resources, deploys the application, configures
      * the application, and then passes control to the test method. The provision only mode does not start the node
      * software and does not run any of the readiness checks or monitors. Additionally, validators are not automatically
-     * executed when the test method completes or throws an exception.
-     * The provision only mode is useful for tests which need explicit control over readiness check, monitor, and
-     * validator executions.
+     * executed when the test method completes or throws an exception. The provision only mode is useful for tests which
+     * need explicit control over readiness check, monitor, and validator executions.
      *
      * @return the execution flow used by this test.
      * @see TestExecutionMode
