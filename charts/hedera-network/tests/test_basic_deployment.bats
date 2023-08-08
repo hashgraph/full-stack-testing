@@ -1,3 +1,4 @@
+# bats file_tags=deployment-test
 setup() {
     # Define mandatory global variables. All bats file must initialize these.
     # Warning: these are also defined in run.sh. So if changes are needed, it will need to be changed at all places.
@@ -12,9 +13,7 @@ teardown() {
   echo "*** Finished running tests ***"
 }
 
-function test_node_total() {
-  # set test expectations
-
+@test "Check all network node pods are running" {
   echo "----------------------------------------------------------------------------"
   echo "Test case: test_node_total"
   echo "Checking total number of network node containers"
@@ -29,23 +28,20 @@ function test_node_total() {
   echo "Nodes: " "${nodes[@]}"
   local node_total=${#nodes[@]}
 
-  local status="${FAIL}"
+  local test_status="${FAIL}"
   if [[ "${node_total}" -eq "${TOTAL_NODES}" ]]; then
-    status="${PASS}"
+    test_status="${PASS}"
   fi
 
   echo ""
-  echo "[${status}] Total network node: ${node_total}; expected: ${TOTAL_NODES}"
+  echo "[${test_status}] Total network node: ${node_total}; expected: ${TOTAL_NODES}"
   echo ""
 
-  if [[ "${status}" = "${FAIL}" ]]; then
-    return "${EX_ERR}"
-  fi
-
-  return "${EX_OK}"
+  # assert success
+  [[ "${node_total}" -eq "${TOTAL_NODES}" ]]
 }
 
-function test_systemctl() {
+@test "Check systemctl is running in all root containers" {
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
 
@@ -56,40 +52,31 @@ function test_systemctl() {
   echo "---------------------------------------------------------------------------"
 
   local attempts=0
-  local status="${EX_ERR}"
+  local systemctl_status="${FAIL}"
   local MAX_ATTEMPTS=10
 
   for node in "${nodes[@]}"
   do
     attempts=0
-    status="${EX_ERR}"
+    systemctl_status="${EX_ERR}"
 
     # make few attempts to check systemctl status
-    while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${status}" -ne "${EX_OK}" ]]; do
+    while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${systemctl_status}" -ne "${EX_OK}" ]]; do
       attempts=$((attempts + 1))
       kubectl exec "${node}" -c root-container -- systemctl status --no-pager
-      status="${?}"
-      echo "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${status} <<<<<"
-      if [[ "${status}" -ne "${EX_OK}" ]]; then
+      systemctl_status="${?}"
+      echo "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${systemctl_status} <<<<<"
+      if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
         echo "Sleeping 5s..."
         sleep 5
       fi
     done
 
-    if [[ "${status}" -ne "${EX_OK}" ]]; then
-      echo "Error status: ${status}" && return "${EX_ERR}" # break at first error
+    if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
+      break # break at first node error
     fi
   done
 
-  return "${EX_OK}"
-}
-
-@test "Check all network node pods are running" {
-    test_node_total
-    check_test_status
-}
-
-@test "Check systemctl is running in all root containers" {
-    test_systemctl
-    check_test_status
+  # assert success
+  [[ "${systemctl_status}" -eq "${EX_OK}" ]]
 }
