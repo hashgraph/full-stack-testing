@@ -20,7 +20,7 @@
   {{- if default $defaults.sidecars.accountBalanceUploader.enable $balanceUploader.enable | eq "true" }}
   # Sidecar: Account Balance Uploader
   {{- $data := dict "balanceUploader" $balanceUploader "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.accountBalanceUploader -}}
-  {{ include "sidecars.account-balance-uploader" $data | nindent 0 }}
+  {{ include "fullstack.sidecars.accountBalanceUploader" $data | nindent 0 }}
   {{- end }}
   {{- if default $defaults.sidecars.backupUploader.enable  $backupUploader.enable | eq "true" }}
   # Sidecar: Backup Uploader

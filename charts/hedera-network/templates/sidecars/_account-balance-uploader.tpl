@@ -1,4 +1,4 @@
-{{- define "sidecars.account-balance-uploader" }}
+{{- define "fullstack.sidecars.accountBalanceUploader" }}
 {{- $balanceUploader := .balanceUploader | required "context must include 'balanceUploader'!" -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
