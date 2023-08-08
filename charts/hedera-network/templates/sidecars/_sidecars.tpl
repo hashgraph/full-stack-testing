@@ -15,7 +15,7 @@
   {{- if default $defaults.sidecars.eventStreamUploader.enable  $eventStream.enable | eq "true" }}
   # Sidecar: Event Stream Uploader
   {{- $data := dict "eventStream" $eventStream "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.eventStreamUploader -}}
-  {{ include "sidecars.event-stream-uploader" $data | nindent 0 }}
+  {{ include "fullstack.sidecars.eventStreamUploader" $data | nindent 0 }}
   {{- end }}
   {{- if default $defaults.sidecars.accountBalanceUploader.enable $balanceUploader.enable | eq "true" }}
   # Sidecar: Account Balance Uploader

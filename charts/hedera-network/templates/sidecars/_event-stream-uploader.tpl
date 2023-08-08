@@ -1,4 +1,4 @@
-{{- define "sidecars.event-stream-uploader" }}
+{{- define "fullstack.sidecars.eventStreamUploader" }}
 {{- $eventStream := .eventStream | required "context must include 'eventStream'!"  -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
