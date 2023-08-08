@@ -1,13 +1,13 @@
-{{- define "sidecars.event-stream-uploader" }}
+{{- define "fullstack.sidecars.eventStreamUploader" }}
 {{- $eventStream := .eventStream | required "context must include 'eventStream'!"  -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
-  image: {{ include "container.image" (dict "image" $eventStream.image "Chart" $chart "defaults" $defaults) }}
-  imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
+  image: {{ include "fullstack.container.image" (dict "image" $eventStream.image "Chart" $chart "defaults" $defaults) }}
+  imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
   securityContext:
-    {{- include "hedera.security.context" . | nindent 4 }}
+    {{- include "fullstack.hedera.security.context" . | nindent 4 }}
   command:
     - /usr/bin/env
     - python3.7
