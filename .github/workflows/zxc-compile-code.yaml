@@ -123,7 +123,7 @@ jobs:
 
       - name: Setup Google Cloud SDK
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
-        uses: google-github-actions/setup-gcloud@d51b5346f85640ec2aa2fa057354d2b82c2fcbce # pin@v1
+        uses: google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b # pin@v1
 
       - name: Helm Chart Test (Direct Install)
         working-directory: dev
