@@ -1,16 +1,7 @@
 # bats file_tags=deployment-test
 setup() {
-    # Define mandatory global variables. All bats file must initialize these.
-    # Warning: these are also defined in run.sh. So if changes are needed, it will need to be changed at all places.
-    BATS_HOME="${BATS_HOME:-../../../dev/bats}"
-    TESTS_DIR="${TESTS_DIR:-.}"
-
-    echo "*** Running tests from: ${TESTS_DIR} ***"
-    source "${TESTS_DIR}/include.sh"
-}
-
-teardown() {
-  echo "*** Finished running tests ***"
+    source "$(dirname "${BATS_TEST_FILENAME}")/env.sh"
+    source "${TESTS_DIR}/load.sh"
 }
 
 @test "Check all network node pods are running" {

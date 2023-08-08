@@ -1,4 +1,19 @@
 #!/usr/bin/env bash
+
+# setup test constants
+readonly EX_OK=0
+readonly EX_ERR=1
+readonly PASS="PASS"
+readonly FAIL="FAIL"
+
+# template variables to be rendered during helm chart deployment
+readonly TMPL_TOTAL_NODES="{{ .total_nodes }}"
+
+# Setup test variables
+if [[ -z "${TOTAL_NODES}" ]]; then
+  TOTAL_NODES="${TMPL_TOTAL_NODES}"
+fi
+
 ####
 # Imports a bash file using the built-in source command.
 #

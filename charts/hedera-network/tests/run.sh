@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-BATS_HOME="${BATS_HOME:-../../../dev/bats}"
-TESTS_DIR="${TESTS_DIR:-.}"
+source "$(dirname "${BASH_SOURCE[0]}")/env.sh"
 
 echo ""
 echo "BATS directory: $BATS_HOME"
@@ -16,4 +15,6 @@ echo ""
 echo "Running BATS: '${BATS_HOME}/bats-core/bin/bats ${TESTS_DIR}'"
 echo "============================================================="
 "${BATS_HOME}/bats-core/bin/bats" "${TESTS_DIR}"
+
+# uncomment in order to inspect tmpdir
 #"${BATS_HOME}/bats-core/bin/bats" --no-tempdir-cleanup .
