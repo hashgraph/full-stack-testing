@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-# This file should not depend on any other variables to file
-
-# ============================= Global Variables ================================================
-# setup some common global variables if not set already
-if [[ -z "${SCRIPT_DIR}" ]]; then
-  readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-fi
-
-readonly ENV_FILE="${SCRIPT_DIR}/../.env"
-
-# ============================= Utilities =======================================================
-
 ####
 # Imports a bash file using the built-in source command.
 #
@@ -70,3 +58,9 @@ function run_test_cases() {
   return "${status}"
 }
 
+# This is to check the bats test execution status
+function check_test_status() {
+  echo "status = ${status}"
+  echo "output = ${output}"
+  [[ "${status}" -eq 0 ]]
+}

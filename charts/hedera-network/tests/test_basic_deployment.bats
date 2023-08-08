@@ -1,4 +1,16 @@
-#!/bin/bash
+setup() {
+    # Define mandatory global variables. All bats file must initialize these.
+    # Warning: these are also defined in run.sh. So if changes are needed, it will need to be changed at all places.
+    BATS_HOME="${BATS_HOME:-../../../dev/bats}"
+    TESTS_DIR="${TESTS_DIR:-.}"
+
+    echo "*** Running tests from: ${TESTS_DIR} ***"
+    source "${TESTS_DIR}/include.sh"
+}
+
+teardown() {
+  echo "*** Finished running tests ***"
+}
 
 function test_node_total() {
   # set test expectations
@@ -70,4 +82,14 @@ function test_systemctl() {
   done
 
   return "${EX_OK}"
+}
+
+@test "Check all network node pods are running" {
+    test_node_total
+    check_test_status
+}
+
+@test "Check systemctl is running in all root containers" {
+    test_systemctl
+    check_test_status
 }
