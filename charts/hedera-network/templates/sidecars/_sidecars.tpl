@@ -10,7 +10,7 @@
   {{- if default $defaults.sidecars.recordStreamUploader.enable  $recordStream.enable | eq "true" }}
   # Sidecar: Record Stream Uploader
   {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.recordStreamUploader -}}
-  {{ include "sidecars.record-stream-uploader" $data | nindent 0 }}
+  {{ include "fullstack.sidecars.recordStreamUploader" $data | nindent 0 }}
   {{- end }}
   {{- if default $defaults.sidecars.eventStreamUploader.enable  $eventStream.enable | eq "true" }}
   # Sidecar: Event Stream Uploader

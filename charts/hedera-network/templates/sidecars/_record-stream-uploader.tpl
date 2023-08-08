@@ -1,4 +1,4 @@
-{{- define "sidecars.record-stream-uploader" }}
+{{- define "fullstack.sidecars.recordStreamUploader" }}
 {{- $recordStream := .recordStream | required "context must include 'recordStream'!" -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
