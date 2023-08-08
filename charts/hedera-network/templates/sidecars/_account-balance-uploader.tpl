@@ -7,7 +7,7 @@
   image: {{ include "container.image" (dict "image" $balanceUploader.image "Chart" $chart "defaults" $defaults ) }}
   imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults) }}
   securityContext:
-    {{- include "hedera.security.context" . | nindent 4 }}
+    {{- include "fullstack.hedera.security.context" . | nindent 4 }}
   command:
     - /usr/bin/env
     - python3.7

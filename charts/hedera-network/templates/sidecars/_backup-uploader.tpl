@@ -6,7 +6,7 @@
   image: {{ include "container.image" (dict "image" $backupUploader.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $backupUploader.image "defaults" $defaults) }}
   securityContext:
-    {{- include "hedera.security.context" . | nindent 4 }}
+    {{- include "fullstack.hedera.security.context" . | nindent 4 }}
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/

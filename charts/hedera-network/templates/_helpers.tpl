@@ -1,4 +1,4 @@
-{{- define "hedera.security.context" -}}
+{{- define "fullstack.hedera.security.context" -}}
 runAsUser: 2000
 runAsGroup: 2000
 {{- end }}
