@@ -40,7 +40,7 @@ spec:
       initContainers:
       # Init Container
       - name: init-container
-        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
+        image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
         securityContext:
@@ -51,7 +51,7 @@ spec:
       containers:
       # Root Container
       - name: {{ $root.nameOverride | default "root-container" }}
-        image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
+        image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         securityContext: # need to run as root with privileged mode
           {{- include "fullstack.root.security.context.privileged" . | nindent 10 }}

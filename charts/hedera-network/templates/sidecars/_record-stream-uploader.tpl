@@ -4,7 +4,7 @@
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
-  image: {{ include "container.image" (dict "image" $recordStream.image "Chart" $chart "defaults" $defaults) }}
+  image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStream.image "defaults" $defaults) }}
   securityContext:
     {{- include "fullstack.hedera.security.context" . | nindent 4 }}

@@ -3,7 +3,7 @@
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ default "otel-collector" $otel.nameOverride }}
-  image: {{ include "container.image" (dict "image" $otel.image "Chart" $chart "defaults" $defaults) }}
+  image: {{ include "fullstack.container.image" (dict "image" $otel.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $otel.image "defaults" $defaults) }}
   securityContext:
     {{- include "fullstack.root.security.context" . | nindent 4 }}

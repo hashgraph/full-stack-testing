@@ -23,7 +23,7 @@ spec:
             name: envoy-proxy-cm-{{ $node.name }}
       containers:
       - name: {{ default $defaults.nameOverride $envoyProxy.nameOverride }}
-        image: {{ include "container.image" (dict "image" $envoyProxy.image "Chart" $.Chart "defaults" $defaults ) }}
+        image: {{ include "fullstack.container.image" (dict "image" $envoyProxy.image "Chart" $.Chart "defaults" $defaults ) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $envoyProxy.image "defaults" $defaults) }}
         volumeMounts:
           - name: config-volume

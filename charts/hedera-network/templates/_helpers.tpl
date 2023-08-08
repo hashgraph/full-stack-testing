@@ -26,7 +26,7 @@ privileged: true
 {{- end }}
 
 
-{{- define "container.image" -}}
+{{- define "fullstack.container.image" -}}
 {{- $reg := (.image).registry | default .defaults.image.registry -}}
 {{- $repo := (.image).repository | default .defaults.image.repository -}}
 {{- $tag := (.image).tag | default .Chart.AppVersion -}}

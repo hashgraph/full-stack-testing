@@ -3,7 +3,7 @@
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ default "backup-uploader" $backupUploader.nameOverride }}
-  image: {{ include "container.image" (dict "image" $backupUploader.image "Chart" $chart "defaults" $defaults) }}
+  image: {{ include "fullstack.container.image" (dict "image" $backupUploader.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $backupUploader.image "defaults" $defaults) }}
   securityContext:
     {{- include "fullstack.hedera.security.context" . | nindent 4 }}
