@@ -1,4 +1,4 @@
-{{- define "sidecars.backup-uploader "}}
+{{- define "fullstack.sidecars.backupUploader "}}
 {{- $backupUploader := .backupUploader | required "context must include 'backupUploader'!" -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $chart := .chart | required "context must include 'chart'!" -}}

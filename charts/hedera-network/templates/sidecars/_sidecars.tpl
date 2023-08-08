@@ -25,7 +25,7 @@
   {{- if default $defaults.sidecars.backupUploader.enable  $backupUploader.enable | eq "true" }}
   # Sidecar: Backup Uploader
   {{- $data := dict "backupUploader" $backupUploader "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.backupUploader -}}
-  {{ include "sidecars.backup-uploader " $data | nindent 0 }}
+  {{ include "fullstack.sidecars.backupUploader " $data | nindent 0 }}
   {{- end }}
   {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}
   # Sidecar: OTel Collector
