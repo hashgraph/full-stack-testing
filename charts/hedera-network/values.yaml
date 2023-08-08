@@ -13,6 +13,15 @@ cloud:
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
 
+# helm test container
+tester:
+  image:
+    registry: "ghcr.io"
+    repository: "hashgraph/full-stack-testing/kubectl-bats"
+    tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
+    pullPolicy: "IfNotPresent"
+  resources: {}
+
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:
