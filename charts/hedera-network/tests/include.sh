@@ -36,4 +36,4 @@ _common_setup
 # load helper scripts
 echo "Loading test helper scripts..."
 load "${TESTS_DIR}/const.sh"
-load "${TESTS_DIR}/helpers.sh"
+load "${TESTS_DIR}/helper.sh"
