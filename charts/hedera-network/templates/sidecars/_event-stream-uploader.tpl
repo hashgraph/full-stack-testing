@@ -5,7 +5,7 @@
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
   image: {{ include "container.image" (dict "image" $eventStream.image "Chart" $chart "defaults" $defaults) }}
-  imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
+  imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
   securityContext:
     {{- include "fullstack.hedera.security.context" . | nindent 4 }}
   command:

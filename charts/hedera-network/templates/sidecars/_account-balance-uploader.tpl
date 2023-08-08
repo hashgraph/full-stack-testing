@@ -5,7 +5,7 @@
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
   image: {{ include "container.image" (dict "image" $balanceUploader.image "Chart" $chart "defaults" $defaults ) }}
-  imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults) }}
+  imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults) }}
   securityContext:
     {{- include "fullstack.hedera.security.context" . | nindent 4 }}
   command:

@@ -27,7 +27,7 @@ spec:
       containers:
       - name: {{ default $defaults.nameOverride $haproxy.nameOverride }}
         image: {{ include "container.image" (dict "image" $haproxy.image "Chart" $.Chart "defaults" $defaults ) }}
-        imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $haproxy.image "defaults" $defaults )  }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $haproxy.image "defaults" $defaults )  }}
         volumeMounts:
           - name: haproxy-config-volume
             # https://hub.docker.com/_/haproxy/

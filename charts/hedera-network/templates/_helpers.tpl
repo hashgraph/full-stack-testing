@@ -21,7 +21,7 @@ privileged: true
       fieldPath: status.podIP
 {{- end }}
 
-{{- define "images.pullPolicy" -}}
+{{- define "fullstack.images.pullPolicy" -}}
 {{ (.image).pullPolicy | default .defaults.image.pullPolicy }}
 {{- end }}
 
