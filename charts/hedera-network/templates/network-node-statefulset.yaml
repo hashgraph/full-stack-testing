@@ -63,7 +63,7 @@ spec:
           - name: hgcapp-storage
             mountPath: /opt/hgcapp/
         env:
-          {{- include "default-env-vars" . | nindent 10 }}
+          {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       # Sidecars
       {{- include "sidecars" (dict
         "recordStream" $recordStream

@@ -14,7 +14,7 @@ runAsGroup: 0
 privileged: true
 {{- end }}
 
-{{- define "default-env-vars" -}}
+{{- define "fullstack.defaultEnvVars" -}}
 - name: POD_IP
   valueFrom:
     fieldRef:
