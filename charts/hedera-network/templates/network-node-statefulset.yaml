@@ -54,7 +54,7 @@ spec:
         image: {{ include "container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
         imagePullPolicy: {{ include "images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         securityContext: # need to run as root with privileged mode
-          {{- include "root.security.context.privileged" . | nindent 10 }}
+          {{- include "fullstack.root.security.context.privileged" . | nindent 10 }}
         {{- with $resources }}
         resources:
           {{- toYaml . | nindent 10 }}

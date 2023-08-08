@@ -8,7 +8,7 @@ runAsUser: 0
 runAsGroup: 0
 {{- end }}
 
-{{- define "root.security.context.privileged" -}}
+{{- define "fullstack.root.security.context.privileged" -}}
 runAsUser: 0
 runAsGroup: 0
 privileged: true
