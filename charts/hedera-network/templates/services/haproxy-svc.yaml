@@ -1,0 +1,24 @@
+{{- range $index, $node := ($.Values.hedera.nodes) }}
+{{- $haproxy := $node.haproxy | default dict -}}
+{{- $defaults := $.Values.defaults.haproxy }}
+{{- if default $defaults.enable $haproxy.enable | eq "true" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: haproxy-{{ $node.name }}-svc
+spec:
+  {{- if $haproxy.externalPortEnabled }}
+  type: LoadBalancer
+  {{- end }}
+  selector:
+    app: haproxy-{{ $node.name }}
+  ports:
+    - port: 14567
+      targetPort: 14567
+      {{- if $haproxy.externalPortEnabled }}
+      nodePort: {{ $node.externalHaproxyPort }}
+      {{- end }}
+{{- end }}
+{{- end }}
+

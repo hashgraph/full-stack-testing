@@ -49,6 +49,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     replica: 1
     resources: {}
+    externalPortEnabled: "false"
   envoyProxy:
     enable: "true"
     nameOverride: "envoy-proxy"
@@ -59,6 +60,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     replica: 1
     resources: {}
+    externalPortEnabled: "false"
   sidecars:
     recordStreamUploader:
       enable: "true"
@@ -162,8 +164,15 @@ defaults:
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
+# the external ports are needed if the nodes externalPortEnabled is true
 hedera:
   nodes:
     - name: node0
+      externalHaproxyPort: 30000
+      externalEnvoyPort: 31000
     - name: node1
+      externalHaproxyPort: 30001
+      externalEnvoyPort: 31001
     - name: node2
+      externalHaproxyPort: 30002
+      externalEnvoyPort: 31002
