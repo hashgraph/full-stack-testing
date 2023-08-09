@@ -51,9 +51,9 @@
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: {{ $cloud.s3.enable | quote }}
+      value: "true"
     - name: GCS_ENABLE
-      value: {{ $cloud.gcs.enable | quote }}
+      value: "false"
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets
