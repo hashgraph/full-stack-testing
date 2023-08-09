@@ -124,3 +124,12 @@ restart: stop-nodes start-nodes
 .PHONY: reset
 reset: destroy-network start
 
+.PHONY: deploy-minio-operator
+deploy-minio-operator:
+	echo ">> Deploying minio operator..." && \
+	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace minio-operator operator
+
+.PHONY: undeploy-minio-operator
+undeploy-minio-operator:
+	echo ">> Deploying minio operator..." && \
+	helm delete  --namespace=minio-operator minio-operator

@@ -5,10 +5,7 @@ cloud:
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
-  s3:
-    enabled: "true"
-  gcs:
-    enabled: "false"
+
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
 
