@@ -8,7 +8,7 @@ kind: Service
 metadata:
   name: envoy-proxy-{{ $node.name }}-svc
 spec:
-  {{- if $envoyProxy.externalPortEnabled }}
+  {{- if $envoyProxy.loadBalancerEnabled }}
   type: LoadBalancer
   {{- end }}
   selector:
@@ -16,9 +16,6 @@ spec:
   ports:
     - port: 8080 # dynamic?
       targetPort: 8080
-      {{- if $envoyProxy.externalPortEnabled }}
-      nodePort: {{ $node.externalEnvoyPort }}
-      {{- end }}
 {{- end }}
 {{- end }}
 

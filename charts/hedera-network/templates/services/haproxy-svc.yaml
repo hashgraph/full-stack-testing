@@ -8,17 +8,14 @@ kind: Service
 metadata:
   name: haproxy-{{ $node.name }}-svc
 spec:
-  {{- if $haproxy.externalPortEnabled }}
+  {{- if $haproxy.loadBalancerEnabled }}
   type: LoadBalancer
   {{- end }}
   selector:
     app: haproxy-{{ $node.name }}
   ports:
-    - port: 14567
+    - port: 14567 # this is telemetry/stats, not needed
       targetPort: 14567
-      {{- if $haproxy.externalPortEnabled }}
-      nodePort: {{ $node.externalHaproxyPort }}
-      {{- end }}
 {{- end }}
 {{- end }}
 
