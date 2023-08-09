@@ -14,9 +14,11 @@ spec:
   selector:
     app: haproxy-{{ $node.name }}
   ports:
-    - port: 50211
+    - name: non-tls-grpc-client-port
+      port: 50211
       targetPort: 50211
-    - port: 50212
+    - name: tls-grpc-client-port
+      port: 50212
       targetPort: 50212
 {{- end }}
 {{- end }}
