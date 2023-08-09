@@ -49,8 +49,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     replica: 1
     resources: {}
-    # default to false before merge
-    loadBalancerEnabled: "true"
+    loadBalancerEnabled: "true" # default to false before merge
   envoyProxy:
     enable: "true"
     nameOverride: "envoy-proxy"
@@ -61,8 +60,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     replica: 1
     resources: {}
-    # default to false before merge
-    loadBalancerEnabled: "true"
+    loadBalancerEnabled: "true" # default to false before merge
   sidecars:
     recordStreamUploader:
       enable: "true"

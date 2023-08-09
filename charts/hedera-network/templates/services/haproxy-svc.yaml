@@ -8,7 +8,7 @@ kind: Service
 metadata:
   name: haproxy-{{ $node.name }}-svc
 spec:
-  {{- if $haproxy.loadBalancerEnabled }}
+  {{- if default $defaults.loadBalancerEnabled $haproxy.loadBalancerEnabled | eq "true" }}
   type: LoadBalancer
   {{- end }}
   selector:
