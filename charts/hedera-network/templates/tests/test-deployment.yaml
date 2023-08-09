@@ -14,14 +14,23 @@ spec:
         name: test-cm
         defaultMode: 0777 # we need the test files to be executable
   containers:
+    {{- $tester := $.Values.tester }}
     - name: tester
-      image: bitnami/kubectl:latest
+      image: {{ include "fullstack.container.image" (dict "image" $tester.image "Chart" $.Chart "defaults" $tester) }}
+      imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $tester.image "defaults" $tester) }}
+      {{- with $tester.resources }}
+      resources:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       volumeMounts:
         - mountPath: /tests
           name: test-volume
+      env:
+        - name: TESTS_DIR
+          value: "/tests" # should be same as mountPath
       command:
         - "/bin/bash"
         - "-c"
-        - /tests/basic_deployment_test.sh
+        - /tests/run.sh
         #- "while true;do echo sleeping; sleep 10;done"
   restartPolicy: Never

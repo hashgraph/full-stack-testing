@@ -4,7 +4,7 @@ metadata:
   name: test-cm
 data:
   {{- $total_nodes := len $.Values.hedera.nodes -}}
-  {{- range $path, $_ :=  .Files.Glob  "tests/*.sh" }}
+  {{- range $path, $_ :=  .Files.Glob  "tests/*.*" }}
   {{ base $path }}: |
   {{- tpl ($.Files.Get $path) ( dict "total_nodes" $total_nodes "Template" $.Template ) | nindent 4 }}
   {{- end }}
