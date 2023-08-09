@@ -160,22 +160,22 @@ defaults:
 
 # This configures the minio tenant subchart
 # Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml
-minio-server:
+tenant:
   secrets:
     name: myminio-env-configuration
     # MinIO root user and password
     #TODO: use helm random alphanumeric generator, or is it ok to hardcode ?
     accessKey: minio
     secretKey: minio123
+  tenant:
     buckets:
       - name: fst-streams
       - name: fst-backups
-  tenant:
     name: myminio
     pools:
-      - servers: 4
-        name: pool-0
-        volumesPerServer: 4
+      - servers: 1
+        name: pool-1
+        volumesPerServer: 1
         size: 10Gi
     configuration:
       name: myminio-env-configuration
