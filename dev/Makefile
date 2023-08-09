@@ -28,6 +28,10 @@ setup:
 setup-cluster:
 	kind create cluster -n fst
 
+.PHONY: update-helm-dependencies
+update-helm-dependencies:
+	helm dependency update ../charts/hedera-network
+
 .PHONY: deploy-chart
 deploy-chart:
 	echo ">> Deploying helm chart..." && \
@@ -116,7 +120,7 @@ run-func:
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && ${FUNC}
 
 .PHONY: start
-start: deploy-minio-operator-if-required deploy-network setup-nodes start-nodes
+start: deploy-minio-operator-if-required update-helm-dependencies deploy-network setup-nodes start-nodes
 
 .PHONY: restart
 restart: stop-nodes start-nodes

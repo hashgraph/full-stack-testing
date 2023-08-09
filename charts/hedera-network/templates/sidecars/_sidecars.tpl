@@ -7,7 +7,7 @@
 {{- $otelCollector := .otelCollector | required "context must include 'otelCollector'!" -}}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
-{{- $nodeId := .node.id -}}
+{{- $nodeId := .node.accountId -}}
   {{- if default $defaults.sidecars.recordStreamUploader.enable  $recordStream.enable | eq "true" }}
   # Sidecar: Record Stream Uploader
   {{- $data := dict "recordStream" $recordStream "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.recordStreamUploader  "nodeId" $nodeId -}}

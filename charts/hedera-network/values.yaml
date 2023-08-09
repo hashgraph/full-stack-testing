@@ -160,7 +160,7 @@ defaults:
 
 # This configures the minio tenant subchart
 # Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml
-tenant:
+minio-server:
   secrets:
     name: myminio-env-configuration
     # MinIO root user and password
@@ -187,8 +187,8 @@ tenant:
 hedera:
   nodes:
     - name: node0
-      id: 0.0.3
+      accountId: 0.0.3
     - name: node1
-      id: 0.0.4
+      accuntIdd: 0.0.4
     - name: node2
-      id: 0.0.5
+      accountId: 0.0.5
