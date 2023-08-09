@@ -82,7 +82,7 @@ test:
 		$(MAKE) destroy-network
 	}
 	trap cleanup_test EXIT # always destroy-network on exit
-	$(MAKE) setup deploy-network helm-test setup-nodes start-nodes
+	$(MAKE) setup deploy-minio-operator-if-required update-helm-dependencies deploy-network helm-test setup-nodes start-nodes
 
 .PHONY: setup-nodes
 setup-nodes: setup
@@ -144,7 +144,7 @@ is-minio-operator-installed:
 
 .PHONY: deploy-minio-operator-if-required
 deploy-minio-operator-if-required:
-	@make is-minio-operator-installed || make deploy-minio-operator
+	@$(MAKE) is-minio-operator-installed || $(MAKE) deploy-minio-operator
 
 
 .PHONY: undeploy-minio-operator
