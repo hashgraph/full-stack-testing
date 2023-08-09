@@ -14,7 +14,7 @@ spec:
   selector:
     app: envoy-proxy-{{ $node.name }}
   ports:
-    - port: 8080 # dynamic?
+    - port: 8080
       targetPort: 8080
 {{- end }}
 {{- end }}
