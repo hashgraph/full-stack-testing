@@ -2,13 +2,15 @@
 
 # cloud configuration
 cloud:
+  minio:
+    enable: true
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
   s3:
-    enabled: "true"
+    enable: "true"
   gcs:
-    enabled: "false"
+    enable: "false"
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
 
