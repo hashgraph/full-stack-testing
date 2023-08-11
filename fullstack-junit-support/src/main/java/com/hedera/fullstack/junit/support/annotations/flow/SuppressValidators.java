@@ -17,7 +17,6 @@
 package com.hedera.fullstack.junit.support.annotations.flow;
 
 import com.hedera.fullstack.validator.api.Validator;
-
 import java.lang.annotation.*;
 
 /**
@@ -36,7 +35,7 @@ public @interface SuppressValidators {
      */
     Class<Validator>[] value();
 
-//    String[] nodeLabels() default {};
-//
-//    int[] nodeIndices() default {};
+    //    String[] nodeLabels() default {};
+    //
+    //    int[] nodeIndices() default {};
 }

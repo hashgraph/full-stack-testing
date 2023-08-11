@@ -17,7 +17,6 @@
 package com.hedera.fullstack.junit.support.annotations.flow;
 
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
-
 import java.lang.annotation.*;
 
 /**
@@ -36,7 +35,7 @@ public @interface SuppressReadinessChecks {
      */
     Class<? extends ReadinessCheck>[] value();
 
-//    String[] nodeLabels() default {};
-//
-//    int[] nodeIndices() default {};
+    //    String[] nodeLabels() default {};
+    //
+    //    int[] nodeIndices() default {};
 }

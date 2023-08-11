@@ -26,7 +26,6 @@ import com.hedera.fullstack.junit.support.annotations.core.ConfigurationValue;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
 import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
-import com.hedera.fullstack.junit.support.annotations.flow.SuppressReadinessChecks;
 import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import com.hedera.fullstack.junit.support.annotations.validation.Monitors;
 import com.hedera.fullstack.junit.support.annotations.validation.ReadinessChecks;
@@ -59,18 +58,21 @@ class InvalidStateSignatureTest {
     @Monitors({NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class})
     @Validators({NodeStatisticHealthValidator.class})
     @DisplayName("ISS-catastrophic-1k-5m")
-    void catastrophic(PlatformNodes nodes, MirrorNode mirror) {
-        for (PlatformNode n : nodes) {
-            n.stop();
-            n.configure().platform().settings().addProperty("mysetting", "12234");
-            // under the hood (uses Infrastructure & Resource Generator)
-              FileRef settingsFile = pod.file().retrieve("/opt/hgcapp/services-hedera/HapiApp2.0/settings.txt");
-              byte[] contents = SettingsResource.fromExistingFile(settingsFile).addProperty("mysetting", "12234").render();
-              pod.file().write("/opt/hgcapp/services-hedera/HapiApp2.0/settings.txt", contents).permissions(0644).owner("hedera").group("hedera");
-            //
-
-            n.start();
-        }
+    void catastrophic(/* PlatformNodes nodes, MirrorNode mirror */ ) {
+        //        for (PlatformNode n : nodes) {
+        //            n.stop();
+        //            n.configure().platform().settings().addProperty("mysetting", "12234");
+        //            // under the hood (uses Infrastructure & Resource Generator)
+        //              FileRef settingsFile =
+        // pod.file().retrieve("/opt/hgcapp/services-hedera/HapiApp2.0/settings.txt");
+        //              byte[] contents = SettingsResource.fromExistingFile(settingsFile).addProperty("mysetting",
+        // "12234").render();
+        //              pod.file().write("/opt/hgcapp/services-hedera/HapiApp2.0/settings.txt",
+        // contents).permissions(0644).owner("hedera").group("hedera");
+        //            //
+        //
+        //            n.start();
+        //        }
 
     }
 }
