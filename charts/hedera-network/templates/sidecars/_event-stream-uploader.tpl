@@ -3,6 +3,7 @@
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
+{{- $nodeId := .nodeId -}}
 - name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $eventStream.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
@@ -15,9 +16,13 @@
     - --linux
     - --watch-directory
     - /opt/hgcapp/events
+    - --debug
+    - --s3-endpoint
+    - http://myminio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
-      mountPath: /opt/hgcapp/
+      mountPath: /opt/hgcapp/events
+      subPath: events/balance{{ $nodeId }}
   env:
     - name: DEBUG
       value: {{ default $defaults.config.debug ($eventStream.config).debug | quote}}
@@ -46,9 +51,9 @@
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: {{ $cloud.s3.enable | quote }}
+      value: "true"
     - name: GCS_ENABLE
-      value: {{ $cloud.gcs.enable | quote }}
+      value: "false"
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets

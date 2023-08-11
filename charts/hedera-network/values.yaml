@@ -2,13 +2,11 @@
 
 # cloud configuration
 cloud:
+  minio:
+    enable: true
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
-  s3:
-    enable: "true"
-  gcs:
-    enable: "true"
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
@@ -160,33 +158,37 @@ defaults:
           port: healthcheck
       resources: {}
 
+# This configures the minio tenant subchart
+# Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml
+minio-server:
+  secrets:
+    name: myminio-env-configuration
+    # MinIO root user and password
+    #TODO: use helm random alphanumeric generator, or is it ok to hardcode ?
+    accessKey: minio
+    secretKey: minio123
+  tenant:
+    buckets:
+      - name: fst-streams
+      - name: fst-backups
+    name: myminio
+    pools:
+      - servers: 1
+        name: pool-1
+        volumesPerServer: 1
+        size: 10Gi
+    configuration:
+      name: myminio-env-configuration
+    certificate:
+      requestAutoCert: false
+
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
 hedera:
   nodes:
     - name: node0
+      accountId: 0.0.3
     - name: node1
+      accuntIdd: 0.0.4
     - name: node2
-
-# inside importer
-importer:
-  config:
-    hedera:
-      mirror:
-        rest.log.level: debug
-        # importer:
-        #   network: dev
-        #   downloader:
-        #     sources:
-        #      - type: "S3"
-        #        uri: "http://myminio-hl.default.svc:9000/fst-streams"
-        #        credentials:
-        #           accessKey: minio
-        #           secretKey: minio123
-        importer:
-          downloader:
-            accessKey: minio
-            secretKey: minio123
-            bucketName: "fst-streams"
-            cloudProvider: "s3"
-            endpointOverride: "http://myminio-hl.default.svc:9000"
+      accountId: 0.0.5
