@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.junit.support.annotations.application;
 
+import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import com.hedera.fullstack.junit.support.events.application.ApplicationEvent;
 import java.lang.annotation.*;
 
@@ -26,6 +27,8 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface LabeledApplicationNode {
     String value();
+
+    ResourceShape shape() default @ResourceShape;
 
     String[] tags() default {};
 

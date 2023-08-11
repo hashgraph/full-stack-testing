@@ -17,16 +17,56 @@
 package com.hedera.fullstack.junit.support.annotations.resource;
 
 import com.hedera.fullstack.base.api.units.StorageUnits;
+import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.application.LabeledApplicationNode;
+
 import java.lang.annotation.*;
 
+/**
+ * Describes the resource limits (CPU, Memory, Disk) for a physical machine, K8S pod, or container. This annotation
+ * must be used as a parameter of another annotation, such as {@link ApplicationNodes} or {@link LabeledApplicationNode}.
+ */
 @Inherited
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ResourceShape {
+    /**
+     * Defines the maximum allowable CPU cores in milli-cores. The milli-cores units are identical to the units used by
+     * Kubernetes. For example, 1000 milli-cores is equivalent to 1 CPU core or hyper-thread. The default value is 2 CPU
+     * cores/hyper-threads.
+     *
+     * @return the maximum allowable CPU cores in milli-cores.
+     */
     float cpuInMillis() default 2000f;
 
+    /**
+     * The maximum memory to be allocated scaled according to the units specified by the {@link #memoryUnits()} property.
+     * The default value is 16 GB.
+     *
+     * @return the maximum memory to be allocated.
+     */
     long memorySize() default 16L;
 
+    /**
+     * The units for the {@link #memorySize()} property. The default value is {@link StorageUnits#GIGABYTES}.
+     *
+     * @return the units for the {@link #memorySize()} property.
+     */
     StorageUnits memoryUnits() default StorageUnits.GIGABYTES;
+
+    /**
+     * The maximum disk size to be allocated scaled according to the units specified by the {@link #diskUnits()} property.
+     * The default value is 32 GB.
+     *
+     * @return the maximum disk size to be allocated.
+     */
+    long diskSize() default 32L;
+
+    /**
+     * The units for the {@link #diskSize()} property. The default value is {@link StorageUnits#GIGABYTES}.
+     *
+     * @return the units for the {@link #diskSize()} property.
+     */
+    StorageUnits diskUnits() default StorageUnits.GIGABYTES;
 }

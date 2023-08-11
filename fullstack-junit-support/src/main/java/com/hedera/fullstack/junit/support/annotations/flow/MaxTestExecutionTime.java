@@ -28,6 +28,9 @@ import org.junit.jupiter.api.BeforeEach;
  * inclusive of all time spent in the test method and in {@link BeforeAll}, {@link BeforeEach}, {@link AfterEach}, and
  * {@link AfterAll} methods declared by the test suite. For a parameterized test, the timeout applies separately to each
  * invocation of the test method for each unique set of arguments.
+ * <p>
+ * If this annotation is not present on a test class, then this timeout will individually apply to each test method.
+ * Specifying this annotation at the class level will not impose a maximum execution time on the test class as a whole.
  */
 @Inherited
 @Documented

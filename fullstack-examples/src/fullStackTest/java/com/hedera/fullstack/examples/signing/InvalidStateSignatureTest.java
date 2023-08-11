@@ -21,13 +21,12 @@ import com.hedera.fullstack.examples.monitors.LogErrorMonitor;
 import com.hedera.fullstack.examples.monitors.NodeLivenessMonitor;
 import com.hedera.fullstack.examples.readiness.NodeActiveReadinessCheck;
 import com.hedera.fullstack.examples.validators.NodeStatisticHealthValidator;
-import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
-import com.hedera.fullstack.junit.support.annotations.application.ConfigurationValue;
-import com.hedera.fullstack.junit.support.annotations.application.PlatformApplication;
-import com.hedera.fullstack.junit.support.annotations.application.PlatformConfiguration;
+import com.hedera.fullstack.junit.support.annotations.application.*;
+import com.hedera.fullstack.junit.support.annotations.core.ConfigurationValue;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
 import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
+import com.hedera.fullstack.junit.support.annotations.flow.SuppressReadinessChecks;
 import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import com.hedera.fullstack.junit.support.annotations.validation.Monitors;
 import com.hedera.fullstack.junit.support.annotations.validation.ReadinessChecks;
@@ -40,8 +39,7 @@ import org.junit.jupiter.api.DisplayName;
 class InvalidStateSignatureTest {
 
     @FullStackTest
-    @ApplicationNodes(4)
-    @ResourceShape(cpuInMillis = 8_000, memorySize = 8L)
+    @ApplicationNodes(value = 4, shape = @ResourceShape(cpuInMillis = 8_000, memorySize = 8L))
     // TODO: Discuss and define how the max test execution time is calculated
     // TODO: Discuss and define what happens after time is breached (eg: do validators still run, do we download files,
     // etc )
@@ -61,5 +59,18 @@ class InvalidStateSignatureTest {
     @Monitors({NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class})
     @Validators({NodeStatisticHealthValidator.class})
     @DisplayName("ISS-catastrophic-1k-5m")
-    void catastrophic() {}
+    void catastrophic(PlatformNodes nodes, MirrorNode mirror) {
+        for (PlatformNode n : nodes) {
+            n.stop();
+            n.configure().platform().settings().addProperty("mysetting", "12234");
+            // under the hood (uses Infrastructure & Resource Generator)
+              FileRef settingsFile = pod.file().retrieve("/opt/hgcapp/services-hedera/HapiApp2.0/settings.txt");
+              byte[] contents = SettingsResource.fromExistingFile(settingsFile).addProperty("mysetting", "12234").render();
+              pod.file().write("/opt/hgcapp/services-hedera/HapiApp2.0/settings.txt", contents).permissions(0644).owner("hedera").group("hedera");
+            //
+
+            n.start();
+        }
+
+    }
 }

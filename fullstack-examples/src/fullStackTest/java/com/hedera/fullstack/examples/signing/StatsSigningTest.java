@@ -43,8 +43,7 @@ class StatsSigningTest {
      * This test will run the StatsSigningTestingTool.jar at 10k TPS for 20 minutes.
      */
     @FullStackTest(mode = TestExecutionMode.TIMED_EXECUTION)
-    @ApplicationNodes(4)
-    @ResourceShape(cpuInMillis = 32_000)
+    @ApplicationNodes(value = 4, shape = @ResourceShape(cpuInMillis = 32_000))
     @WaitForDuration(value = 20, unit = java.util.concurrent.TimeUnit.MINUTES)
     @MaxTestExecutionTime(value = 30, unit = java.util.concurrent.TimeUnit.MINUTES)
     @PlatformApplication(

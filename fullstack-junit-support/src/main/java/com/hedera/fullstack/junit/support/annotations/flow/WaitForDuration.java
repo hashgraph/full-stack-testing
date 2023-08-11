@@ -18,7 +18,6 @@ package com.hedera.fullstack.junit.support.annotations.flow;
 
 import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
 import com.hedera.fullstack.junit.support.annotations.core.TestExecutionMode;
-
 import java.lang.annotation.*;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.METHOD})
 public @interface WaitForDuration {
     /**
      * The amount of time units for which to wait before executing the test body.

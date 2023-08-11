@@ -18,10 +18,25 @@ package com.hedera.fullstack.junit.support.annotations.flow;
 
 import com.hedera.fullstack.monitoring.api.Monitor;
 
+import java.lang.annotation.*;
+
+/**
+ * Suppresses the specified monitors for the annotated method. The behavior of this annotation is to suppress the
+ * monitor, if present, regardless of the inheritance path from which the monitor was applied.
+ */
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
 public @interface SuppressMonitors {
+    /**
+     * An array of monitors to suppress.
+     *
+     * @return the array of monitors to be suppressed.
+     */
     Class<Monitor>[] value();
 
-    String[] nodeLabels() default {};
-
-    int[] nodeIndices() default {};
+//    String[] nodeLabels() default {};
+//
+//    int[] nodeIndices() default {};
 }

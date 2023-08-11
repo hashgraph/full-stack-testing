@@ -18,11 +18,25 @@ package com.hedera.fullstack.junit.support.annotations.flow;
 
 import com.hedera.fullstack.validator.api.Validator;
 
+import java.lang.annotation.*;
 
+/**
+ * Suppresses the specified validators for the annotated method. The behavior of this annotation is to suppress the
+ * validator, if present, regardless of the inheritance path from which the validator was applied.
+ */
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
 public @interface SuppressValidators {
+    /**
+     * An array of validators to suppress.
+     *
+     * @return the array of validators to be suppressed.
+     */
     Class<Validator>[] value();
 
-    String[] nodeNames() default {};
-
-    int[] nodeIndices() default {};
+//    String[] nodeLabels() default {};
+//
+//    int[] nodeIndices() default {};
 }

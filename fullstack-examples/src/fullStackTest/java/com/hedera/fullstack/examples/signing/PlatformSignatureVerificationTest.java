@@ -24,8 +24,6 @@ import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
 import com.hedera.fullstack.junit.support.annotations.core.ParameterizedFullStackTest;
 import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
-import com.hedera.fullstack.junit.support.annotations.resource.LabeledResourceShape;
-import com.hedera.fullstack.junit.support.annotations.resource.LabeledResourceShapes;
 import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -41,17 +39,18 @@ public class PlatformSignatureVerificationTest {
     void testBasicCase() {}
 
     @FullStackTest
-    @ResourceShape(cpuInMillis = 10_000, memorySize = 64, memoryUnits = StorageUnits.GIGABYTES)
+    @ApplicationNodes(
+            value = 4,
+            shape = @ResourceShape(cpuInMillis = 10_000, memorySize = 64, memoryUnits = StorageUnits.GIGABYTES))
     @DisplayName("SSTT: Basic Signatures - Mixed Algorithms - 4 Nodes - 10k TPS")
     void testBasicSignaturesMixedAlgorithms() {}
 
     @FullStackTest
     @DisplayName("SSTT: Quick Basic Signatures - 2 Nodes - 500 TPS")
     @MaxTestExecutionTime(value = 5, unit = TimeUnit.MINUTES)
-    @LabeledApplicationNodes({@LabeledApplicationNode("node1"), @LabeledApplicationNode("node2")})
-    @LabeledResourceShapes({
-        @LabeledResourceShape(label = "node1"),
-        @LabeledResourceShape(label = "node2", shape = @ResourceShape(cpuInMillis = 2500))
+    @LabeledApplicationNodes({
+        @LabeledApplicationNode("node1"),
+        @LabeledApplicationNode(value = "node2", shape = @ResourceShape(cpuInMillis = 2500))
     })
     void testQuickBasicSignatures() {}
 

@@ -18,10 +18,25 @@ package com.hedera.fullstack.junit.support.annotations.flow;
 
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
 
+import java.lang.annotation.*;
+
+/**
+ * Suppresses the specified readiness checks for the annotated method. The behavior of this annotation is to suppress the
+ * readiness check, if present, regardless of the inheritance path from which the readiness check was applied.
+ */
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
 public @interface SuppressReadinessChecks {
-    Class<ReadinessCheck>[] value();
+    /**
+     * An array of readiness checks to suppress.
+     *
+     * @return the array of readiness checks to be suppressed.
+     */
+    Class<? extends ReadinessCheck>[] value();
 
-    String[] nodeNames() default {};
-
-    int[] nodeIndices() default {};
+//    String[] nodeLabels() default {};
+//
+//    int[] nodeIndices() default {};
 }

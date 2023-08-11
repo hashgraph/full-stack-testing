@@ -14,17 +14,30 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations.application;
+package com.hedera.fullstack.junit.support.annotations.core;
 
 import java.lang.annotation.*;
 
+/**
+ * Represents a generic configuration value which comprises a key and value pair. This annotation may only be used
+ * in conjunction with other annotations and may not be directly applied to test classes or methods.
+ */
 @Inherited
 @Documented
-@Repeatable(PlatformConfiguration.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({})
 public @interface ConfigurationValue {
+    /**
+     * The key or name of the configuration value. Depending on the context, the key format may vary.
+     *
+     * @return the key or name of the configuration value.
+     */
     String name();
 
+    /**
+     * The value of the specified configuration key/name. Depending on the context, the value format may vary.
+     *
+     * @return the value of the specified configuration key/name.
+     */
     String value();
 }

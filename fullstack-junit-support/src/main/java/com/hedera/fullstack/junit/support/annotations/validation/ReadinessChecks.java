@@ -16,13 +16,30 @@
 
 package com.hedera.fullstack.junit.support.annotations.validation;
 
+import com.hedera.fullstack.junit.support.annotations.flow.SuppressReadinessChecks;
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
 import java.lang.annotation.*;
 
+/**
+ * Declares a list of {@link ReadinessCheck} implementations which should be executed before the test body.
+ * <p>
+ * If this annotation is present on a test class, all tests in the class inherit the list of readiness checks. If this
+ * annotation is also present on one or more test methods, then the list of readiness checks declared on the method is
+ * appended to the list of readiness checks declared on the class with any duplicates removed. Readiness checks declared
+ * at the class level may be excluded on a per readiness check and per test basis by using the
+ * {@link SuppressReadinessChecks} at the method level.
+ * <p>
+ * Default readiness checks will not be used for a test or class if this annotation is present.
+ */
 @Inherited
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReadinessChecks {
+    /**
+     * The list of {@link ReadinessCheck} implementations to be executed during the test.
+     *
+     * @return an array of {@link ReadinessCheck} implementations.
+     */
     Class<? extends ReadinessCheck>[] value();
 }

@@ -16,13 +16,30 @@
 
 package com.hedera.fullstack.junit.support.annotations.validation;
 
+import com.hedera.fullstack.junit.support.annotations.flow.SuppressValidators;
 import com.hedera.fullstack.validator.api.Validator;
 import java.lang.annotation.*;
 
+/**
+ * Declares a list of {@link Validator} implementations which should be executed after the test body.
+ * <p>
+ * If this annotation is present on a test class, all tests in the class inherit the list of validators. If this
+ * annotation is also present on one or more test methods, then the list of validators declared on the method is
+ * appended to the list of validators declared on the class with any duplicates removed. Monitors declared at the class
+ * level may be excluded on a per validator and per test basis by using the {@link SuppressValidators} at the method
+ * level.
+ * <p>
+ * Default validators will not be used for a test or class if this annotation is present.
+ */
 @Inherited
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Validators {
+    /**
+     * The list of {@link Validator} implementations to be executed during the test.
+     *
+     * @return an array of {@link Validator} implementations.
+     */
     Class<? extends Validator>[] value();
 }
