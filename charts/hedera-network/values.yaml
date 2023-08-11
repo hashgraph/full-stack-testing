@@ -167,3 +167,26 @@ hedera:
     - name: node0
     - name: node1
     - name: node2
+
+# inside importer
+importer:
+  config:
+    hedera:
+      mirror:
+        rest.log.level: debug
+        # importer:
+        #   network: dev
+        #   downloader:
+        #     sources:
+        #      - type: "S3"
+        #        uri: "http://myminio-hl.default.svc:9000/fst-streams"
+        #        credentials:
+        #           accessKey: minio
+        #           secretKey: minio123
+        importer:
+          downloader:
+            accessKey: minio
+            secretKey: minio123
+            bucketName: "fst-streams"
+            cloudProvider: "s3"
+            endpointOverride: "http://myminio-hl.default.svc:9000"
