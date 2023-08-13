@@ -16,21 +16,24 @@
 
 package com.hedera.fullstack.junit.support.annotations.application;
 
-import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
-import com.hedera.fullstack.junit.support.events.application.ApplicationEvent;
 import java.lang.annotation.*;
 
+/**
+ * A container annotation for {@link NamedApplicationNode}. This annotation allows multiple
+ * {@link NamedApplicationNode} annotations to be declared on a single element.
+ * <p>Please see the documentation for {@link NamedApplicationNode} for more information.
+ *
+ * @see NamedApplicationNode
+ */
 @Inherited
 @Documented
-@Repeatable(LabeledApplicationNodes.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface LabeledApplicationNode {
-    String value();
-
-    ResourceShape shape() default @ResourceShape;
-
-    String[] tags() default {};
-
-    Class<? extends ApplicationEvent>[] eventHandlers() default {};
+public @interface NamedApplicationNodes {
+    /**
+     * The array of {@link NamedApplicationNode} annotations which have been applied to the target element.
+     *
+     * @return an array of {@link NamedApplicationNode} annotations.
+     */
+    NamedApplicationNode[] value();
 }

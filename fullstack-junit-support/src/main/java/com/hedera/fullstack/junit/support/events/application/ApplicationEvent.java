@@ -16,4 +16,7 @@
 
 package com.hedera.fullstack.junit.support.events.application;
 
+/**
+ * The base interface for all event types which are related to the application lifecycle.
+ */
 public interface ApplicationEvent {}

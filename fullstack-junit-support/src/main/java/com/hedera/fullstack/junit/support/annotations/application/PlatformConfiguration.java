@@ -17,7 +17,6 @@
 package com.hedera.fullstack.junit.support.annotations.application;
 
 import com.hedera.fullstack.junit.support.annotations.core.ConfigurationValue;
-
 import java.lang.annotation.*;
 
 /**

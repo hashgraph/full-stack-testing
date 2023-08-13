@@ -20,26 +20,40 @@ import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import java.lang.annotation.*;
 
 /**
- * Defines multiple identical application nodes with a resource shape specification, and zero or more tags. This
- * annotation is mutually exclusive with the {@link NamedApplicationNode} annotation and must not be used in conjunction
+ * Defines a single application node with a name, resource shape specification, and zero or more tags. This annotation
+ * is mutually exclusive with the {@link ApplicationNodes} annotation and must not be used in conjunction
  * with each other on the same element. When {@link ApplicationNodes}, {@link NamedApplicationNode}, or any combination
  * thereof is defined at the class level and at the test method level, then the annotations declared on the class will
  * be ignored and only the annotations declared on the test method will be used.
  *
- * @see NamedApplicationNode
+ * @see ApplicationNodes
  * @see NamedApplicationNodes
  */
 @Inherited
 @Documented
+@Repeatable(NamedApplicationNodes.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface ApplicationNodes {
+public @interface NamedApplicationNode {
     /**
-     * The number of identical application nodes to be created. This value must be greater than or equal to 1.
+     * The user specific name or identifier of the application node. This name must be unique within the scope of the
+     * test suite and test method. If this annotation is declared on a test method, then the name must be unique within
+     * the scope of the test method. If this annotation is declared on a test class, then the name must be unique within
+     * the scope of the test class.
+     * <p>The user provided name must conform to the DNS label specification as defined in RFC 1035 (summarized below):
+     * <ul>
+     *     <li>Must be between 1 and 63 characters in length.</li>
+     *     <li>Must start with a letter or number.</li>
+     *     <li>Must end with a letter or number.</li>
+     *     <li>Must contain only letters, numbers, or hyphens.</li>
+     *     <li>Must not contain two consecutive hyphens.</li>
+     *     <li>Must not contain a hyphen as the first or last character.</li>
+     *     <li>Must be treated as case insensitive.</li>
+     * </ul>
      *
-     * @return the number of application nodes.
+     * @return the name of the application node.
      */
-    int value();
+    String value();
 
     /**
      * The description of the physical machine specification on which the application is deployed. Uses the defaults

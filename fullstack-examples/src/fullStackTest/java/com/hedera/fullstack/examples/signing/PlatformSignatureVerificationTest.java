@@ -18,8 +18,8 @@ package com.hedera.fullstack.examples.signing;
 
 import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
-import com.hedera.fullstack.junit.support.annotations.application.LabeledApplicationNode;
-import com.hedera.fullstack.junit.support.annotations.application.LabeledApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.application.NamedApplicationNode;
+import com.hedera.fullstack.junit.support.annotations.application.NamedApplicationNodes;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
 import com.hedera.fullstack.junit.support.annotations.core.ParameterizedFullStackTest;
@@ -48,9 +48,9 @@ public class PlatformSignatureVerificationTest {
     @FullStackTest
     @DisplayName("SSTT: Quick Basic Signatures - 2 Nodes - 500 TPS")
     @MaxTestExecutionTime(value = 5, unit = TimeUnit.MINUTES)
-    @LabeledApplicationNodes({
-        @LabeledApplicationNode("node1"),
-        @LabeledApplicationNode(value = "node2", shape = @ResourceShape(cpuInMillis = 2500))
+    @NamedApplicationNodes({
+        @NamedApplicationNode("node1"),
+        @NamedApplicationNode(value = "node2", shape = @ResourceShape(cpuInMillis = 2500))
     })
     void testQuickBasicSignatures() {}
 

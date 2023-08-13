@@ -18,12 +18,12 @@ package com.hedera.fullstack.junit.support.annotations.resource;
 
 import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
-import com.hedera.fullstack.junit.support.annotations.application.LabeledApplicationNode;
+import com.hedera.fullstack.junit.support.annotations.application.NamedApplicationNode;
 import java.lang.annotation.*;
 
 /**
  * Describes the resource limits (CPU, Memory, Disk) for a physical machine, K8S pod, or container. This annotation
- * must be used as a parameter of another annotation, such as {@link ApplicationNodes} or {@link LabeledApplicationNode}.
+ * must be used as a parameter of another annotation, such as {@link ApplicationNodes} or {@link NamedApplicationNode}.
  */
 @Inherited
 @Documented

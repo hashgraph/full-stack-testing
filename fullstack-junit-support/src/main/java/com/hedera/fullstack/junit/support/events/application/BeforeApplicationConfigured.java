@@ -16,7 +16,25 @@
 
 package com.hedera.fullstack.junit.support.events.application;
 
+/**
+ * Defines an extension point for the application lifecycle which is invoked before the application node configuration
+ * is rendered and deployed to the physical environment. This event is invoked for each node in the application topology.
+ * <p>
+ * Implementations of this extension point are expected to be idempotent and should only modify the configuration
+ * supplied as method arguments. Mutating state other than the supplied configuration is not recommended and may lead to
+ * unexpected results.
+ * <p>
+ * At the time of extension point invocation, it is guaranteed that the defaults have been applied and any class or
+ * method level annotations have been applied to the configuration.
+ */
 public interface BeforeApplicationConfigured extends ApplicationEvent {
 
+    /**
+     * Invoked before the application node configuration is rendered and deployed to the physical environment.
+     *
+     * @param index the index of the node in the application topology.
+     * @param node the application node.
+     * @param config the application node configuration.
+     */
     void beforeApplicationConfigured(int index, Object node, Object config);
 }

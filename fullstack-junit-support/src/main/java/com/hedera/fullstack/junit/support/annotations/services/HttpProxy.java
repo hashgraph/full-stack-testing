@@ -18,6 +18,10 @@ package com.hedera.fullstack.junit.support.annotations.services;
 
 import java.lang.annotation.*;
 
+/**
+ * Indicates that the annotated test class or test method requires one or more HAProxy servers to be deployed and
+ * running.
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
