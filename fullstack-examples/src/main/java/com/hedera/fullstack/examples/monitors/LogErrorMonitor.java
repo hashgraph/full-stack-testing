@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support;
+package com.hedera.fullstack.examples.monitors;
 
-public interface ApplicationProvisioner {
+import com.hedera.fullstack.monitoring.api.CheckOutcome;
+import com.hedera.fullstack.monitoring.api.Monitor;
 
-    void beforeApplicationConfigured(int index, Object node, Object config);
+public class LogErrorMonitor implements Monitor {
+    @Override
+    public CheckOutcome check() {
+        return CheckOutcome.SUCCESS;
+    }
 }

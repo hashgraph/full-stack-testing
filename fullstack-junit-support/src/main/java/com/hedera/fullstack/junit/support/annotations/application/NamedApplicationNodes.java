@@ -14,12 +14,26 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotations.application;
 
 import java.lang.annotation.*;
 
+/**
+ * A container annotation for {@link NamedApplicationNode}. This annotation allows multiple
+ * {@link NamedApplicationNode} annotations to be declared on a single element.
+ * <p>Please see the documentation for {@link NamedApplicationNode} for more information.
+ *
+ * @see NamedApplicationNode
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnableHashIO {}
+public @interface NamedApplicationNodes {
+    /**
+     * The array of {@link NamedApplicationNode} annotations which have been applied to the target element.
+     *
+     * @return an array of {@link NamedApplicationNode} annotations.
+     */
+    NamedApplicationNode[] value();
+}

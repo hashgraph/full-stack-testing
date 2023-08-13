@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api;
+package com.hedera.fullstack.examples.monitors;
 
-import java.util.List;
+import com.hedera.fullstack.monitoring.api.CheckOutcome;
+import com.hedera.fullstack.monitoring.api.Monitor;
 
-/**
- *
- */
-public interface ValidationResult {
-    ValidationOutcome getOutcome();
-
-    <T extends ValidationDetail> List<T> getDetails();
+public class InvalidStateSignatureMonitor implements Monitor {
+    @Override
+    public CheckOutcome check() {
+        return CheckOutcome.SUCCESS;
+    }
 }
