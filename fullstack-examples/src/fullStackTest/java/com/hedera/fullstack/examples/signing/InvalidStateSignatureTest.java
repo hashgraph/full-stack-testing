@@ -47,7 +47,6 @@ import org.junit.jupiter.api.DisplayName;
     @ConfigurationValue(name = "state.dumpStateOnAnyISS", value = "false"),
     @ConfigurationValue(name = "state.automatedSelfIssRecovery", value = "true"),
     @ConfigurationValue(name = "state.haltOnCatastrophicIss", value = "true"),
-    @ConfigurationValue(name = "issTestingTool.plannedISSs", value = "180:0-1-2-3"),
     @ConfigurationValue(name = "event.preconsensus.enableReplay", value = "false"),
     @ConfigurationValue(name = "event.preconsensus.enableStorage", value = "false")
 })
@@ -57,6 +56,9 @@ class InvalidStateSignatureTest {
     @FullStackTest(mode = TestExecutionMode.TIMED_EXECUTION)
     @WaitForDuration(value = 5, unit = TimeUnit.MINUTES)
     @MaxTestExecutionTime(value = 15, unit = TimeUnit.MINUTES)
+    @PlatformConfiguration({
+        @ConfigurationValue(name = "issTestingTool.plannedISSs", value = "180:0-1-2-3"),
+    })
     @DisplayName("ISS-catastrophic-1k-5m")
     void catastrophic_1k_5m() {}
 }
