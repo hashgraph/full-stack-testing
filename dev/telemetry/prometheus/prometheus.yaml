@@ -2,13 +2,14 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: prometheus-example-app
+  name: network-node-monitor
   labels:
+
     team: frontend
 spec:
   selector:
     matchLabels:
-      app: prometheus-example-app
+      fullstack.hedera.com/type: network-node-svc
   endpoints:
     - port: web
 ---
