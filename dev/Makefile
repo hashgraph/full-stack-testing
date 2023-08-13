@@ -8,13 +8,22 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 .ONESHELL:
 
 # Here we tell make not to output the actual command before execution in order to reduce noise in the logs.
-.SILENT: setup setup-cluster deploy-chart helm-test deploy-network  destroy-test-container destroy-network test
+.SILENT: \
+	setup \
+	setup-cluster \
+	deploy-chart \
+	helm-test \
+	deploy-network  \
+	destroy-test-container \
+	destroy-network test
+
 
 # Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
+TELEMETRY_SCRIPT="telemetry.sh"
 
 .PHONY: all
 all: setup setup-cluster reset
@@ -124,3 +133,25 @@ restart: stop-nodes start-nodes
 .PHONY: reset
 reset: destroy-network start
 
+
+######################################### Prometheus #################################
+.PHONY: fetch-prometheus-operator-bundle
+fetch-prometheus-operator-bundle:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && fetch-prometheus-operator-bundle
+
+.PHONY: deploy-prometheus-operator
+deploy-prometheus-operator: fetch-prometheus-operator-bundle
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus-operator
+
+.PHONY: destroy-prometheus-operator
+destroy-prometheus-operator:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
+
+.PHONY: deploy-prometheus
+deploy-prometheus: deploy-prometheus-operator
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus
+
+.PHONY: destroy-prometheus
+destroy-prometheus:
+	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus
+	make destroy-prometheus-operator

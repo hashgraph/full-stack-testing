@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-example-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: prometheus-example-app
+  template:
+    metadata:
+      labels:
+        app: prometheus-example-app
+    spec:
+      containers:
+        - name: prometheus-example-app
+          image: fabxc/instrumented_app
+          ports:
+            - name: web
+              containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: prometheus-example-app
+  labels:
+    app: prometheus-example-app
+spec:
+  selector:
+    app: prometheus-example-app
+  ports:
+    - name: web
+      port: 8080
