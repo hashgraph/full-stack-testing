@@ -41,7 +41,13 @@ import org.junit.jupiter.api.DisplayName;
 @ApplicationNodes(value = 4, shape = @ResourceShape(cpuInMillis = 8_000, memorySize = 8L))
 @PlatformApplication(fileName = "ISSTestingTool.jar")
 @ReadinessChecks({NodeActiveReadinessCheck.class})
-@Monitors({NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class})
+@Monitors(
+        value = {NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class},
+        config = {
+            @ConfigurationValue(
+                    name = "log.errors.iss.expected.typeByNodeIndex",
+                    values = {"catastrophic", "catastrophic", "catastrophic", "catastrophic"})
+        })
 @Validators({NodeStatisticHealthValidator.class})
 @PlatformConfiguration({
     @ConfigurationValue(name = "state.dumpStateOnAnyISS", value = "false"),

@@ -58,6 +58,7 @@ public @interface FullStackSuite {
      * Please see the {@link ProvisioningModel} documentation for more information.
      *
      * @return the provisioning model to be used for the test suite.
+     * @see ProvisioningModel
      */
     ProvisioningModel provisioningModel() default ProvisioningModel.CLEAN_ENV_PER_TEST;
 }
