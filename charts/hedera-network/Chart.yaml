@@ -28,6 +28,7 @@ kubeVersion: ">=1.25.0"
 
 dependencies:
   - name: hedera-mirror
+    alias: hedera-mirror-node
     version: 0.86.0
     repository: https://hashgraph.github.io/hedera-mirror-node/charts
 

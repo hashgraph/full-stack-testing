@@ -182,6 +182,27 @@ minio-server:
     certificate:
       requestAutoCert: false
 
+hedera-mirror-node:
+  # importer is a component of the hedera mirror node
+  # config for subchart hedera-mirror/importer
+  importer:
+    config:
+      # importer is a springboot app, its application.yaml configuration starts here
+      # This config is mounted at [/usr/etc/hedera/application.yaml] in the importer pod
+      hedera:
+        mirror:
+          importer:
+            downloader:
+              allowAnonymousAccess: false
+              bucketName: "fst-streams"
+              sources:
+                - type: "S3"
+                  ## If minio is deployed in a different namespace use a FQDN like myminio-hl.<namespace>.svc.cluster.local
+                  uri: "http://myminio-hl:9000/fst-streams"
+                  credentials:
+                    accessKey: minio
+                    secretKey: minio123
+
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
 hedera:
