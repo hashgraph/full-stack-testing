@@ -14,12 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+plugins { id("com.hedera.fullstack.conventions") }
 
-import java.lang.annotation.*;
-
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnableProxyServer {}
+dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }

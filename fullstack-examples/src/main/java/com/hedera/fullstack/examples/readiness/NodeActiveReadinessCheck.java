@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api;
+package com.hedera.fullstack.examples.readiness;
 
-import java.util.List;
+import com.hedera.fullstack.readiness.api.ReadinessCheck;
 
-/**
- *
- */
-public interface ValidationResult {
-    ValidationOutcome getOutcome();
+public class NodeActiveReadinessCheck implements ReadinessCheck {
 
-    <T extends ValidationDetail> List<T> getDetails();
+    @Override
+    public boolean ready() {
+        return true;
+    }
 }

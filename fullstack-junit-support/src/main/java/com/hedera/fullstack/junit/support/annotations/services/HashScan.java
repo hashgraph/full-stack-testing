@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api;
+package com.hedera.fullstack.junit.support.annotations.services;
 
-import java.util.List;
+import java.lang.annotation.*;
 
 /**
- *
+ * Indicates that the annotated test class or test method requires a HashScan server (Hedera Mirror Node Explorer)
+ * to be deployed and running. This annotation also implicitly specifies the {@link MirrorNode} annotation.
  */
-public interface ValidationResult {
-    ValidationOutcome getOutcome();
-
-    <T extends ValidationDetail> List<T> getDetails();
-}
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface HashScan {}

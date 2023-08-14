@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotations.services;
 
 import java.lang.annotation.*;
 
+/**
+ * Indicates that the annotated test class or test method requires a mirror node to be deployed and running.
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface LabeledApplicationNodes {
-    LabeledApplicationNode[] value();
-}
+public @interface MirrorNode {}
