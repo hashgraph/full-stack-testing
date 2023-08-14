@@ -30,7 +30,7 @@ destroy-prometheus-operator:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
 
 .PHONY: deploy-prometheus
-deploy-prometheus:
+deploy-prometheus: deploy-prometheus-operator
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus
 
 .PHONY: destroy-prometheus
@@ -45,7 +45,7 @@ destroy-all:
 	-${MAKE} destroy-prometheus-operator
 
 .PHONY: deploy-all
-deploy-all: deploy-prometheus-operator deploy-prometheus-example-app deploy-prometheus
+deploy-all: deploy-prometheus-example-app deploy-prometheus
 
 # Prometheus example app
 .PHONY: deploy-prometheus-example-app

@@ -32,8 +32,13 @@ function deploy-prometheus-operator() {
 	echo "Deploying prometheus operator"
 	echo "PROMETHEUS_OPERATOR_YAML: ${PROMETHEUS_OPERATOR_YAML}"
   echo "-----------------------------------------------------------------------------------------------------"
-	kubectl create -f "${PROMETHEUS_OPERATOR_YAML}"
-	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus-operator -n default
+  local crd_count=$(kubectl get crd | grep "monitoring.coreos.com" | wc -l)
+  if [[ $crd_count -ne 10 ]]; then
+	  kubectl create -f "${PROMETHEUS_OPERATOR_YAML}"
+	  kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus-operator -n default
+	else
+	  echo "Kubernetes operator CRD is already installed"
+	fi
 }
 
 function destroy-prometheus-operator() {
