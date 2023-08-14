@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api;
+package com.hedera.fullstack.monitoring.api;
 
-import java.util.List;
+import java.time.Duration;
 
-/**
- *
- */
-public interface ValidationResult {
-    ValidationOutcome getOutcome();
+@FunctionalInterface
+public interface Monitor {
 
-    <T extends ValidationDetail> List<T> getDetails();
+    Duration DEFAULT_CHECK_INTERVAL = Duration.ofSeconds(5);
+
+    CheckOutcome check();
+
+    default Duration checkInterval() {
+        return DEFAULT_CHECK_INTERVAL;
+    }
 }

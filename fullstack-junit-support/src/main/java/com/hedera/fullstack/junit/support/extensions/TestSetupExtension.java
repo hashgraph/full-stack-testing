@@ -16,21 +16,19 @@
 
 package com.hedera.fullstack.junit.support.extensions;
 
+import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 
 /**
- * Initializes the test class instance for the test suite. This initializer is responsible for reading the class level
- * annotations and setting up the suite configuration.
+ * Handles the individual test setup, configuration, and resource deployment (if applicable).
  */
-public class TestSuiteInitializer implements TestInstancePostProcessor {
-
+public class TestSetupExtension implements BeforeEachCallback {
     /**
+     * Callback that is invoked <em>before</em> each test is executed.
      *
-     * @param testInstance the instance to post-process; never {@code null}
      * @param context the current extension context; never {@code null}
-     * @throws Exception if an error occurs during post-processing
+     * @throws Exception if an error occurs during callback execution.
      */
     @Override
-    public void postProcessTestInstance(Object testInstance, ExtensionContext context) throws Exception {}
+    public void beforeEach(final ExtensionContext context) throws Exception {}
 }

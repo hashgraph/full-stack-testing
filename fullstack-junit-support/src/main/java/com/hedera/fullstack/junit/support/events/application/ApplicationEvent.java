@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.monitoring.api;
+package com.hedera.fullstack.junit.support.events.application;
 
-public class Dummy {}
+/**
+ * The base interface for all event types which are related to the application lifecycle.
+ */
+public interface ApplicationEvent {}
