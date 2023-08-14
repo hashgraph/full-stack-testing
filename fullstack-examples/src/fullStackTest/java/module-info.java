@@ -7,5 +7,6 @@ module com.hedera.fullstack.examples.fullstacktest {
 
     requires com.hedera.fullstack.examples;
     requires com.hedera.fullstack.junit.support;
+    requires com.hedera.fullstack.test.toolkit;
     requires org.junit.jupiter.api;
 }

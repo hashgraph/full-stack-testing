@@ -14,6 +14,18 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.test.toolkit.api;
+package com.hedera.fullstack.test.toolkit.api.model.traits;
 
-public class Dummy {}
+import java.util.List;
+
+/**
+ * A trait for objects that have tags and are aware of their own tags.
+ */
+public interface Tagged {
+    /**
+     * The well-known tags of this object instance.
+     *
+     * @return the known tags.
+     */
+    List<String> tags();
+}

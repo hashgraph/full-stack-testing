@@ -21,6 +21,7 @@ import com.hedera.fullstack.examples.monitors.LogErrorMonitor;
 import com.hedera.fullstack.examples.monitors.NodeLivenessMonitor;
 import com.hedera.fullstack.examples.readiness.NodeActiveReadinessCheck;
 import com.hedera.fullstack.examples.validators.NodeStatisticHealthValidator;
+import com.hedera.fullstack.examples.validators.PlatformStatusValidator;
 import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
 import com.hedera.fullstack.junit.support.annotations.application.PlatformApplication;
 import com.hedera.fullstack.junit.support.annotations.application.PlatformConfiguration;
@@ -34,6 +35,8 @@ import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
 import com.hedera.fullstack.junit.support.annotations.validation.Monitors;
 import com.hedera.fullstack.junit.support.annotations.validation.ReadinessChecks;
 import com.hedera.fullstack.junit.support.annotations.validation.Validators;
+import com.hedera.fullstack.junit.support.inject.core.TestTailor;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Network;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
 
@@ -66,5 +69,12 @@ class InvalidStateSignatureTest {
         @ConfigurationValue(name = "issTestingTool.plannedISSs", value = "180:0-1-2-3"),
     })
     @DisplayName("ISS-catastrophic-1k-5m")
-    void catastrophic_1k_5m() {}
+    void catastrophic_1k_5m(Network network, TestTailor tailor) {
+        final PlatformStatusValidator psv = PlatformStatusValidator.builder()
+                .nodeId("default")
+                .steps("REPLAYING_EVENTS", "OBSERVING", "CHECKING", "ACTIVE", "CHECKING")
+                .build();
+
+        tailor.validators().add(psv);
+    }
 }
