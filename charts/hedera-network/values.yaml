@@ -15,7 +15,9 @@ telemetry:
   prometheus:
     svcMonitor:
       enable: "true"
-      interval: "5s"
+      endpoints:
+        - port: metrics
+          interval: 5s
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
