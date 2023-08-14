@@ -74,7 +74,7 @@ function destroy-prometheus() {
 	sleep 5
 }
 
-function deploy-prometheus-example-app {
+function deploy-prometheus-example-app() {
   echo ""
 	echo "Deploying prometheus-example-app"
 	echo "PROMETHEUS_EXAMPLE_APP_YAML: ${PROMETHEUS_EXAMPLE_APP_YAML}"
@@ -83,7 +83,7 @@ function deploy-prometheus-example-app {
 	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default
 }
 
-function destroy-prometheus-example-app {
+function destroy-prometheus-example-app() {
   echo ""
 	echo "Destroying prometheus-example-app"
 	echo "PROMETHEUS_EXAMPLE_APP_YAML: ${PROMETHEUS_EXAMPLE_APP_YAML}"
