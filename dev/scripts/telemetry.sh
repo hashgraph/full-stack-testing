@@ -59,6 +59,8 @@ function deploy-prometheus() {
 	kubectl create -f "${PROMETHEUS_RBAC_YAML}"
 	sleep 10
 	kubectl create -f "${PROMETHEUS_YAML}"
+	echo "Waiting for prometheus to be running..."
+	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus -n default  --timeout 300s
 }
 
 function destroy-prometheus() {
@@ -69,7 +71,7 @@ function destroy-prometheus() {
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl delete -f "${PROMETHEUS_YAML}"
 	kubectl delete -f "${PROMETHEUS_RBAC_YAML}"
-	sleep 10
+	sleep 5
 }
 
 function deploy-prometheus-example-app {

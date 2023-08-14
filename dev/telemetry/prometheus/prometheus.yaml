@@ -1,18 +1,3 @@
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: network-node-monitor
-  labels:
-
-    team: frontend
-spec:
-  selector:
-    matchLabels:
-      fullstack.hedera.com/type: network-node-svc
-  endpoints:
-    - port: web
----
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
@@ -21,7 +6,7 @@ spec:
   serviceAccountName: prometheus
   serviceMonitorSelector:
     matchLabels:
-      team: frontend
+      fullstack.hedera.com/type: network-node-svc-monitor
   resources:
     requests:
       memory: 400Mi

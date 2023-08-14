@@ -1,4 +1,4 @@
-# WARNING: Except numbers use double quote for all values. This is because we need to be careful about booleans.
+# WARNING: Use double quotes for all values. This is because we need to be careful about booleans.
 
 # cloud configuration
 cloud:
@@ -9,6 +9,13 @@ cloud:
     enable: "true"
   gcs:
     enable: "true"
+
+# telemetry configurations
+telemetry:
+  prometheus:
+    svcMonitor:
+      enable: "true"
+      interval: "5s"
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
