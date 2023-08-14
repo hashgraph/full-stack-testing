@@ -38,7 +38,7 @@ setup-cluster:
 	kind create cluster -n fst
 
 .PHONY: deploy-chart
-deploy-chart:
+deploy-chart: deploy-prometheus-operator
 	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
