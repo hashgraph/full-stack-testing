@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api;
+package com.hedera.fullstack.base.api.units;
 
-import java.util.List;
-
-/**
- *
- */
-public interface ValidationResult {
-    ValidationOutcome getOutcome();
-
-    <T extends ValidationDetail> List<T> getDetails();
+public enum StorageUnits {
+    BYTES,
+    KILOBYTES,
+    MEGABYTES,
+    GIGABYTES,
+    TERABYTES,
+    PETABYTES,
+    EXABYTES
 }

@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api.annotations;
+package com.hedera.fullstack.junit.support.annotations.flow;
 
+import com.hedera.fullstack.readiness.api.ReadinessCheck;
 import java.lang.annotation.*;
 
 /**
- * Indicates the annotated {@link com.hedera.fullstack.validator.api.Validator} implementation should always be executed,
- * even if the test has already failed or if a prior validator reports a failure.
+ * Suppresses the specified readiness checks for the annotated method. The behavior of this annotation is to suppress the
+ * readiness check, if present, regardless of the inheritance path from which the readiness check was applied.
  */
 @Inherited
 @Documented
-@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidateAlways {}
+@Target({ElementType.METHOD})
+public @interface SuppressReadinessChecks {
+    /**
+     * An array of readiness checks to suppress.
+     *
+     * @return the array of readiness checks to be suppressed.
+     */
+    Class<? extends ReadinessCheck>[] value();
+
+    //    String[] nodeLabels() default {};
+    //
+    //    int[] nodeIndices() default {};
+}

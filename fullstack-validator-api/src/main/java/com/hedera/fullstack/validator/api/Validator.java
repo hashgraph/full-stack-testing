@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 /**
  *
  */
+@FunctionalInterface
 public interface Validator {
     /**
      *

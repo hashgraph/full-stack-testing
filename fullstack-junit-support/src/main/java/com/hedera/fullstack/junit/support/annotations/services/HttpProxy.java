@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.junit.support.annotations.services;
 
-import com.hedera.fullstack.junit.support.ApplicationProvisioner;
 import java.lang.annotation.*;
 
+/**
+ * Indicates that the annotated test class or test method requires one or more HAProxy servers to be deployed and
+ * running.
+ */
 @Inherited
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface ApplicationNodes {
-    int value();
-
-    Class<ApplicationProvisioner> provisioner() default ApplicationProvisioner.class;
-}
+public @interface HttpProxy {}

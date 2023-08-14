@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.validator.api.annotations;
+package com.hedera.fullstack.junit.support.annotations.flow;
 
+import com.hedera.fullstack.monitoring.api.Monitor;
 import java.lang.annotation.*;
 
 /**
- * Indicates the annotated {@link com.hedera.fullstack.validator.api.Validator} implementation should always be executed,
- * even if the test has already failed or if a prior validator reports a failure.
+ * Suppresses the specified monitors for the annotated method. The behavior of this annotation is to suppress the
+ * monitor, if present, regardless of the inheritance path from which the monitor was applied.
  */
 @Inherited
 @Documented
-@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidateAlways {}
+@Target({ElementType.METHOD})
+public @interface SuppressMonitors {
+    /**
+     * An array of monitors to suppress.
+     *
+     * @return the array of monitors to be suppressed.
+     */
+    Class<Monitor>[] value();
+
+    //    String[] nodeLabels() default {};
+    //
+    //    int[] nodeIndices() default {};
+}

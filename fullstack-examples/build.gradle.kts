@@ -17,3 +17,16 @@
 plugins { id("com.hedera.fullstack.conventions") }
 
 dependencies { api(platform(project(":fullstack-bom"))) }
+
+testing {
+    suites {
+        @Suppress("UnstableApiUsage", "unused")
+        val fullStackTest by
+            registering(JvmTestSuite::class) {
+                useJUnitJupiter()
+                dependencies { implementation(project(":fullstack-examples")) }
+            }
+    }
+}
+
+tasks.assemble.configure { dependsOn(tasks.named("fullStackTestClasses")) }

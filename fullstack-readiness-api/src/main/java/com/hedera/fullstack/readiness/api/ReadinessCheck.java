@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.readiness.api;
 
-import java.lang.annotation.*;
+import java.time.Duration;
 
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnableHashScan {}
+@FunctionalInterface
+public interface ReadinessCheck {
+    Duration DEFAULT_CHECK_INTERVAL = Duration.ofSeconds(1);
+    Duration DEFAULT_CHECK_TIMEOUT = Duration.ofSeconds(60);
+
+    boolean ready();
+
+    default Duration checkInterval() {
+        return DEFAULT_CHECK_INTERVAL;
+    }
+
+    default Duration checkTimeout() {
+        return DEFAULT_CHECK_TIMEOUT;
+    }
+}
