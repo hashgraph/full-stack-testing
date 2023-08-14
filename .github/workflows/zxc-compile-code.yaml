@@ -106,11 +106,18 @@ jobs:
         with:
           version: "v3.12.1" # helm version
 
+      - name: Setup Kubernetes Operators
+        working-directory: dev
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run: | 
+          make deploy-prometheus-operator
+
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         run: |
           kubectl config set-context --current --namespace=default
           kubectl config get-contexts
+          kubectl get crd
 
       - name: Authenticate to Google Cloud
         id: google-auth
