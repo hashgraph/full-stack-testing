@@ -18,13 +18,20 @@ package com.hedera.fullstack.junit.support.inject.core;
 
 import com.hedera.fullstack.monitoring.api.Monitor;
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.PhysicalNode;
 import com.hedera.fullstack.validator.api.Validator;
 
 public interface TestTailor {
 
     CheckMutator<Validator, TestTailor> validators();
 
+    CheckMutator<Validator, TestTailor> validators(PhysicalNode node);
+
     CheckMutator<Monitor, TestTailor> monitors();
 
+    CheckMutator<Monitor, TestTailor> monitors(PhysicalNode node);
+
     CheckMutator<ReadinessCheck, TestTailor> readinessChecks();
+
+    CheckMutator<ReadinessCheck, TestTailor> readinessChecks(PhysicalNode node);
 }

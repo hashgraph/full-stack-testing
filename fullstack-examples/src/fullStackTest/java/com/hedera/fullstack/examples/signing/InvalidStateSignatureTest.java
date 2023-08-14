@@ -17,9 +17,10 @@
 package com.hedera.fullstack.examples.signing;
 
 import com.hedera.fullstack.examples.monitors.InvalidStateSignatureMonitor;
-import com.hedera.fullstack.examples.monitors.LogErrorMonitor;
+import com.hedera.fullstack.examples.monitors.LogMonitor;
 import com.hedera.fullstack.examples.monitors.NodeLivenessMonitor;
 import com.hedera.fullstack.examples.readiness.NodeActiveReadinessCheck;
+import com.hedera.fullstack.examples.validators.InvalidStateSignatureValidator;
 import com.hedera.fullstack.examples.validators.NodeStatisticHealthValidator;
 import com.hedera.fullstack.examples.validators.PlatformStatusValidator;
 import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
@@ -45,13 +46,12 @@ import org.junit.jupiter.api.DisplayName;
 @PlatformApplication(fileName = "ISSTestingTool.jar")
 @ReadinessChecks({NodeActiveReadinessCheck.class})
 @Monitors(
-        value = {NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class},
-        config = {
-            @ConfigurationValue(
-                    name = "log.errors.iss.expected.typeByNodeIndex",
-                    values = {"catastrophic", "catastrophic", "catastrophic", "catastrophic"})
-        })
-@Validators({NodeStatisticHealthValidator.class})
+        value = {NodeLivenessMonitor.class, LogMonitor.class, InvalidStateSignatureMonitor.class},
+        config =
+                @ConfigurationValue(
+                        name = "log.iss.expected.typeByNodeIndex",
+                        values = {"catastrophic", "catastrophic", "catastrophic", "catastrophic"}))
+@Validators({NodeStatisticHealthValidator.class, InvalidStateSignatureValidator.class})
 @PlatformConfiguration({
     @ConfigurationValue(name = "state.dumpStateOnAnyISS", value = "false"),
     @ConfigurationValue(name = "state.automatedSelfIssRecovery", value = "true"),

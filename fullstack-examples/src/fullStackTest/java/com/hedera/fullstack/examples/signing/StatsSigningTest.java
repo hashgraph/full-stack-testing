@@ -17,7 +17,7 @@
 package com.hedera.fullstack.examples.signing;
 
 import com.hedera.fullstack.examples.monitors.InvalidStateSignatureMonitor;
-import com.hedera.fullstack.examples.monitors.LogErrorMonitor;
+import com.hedera.fullstack.examples.monitors.LogMonitor;
 import com.hedera.fullstack.examples.monitors.NodeLivenessMonitor;
 import com.hedera.fullstack.examples.readiness.NodeActiveReadinessCheck;
 import com.hedera.fullstack.examples.validators.NodeStatisticHealthValidator;
@@ -52,7 +52,7 @@ class StatsSigningTest {
     @ReadinessChecks({
         NodeActiveReadinessCheck.class,
     })
-    @Monitors({NodeLivenessMonitor.class, LogErrorMonitor.class, InvalidStateSignatureMonitor.class})
+    @Monitors({NodeLivenessMonitor.class, LogMonitor.class, InvalidStateSignatureMonitor.class})
     @Validators({NodeStatisticHealthValidator.class})
     @DisplayName("Basic 10k TPS - 20 minutes")
     void basic() {}

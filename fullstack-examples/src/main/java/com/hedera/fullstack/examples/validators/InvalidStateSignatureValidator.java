@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.inject.core;
+package com.hedera.fullstack.examples.validators;
 
-public interface CheckMutator<T, B> {
+import com.hedera.fullstack.validator.api.ValidationContext;
+import com.hedera.fullstack.validator.api.ValidationResult;
+import com.hedera.fullstack.validator.api.Validator;
+import java.util.concurrent.Future;
 
-    CheckMutator<T, B> add(T check);
-
-    CheckMutator<T, B> remove(Class<? extends T> checkType);
-
-    ConfigurationMutator<CheckMutator<T, B>> configure();
-
-    B and();
+public class InvalidStateSignatureValidator implements Validator {
+    /**
+     * @param context
+     * @return
+     */
+    @Override
+    public Future<ValidationResult> validate(ValidationContext context) {
+        return null;
+    }
 }

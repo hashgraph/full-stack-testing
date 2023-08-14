@@ -18,6 +18,7 @@ module com.hedera.fullstack.junit.support {
     requires transitive com.hedera.fullstack.validator.api;
     requires transitive com.hedera.fullstack.monitoring.api;
     requires transitive com.hedera.fullstack.readiness.api;
+    requires transitive com.hedera.fullstack.test.toolkit;
     requires transitive org.junit.jupiter.api;
     requires transitive org.junit.jupiter.params;
 

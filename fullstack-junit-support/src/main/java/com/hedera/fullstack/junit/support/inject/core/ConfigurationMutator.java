@@ -16,13 +16,13 @@
 
 package com.hedera.fullstack.junit.support.inject.core;
 
-public interface CheckMutator<T, B> {
+public interface ConfigurationMutator<B> {
 
-    CheckMutator<T, B> add(T check);
+    ConfigurationMutator<B> add(String key, String value);
 
-    CheckMutator<T, B> remove(Class<? extends T> checkType);
+    ConfigurationMutator<B> add(String key, String... values);
 
-    ConfigurationMutator<CheckMutator<T, B>> configure();
+    ConfigurationMutator<B> remove(String key);
 
     B and();
 }
