@@ -88,7 +88,7 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
 
       - name: Setup Node
-        uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # pin@v3
+        uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # pin@v3
         with:
           node-version: ${{ inputs.node-version }}
 
