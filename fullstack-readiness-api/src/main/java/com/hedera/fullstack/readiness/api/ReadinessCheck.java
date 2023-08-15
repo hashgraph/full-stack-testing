@@ -16,6 +16,8 @@
 
 package com.hedera.fullstack.readiness.api;
 
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.ApplicationNode;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Node;
 import java.time.Duration;
 
 @FunctionalInterface
@@ -31,5 +33,9 @@ public interface ReadinessCheck {
 
     default Duration checkTimeout() {
         return DEFAULT_CHECK_TIMEOUT;
+    }
+
+    default boolean appliesTo(Node<?> node) {
+        return node instanceof ApplicationNode;
     }
 }

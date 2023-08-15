@@ -24,7 +24,7 @@ dependencies { api(platform(project(":fullstack-bom"))) }
 testing {
     suites {
         @Suppress("UnstableApiUsage", "unused")
-        val fullStackTest by
+        val fullstack by
             registering(JvmTestSuite::class) {
                 useJUnitJupiter()
                 dependencies { implementation(project(":fullstack-examples")) }
@@ -32,4 +32,4 @@ testing {
     }
 }
 
-tasks.assemble.configure { dependsOn(tasks.named("fullStackTestClasses")) }
+tasks.assemble.configure { dependsOn(tasks.named("fullstackClasses")) }

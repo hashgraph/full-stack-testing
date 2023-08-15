@@ -54,6 +54,6 @@ class StatsSigningTest {
     })
     @Monitors({NodeLivenessMonitor.class, LogMonitor.class, InvalidStateSignatureMonitor.class})
     @Validators({NodeStatisticHealthValidator.class})
-    @DisplayName("Basic 10k TPS - 20 minutes")
-    void basic() {}
+    @DisplayName("Crypto-Basic-10k-20m")
+    void crypto_basic_10k_20m() {}
 }

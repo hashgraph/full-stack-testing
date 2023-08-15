@@ -69,12 +69,12 @@ class InvalidStateSignatureTest {
         @ConfigurationValue(name = "issTestingTool.plannedISSs", value = "180:0-1-2-3"),
     })
     @DisplayName("ISS-catastrophic-1k-5m")
-    void catastrophic_1k_5m(Deployment deployment, TestMutator tailor) {
+    void catastrophic_1k_5m(Deployment deployment, TestMutator tm) {
         final PlatformStatusValidator psv = PlatformStatusValidator.builder()
                 .nodeId("default")
                 .steps("REPLAYING_EVENTS", "OBSERVING", "CHECKING", "ACTIVE", "CHECKING")
                 .build();
 
-        tailor.validators().add(psv);
+        tm.validators().add(psv);
     }
 }

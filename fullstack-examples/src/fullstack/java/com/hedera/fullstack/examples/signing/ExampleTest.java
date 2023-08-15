@@ -20,11 +20,15 @@ import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
 import com.hedera.fullstack.junit.support.annotations.application.NamedApplicationNode;
 import com.hedera.fullstack.junit.support.annotations.application.NamedApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.application.PlatformApplication;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackSuite;
 import com.hedera.fullstack.junit.support.annotations.core.FullStackTest;
 import com.hedera.fullstack.junit.support.annotations.core.ParameterizedFullStackTest;
+import com.hedera.fullstack.junit.support.annotations.core.TestExecutionMode;
 import com.hedera.fullstack.junit.support.annotations.flow.MaxTestExecutionTime;
+import com.hedera.fullstack.junit.support.annotations.flow.WaitForDuration;
 import com.hedera.fullstack.junit.support.annotations.resource.ResourceShape;
+import com.hedera.fullstack.junit.support.mutators.core.TestMutator;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
@@ -33,26 +37,32 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @FullStackSuite
-public class PlatformSignatureVerificationTest {
+public class ExampleTest {
 
-    @FullStackTest
-    void testBasicCase() {}
-
-    @FullStackTest
+    @FullStackTest(mode = TestExecutionMode.TIMED_EXECUTION)
+    @WaitForDuration(value = 5, unit = TimeUnit.MINUTES)
     @ApplicationNodes(
             value = 4,
-            shape = @ResourceShape(cpuInMillis = 10_000, memorySize = 64, memoryUnits = StorageUnits.GIGABYTES))
-    @DisplayName("SSTT: Basic Signatures - Mixed Algorithms - 4 Nodes - 10k TPS")
+            shape = @ResourceShape(cpuInMillis = 18_000, memorySize = 2, memoryUnits = StorageUnits.GIGABYTES))
+    @PlatformApplication(
+            fileName = "StatsSigningTestingTool.jar",
+            parameters = {"1", "3000", "0", "100", "-1", "10000", "5000"})
+    @DisplayName("Crypto-Basic-10k-5m")
     void testBasicSignaturesMixedAlgorithms() {}
 
     @FullStackTest
-    @DisplayName("SSTT: Quick Basic Signatures - 2 Nodes - 500 TPS")
     @MaxTestExecutionTime(value = 5, unit = TimeUnit.MINUTES)
     @NamedApplicationNodes({
         @NamedApplicationNode("node1"),
-        @NamedApplicationNode(value = "node2", shape = @ResourceShape(cpuInMillis = 2500))
+        @NamedApplicationNode(
+                value = "node2",
+                shape = @ResourceShape(cpuInMillis = 18_000, memorySize = 4, memoryUnits = StorageUnits.GIGABYTES))
     })
-    void testQuickBasicSignatures() {}
+    @PlatformApplication(
+            fileName = "StatsSigningTestingTool.jar",
+            parameters = {"1", "3000", "0", "4000", "-1", "10000", "5000"})
+    @DisplayName("Crypto-LargeTx-50k-20m.json")
+    void testLargeTxBasicSignatures() {}
 
     static Stream<Arguments> testScalingBasicSignatures() {
         return Stream.of(Arguments.of(Named.of("5k TPS", 5000)), Arguments.of(Named.of("10k TPS", 10000)));
@@ -62,5 +72,5 @@ public class PlatformSignatureVerificationTest {
     @DisplayName("SSTT: Scaling Basic Signatures - 4 Nodes")
     @ApplicationNodes(6)
     @MethodSource
-    void testScalingBasicSignatures(int tps) {}
+    void testScalingBasicSignatures(int tps, TestMutator tm) {}
 }

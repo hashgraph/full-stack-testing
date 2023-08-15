@@ -16,6 +16,8 @@
 
 package com.hedera.fullstack.monitoring.api;
 
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.ApplicationNode;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Node;
 import java.time.Duration;
 
 @FunctionalInterface
@@ -27,5 +29,9 @@ public interface Monitor {
 
     default Duration checkInterval() {
         return DEFAULT_CHECK_INTERVAL;
+    }
+
+    default boolean appliesTo(Node<?> node) {
+        return node instanceof ApplicationNode;
     }
 }
