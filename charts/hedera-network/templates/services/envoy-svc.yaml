@@ -1,0 +1,21 @@
+{{ range $index, $node := ($.Values.hedera.nodes) }}
+{{- $envoyProxy := $node.envoyProxy | default dict -}}
+{{- $defaults := $.Values.defaults.haproxy }}
+{{- if default $defaults.enable $envoyProxy.enable | eq "true" }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy-proxy-{{ $node.name }}-svc
+spec:
+  {{- if default $defaults.loadBalancerEnabled $envoyProxy.loadBalancerEnabled | eq "true" }}
+  type: LoadBalancer
+  {{- end }}
+  selector:
+    app: envoy-proxy-{{ $node.name }}
+  ports:
+    - port: 8080
+      targetPort: 8080
+{{- end }}
+{{- end }}
+

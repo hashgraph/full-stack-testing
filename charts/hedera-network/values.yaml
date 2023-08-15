@@ -49,6 +49,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     replica: 1
     resources: {}
+    loadBalancerEnabled: "false"
   envoyProxy:
     enable: "true"
     nameOverride: "envoy-proxy"
@@ -59,6 +60,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     replica: 1
     resources: {}
+    loadBalancerEnabled: "false"
   sidecars:
     recordStreamUploader:
       enable: "true"
