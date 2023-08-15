@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.inject.core;
+package com.hedera.fullstack.junit.support.mutators.core;
 
 import com.hedera.fullstack.monitoring.api.Monitor;
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
-import com.hedera.fullstack.test.toolkit.api.model.infrastructure.PhysicalNode;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.ApplicationNode;
 import com.hedera.fullstack.validator.api.Validator;
 
-public interface TestTailor {
+public interface TestMutator {
 
-    CheckMutator<Validator, TestTailor> validators();
+    CheckMutator<Validator, TestMutator> validators();
 
-    CheckMutator<Validator, TestTailor> validators(PhysicalNode node);
+    CheckMutator<Validator, TestMutator> validators(ApplicationNode node);
 
-    CheckMutator<Monitor, TestTailor> monitors();
+    CheckMutator<Monitor, TestMutator> monitors();
 
-    CheckMutator<Monitor, TestTailor> monitors(PhysicalNode node);
+    CheckMutator<Monitor, TestMutator> monitors(ApplicationNode node);
 
-    CheckMutator<ReadinessCheck, TestTailor> readinessChecks();
+    CheckMutator<ReadinessCheck, TestMutator> readinessChecks();
 
-    CheckMutator<ReadinessCheck, TestTailor> readinessChecks(PhysicalNode node);
+    CheckMutator<ReadinessCheck, TestMutator> readinessChecks(ApplicationNode node);
 }

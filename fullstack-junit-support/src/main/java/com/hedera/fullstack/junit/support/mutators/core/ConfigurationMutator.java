@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
+package com.hedera.fullstack.junit.support.mutators.core;
 
-public interface Network {
-    NodeSet<PhysicalNode> nodes();
+public interface ConfigurationMutator<P> {
+
+    ConfigurationMutator<P> add(String key, String value);
+
+    ConfigurationMutator<P> add(String key, String... values);
+
+    ConfigurationMutator<P> remove(String key);
+
+    P and();
 }

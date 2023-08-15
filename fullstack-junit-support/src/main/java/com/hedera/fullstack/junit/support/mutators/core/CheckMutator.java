@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
+package com.hedera.fullstack.junit.support.mutators.core;
 
-import com.hedera.fullstack.test.toolkit.api.model.traits.Named;
-import com.hedera.fullstack.test.toolkit.api.model.traits.Tagged;
+public interface CheckMutator<T, P> {
 
-public sealed interface Node<T> extends Named, Tagged, Comparable<T> permits ApplicationNode, MirrorNode, RelayNode {}
+    CheckMutator<T, P> add(T check);
+
+    CheckMutator<T, P> remove(Class<? extends T> checkType);
+
+    ConfigurationMutator<CheckMutator<T, P>> configure();
+
+    P and();
+}

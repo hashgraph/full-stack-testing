@@ -19,7 +19,8 @@ package com.hedera.fullstack.junit.support.annotations.services;
 import java.lang.annotation.*;
 
 /**
- * Indicates that the annotated test class or test method requires a mirror node to be deployed and running.
+ * Indicates that the annotated test class or test method requires a mirror node to be deployed and running. Only one
+ * Mirror Node per deployment is supported.
  */
 @Inherited
 @Documented

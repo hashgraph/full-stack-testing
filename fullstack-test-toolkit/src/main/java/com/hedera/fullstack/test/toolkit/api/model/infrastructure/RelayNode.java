@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.inject.core;
+package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
-public interface ConfigurationMutator<B> {
+import com.hedera.fullstack.test.toolkit.api.model.traits.Indexed;
 
-    ConfigurationMutator<B> add(String key, String value);
-
-    ConfigurationMutator<B> add(String key, String... values);
-
-    ConfigurationMutator<B> remove(String key);
-
-    B and();
-}
+public non-sealed interface RelayNode extends Indexed, Node<RelayNode> {}

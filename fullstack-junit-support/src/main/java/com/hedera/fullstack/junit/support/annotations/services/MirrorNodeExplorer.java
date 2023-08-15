@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.inject.core;
+package com.hedera.fullstack.junit.support.annotations.services;
 
-public interface CheckMutator<T, B> {
+import java.lang.annotation.*;
 
-    CheckMutator<T, B> add(T check);
-
-    CheckMutator<T, B> remove(Class<? extends T> checkType);
-
-    ConfigurationMutator<CheckMutator<T, B>> configure();
-
-    B and();
-}
+/**
+ * Indicates that the annotated test class or test method requires a Hedera Mirror Node Explorer server
+ * to be deployed and running. This annotation also implicitly specifies the {@link MirrorNode} annotation.
+ * Only one Mirror Node Explorer per deployment is supported.
+ */
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+public @interface MirrorNodeExplorer {}

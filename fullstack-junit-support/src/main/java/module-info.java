@@ -7,7 +7,7 @@ module com.hedera.fullstack.junit.support {
     exports com.hedera.fullstack.junit.support.annotations.services;
     exports com.hedera.fullstack.junit.support.annotations.validation;
     exports com.hedera.fullstack.junit.support.events.application;
-    exports com.hedera.fullstack.junit.support.inject.core;
+    exports com.hedera.fullstack.junit.support.mutators.core;
 
     // Targeted Exports
     exports com.hedera.fullstack.junit.support.extensions to

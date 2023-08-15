@@ -16,7 +16,6 @@
 
 package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
-import com.hedera.fullstack.test.toolkit.api.model.traits.Named;
-import com.hedera.fullstack.test.toolkit.api.model.traits.Tagged;
+import com.hedera.fullstack.test.toolkit.api.model.traits.Indexed;
 
-public sealed interface Node<T> extends Named, Tagged, Comparable<T> permits ApplicationNode, MirrorNode, RelayNode {}
+public non-sealed interface ApplicationNode extends Indexed, Node<ApplicationNode> {}

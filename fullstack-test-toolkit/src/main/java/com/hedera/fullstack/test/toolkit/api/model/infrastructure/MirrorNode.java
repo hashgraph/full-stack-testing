@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations.services;
+package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
-import java.lang.annotation.*;
-
-/**
- * Indicates that the annotated test class or test method requires an HashIO server to be deployed and running. This
- * annotation also implicitly specifies the {@link MirrorNode} annotation.
- */
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface HashIO {}
+public non-sealed interface MirrorNode extends Node<MirrorNode> {}

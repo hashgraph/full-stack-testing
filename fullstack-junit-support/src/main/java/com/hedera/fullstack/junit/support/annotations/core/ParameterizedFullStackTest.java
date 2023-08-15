@@ -40,13 +40,4 @@ public @interface ParameterizedFullStackTest {
      * @return the execution flow used by this test.
      */
     TestExecutionMode mode() default TestExecutionMode.DEFAULT;
-
-    /**
-     * Please see the documentation for {@link FullStackTest#executor()} for a description of the supported execution
-     * frameworks.
-     *
-     * @see FullStackTest#executor()
-     * @return the execution framework used by this test.
-     */
-    TestExecutorType executor() default TestExecutorType.JAVA_DIRECT;
 }

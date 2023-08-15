@@ -16,4 +16,12 @@
 
 package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
-public non-sealed interface PhysicalNode extends Node<PhysicalNode> {}
+import com.hedera.fullstack.test.toolkit.api.model.traits.Named;
+
+public interface Deployment extends Named {
+    NodeSet<ApplicationNode> nodes();
+
+    NodeSet<RelayNode> relayNodes();
+
+    MirrorNode mirrorNode();
+}
