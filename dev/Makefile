@@ -45,7 +45,7 @@ update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator
+deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator deploy-gateway-api
 	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
@@ -141,9 +141,16 @@ restart: stop-nodes start-nodes
 reset: destroy-network start
 
 ######################################### Gateway API #################################
+.PHONY: deploy-haproxy-ingress-controller
+deploy-haproxy-ingress-controller:
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_haproxy_ingress_controller
+
 .PHONY: deploy-gateway-api-crd
 deploy-gateway-api-crd:
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_gatway_api_crd
+
+.PHONY: deploy-gateway-api
+deploy-gateway-api: deploy-gateway-api-crd deploy-haproxy-ingress-controller
 
 ######################################### Prometheus #################################
 .PHONY: fetch-prometheus-operator-bundle
