@@ -23,7 +23,10 @@ SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
+
+# scripts
 TELEMETRY_SCRIPT="telemetry.sh"
+GATEWAY_API_SCRIPT="gateway.sh"
 
 .PHONY: all
 all: setup setup-cluster reset
@@ -136,6 +139,11 @@ restart: stop-nodes start-nodes
 
 .PHONY: reset
 reset: destroy-network start
+
+######################################### Gateway API #################################
+.PHONY: deploy-gateway-api-crd
+deploy-gateway-api-crd:
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_gatway_api_crd
 
 ######################################### Prometheus #################################
 .PHONY: fetch-prometheus-operator-bundle

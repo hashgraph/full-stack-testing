@@ -1,0 +1,19 @@
+{{- if $.Values.gatewayApi.routes.echoserver.enable | eq "true" }}
+# echoserver route is for debugging only
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: echoserver
+  namespace: default
+  labels:
+    fullstack.hedera.com/type: http-route
+spec:
+  parentRefs:
+    - name: fst-gateway
+  hostnames:
+    - echoserver.local
+  rules:
+    - backendRefs:
+        - name: echoserver-svc
+          port: 80
+{{- end }}

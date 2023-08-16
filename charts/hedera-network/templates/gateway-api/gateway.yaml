@@ -1,0 +1,25 @@
+{{- if $.Values.gatewayApi.gatewayClass.enable | eq "true" }}
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: GatewayClass
+metadata:
+  name: {{ $.Values.gatewayApi.gatewayClass.name }}
+  namespace: default
+  labels:
+    fullstack.hedera.com/type: gateway-class
+spec:
+  controllerName: haproxy-ingress.github.io/controller
+{{- end }}
+{{- if $.Values.gatewayApi.gateway.enable | eq "true" }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: fst-gateway
+  namespace: default
+  labels:
+    fullstack.hedera.com/type: gateway
+spec:
+  gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
+  listeners:
+  {{- toYaml $.Values.gatewayApi.gateway.listeners | nindent 4 }}
+{{- end }}
