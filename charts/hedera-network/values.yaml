@@ -29,14 +29,10 @@ tester:
 # gateway-api configuration
 gatewayApi:
   gatewayClass:
-    name: "fst-lb"
+    name: "fst"
     enable: "true"
-  routes:
-    networkNodes:
-      enable: "true"
-    echoserver:
-      enable: "true"
   gateway:
+    name: "fst"
     enable: "true"
     listeners:
       - name: http

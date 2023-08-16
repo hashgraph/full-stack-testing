@@ -147,7 +147,7 @@ deploy-haproxy-ingress-controller:
 
 .PHONY: deploy-gateway-api-crd
 deploy-gateway-api-crd:
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_gatway_api_crd
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_gateway_api_crd
 
 .PHONY: deploy-gateway-api
 deploy-gateway-api: deploy-gateway-api-crd deploy-haproxy-ingress-controller
