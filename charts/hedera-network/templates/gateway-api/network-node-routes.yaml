@@ -14,7 +14,7 @@ spec:
   parentRefs:
     - name: fst
   hostnames:
-    - {{ $node.name }}.fst.local
+    - {{ tpl $.Values.gatewayApi.route.hostname (dict "node" $node "Template" $.Template) }}
   rules:
     - backendRefs:
       - name: network-{{ $node.name }}-svc
