@@ -51,5 +51,5 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: network-{{ .nodeConfig.name }}-service
+                      address: network-{{ .nodeConfig.name }}-svc
                       port_value: 50211

@@ -21,5 +21,19 @@ metadata:
 spec:
   gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
   listeners:
-  {{- toYaml $.Values.gatewayApi.gateway.listeners | nindent 4 }}
+    - name: http
+      protocol: HTTP
+      port: 80
+    - name: https
+      protocol: HTTPS
+      port: 443
+    - name: json-rpc-relay
+      protocol: HTTP
+      port: 8080
+    - name: non-tls-grpc-client-port
+      protocol: HTTP
+      port: 50211
+    - name: tls-grpc-client-port
+      protocol: HTTPS
+      port: 50212
 {{- end }}
