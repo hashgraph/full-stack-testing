@@ -4,4 +4,4 @@ metadata:
   name: otel-collector-cm
 data:
   config.yaml: |
-  {{- tpl (.Files.Get "config-files/otel-collector-config.yaml") ( dict "defaults" $.Values.defaults "Template" $.Template )  | nindent 4 }}
+  {{- tpl (.Files.Get "config-files/otel-collector-config.yaml") ( dict "otelDefaults" $.Values.defaults.sidecars.otelCollector "Template" $.Template )  | nindent 4 }}
