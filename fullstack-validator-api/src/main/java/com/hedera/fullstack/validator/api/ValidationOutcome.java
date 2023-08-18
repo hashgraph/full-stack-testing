@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.examples;
+package com.hedera.fullstack.validator.api;
 
-public class Dummy {}
+public enum ValidationOutcome {
+    PASS,
+    FAIL,
+    WARN,
+    SKIP
+}

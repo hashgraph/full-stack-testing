@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.junit.support.annotations;
+package com.hedera.fullstack.monitoring.api;
 
-import java.lang.annotation.*;
-
-@Inherited
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnableMirrorNode {}
+public enum CheckOutcome {
+    NOT_READY,
+    WAITING,
+    SUCCESS,
+    FAILURE,
+    SKIPPED
+}
