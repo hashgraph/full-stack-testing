@@ -17,7 +17,7 @@
     - --watch-directory
     - /opt/hgcapp/accountBalances
     - --s3-endpoint
-    - http://myminio-hl:9000
+    - http://minio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/accountBalances
@@ -46,7 +46,7 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "accountbalance"
+      value: "accountBalances/balance{{ $nodeId }}"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE

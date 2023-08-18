@@ -18,7 +18,7 @@
     - /opt/hgcapp/events
     - --debug
     - --s3-endpoint
-    - http://myminio-hl:9000
+    - http://minio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/events
@@ -47,7 +47,7 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($eventStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "/events"
+      value: "eventsStreams/events_{{ $nodeId }}"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE

@@ -19,7 +19,7 @@
     - --csv-stats-directory
     - /opt/hgcapp/recordStreams/uploader-stats
     - --s3-endpoint
-    - http://myminio-hl:9000
+    - http://minio-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/recordStreams
@@ -52,7 +52,7 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "recordstreams"
+      value: "recordstreams/record{{ $nodeId }}"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
