@@ -204,10 +204,19 @@ hedera-mirror-node:
               sources:
                 - type: "S3"
                   ## If minio is deployed in a different namespace use a FQDN like minio-hl.<namespace>.svc.cluster.local
-                  uri: "http://minio-hl:9000"
+                  uri: "http://minio-hl:9000/"
                   credentials:
                     accessKey: minio
                     secretKey: minio123
+
+hedera-explorer:
+  securityContext:
+    readOnlyRootFilesystem: false
+  env:
+    # POSSIBLE BUG: These values are used by entrypoint script, which uses sed to modify index.html
+    # But since fs is readonly, its unable to modify it
+    DOCKER_LOCAL_MIRROR_NODE_MENU_NAME: "FST"
+    DOCKER_LOCAL_MIRROR_NODE_URL: "http://fst-rest:80"
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
