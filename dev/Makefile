@@ -47,7 +47,8 @@ helm-test:
 	echo "" && \
 	echo ">> Running helm test..." && \
 	echo "" && \
-	helm test fst --logs
+	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
+	helm test fst --logs --filter 'name=network-test'
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
