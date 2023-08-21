@@ -7,10 +7,16 @@
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $otel.image "defaults" $defaults) }}
   securityContext:
     {{- include "fullstack.root.security.context" . | nindent 4 }}
-  {{- with default $defaults.ports $otel.ports }}
   ports:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    - name: otel-healthcheck
+      containerPort: 13133
+      protocol: TCP
+    - name: otel-metrics
+      containerPort: 8888
+      protocol: TCP
+    - name: otel-otlp
+      containerPort: 4317
+      protocol: TCP
   {{- with default $defaults.livenessProbe $otel.livenessProbe }}
   livenessProbe:
     {{- toYaml . | nindent 4 }}

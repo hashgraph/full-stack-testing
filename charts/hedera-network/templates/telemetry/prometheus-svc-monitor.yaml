@@ -10,5 +10,6 @@ spec:
     matchLabels:
       fullstack.hedera.com/type: network-node-svc
   endpoints:
-  {{- toYaml $.Values.telemetry.prometheus.svcMonitor.endpoints | nindent 4 }}
+    - port: otel-metrics
+      interval: 5s
 {{- end }}

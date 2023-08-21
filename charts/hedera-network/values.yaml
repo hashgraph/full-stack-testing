@@ -15,9 +15,6 @@ telemetry:
   prometheus:
     svcMonitor:
       enable: "true"
-      endpoints:
-        - port: metrics
-          interval: 5s
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
@@ -151,16 +148,6 @@ defaults:
         repository: "otel/opentelemetry-collector-contrib"
         tag: "0.72.0"
         pullPolicy: "IfNotPresent"
-      ports:
-        - name: healthcheck
-          containerPort: 13133
-          protocol: TCP
-        - name: metrics
-          containerPort: 8888
-          protocol: TCP
-        - name: otlp
-          containerPort: 4317
-          protocol: TCP
       livenessProbe:
         httpGet:
           path: /
