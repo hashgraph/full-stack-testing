@@ -3,6 +3,8 @@
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
+{{- $minioserver := .minioserver -}}
+{{- $nodeId := .nodeId -}}
 - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStream.image "defaults" $defaults) }}
@@ -14,12 +16,15 @@
     - /usr/local/bin/mirror.py
     - --linux
     - --watch-directory
-    - /opt/hgcapp/recordstream
+    - /opt/hgcapp/recordStreams
     - --csv-stats-directory
-    - /opt/hgcapp/recordstream/uploader-stats
+    - /opt/hgcapp/recordStreams/uploader-stats
+    - --s3-endpoint
+    - http://{{ $minioserver.tenant.name }}-hl:9000
   volumeMounts:
     - name: hgcapp-storage
-      mountPath: /opt/hgcapp/
+      mountPath: /opt/hgcapp/recordStreams
+      subPath: recordStreams/record{{ $nodeId }}
   env:
     - name: DEBUG
       value: {{ default $defaults.config.debug ($recordStream.config).debug | quote }}
@@ -38,7 +43,7 @@
     - name: STREAM_EXTENSION
       value: {{ default $defaults.config.compression ($recordStream.config).compression | eq "true" | ternary "rcd.gz" "rcd" | quote }}
     - name: SIG_EXTENSION
-      value: {{ default $defaults.config.compression ($recordStream.config).compression | eq "true" | ternary "rcd_sig.gz" "rcd_sig" | quote }}
+      value: "rcd_sig"
     - name: RECORD_STREAM_COMPRESSION
       value: {{ default $defaults.config.compression $recordStream.config.compression | quote }}
     - name: RECORD_STREAM_SIDECAR
@@ -48,13 +53,13 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "/recordstream"
+      value: "recordstreams"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: {{ $cloud.s3.enable | quote }}
+      value: "true"
     - name: GCS_ENABLE
-      value: {{ $cloud.gcs.enable | quote }}
+      value: "false"
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets
