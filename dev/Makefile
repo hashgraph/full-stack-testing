@@ -42,7 +42,7 @@ update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart: deploy-prometheus-operator
+deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator
 	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
