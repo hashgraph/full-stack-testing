@@ -76,5 +76,6 @@ spec:
         "chart" $.Chart
         "node" $node
         "defaults" $defaults
+        "minioserver" (index $.Values "minio-server")
         ) | nindent 6 }}
 {{ end }}
