@@ -16,7 +16,7 @@ spec:
         - name: prometheus-example-app
           image: fabxc/instrumented_app
           ports:
-            - name: metrics # use same name as used by otel-collector sidecar in hedera-network network-node
+            - name: otel-metrics # use same name as used by otel-collector sidecar in hedera-network network-node
               containerPort: 8080
 ---
 kind: Service
@@ -30,5 +30,5 @@ spec:
   selector:
     app: prometheus-example-app
   ports:
-    - name: metrics
+    - name: otel-metrics
       port: 8080
