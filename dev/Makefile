@@ -48,7 +48,9 @@ helm-test:
 	echo ">> Running helm test..." && \
 	echo "" && \
 	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
-	helm test fst --logs --filter 'name=network-test'
+	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
+    # Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
+	helm test fst --filter 'name=network-test'
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
