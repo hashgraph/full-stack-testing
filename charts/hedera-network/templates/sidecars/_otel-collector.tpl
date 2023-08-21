@@ -8,7 +8,7 @@
   securityContext:
     {{- include "fullstack.root.security.context" . | nindent 4 }}
   ports:
-    - name: otel-healthcheck
+    - name: otel-health
       containerPort: 13133
       protocol: TCP
     - name: otel-metrics
