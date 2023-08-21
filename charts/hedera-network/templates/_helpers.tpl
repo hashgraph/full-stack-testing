@@ -32,3 +32,8 @@ privileged: true
 {{- $tag := default .defaults.image.tag (.image).tag | default .Chart.AppVersion -}}
 {{ $reg }}/{{ $repo }}:{{ $tag }}
 {{- end }}
+
+{{- define "minio.configEnv" -}}
+export MINIO_ROOT_USER={{ include "minio.accessKey" . }}
+export MINIO_ROOT_PASSWORD={{ include "minio.secretKey" . }}
+{{- end -}}
