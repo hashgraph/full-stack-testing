@@ -188,6 +188,6 @@ hedera:
     - name: node0
       accountId: 0.0.3
     - name: node1
-      accuntIdd: 0.0.4
+      accountId: 0.0.4
     - name: node2
       accountId: 0.0.5
