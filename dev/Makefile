@@ -50,11 +50,9 @@ helm-test:
 	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
 	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
     #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
-	helm test fst --filter 'name=network-test'
-    # Store exit results
-    EXIT_CODE=$$?
-	kubectl logs network-test || true
-	# Exit with the exit code from helm test
+	helm test fst --filter 'name=network-test' && \
+    EXIT_CODE=$$? && \
+	kubectl logs network-test && \
 	exit $${EXIT_CODE}
 
 .PHONY: deploy-network
