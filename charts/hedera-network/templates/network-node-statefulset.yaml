@@ -42,7 +42,7 @@ spec:
       - name: init-container
         image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
-        command: [ "/bin/sh", "-c", "mkdir /opt/hgcapp/hedera-backups /opt/hgcapp/accountbalance /opt/hgcapp/events /opt/hgcapp/recordstream /opt/hgcapp/sidecar /opt/hgcapp/recordstream/uploader-stats/"  ]
+        command: [ "/bin/sh", "-c", "mkdir -p /opt/hgcapp/hedera-backups /opt/hgcapp/accountBalances /opt/hgcapp/events /opt/hgcapp/recordStreams /opt/hgcapp/sidecar /opt/hgcapp/recordStreams/uploader-stats/" ]
         securityContext:
           {{- include "fullstack.hedera.security.context" . | nindent 10 }}
         volumeMounts:
@@ -74,6 +74,8 @@ spec:
         "otelCollector" $otelCollector
         "cloud" $.Values.cloud
         "chart" $.Chart
+        "node" $node
         "defaults" $defaults
+        "minioserver" (index $.Values "minio-server")
         ) | nindent 6 }}
 {{ end }}

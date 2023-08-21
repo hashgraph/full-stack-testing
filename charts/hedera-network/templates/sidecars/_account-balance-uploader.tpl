@@ -3,6 +3,8 @@
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
+{{- $nodeId := .nodeId -}}
+{{- $minioserver := .minioserver -}}
 - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $balanceUploader.image "Chart" $chart "defaults" $defaults ) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults) }}
@@ -14,10 +16,13 @@
     - /usr/local/bin/mirror.py
     - --linux
     - --watch-directory
-    - /opt/hgcapp/accountbalance
+    - /opt/hgcapp/accountBalances
+    - --s3-endpoint
+    - http://{{ $minioserver.tenant.name }}-hl:9000
   volumeMounts:
     - name: hgcapp-storage
-      mountPath: /opt/hgcapp/
+      mountPath: /opt/hgcapp/accountBalances
+      subPath: accountBalances/balance{{ $nodeId }}
   env:
     - name: DEBUG
       value: {{ default $defaults.config.debug ($balanceUploader.config).debug | quote }}
@@ -42,13 +47,13 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "/accountbalance"
+      value: "accountbalance"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
-      value: {{ $cloud.s3.enable | quote }}
+      value: "true"
     - name: GCS_ENABLE
-      value: {{ $cloud.gcs.enable | quote }}
+      value: "false"
   envFrom:
     - secretRef:
         name: uploader-mirror-secrets
