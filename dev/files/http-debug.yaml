@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: http-debug
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-debug
+  labels:
+    app: http-debug
+    service: http-debug
+spec:
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: http-debug
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-debug
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: http-debug
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: http-debug
+        version: v1
+    spec:
+      serviceAccountName: http-debug
+      containers:
+        - image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+          imagePullPolicy: IfNotPresent
+          name: http-debug
+          ports:
+            - containerPort: 3000
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: http-debug
+spec:
+  parentRefs:
+    - name: fst
+  hostnames:
+    - "debug.fst.local"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: http-debug
+          port: 3000
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

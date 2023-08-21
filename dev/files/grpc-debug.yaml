@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: grpc-debug
+    example: grpc-routing
+  name: grpc-debug
+spec:
+  selector:
+    matchLabels:
+      app: grpc-debug
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: grpc-debug
+    spec:
+      containers:
+        - name: grpc-debug
+          image: quay.io/mhausenblas/yages:0.1.0
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: grpc-debug
+    example: grpc-routing
+  name: grpc-debug
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: grpc-debug
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: GRPCRoute
+metadata:
+  name: grpc-debug
+  labels:
+    example: grpc-routing
+spec:
+  parentRefs:
+    - name: fst
+  hostnames:
+    - "debug.fst.local"
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: grpc-debug
+          port: 9000
+          weight: 1
