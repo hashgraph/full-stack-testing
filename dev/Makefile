@@ -23,6 +23,7 @@ SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
+TELEMETRY_SCRIPT="telemetry.sh"
 
 # scripts
 TELEMETRY_SCRIPT="telemetry.sh"

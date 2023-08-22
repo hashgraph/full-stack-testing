@@ -1,0 +1,9 @@
+dependencies:
+- name: hedera-mirror
+  repository: https://hashgraph.github.io/hedera-mirror-node/charts
+  version: 0.86.0
+- name: tenant
+  repository: https://operator.min.io/
+  version: 5.0.7
+digest: sha256:aae58a156f5385f0540375c8ca43aea707a71e353ff01394d9c2f3aaebf4bd27
+generated: "2023-08-25T15:11:52.370062+10:00"
