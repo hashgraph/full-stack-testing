@@ -3,8 +3,8 @@ kind: GatewayClass
 metadata:
   name: fst
 spec:
-#  controllerName: gateway.envoyproxy.io/gatewayclass-controller
-  controllerName: haproxy-ingress.github.io/controller
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+#  controllerName: haproxy-ingress.github.io/controller
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
@@ -16,4 +16,10 @@ spec:
     - name: http
       protocol: HTTP
       port: 80
+    - name: grpc-non-tls
+      protocol: TCP
+      port: 50211
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute
 ---
