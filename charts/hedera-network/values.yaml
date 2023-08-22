@@ -1,4 +1,4 @@
-# WARNING: Except numbers use double quote for all values. This is because we need to be careful about booleans.
+# WARNING: Use double quotes for all values. This is because we need to be careful about booleans.
 
 # cloud configuration
 cloud:
@@ -7,6 +7,12 @@ cloud:
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
+
+# telemetry configurations
+telemetry:
+  prometheus:
+    svcMonitor:
+      enable: "true"
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
@@ -140,24 +146,14 @@ defaults:
         repository: "otel/opentelemetry-collector-contrib"
         tag: "0.72.0"
         pullPolicy: "IfNotPresent"
-      ports:
-        - name: healthcheck
-          containerPort: 13133
-          protocol: TCP
-        - name: metrics
-          containerPort: 8888
-          protocol: TCP
-        - name: otlp
-          containerPort: 4317
-          protocol: TCP
       livenessProbe:
         httpGet:
           path: /
-          port: healthcheck
+          port: otel-health
       readinessProbe:
         httpGet:
           path: /
-          port: healthcheck
+          port: otel-health
       resources: {}
 
 # This configures the minio tenant subchart
