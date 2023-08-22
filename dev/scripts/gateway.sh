@@ -133,14 +133,60 @@ function expose_envoy_gateway_svc() {
 	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port 8888"
   echo "-----------------------------------------------------------------------------------------------------"
   kubectl port-forward "svc/${ENVOY_SERVICE}"  -n envoy-gateway-system 8888:80 &
+  export GATEWAY_SVC_PID=$(ps aux | grep "kubectl port-forward svc/envoy-default-fst-a00b59fc -n envoy-gateway-system 8888:80" | sed -n 2p | awk '{ print $2 }')
+  echo "PID: ${GATEWAY_SVC_PID}"
 }
 
 function unexpose_envoy_gateway_svc() {
-  pid=$(ps aux | grep "kubectl port-forward svc/envoy-default-fst-a00b59fc -n envoy-gateway-system 8888:80" | sed -n 2p | awk '{ print $2 }')
-  if [[ "${pid}" ]]; then
+  if [[ "${GATEWAY_SVC_PID}" ]]; then
     echo ""
-    echo "Un-exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port 8888 for PID: ${pid}"
+    echo "Un-exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port 8888 for PID: ${GATEWAY_SVC_PID}"
     echo "-----------------------------------------------------------------------------------------------------"
-    kill -9 "${pid}"
+    kill "${GATEWAY_SVC_PID}" || true
   fi
+}
+
+function test_http_route() {
+  expose_envoy_gateway_svc
+
+  local route_host="debug.fst.local"
+
+  sleep 1
+
+  echo "Checking ${route_host}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo ""
+
+  local status=$(curl --header "Host: ${route_host}" -o /dev/null -s -w "%{http_code}\n" localhost:8888)
+
+  if [[ $status -eq 200 ]]; then
+    echo "SUCCESS: HTTPRoute ${route_host}"
+  else
+    echo "FAIL: HTTPRoute ${route_host}"
+  fi
+
+  unexpose_envoy_gateway_svc || true
+}
+
+function test_grpc_route() {
+  expose_envoy_gateway_svc
+
+  local route_host="debug.fst.local"
+
+  sleep 1
+
+  echo "Checking ${route_host}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo ""
+
+  grpcurl -plaintext -vv -authority=grpc-example.com 127.0.0.1:8888 yages.Echo/Ping
+  local status=$?
+
+  if [[ $status -eq 0 ]]; then
+    echo "SUCCESS: GRPCRoute ${route_host}"
+  else
+    echo "FAIL: GRPCRoute ${route_host}"
+  fi
+
+  unexpose_envoy_gateway_svc
 }
