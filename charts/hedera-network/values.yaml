@@ -149,11 +149,11 @@ defaults:
       livenessProbe:
         httpGet:
           path: /
-          port: healthcheck
+          port: otel-health
       readinessProbe:
         httpGet:
           path: /
-          port: healthcheck
+          port: otel-health
       resources: {}
 
 # This configures the minio tenant subchart

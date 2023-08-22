@@ -305,9 +305,21 @@ function prep_address_book() {
   local addresses=()
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
-    while [[ $(kubectl get pod ${pod} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-      echo "waiting for pod" && sleep 1
+    local max_attempts=$MAX_ATTEMPTS
+    local attempts=0
+    local status=$(kubectl get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}')
+
+    while [[ "${attempts}" -lt "${max_attempts}" &&  "${status}" != "True" ]]; do
+      kubectl get pod network-node0-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")]}'
+
+      echo ""
+      echo "Waiting for the pod to be ready - ${pod}: Attempt# ${attempts}/${max_attempts} ..."
+      sleep 5
+
+      status=$(kubectl get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}')
+      attempts=$((attempts + 1))
     done
+
     echo "${KCTL} get pod ${pod} -o jsonpath='{.status.podIP}' | xargs"
     local POD_IP=$("${KCTL}" get pod "${pod}" -o jsonpath='{.status.podIP}' | xargs)
     if [ -z "${POD_IP}" ]; then
