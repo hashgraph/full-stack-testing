@@ -48,7 +48,7 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($eventStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "/events"
+      value: "eventsStreams/events_{{ $nodeId }}"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE

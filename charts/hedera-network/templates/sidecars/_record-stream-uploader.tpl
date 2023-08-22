@@ -53,7 +53,7 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "recordstreams"
+      value: "recordstreams/record{{ $nodeId }}"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE
