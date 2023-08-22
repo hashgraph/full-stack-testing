@@ -8,13 +8,22 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 .ONESHELL:
 
 # Here we tell make not to output the actual command before execution in order to reduce noise in the logs.
-.SILENT: setup setup-cluster deploy-chart helm-test deploy-network  destroy-test-container destroy-network test
+.SILENT: \
+	setup \
+	setup-cluster \
+	deploy-chart \
+	helm-test \
+	deploy-network  \
+	destroy-test-container \
+	destroy-network test
+
 
 # Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
+TELEMETRY_SCRIPT="telemetry.sh"
 
 .PHONY: all
 all: setup setup-cluster reset
@@ -33,7 +42,7 @@ update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart:
+deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator
 	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
@@ -134,6 +143,52 @@ restart: stop-nodes start-nodes
 .PHONY: reset
 reset: destroy-network start
 
+.PHONY: deploy-minio-operator
+deploy-minio-operator:
+	@echo ">> Deploying minio operator..."; \
+	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace --version 5.0.7 minio-operator operator && \
+	echo ">> Waiting for minio operator to be ready..." && \
+	kubectl --namespace=minio-operator  wait --for=condition=available --timeout=600s deployment.apps/minio-operator && \
+	sleep 5
+
+.PHONY: is-minio-operator-installed
+is-minio-operator-installed:
+	@echo ">> Checking for minio operator..."; \
+	helm list --namespace=minio-operator | grep minio-operator &> /dev/null && { echo "Found minio operator."; exit 0; }; \
+	echo "Minio operator not found."; exit 1
+
+.PHONY: deploy-minio-operator-if-required
+deploy-minio-operator-if-required:
+	@$(MAKE) is-minio-operator-installed || $(MAKE) deploy-minio-operator
+
+
+.PHONY: undeploy-minio-operator
+undeploy-minio-operator:
+	echo ">> Deploying minio operator..." && \
+	helm delete  --namespace=minio-operator minio-operator
+######################################### Prometheus #################################
+.PHONY: fetch-prometheus-operator-bundle
+fetch-prometheus-operator-bundle:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && fetch-prometheus-operator-bundle
+
+.PHONY: deploy-prometheus-operator
+deploy-prometheus-operator: fetch-prometheus-operator-bundle
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus-operator
+
+.PHONY: destroy-prometheus-operator
+destroy-prometheus-operator:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
+
+.PHONY: deploy-prometheus
+deploy-prometheus: deploy-prometheus-operator
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus
+
+.PHONY: destroy-prometheus
+destroy-prometheus:
+	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus
+	make destroy-prometheus-operator
+
+######################################### MinIO #################################
 .PHONY: deploy-minio-operator
 deploy-minio-operator:
 	@echo ">> Deploying minio operator..."; \
