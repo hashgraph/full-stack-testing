@@ -1,5 +1,69 @@
 #!/usr/bin/env bash
 
+GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v0.7.1}"
+
+function deploy_haproxy_ingress() {
+  deploy_gateway_api_crd
+
+  echo ""
+	echo "Deploying HAProxy Ingress Controller"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local helm_chart=$(helm list --all-namespaces | grep haproxy-ingress)
+  if [[ ! "${helm_chart}" ]]; then
+    helm repo add haproxy-ingress https://haproxy-ingress.github.io/charts
+    helm install haproxy-ingress haproxy-ingress/haproxy-ingress\
+      --create-namespace --namespace haproxy-ingress \
+      --version 0.14.4
+  else
+	  echo "HAProxy Ingress Controller is already installed"
+	  echo ""
+  fi
+}
+
+function destroy_haproxy_ingress() {
+  echo ""
+	echo "Uninstalling HAProxy Ingress Controller"
+  echo "-----------------------------------------------------------------------------------------------------"
+  get_gateway_status
+
+  # Uninstall helm chart
+  local helm_chart=$(helm list --all-namespaces | grep haproxy-ingress)
+  if [[ "${helm_chart}" ]]; then
+    helm uninstall haproxy-ingress -n haproxy-ingress
+    kubectl delete ns haproxy-ingress
+  fi
+
+  uninstall_crd "gateway.networking.k8s.io"
+
+	echo "HAProxy Ingress Controller is uninstalled"
+	echo ""
+}
+
+function deploy_gateway_api_crd() {
+  echo ""
+	echo "Deploying Gateway API CRD"
+  echo "-----------------------------------------------------------------------------------------------------"
+  #  Expected list of CRDs
+  #  -------------------------
+  #  gatewayclasses.gateway.networking.k8s.io
+  #  gateways.gateway.networking.k8s.io
+  #  httproutes.gateway.networking.k8s.io
+  #  referencepolicies.gateway.networking.k8s.io
+  #  tcproutes.gateway.networking.k8s.io
+  #  tlsroutes.gateway.networking.k8s.io
+  #  udproutes.gateway.networking.k8s.io
+  local crd_count=$(kubectl get crd | grep -c "gateway.networking.k8s.io")
+
+  if [[ $crd_count -ne 7 ]]; then
+    kubectl kustomize\
+     "github.com/kubernetes-sigs/gateway-api/config/crd?ref=${GATEWAY_API_VERSION}" |\
+     kubectl apply -f -
+	else
+	  echo "Gateway API CRD is already installed"
+	  echo ""
+	fi
+}
+
 function deploy_envoy_gateway_api() {
   echo ""
 	echo "Installing Envoy Gateway API"
@@ -43,8 +107,8 @@ function destroy_envoy_gateway_api() {
     kubectl delete ns envoy-gateway-system
   fi
 
-#  uninstall_crd "gateway.networking.k8s.io"
-#  uninstall_crd "gateway.envoyproxy.io"
+  uninstall_crd "gateway.networking.k8s.io"
+  uninstall_crd "gateway.envoyproxy.io"
 
 	echo "Envoy Gateway API is uninstalled"
 	echo ""
@@ -64,7 +128,7 @@ function uninstall_crd() {
 }
 
 function expose_envoy_gateway_svc() {
-  export ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=fst -o jsonpath='{.items[0].metadata.name}')
+  ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=fst -o jsonpath="{.items[0].metadata.name}" )
   echo ""
 	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port 8888"
   echo "-----------------------------------------------------------------------------------------------------"

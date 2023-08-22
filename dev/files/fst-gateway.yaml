@@ -3,7 +3,8 @@ kind: GatewayClass
 metadata:
   name: fst
 spec:
-  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+#  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  controllerName: haproxy-ingress.github.io/controller
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
