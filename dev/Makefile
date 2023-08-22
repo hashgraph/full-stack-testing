@@ -143,29 +143,6 @@ restart: stop-nodes start-nodes
 .PHONY: reset
 reset: destroy-network start
 
-.PHONY: deploy-minio-operator
-deploy-minio-operator:
-	@echo ">> Deploying minio operator..."; \
-	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace --version 5.0.7 minio-operator operator && \
-	echo ">> Waiting for minio operator to be ready..." && \
-	kubectl --namespace=minio-operator  wait --for=condition=available --timeout=600s deployment.apps/minio-operator && \
-	sleep 5
-
-.PHONY: is-minio-operator-installed
-is-minio-operator-installed:
-	@echo ">> Checking for minio operator..."; \
-	helm list --namespace=minio-operator | grep minio-operator &> /dev/null && { echo "Found minio operator."; exit 0; }; \
-	echo "Minio operator not found."; exit 1
-
-.PHONY: deploy-minio-operator-if-required
-deploy-minio-operator-if-required:
-	@$(MAKE) is-minio-operator-installed || $(MAKE) deploy-minio-operator
-
-
-.PHONY: undeploy-minio-operator
-undeploy-minio-operator:
-	echo ">> Deploying minio operator..." && \
-	helm delete  --namespace=minio-operator minio-operator
 ######################################### Prometheus #################################
 .PHONY: fetch-prometheus-operator-bundle
 fetch-prometheus-operator-bundle:
