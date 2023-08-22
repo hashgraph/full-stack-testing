@@ -166,6 +166,10 @@ test-gateway-http-route:
 .PHONY: test-gateway-grpc-route
 test-gateway-grpc-route:
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_grpc_route
+
+.PHONY: test-gateway-tcp-route
+test-gateway-tcp-route:
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_tcp_route
 ######################################### Prometheus #################################
 .PHONY: fetch-prometheus-operator-bundle
 fetch-prometheus-operator-bundle:

@@ -2,6 +2,9 @@
 
 GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v0.7.1}"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+readonly SCRIPT_DIR
+
 function deploy_haproxy_ingress() {
   deploy_gateway_api_crd
 
@@ -129,10 +132,11 @@ function uninstall_crd() {
 
 function expose_envoy_gateway_svc() {
   ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=fst -o jsonpath="{.items[0].metadata.name}" )
+  local port="${1}"
   echo ""
-	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port 8888"
+	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port ${port}"
   echo "-----------------------------------------------------------------------------------------------------"
-  kubectl port-forward "svc/${ENVOY_SERVICE}"  -n envoy-gateway-system 8888:80 &
+  kubectl port-forward "svc/${ENVOY_SERVICE}"  -n envoy-gateway-system ${port}:80 &
   export GATEWAY_SVC_PID=$(ps aux | grep "kubectl port-forward svc/envoy-default-fst-a00b59fc -n envoy-gateway-system 8888:80" | sed -n 2p | awk '{ print $2 }')
   echo "PID: ${GATEWAY_SVC_PID}"
 }
@@ -140,14 +144,17 @@ function expose_envoy_gateway_svc() {
 function unexpose_envoy_gateway_svc() {
   if [[ "${GATEWAY_SVC_PID}" ]]; then
     echo ""
-    echo "Un-exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port 8888 for PID: ${GATEWAY_SVC_PID}"
+    echo "Un-exposing Envoy Gateway Service: ${ENVOY_SERVICE} for PID: ${GATEWAY_SVC_PID}"
     echo "-----------------------------------------------------------------------------------------------------"
     kill "${GATEWAY_SVC_PID}" || true
   fi
 }
 
 function test_http_route() {
-  expose_envoy_gateway_svc
+  kubectl apply -f "${SCRIPT_DIR}/../files/http-debug.yaml"
+
+  local port=8888
+  expose_envoy_gateway_svc ${port}
 
   local route_host="debug.fst.local"
 
@@ -157,7 +164,7 @@ function test_http_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   echo ""
 
-  local status=$(curl --header "Host: ${route_host}" -o /dev/null -s -w "%{http_code}\n" localhost:8888)
+  local status=$(curl --header "Host: ${route_host}" -o /dev/null -s -w "%{http_code}\n" localhost:${port})
 
   if [[ $status -eq 200 ]]; then
     echo "SUCCESS: HTTPRoute ${route_host}"
@@ -166,10 +173,15 @@ function test_http_route() {
   fi
 
   unexpose_envoy_gateway_svc || true
+
+  kubectl delete -f "${SCRIPT_DIR}/../files/http-debug.yaml"
 }
 
 function test_grpc_route() {
-  expose_envoy_gateway_svc
+  kubectl apply -f "${SCRIPT_DIR}/../files/grpc-debug.yaml"
+
+  local port=8888
+  expose_envoy_gateway_svc ${port}
 
   local route_host="debug.fst.local"
 
@@ -179,7 +191,7 @@ function test_grpc_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   echo ""
 
-  grpcurl -plaintext -vv -authority=grpc-example.com 127.0.0.1:8888 yages.Echo/Ping
+  grpcurl -plaintext -vv -authority=grpc-example.com 127.0.0.1:${port} yages.Echo/Ping
   local status=$?
 
   if [[ $status -eq 0 ]]; then
@@ -189,4 +201,31 @@ function test_grpc_route() {
   fi
 
   unexpose_envoy_gateway_svc
+
+  kubectl delete -f "${SCRIPT_DIR}/../files/grpc-debug.yaml"
+}
+
+function test_tcp_route() {
+  kubectl apply -f "${SCRIPT_DIR}/../files/tcp-debug.yaml"
+
+  local tcp_port="50211"
+  expose_envoy_gateway_svc ${tcp_port}
+  sleep 1
+
+  echo "Checking TCP route localhost:${tcp_port}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo ""
+
+  nc -zv localhost ${tcp_port}
+  local status=$?
+
+  if [[ $status -eq 0 ]]; then
+    echo "SUCCESS: TCPRoute localhost:${tcp_port}"
+  else
+    echo "FAIL: TCPRoute localhost:${tcp_port}"
+  fi
+
+  unexpose_envoy_gateway_svc
+
+  kubectl delete -f "${SCRIPT_DIR}/../files/tcp-debug.yaml"
 }
