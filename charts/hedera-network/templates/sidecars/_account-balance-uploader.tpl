@@ -47,7 +47,7 @@
     - name: SIG_PRIORITIZE
       value: {{ default $defaults.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
     - name: BUCKET_PATH
-      value: "accountbalance"
+      value: "accountBalances/balance{{ $nodeId }}"
     - name: BUCKET_NAME
       value: {{ $cloud.buckets.streamBucket | quote }}
     - name: S3_ENABLE

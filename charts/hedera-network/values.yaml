@@ -7,6 +7,10 @@ cloud:
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
+  s3:
+    enable: "true"
+  gcs:
+    enable: "true"
 
 # telemetry configurations
 telemetry:
@@ -189,6 +193,33 @@ minio-server:
       name: minio-secrets
     certificate:
       requestAutoCert: false
+
+hedera-mirror-node:
+  # importer is a component of the hedera mirror node
+  # config for subchart hedera-mirror/importer
+  importer:
+    envFrom:
+      - secretRef:
+          name: mirror-passwords
+      - secretRef:
+          name: "{{ .Release.Name }}-redis"
+      - secretRef:
+          name: uploader-mirror-secrets
+
+    # This is a single node address book, node account id = 0.0.3
+    # The addressbook.bin file updates will be handled by infrastructure code
+    addressBook: CvYGCgwxMC45Ni4xMzEuMzYaBTAuMC4zIswGMzA4MjAxYTIzMDBkMDYwOTJhODY0ODg2ZjcwZDAxMDEwMTA1MDAwMzgyMDE4ZjAwMzA4MjAxOGEwMjgyMDE4MTAwYTEyMDA2ZjI1MjcyNDJjZDdmNTNiOWM0ZmQ1ZGU4NjljNTYyZmY0ZWQ4YTRhYjNhNjI5NjNmM2Y4MTg4YmU3OGYyNThlYWY0MmI5YzNlM2U4ZjU4Njk3MTYwNDEzYmJmNzdhYWRmYWYwZDlmZmQ4Njk4NGIzYmM0ZmI1ZjAyZTExZThhY2I2ZWM2N2U0MjY0YWRkY2ExM2ZmZGU4MzY3NTc4YzI3OTJmYzZhZTMyNmU3YjM0ODU2ZDIzZjAyNTc0ZjVhMjc0ODE1NjAwMzJkNzM3NDlkYWY5ZDMzMmE3ODgzNTEwZTYwZWEyMjI4ODlhM2JmYzNiZWRmMzUwZjNhMzZjYWRhMzliOTQ1MzljNzRmYjgyNjU2NzhiZDVjMTQ4ZmJjOTE2OWFkY2FjZjY3MTliOTJlZThkNDJhOWQyZjg5MjNjYzRmZTNiNDk0YzQ2N2Y0ZTk4YTJhNDllMGEwZWY1YWE0MzNjYmVjNDM4YmFhMjU2YWU2MWEwNTkwY2U0ZTY3ZDBiM2ZlNWYyZGE5YWQ5MGMyNmUyMjlkMjhkNjc5NDU2OTc4ZDY1NzM1NzNlYmI0NjIzOWJhZDRhYmZhYjRmZmU2NGVhNGEzOTdjNmJjNWY3MTc1ZTFhYzM2NDg4ZjE3YzY3NzNiNWVkOTM0MTVlNTdjNDFjNmNkODg2NmRiZDEyMzYwMDYyMzM5Y2IxNTRkODVhZDFhZWNkMWQ3NjBhMDk0MWQ4MGUyOGZlMjQ2MDMzYTg2OGRiYmM4OTc1ZjM2MDQ0MzFmY2U5YWY5MWRjNDI1NDBhYjA0YjFiYmVjMjFmMzVmNzVmMzBhZjZmMDVjODk4NjQyOTM4NmUyYjQzOWJmZDJmZDU5MTJjODI2MDA4MDFlOWMwODU3ZjE2NWU4ODdmMjIzM2RjMmMwOThiYTEyNjdiMDU5ZGI4YTJkYjcxNGZlNTA2NjhkYmYwOTM2MDRhNWRmM2MyMzIxNDY3MjMyMTFjZTU4NTUyNjM4ZmFlOWZjMDY0YTdmMDliMDIwMzAxMDAwMTICGANCCgoECmCDJBC/hwNQAQ==
+    config:
+      # importer is a springboot app, its application.yaml configuration starts here
+      # This config is mounted at [/usr/etc/hedera/application.yaml] in the importer pod
+      hedera:
+        mirror:
+          importer:
+            network: other
+            downloader:
+              allowAnonymousAccess: false
+              bucketName: "fst-streams"
+              # for s3 configuration of mirror node look at uploader-mirror-secrets.yaml
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
