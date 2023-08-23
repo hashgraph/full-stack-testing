@@ -4,6 +4,7 @@
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 {{- $nodeId := .nodeId -}}
+{{- $minioserver := .minioserver -}}
 - name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $eventStream.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults) }}
@@ -18,7 +19,7 @@
     - /opt/hgcapp/events
     - --debug
     - --s3-endpoint
-    - http://minio-hl:9000
+    - http://{{ $minioserver.tenant.name }}-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/events

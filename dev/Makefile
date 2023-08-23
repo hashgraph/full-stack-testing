@@ -8,13 +8,22 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 .ONESHELL:
 
 # Here we tell make not to output the actual command before execution in order to reduce noise in the logs.
-.SILENT: setup setup-cluster deploy-chart helm-test deploy-network  destroy-test-container destroy-network test
+.SILENT: \
+	setup \
+	setup-cluster \
+	deploy-chart \
+	helm-test \
+	deploy-network  \
+	destroy-test-container \
+	destroy-network test
+
 
 # Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
+TELEMETRY_SCRIPT="telemetry.sh"
 
 .PHONY: all
 all: setup setup-cluster reset
@@ -33,7 +42,7 @@ update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart:
+deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator
 	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
@@ -47,7 +56,13 @@ helm-test:
 	echo "" && \
 	echo ">> Running helm test..." && \
 	echo "" && \
-	helm test fst --logs
+	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
+	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
+    #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
+	helm test fst --filter 'name=network-test' && \
+    EXIT_CODE=$$? && \
+	kubectl logs network-test && \
+	exit $${EXIT_CODE}
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
@@ -128,6 +143,29 @@ restart: stop-nodes start-nodes
 .PHONY: reset
 reset: destroy-network start
 
+######################################### Prometheus #################################
+.PHONY: fetch-prometheus-operator-bundle
+fetch-prometheus-operator-bundle:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && fetch-prometheus-operator-bundle
+
+.PHONY: deploy-prometheus-operator
+deploy-prometheus-operator: fetch-prometheus-operator-bundle
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus-operator
+
+.PHONY: destroy-prometheus-operator
+destroy-prometheus-operator:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
+
+.PHONY: deploy-prometheus
+deploy-prometheus: deploy-prometheus-operator
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus
+
+.PHONY: destroy-prometheus
+destroy-prometheus:
+	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus
+	make destroy-prometheus-operator
+
+######################################### MinIO #################################
 .PHONY: deploy-minio-operator
 deploy-minio-operator:
 	@echo ">> Deploying minio operator..."; \

@@ -4,6 +4,7 @@
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
 {{- $nodeId := .nodeId -}}
+{{- $minioserver := .minioserver -}}
 - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $balanceUploader.image "Chart" $chart "defaults" $defaults ) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults) }}
@@ -17,7 +18,7 @@
     - --watch-directory
     - /opt/hgcapp/accountBalances
     - --s3-endpoint
-    - http://minio-hl:9000
+    - http://{{ $minioserver.tenant.name }}-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/accountBalances

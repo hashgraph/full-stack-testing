@@ -1,0 +1,15 @@
+{{- if $.Values.telemetry.prometheus.svcMonitor.enable | eq "true" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: network-node-monitor
+  labels:
+    fullstack.hedera.com/type: network-node-svc-monitor
+spec:
+  selector:
+    matchLabels:
+      fullstack.hedera.com/type: network-node-svc
+  endpoints:
+    - port: otel-metrics
+      interval: 5s
+{{- end }}

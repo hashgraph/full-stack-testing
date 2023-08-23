@@ -3,6 +3,7 @@
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
+{{- $minioserver := .minioserver -}}
 {{- $nodeId := .nodeId -}}
 - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $chart "defaults" $defaults) }}
@@ -19,7 +20,7 @@
     - --csv-stats-directory
     - /opt/hgcapp/recordStreams/uploader-stats
     - --s3-endpoint
-    - http://minio-hl:9000
+    - http://{{ $minioserver.tenant.name }}-hl:9000
   volumeMounts:
     - name: hgcapp-storage
       mountPath: /opt/hgcapp/recordStreams
