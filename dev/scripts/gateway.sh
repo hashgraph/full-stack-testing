@@ -3,6 +3,7 @@
 GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v0.7.1}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
 readonly SCRIPT_DIR
 
 function deploy_haproxy_ingress() {
@@ -131,30 +132,42 @@ function uninstall_crd() {
 }
 
 function expose_envoy_gateway_svc() {
+  local local_port="${1}"
+  [[ -z "${local_port}" ]] && echo "ERROR: local port is required" && return 1
+
+  local gateway_port="${2}"
+  [[ -z "${gateway_port}" ]] && echo "ERROR: gateway port is required" && return 1
+
+  unexpose_envoy_gateway_svc || true
+
   ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=fst -o jsonpath="{.items[0].metadata.name}" )
-  local port="${1}"
   echo ""
-	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on port ${port}"
+	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on ${local_port}:${gateway_port}"
   echo "-----------------------------------------------------------------------------------------------------"
-  kubectl port-forward "svc/${ENVOY_SERVICE}"  -n envoy-gateway-system ${port}:80 &
-  export GATEWAY_SVC_PID=$(ps aux | grep "kubectl port-forward svc/envoy-default-fst-a00b59fc -n envoy-gateway-system 8888:80" | sed -n 2p | awk '{ print $2 }')
-  echo "PID: ${GATEWAY_SVC_PID}"
+  kubectl port-forward "svc/${ENVOY_SERVICE}" -n envoy-gateway-system "${local_port}":"${gateway_port}" &
 }
 
 function unexpose_envoy_gateway_svc() {
+  export GATEWAY_SVC_PID=$(ps aux | grep "kubectl port-forward svc/${ENVOY_SERVICE}" | sed -n 2p | awk '{ print $2 }')
+  [[ -z "${GATEWAY_SVC_PID}" ]] && echo "No Envoy Gateway Service PID is found" && return 0
+
   if [[ "${GATEWAY_SVC_PID}" ]]; then
     echo ""
     echo "Un-exposing Envoy Gateway Service: ${ENVOY_SERVICE} for PID: ${GATEWAY_SVC_PID}"
     echo "-----------------------------------------------------------------------------------------------------"
-    kill "${GATEWAY_SVC_PID}" || true
+    kill "${GATEWAY_SVC_PID}" &>/dev/null || true
   fi
 }
 
 function test_http_route() {
-  kubectl apply -f "${SCRIPT_DIR}/../files/http-debug.yaml"
+  echo "Setup"
+  echo "-----------------------------------------------------------------------------------------------------"
+  kubectl apply -f "${GATEWAY_API_DIR}/http-debug.yaml"
+  kubectl wait --for=condition=Ready pods -l app=http-debug -n default
 
-  local port=8888
-  expose_envoy_gateway_svc ${port}
+  local local_port=8080
+  local gateway_port=80
+  expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
 
   local route_host="debug.fst.local"
 
@@ -164,24 +177,35 @@ function test_http_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   echo ""
 
-  local status=$(curl --header "Host: ${route_host}" -o /dev/null -s -w "%{http_code}\n" localhost:${port})
+  local status=$(curl --header "Host: ${route_host}" -o /dev/null -s -w "%{http_code}\n" localhost:${local_port})
 
+  echo ""
+  echo "********************************************************"
   if [[ $status -eq 200 ]]; then
-    echo "SUCCESS: HTTPRoute ${route_host}"
+    echo "SUCCESS: HTTPRoute ${route_host}:${gateway_port}"
   else
-    echo "FAIL: HTTPRoute ${route_host}"
+    curl --header "Host: ${route_host}" -vvv localhost:${local_port}
+    echo ""
+    echo "FAIL: HTTPRoute ${route_host}:${gateway_port}"
   fi
+  echo "********************************************************"
+  echo ""
 
+  echo "Cleanup"
+  echo "-----------------------------------------------------------------------------------------------------"
   unexpose_envoy_gateway_svc || true
-
-  kubectl delete -f "${SCRIPT_DIR}/../files/http-debug.yaml"
+  kubectl delete -f "${GATEWAY_API_DIR}/http-debug.yaml"
 }
 
 function test_grpc_route() {
-  kubectl apply -f "${SCRIPT_DIR}/../files/grpc-debug.yaml"
+  echo "Setup"
+  echo "-----------------------------------------------------------------------------------------------------"
+  kubectl apply -f "${GATEWAY_API_DIR}/grpc-debug.yaml"
+  kubectl wait --for=condition=Ready pods -l app=grpc-debug -n default
 
-  local port=8888
-  expose_envoy_gateway_svc ${port}
+  local local_port=9090
+  local gateway_port=9090
+  expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
 
   local route_host="debug.fst.local"
 
@@ -191,41 +215,56 @@ function test_grpc_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   echo ""
 
-  grpcurl -plaintext -vv -authority=grpc-example.com 127.0.0.1:${port} yages.Echo/Ping
+  grpcurl -plaintext -vv -authority=grpc-example.com 127.0.0.1:${local_port} yages.Echo/Ping
   local status=$?
 
+  echo ""
+  echo "********************************************************"
   if [[ $status -eq 0 ]]; then
-    echo "SUCCESS: GRPCRoute ${route_host}"
+    echo "SUCCESS: GRPCRoute ${route_host}:${gateway_port}"
   else
-    echo "FAIL: GRPCRoute ${route_host}"
+    echo "FAIL: GRPCRoute ${route_host}:${gateway_port}"
   fi
+  echo "********************************************************"
+  echo ""
 
-  unexpose_envoy_gateway_svc
-
-  kubectl delete -f "${SCRIPT_DIR}/../files/grpc-debug.yaml"
+  echo "Cleanup"
+  echo "-----------------------------------------------------------------------------------------------------"
+  unexpose_envoy_gateway_svc || true
+  kubectl delete -f "${GATEWAY_API_DIR}/grpc-debug.yaml"
 }
 
 function test_tcp_route() {
-  kubectl apply -f "${SCRIPT_DIR}/../files/tcp-debug.yaml"
+  echo "Setup"
+  echo "-----------------------------------------------------------------------------------------------------"
+  kubectl apply -f "${GATEWAY_API_DIR}/tcp-debug.yaml"
+  kubectl wait --for=condition=Ready pods -l app=tcp-debug -n default
 
-  local tcp_port="50211"
-  expose_envoy_gateway_svc ${tcp_port}
+  local local_port=9000
+  local gateway_port=9000
+  expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
   sleep 1
 
-  echo "Checking TCP route localhost:${tcp_port}"
+  echo ""
+  echo "Checking TCP route localhost:${local_port}"
   echo "-----------------------------------------------------------------------------------------------------"
   echo ""
 
-  nc -zv localhost ${tcp_port}
+  timeout 1s bash -c "echo tcp-test | nc localhost ${local_port}"
   local status=$?
 
-  if [[ $status -eq 0 ]]; then
-    echo "SUCCESS: TCPRoute localhost:${tcp_port}"
+  echo ""
+  echo "********************************************************"
+  if [[ ${status} -ne 0 ]]; then
+    echo "SUCCESS: TCPRoute localhost:${local_port}"
   else
-    echo "FAIL: TCPRoute localhost:${tcp_port}"
+    echo "FAIL: TCPRoute localhost:${local_port}"
   fi
+  echo "********************************************************"
+  echo ""
 
-  unexpose_envoy_gateway_svc
-
-  kubectl delete -f "${SCRIPT_DIR}/../files/tcp-debug.yaml"
+  echo "Cleanup"
+  echo "-----------------------------------------------------------------------------------------------------"
+  unexpose_envoy_gateway_svc || true
+  kubectl delete -f "${GATEWAY_API_DIR}/tcp-debug.yaml"
 }

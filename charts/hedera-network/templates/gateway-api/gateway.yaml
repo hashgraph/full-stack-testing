@@ -21,7 +21,28 @@ metadata:
 spec:
   gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
   listeners:
-    - name: http
+    - name: http-debug
       protocol: HTTP
       port: 80
+    - name: tcp-debug
+      protocol: TCP
+      port: 9000
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute
+    - name: grpc-debug
+      protocol: TCP
+      port: 9090
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute # we use TCPRoute to for GRPC
+    {{- range $index, $node := $.Values.hedera.nodes }}
+    {{- $port := add $index 50000 }}
+    - name: tcp-{{ $node.name }}
+      protocol: TCP
+      port: {{ $port }}
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute
+    {{- end }}
 {{- end }}

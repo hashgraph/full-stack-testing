@@ -151,25 +151,6 @@ destroy-gateway-api:
 	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_haproxy_ingress
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
-.PHONY: expose-envoy-gateway-svc
-expose-envoy-gateway-svc:
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && expose_envoy_gateway_svc
-
-.PHONY: unexpose-envoy-gateway-svc
-unexpose-envoy-gateway-svc:
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && unexpose_envoy_gateway_svc
-
-.PHONY: test-gateway-http-route
-test-gateway-http-route:
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_http_route
-
-.PHONY: test-gateway-grpc-route
-test-gateway-grpc-route:
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_grpc_route
-
-.PHONY: test-gateway-tcp-route
-test-gateway-tcp-route:
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_tcp_route
 ######################################### Prometheus #################################
 .PHONY: fetch-prometheus-operator-bundle
 fetch-prometheus-operator-bundle:

@@ -13,13 +13,19 @@ metadata:
 spec:
   gatewayClassName: fst
   listeners:
-    - name: http
+    - name: http-debug
       protocol: HTTP
       port: 80
-    - name: grpc-non-tls
+    - name: tcp-debug
       protocol: TCP
-      port: 50211
+      port: 9000
       allowedRoutes:
         kinds:
           - kind: TCPRoute
+    - name: grpc-debug
+      protocol: TCP
+      port: 9090
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute # we use TCPRoute to for GRPC
 ---

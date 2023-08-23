@@ -1,46 +1,46 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: http-debug
+  name: tcp-debug
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: http-debug
+  name: tcp-debug
   labels:
-    app: http-debug
-    service: http-debug
+    app: tcp-debug
+    service: tcp-debug
 spec:
   ports:
     - name: http
-      port: 3000
-      targetPort: 3000
+      port: 9000
+      targetPort: 9000
   selector:
-    app: http-debug
+    app: tcp-debug
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: http-debug
+  name: tcp-debug
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: http-debug
+      app: tcp-debug
       version: v1
   template:
     metadata:
       labels:
-        app: http-debug
+        app: tcp-debug
         version: v1
     spec:
-      serviceAccountName: http-debug
+      serviceAccountName: tcp-debug
       containers:
-        - image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+        - image: docker.io/istio/tcp-echo-server:1.2
           imagePullPolicy: IfNotPresent
-          name: http-debug
+          name: tcp-debug
           ports:
-            - containerPort: 3000
+            - containerPort: 9000
           env:
             - name: POD_NAME
               valueFrom:
@@ -51,23 +51,15 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
 ---
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
 metadata:
-  name: http-debug
+  name: tcp-debug
 spec:
   parentRefs:
     - name: fst
-  hostnames:
-    - "debug.fst.local"
+      sectionName: tcp-debug
   rules:
     - backendRefs:
-        - group: ""
-          kind: Service
-          name: http-debug
-          port: 3000
-          weight: 1
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
+        - name: tcp-debug
+          port: 9000
