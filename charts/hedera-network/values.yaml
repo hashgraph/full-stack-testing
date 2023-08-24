@@ -157,7 +157,7 @@ defaults:
       resources: {}
     otelCollector:
       enable: "true"
-      nameOverride: "otel-collector"
+      nameOverride: ""
       image:
         registry: "docker.io"
         repository: "otel/opentelemetry-collector-contrib"
@@ -172,6 +172,9 @@ defaults:
           path: /
           port: otel-health
       resources: {}
+      prometheusRemoteWrite:
+        enable: "false"
+        endpoint: "http://prometheus.default.svc:9090/api/v1/write"
 
 # This configures the minio tenant subchart
 # Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml

@@ -81,7 +81,7 @@ function deploy-prometheus-example-app() {
 	echo "PROMETHEUS_EXAMPLE_APP_YAML: ${PROMETHEUS_EXAMPLE_APP_YAML}"
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl create -f "${PROMETHEUS_EXAMPLE_APP_YAML}"
-	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 60
+	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 60s
 }
 
 function destroy-prometheus-example-app() {
