@@ -21,7 +21,7 @@ import com.hedera.fullstack.readiness.api.ReadinessCheck;
 public class NodeActiveReadinessCheck implements ReadinessCheck {
 
     @Override
-    public boolean ready() {
+    public boolean ready(final Deployment deployment) {
         return true;
     }
 }

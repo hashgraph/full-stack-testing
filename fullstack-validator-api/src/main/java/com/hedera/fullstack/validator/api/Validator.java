@@ -25,9 +25,8 @@ import java.util.concurrent.Future;
  */
 @FunctionalInterface
 public interface Validator {
-
-    default boolean appliesTo(Node<?> node) {
-        return node instanceof ApplicationNode;
+    default boolean appliesTo(Class<? extends Node<?>> nodeClass) {
+        return ApplicationNode.class.isAssignableFrom(nodeClass);
     }
 
     /**

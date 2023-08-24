@@ -31,7 +31,7 @@ public interface Monitor {
         return DEFAULT_CHECK_INTERVAL;
     }
 
-    default boolean appliesTo(Node<?> node) {
-        return node instanceof ApplicationNode;
+    default boolean appliesTo(Class<? extends Node<?>> nodeClass) {
+        return ApplicationNode.class.isAssignableFrom(nodeClass);
     }
 }
