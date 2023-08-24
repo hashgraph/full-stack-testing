@@ -250,12 +250,10 @@ function test_tcp_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   echo ""
 
-  timeout 1s bash -c "echo tcp-test | nc localhost ${local_port}"
-  local status=$?
-
+  timeout 1s bash -c "echo tcp-test | nc localhost ${local_port} >> deleteme.txt"
   echo ""
   echo "********************************************************"
-  if [[ ${status} -ne 0 ]]; then
+  if [[ -s deleteme.txt ]]; then
     echo "SUCCESS: TCPRoute localhost:${local_port}"
   else
     echo "FAIL: TCPRoute localhost:${local_port}"
@@ -265,6 +263,7 @@ function test_tcp_route() {
 
   echo "Cleanup"
   echo "-----------------------------------------------------------------------------------------------------"
+  rm deleteme.txt
   unexpose_envoy_gateway_svc || true
   kubectl delete -f "${GATEWAY_API_DIR}/tcp-debug.yaml"
 }
