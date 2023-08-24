@@ -3,23 +3,21 @@
 {{- $defaults := $.Values.defaults.haproxy }}
 {{- if default $defaults.enable $haproxy.enable | eq "true" }}
 ---
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: HTTPRoute
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
 metadata:
-  name: haproxy-routes-{{ $node.name }}
+  name: haproxy-grpc-route-{{ $node.name }}
   namespace: default
   labels:
-    fullstack.hedera.com/type: http-route
+    fullstack.hedera.com/type: tcp-route
+    fullstack.hedera.com/nodeName: {{ $node.name }}
 spec:
   parentRefs:
     - name: fst
-  hostnames:
-    - {{ tpl $.Values.gatewayApi.route.hostname (dict "node" $node "Template" $.Template) }}
+      sectionName: tcp-{{ $node.name }}
   rules:
     - backendRefs:
       - name: haproxy-{{ $node.name }}-svc
         port: 50211
-      - name: haproxy-{{ $node.name }}-svc
-        port: 50212
 {{- end }}
 {{- end }}
