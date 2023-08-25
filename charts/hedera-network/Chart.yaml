@@ -29,12 +29,12 @@ kubeVersion: ">=1.25.0"
 dependencies:
   - name: hedera-mirror
     alias: hedera-mirror-node
-version: 0.7.0
+    version: 0.86.0
     repository: https://hashgraph.github.io/hedera-mirror-node/charts
     condition: cloud.minio.enable
 
   - name: tenant
     alias: minio-server
-version: 0.7.0
+    version: 5.0.7
     repository: https://operator.min.io/
     condition: cloud.minio.enable
