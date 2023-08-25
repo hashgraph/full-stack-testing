@@ -49,7 +49,7 @@ jobs:
 
       # Node.JS 16.x is required for the Snyk CLI.
       - name: Setup NodeJS
-        uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
+        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
           node-version: 16
 
