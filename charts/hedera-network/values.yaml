@@ -30,6 +30,19 @@ tester:
     pullPolicy: "IfNotPresent"
   resources: {}
 
+# gateway-api configuration
+gatewayApi:
+  gatewayClass:
+    name: "fst"
+    enable: "true"
+    controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
+#    controllerName: "haproxy-ingress.github.io/controller"
+  gateway:
+    name: "fst"
+    enable: "true"
+  route:
+    hostname: "{{ .node.name }}.fst.local"
+
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:

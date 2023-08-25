@@ -23,7 +23,10 @@ SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
+
+# scripts
 TELEMETRY_SCRIPT="telemetry.sh"
+GATEWAY_API_SCRIPT="gateway.sh"
 
 .PHONY: all
 all: setup setup-cluster reset
@@ -42,7 +45,7 @@ update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator
+deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator deploy-gateway-api
 	echo ">> Deploying helm chart..." && \
 	echo "" && \
 	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
@@ -142,6 +145,17 @@ restart: stop-nodes start-nodes
 
 .PHONY: reset
 reset: destroy-network start
+
+######################################### Gateway API #################################
+.PHONY: deploy-gateway-api
+deploy-gateway-api:
+	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_haproxy_ingress
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_envoy_gateway_api
+
+.PHONY: destroy-gateway-api
+destroy-gateway-api:
+	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_haproxy_ingress
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
 ######################################### Prometheus #################################
 .PHONY: fetch-prometheus-operator-bundle
