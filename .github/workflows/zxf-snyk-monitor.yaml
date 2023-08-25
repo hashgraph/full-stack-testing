@@ -15,6 +15,8 @@
 ##
 
 name: "ZXF: Snyk Monitor"
+# The purpose of this job is to run on each commit to the main branch and daily at midnight UTC on the most recent commit.
+# This job is not intended to be run manually, but rather to be run when triggered by either a commit or the schedule.
 
 on:
   push:
@@ -32,26 +34,30 @@ jobs:
     runs-on: [self-hosted, Linux, medium, ephemeral]
     steps:
       - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # pin@v3
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
 
       - name: Setup Java
-        uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # pin@v3
+        uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3.12.0
         with:
           distribution: temurin
           java-version: 17.0.7
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
+        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # v2.7.0
         with:
           gradle-version: wrapper
 
+      # Node.JS 16.x is required for the Snyk CLI.
       - name: Setup NodeJS
-        uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # pin@v3
+        uses: actions/setup-node@bea5baf987ba7aa777a8a0b4ace377a21c45c381 # v3.8.0
         with:
           node-version: 16
 
+      # This step may be optional since Snyk analysis does not require the binary artifacts to be built first. However,
+      # Snyk will fail if the code does not compile and the error messages are less than helpful. Therefore, we will
+      # compile the code first and then run Snyk so that we can get diagnostic information if the code does not compile.
       - name: Compile
-        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # pin@v2
+        uses: gradle/gradle-build-action@a4cf152f482c7ca97ef56ead29bf08bcd953284c # v2.7.0
         with:
           gradle-version: wrapper
           arguments: assemble --scan
@@ -59,6 +65,8 @@ jobs:
       - name: Setup Snyk
         run: npm install -g snyk
 
+      # This step is what actually uploads the Snyk analysis to the Snyk Cloud. The Snyk token is stored as a secret
+      # in the Github repository and is passed to the Snyk CLI via the environment variable SNYK_TOKEN.
       - name: Run Snyk Monitor
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
