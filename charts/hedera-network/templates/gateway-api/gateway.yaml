@@ -39,13 +39,13 @@ spec:
     {{- range $index, $node := $.Values.hedera.nodes }}
     {{- $tcp_port := mul $index 1000 | add 50211 }}
     {{- $http_port := mul $index 100 | add 8080 }}
-    - name: tcp-{{ $node.name }}
+    - name: tcp-{{ $node.name }} # for haproxy or network-node TCPRoute
       protocol: TCP
       port: {{ $tcp_port }}
       allowedRoutes:
         kinds:
           - kind: TCPRoute
-    - name: http-{{ $node.name }}
+    - name: http-{{ $node.name }} # for envoy-proxy HTTPRoute
       protocol: HTTP
       port: {{ $http_port }}
     {{- end }}
