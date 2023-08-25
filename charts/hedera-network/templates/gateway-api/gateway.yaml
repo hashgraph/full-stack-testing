@@ -37,12 +37,16 @@ spec:
         kinds:
           - kind: TCPRoute # we use TCPRoute to for GRPC
     {{- range $index, $node := $.Values.hedera.nodes }}
-    {{- $port := add $index 50000 }}
+    {{- $tcp_port := mul $index 1000 | add 50211 }}
+    {{- $http_port := mul $index 100 | add 8080 }}
     - name: tcp-{{ $node.name }}
       protocol: TCP
-      port: {{ $port }}
+      port: {{ $tcp_port }}
       allowedRoutes:
         kinds:
           - kind: TCPRoute
+    - name: http-{{ $node.name }}
+      protocol: HTTP
+      port: {{ $http_port }}
     {{- end }}
 {{- end }}
