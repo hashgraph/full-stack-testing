@@ -18,9 +18,19 @@ exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
     const_labels:
-      label1: "{{ .otelDefaults.nameOverride }}-label1"
+      source: p-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="p-otel-collector"}
+  {{- if eq .otelDefaults.prometheusRemoteWrite.enable "true" }}
+  prometheusremotewrite:
+    endpoint: "{{ .otelDefaults.prometheusRemoteWrite.endpoint }}"
+    tls:
+      insecure: true
+    external_labels:
+      source: prw-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="prw-otel-collector"}
+  {{- end }}
+#  logging:
+#    verbosity: detailed
+#    sampling_initial: 5
 
-  logging:
 
 #  jaeger:
 #    endpoint: jaeger-all-in-one:14250
@@ -34,11 +44,14 @@ exporters:
 
 processors:
   batch:
-
 extensions:
   health_check:
 
 service:
+#  telemetry:
+#    logs:
+#      level: "debug"
+#      development: true
   extensions: [health_check]
   pipelines:
     #traces:
@@ -48,4 +61,9 @@ service:
     metrics:
       receivers: [otlp, hostmetrics]
       processors: [batch]
-      exporters: [logging, prometheus]
+      exporters: 
+         - prometheus
+         {{- if eq .otelDefaults.prometheusRemoteWrite.enable "true" }}
+         - prometheusremotewrite
+         {{- end }}
+#      exporters: [logging, prometheus{{ if eq .otelDefaults.prometheusRemoteWrite.enable "true" }}, prometheusremotewrite{{ end }}]
