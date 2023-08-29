@@ -161,14 +161,6 @@ defaults:
         repository: "otel/opentelemetry-collector-contrib"
         tag: "0.72.0"
         pullPolicy: "IfNotPresent"
-      livenessProbe:
-        httpGet:
-          path: /
-          port: otel-health
-      readinessProbe:
-        httpGet:
-          path: /
-          port: otel-health
       resources: {}
       prometheusRemoteWrite:
         enable: "false"

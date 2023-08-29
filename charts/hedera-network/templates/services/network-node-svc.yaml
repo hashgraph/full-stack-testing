@@ -11,23 +11,24 @@ spec:
   selector:
     app: network-{{ $nodeConfig.name }}
   ports:
+  # GOSSIP port is used by nodes for gossip protocol
   - name: gossip
     protocol: TCP
     port: 50111 # gossip port
     targetPort: 50111
+  # GRPC-TLS port is used for services API
   - name: grpc-non-tls
     protocol: TCP
     port: 50211 # non-tls grpc client port
     targetPort: 50211
+  # GRPC-TLS port
   - name: grpc-tls
     protocol: TCP
     port: 50212 # tls grpc client port
     targetPort: 50212
-  - name: otel-metrics
-    protocol: TCP
-    port: 8888
-    targetPort: 8888
-  - name: prometheus
+  # Node metrics port
+  # Rather than exposing the node's metrics port 9999 directly, we expose otel-collect's prometheus port here.
+  - name: prometheus # otel-collector's prometheus exporter port
     protocol: TCP
     port: 8889
     targetPort: 8889
