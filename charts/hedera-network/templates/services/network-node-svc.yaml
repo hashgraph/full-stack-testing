@@ -16,7 +16,7 @@ spec:
     protocol: TCP
     port: 50111 # gossip port
     targetPort: 50111
-  # GRPC-TLS port is used for services API
+  # GRPC-NON-TLS port is used for services API
   - name: grpc-non-tls
     protocol: TCP
     port: 50211 # non-tls grpc client port

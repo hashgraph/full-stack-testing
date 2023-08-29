@@ -8,13 +8,13 @@
   securityContext:
     {{- include "fullstack.root.security.context" . | nindent 4 }}
   ports:
-    - name: otlp
-      containerPort: 4317 # otel port defined in otel-collector config
+    - name: otlp # otel port defined in otel-collector config
+      containerPort: 4317
       protocol: TCP
     - name: prometheus # prometheus exporter port as specified in otel-collector-config.yaml
       containerPort: 8889
       protocol: TCP
-    - name: health
+    - name: health # for otel-collector liveness check
       containerPort: 13133
       protocol: TCP
     - name: metrics # default metrics port exposed by the otel-collector itself
