@@ -37,7 +37,8 @@ function deploy-prometheus-operator() {
 	  kubectl create -f "${PROMETHEUS_OPERATOR_YAML}"
 	  kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus-operator -n default
 	else
-	  echo "Kubernetes operator CRD is already installed"
+	  echo "Prometheus operator CRD is already installed"
+	  echo ""
 	fi
 }
 
@@ -59,7 +60,7 @@ function deploy-prometheus() {
 	kubectl create -f "${PROMETHEUS_RBAC_YAML}"
 	sleep 10
 	kubectl create -f "${PROMETHEUS_YAML}"
-	echo "Waiting for prometheus to be running..."
+	echo "Waiting for prometheus to be active..."
 	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus -n default  --timeout 300s
 }
 
@@ -80,7 +81,7 @@ function deploy-prometheus-example-app() {
 	echo "PROMETHEUS_EXAMPLE_APP_YAML: ${PROMETHEUS_EXAMPLE_APP_YAML}"
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl create -f "${PROMETHEUS_EXAMPLE_APP_YAML}"
-	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 60
+	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 60s
 }
 
 function destroy-prometheus-example-app() {

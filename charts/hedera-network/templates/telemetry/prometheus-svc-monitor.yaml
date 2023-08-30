@@ -12,4 +12,6 @@ spec:
   endpoints:
     - port: otel-metrics
       interval: 5s
+    - port: prometheus
+      interval: 5s
 {{- end }}

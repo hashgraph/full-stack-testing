@@ -1,0 +1,52 @@
+{{- if $.Values.gatewayApi.gatewayClass.enable | eq "true" }}
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: GatewayClass
+metadata:
+  name: {{ $.Values.gatewayApi.gatewayClass.name }}
+  namespace: default
+  labels:
+    fullstack.hedera.com/type: gateway-class
+spec:
+  controllerName: {{ $.Values.gatewayApi.gatewayClass.controllerName }}
+{{- end }}
+{{- if $.Values.gatewayApi.gateway.enable | eq "true" }}
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ $.Values.gatewayApi.gateway.name }}
+  namespace: default
+  labels:
+    fullstack.hedera.com/type: gateway
+spec:
+  gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
+  listeners:
+    - name: http-debug
+      protocol: HTTP
+      port: 80
+    - name: tcp-debug
+      protocol: TCP
+      port: 9000
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute
+    - name: grpc-debug
+      protocol: TCP
+      port: 9090
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute # we use TCPRoute to for GRPC
+    {{- range $index, $node := $.Values.hedera.nodes }}
+    {{- $tcp_port := mul $index 1000 | add 50211 }}
+    {{- $http_port := mul $index 100 | add 8080 }}
+    - name: tcp-{{ $node.name }} # for haproxy or network-node TCPRoute
+      protocol: TCP
+      port: {{ $tcp_port }}
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute
+    - name: http-{{ $node.name }} # for envoy-proxy HTTPRoute
+      protocol: HTTP
+      port: {{ $http_port }}
+    {{- end }}
+{{- end }}

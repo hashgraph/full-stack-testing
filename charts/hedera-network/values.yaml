@@ -30,6 +30,19 @@ tester:
     pullPolicy: "IfNotPresent"
   resources: {}
 
+# gateway-api configuration
+gatewayApi:
+  gatewayClass:
+    name: "fst"
+    enable: "true"
+    controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
+#    controllerName: "haproxy-ingress.github.io/controller"
+  gateway:
+    name: "fst"
+    enable: "true"
+  route:
+    hostname: "{{ .node.name }}.fst.local"
+
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:
@@ -144,7 +157,7 @@ defaults:
       resources: {}
     otelCollector:
       enable: "true"
-      nameOverride: "otel-collector"
+      nameOverride: ""
       image:
         registry: "docker.io"
         repository: "otel/opentelemetry-collector-contrib"
@@ -159,6 +172,9 @@ defaults:
           path: /
           port: otel-health
       resources: {}
+      prometheusRemoteWrite:
+        enable: "false"
+        endpoint: "http://prometheus.default.svc:9090/api/v1/write"
 
 # This configures the minio tenant subchart
 # Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml

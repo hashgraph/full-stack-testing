@@ -21,7 +21,7 @@ import kotlin.io.path.exists
 @CacheableTask
 abstract class HelmArtifactTask() : DefaultTask() {
     @get:Input
-    val version: Property<String> = project.objects.property(String::class.java).convention("3.12.0")
+    val version: Property<String> = project.objects.property(String::class.java).convention("3.12.3")
 
     @get:Input
     val tuples: ListProperty<ArtifactTuple> = project.objects.listProperty(ArtifactTuple::class.java).convention(

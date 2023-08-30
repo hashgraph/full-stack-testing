@@ -30,7 +30,7 @@ class Utils {
         @JvmStatic
         fun updateHelmChartVersion(project: Project, chartName: String, newVersion: SemVer) {
             val manifestFile = File(project.rootProject.projectDir, "charts/${chartName}/Chart.yaml")
-            updateStringInFile(manifestFile, "version:", "version: $newVersion")
+            updateStringInFile(manifestFile, "version:", "version: $newVersion", false)
         }
 
         @JvmStatic
@@ -39,31 +39,30 @@ class Utils {
             updateStringInFile(manifestFile, "appVersion:", "appVersion: \"${newVersion}\"")
         }
 
-        private fun updateStringInFile(file: File, startsWith: String, newString: String) {
+        private fun updateStringInFile(file: File, startsWith: String, newString: String, ignoreLeadingSpace: Boolean = true) {
             var lines: List<String> = mutableListOf()
 
             if (file.exists()) {
                 lines = file.readLines(Charsets.UTF_8)
             }
 
-            val finalLines: List<String>
-
-            if (lines.isNotEmpty()) {
-                finalLines = lines.map {
-                    if (it.trimStart().startsWith(startsWith)) {
+            val finalLines: List<String> = if (lines.isNotEmpty()) {
+                lines.map {
+                    if (ignoreLeadingSpace && it.trimStart().startsWith(startsWith)) {
+                        newString
+                    } else if (it.startsWith(startsWith)) {
                         newString
                     } else {
                         it
                     }
                 }
             } else {
-                finalLines = listOf(newString)
+                listOf(newString)
             }
 
-            file.bufferedWriter(Charsets.UTF_8).use {
-                val writer = it
-                finalLines.forEach {
-                    writer.write(it)
+            file.bufferedWriter(Charsets.UTF_8).use { writer ->
+                finalLines.forEach { lines ->
+                    writer.write(lines)
                     writer.newLine()
                 }
                 writer.flush()
