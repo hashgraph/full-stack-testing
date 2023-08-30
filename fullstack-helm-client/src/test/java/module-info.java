@@ -12,15 +12,15 @@ module com.hedera.fullstack.helm.client.test {
     opens com.hedera.fullstack.helm.client.test.software to
             org.junit.platform.commons;
 
+    requires com.fasterxml.jackson.databind;
     requires com.hedera.fullstack.base.api;
-    requires org.assertj.core;
-    requires org.junit.jupiter.api;
     requires com.hedera.fullstack.helm.client;
     requires com.jcovalent.junit.logging;
-    requires org.junit.jupiter.params;
-    requires org.slf4j;
-    requires org.mockito;
-    requires org.mockito.junit.jupiter;
-    requires com.fasterxml.jackson.databind;
     requires jdk.attach;
+    requires org.assertj.core;
+    requires org.junit.jupiter.api;
+    requires org.junit.jupiter.params;
+    requires org.mockito.junit.jupiter;
+    requires org.mockito;
+    requires org.slf4j;
 }
