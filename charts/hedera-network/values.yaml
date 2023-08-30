@@ -68,7 +68,6 @@ defaults:
       repository: "haproxy"
       tag: "2.4-alpine"
       pullPolicy: "IfNotPresent"
-    replica: 1
     resources: {}
     loadBalancerEnabled: "false"
   envoyProxy:
@@ -79,7 +78,6 @@ defaults:
       repository: "envoyproxy/envoy"
       tag: "v1.21.1"
       pullPolicy: "IfNotPresent"
-    replica: 1
     resources: {}
     loadBalancerEnabled: "false"
   sidecars:
