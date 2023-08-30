@@ -22,4 +22,5 @@ module com.hedera.fullstack.helm.client.test {
     requires org.mockito;
     requires org.mockito.junit.jupiter;
     requires com.fasterxml.jackson.databind;
+    requires jdk.attach;
 }
