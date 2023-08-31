@@ -61,7 +61,7 @@ function deploy-prometheus() {
 	kubectl create -f "${PROMETHEUS_RBAC_YAML}"
 	sleep 10
 	kubectl create -f "${PROMETHEUS_YAML}"
-	echo "Waiting for prometheus to be active..."
+	echo "Waiting for prometheus to be active (timeout 300s)..."
 	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus -n default  --timeout 300s
 }
 

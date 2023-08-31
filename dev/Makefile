@@ -92,6 +92,12 @@ deploy-network: deploy-chart
 	kubectl get pods -o wide && \
 	echo ">> Waiting for network-node pods to be active (first deployment takes ~10m)...." && \
   	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
+	echo "" && \
+    echo ">> Service Information...." && \
+    echo "" && \
+	kubectl get svc -o wide && \
+	echo ">> Waiting for pods to be up (timeout 600s)" && \
+	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
 
 .PHONY: destroy-network
 destroy-network: destroy-test-container destroy-chart
