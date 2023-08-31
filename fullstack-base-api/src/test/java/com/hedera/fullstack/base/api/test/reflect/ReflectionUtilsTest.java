@@ -48,6 +48,7 @@ public class ReflectionUtilsTest {
     void testPrimitiveAsWrapperClass(Class<?> primitiveClass, Class<?> wrapperClass) {
         Class<?> result = ReflectionUtils.primitiveAsWrapperClass(primitiveClass);
         assertThat(result).isEqualTo(wrapperClass);
+
     }
 
     @ParameterizedTest(name = "Validate primitive for {1}")
