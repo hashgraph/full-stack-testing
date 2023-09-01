@@ -162,9 +162,23 @@ defaults:
         tag: "0.72.0"
         pullPolicy: "IfNotPresent"
       resources: {}
-      prometheusRemoteWrite:
-        enable: "false"
-        endpoint: "http://prometheus.default.svc:9090/api/v1/write"
+      receivers:
+        prometheus:
+          scrapeTargets: [ 0.0.0.0:9999 ]  # hedera node metrics are exposed at port 9090
+          scrapeInterval: 5s
+      exporters:
+        otlp:
+          endpoint: tempo:4317
+          tls:
+            insecure: true
+        prometheus:
+          tls:
+            insecure: true
+        prometheusRemoteWrite:
+          enable: "false"
+          endpoint: "http://prometheus.default.svc:9090/api/v1/write"
+          tls:
+            insecure: true
 
 # This configures the minio tenant subchart
 # Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml
