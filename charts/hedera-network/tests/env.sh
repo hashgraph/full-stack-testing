@@ -14,6 +14,10 @@ fi
 BATS_HOME="${BATS_HOME:-../../../dev/bats}"
 TESTS_DIR="${TESTS_DIR:-.}"
 
+LOG_DIR="${LOG_DIR:-/tmp/bats-test-logs}"
+LOG_FILE="test.log"
+mkdir "${LOG_DIR}" || true
+
 echo ""
 echo "Mandatory variables"
 echo "=============================================="

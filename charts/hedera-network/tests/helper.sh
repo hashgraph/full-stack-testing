@@ -79,3 +79,38 @@ function check_test_status() {
   echo "output = ${output}"
   [[ "${status}" -eq 0 ]]
 }
+
+function get_config_val() {
+  local val_path=$1
+  ret=$(helm get values fst -a | tail -n +2 | niet "${val_path}" )
+  echo "${ret}"
+}
+
+function has_sidecar() {
+  local val_path=$1
+  local name=$2
+  local sidecars=("${3}") # convert to an array
+
+  log_debug "Checking sidecar with: ${KEY} => ${VAL}";
+  log_debug "Received sidecar list: ${sidecars[*]}"
+
+  set -o pipefail
+  local should_enable=$(get_config_val "${val_path}" | tr '[:lower:]' '[:upper:]' ) || return "${EX_ERR}"
+  if [[ -z "${should_enable}" ]]; then
+    return "${EX_ERR}"
+  fi
+
+  log_debug "Found config: ${val_path} = ${should_enable}"
+
+  local is_enabled="FALSE"
+  if [[ "${sidecars[*]}" =~ ${name} ]]; then
+    is_enabled="TRUE"
+    log_debug "Found sidecar: ${name}"
+  fi
+
+  if [[ "${is_enabled}" != "${should_enable}" ]]; then
+    return "${EX_ERR}"
+  fi
+
+  return "${EX_OK}"
+}

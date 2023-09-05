@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 
-readonly LOG_DIR="logs"
-readonly LOG_FILE="test.log"
-
 function clear_log() {
-  if [[ -f "logs/${LOG_FILE}" ]]; then
-    rm -f "logs/${LOG_FILE}"
+  if [[ -f "${LOG_DIR}/${LOG_FILE}" ]]; then
+    rm -f "${LOG_DIR}/${LOG_FILE}"
   fi
 }
 
@@ -15,7 +12,7 @@ function log() {
   local file=$3
   local dt=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-  echo "${dt} | ${level} | ${msg}" >> "logs/${3}"
+  echo "${dt} | ${level} | ${msg}" >> "${LOG_DIR}/${3}"
 }
 
 function log_debug() {
@@ -41,4 +38,8 @@ function log_pass() {
 function log_fail() {
   local msg=$1
   log "INFO " "(${FAIL}) ${msg}" "${LOG_FILE}"
+}
+
+function log_line_sep() {
+  log_debug "---"
 }
