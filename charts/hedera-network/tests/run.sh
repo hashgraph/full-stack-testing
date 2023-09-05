@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname "${BASH_SOURCE[0]}")/env.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/logging.sh"
+
+clear_log
 
 echo ""
 echo "BATS directory: $BATS_HOME"

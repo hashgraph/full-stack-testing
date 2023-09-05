@@ -5,18 +5,17 @@ setup() {
 }
 
 @test "Check all network node pods are running" {
-  echo "----------------------------------------------------------------------------"
-  echo "Test case: test_node_total"
-  echo "Checking total number of network node containers"
-  echo "Expected total nodes: ${TOTAL_NODES}"
-  echo "----------------------------------------------------------------------------"
+  log_debug "----------------------------------------------------------------------------"
+  log_debug "TEST: Checking total number of network node containers"
+  log_debug "Expected total nodes: ${TOTAL_NODES}"
+  log_debug "----------------------------------------------------------------------------"
 
   kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s || return "${EX_ERR}"
 
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
 
-  echo "Nodes: " "${nodes[@]}"
+  log_debug "Nodes: " "${nodes[@]}"
   local node_total=${#nodes[@]}
 
   local test_status="${FAIL}"
@@ -24,23 +23,21 @@ setup() {
     test_status="${PASS}"
   fi
 
-  echo ""
-  echo "[${test_status}] Total network node: ${node_total}; expected: ${TOTAL_NODES}"
-  echo ""
+  log_debug ""
+  log_debug "[${test_status}] Total network node: ${node_total}; expected: ${TOTAL_NODES}"
+  log_debug ""
 
   # assert success
-  [[ "${node_total}" -eq "${TOTAL_NODES}" ]]
+  [[ "${test_status}" = "${PASS}" ]]
 }
 
 @test "Check systemctl is running in all root containers" {
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
 
-  echo "---------------------------------------------------------------------------"
-  echo "Test case: test_systemctl"
-  echo "Checking systemctl is running in all network node containers"
-  echo "Nodes: " "${nodes[@]}" ", Total:" "${#nodes[@]}"
-  echo "---------------------------------------------------------------------------"
+  log_debug "---------------------------------------------------------------------------"
+  log_debug "TEST: Checking systemctl is running in all network node containers"
+  log_debug "---------------------------------------------------------------------------"
 
   local attempts=0
   local systemctl_status="${FAIL}"
@@ -51,23 +48,81 @@ setup() {
     attempts=0
     systemctl_status="${EX_ERR}"
 
+    log_debug "Checking node ${node}..."
+
     # make few attempts to check systemctl status
     while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${systemctl_status}" -ne "${EX_OK}" ]]; do
       attempts=$((attempts + 1))
       kubectl exec "${node}" -c root-container -- systemctl status --no-pager
       systemctl_status="${?}"
-      echo "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${systemctl_status} <<<<<"
+      log_debug "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${systemctl_status} <<<<<"
       if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
-        echo "Sleeping 5s..."
+        log_debug "Sleeping 5s..."
         sleep 5
       fi
     done
 
     if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
+      log_fail "systemctl is not running in node ${node}"
+      break # break at first node error
+    fi
+
+    log_pass "systemctl is running in node ${node}"
+  done
+
+  local test_status="${FAIL}"
+  if [[ "${systemctl_status}" -eq "${EX_OK}" ]]; then
+    test_status="${PASS}"
+  fi
+
+  log_debug ""
+  log_debug "[${test_status}] systemctl is running in all network node containers"
+  log_debug ""
+
+  # assert success
+  [[ "${test_status}" = "${PASS}" ]]
+}
+
+@test "Check all sidecars are running" {
+  local resp="$(get_pod_list network-node)"
+  local nodes=(${resp}) # convert into an array
+
+  log_debug "---------------------------------------------------------------------------"
+  log_debug "TEST: Checking all sidecars are running" 2>&1
+  log_debug "---------------------------------------------------------------------------"
+
+  local attempts=0
+  local systemctl_status="${FAIL}"
+  local MAX_ATTEMPTS=10
+
+  local test_status="${PASS}"
+  for node in "${nodes[@]}"
+  do
+    attempts=0
+    systemctl_status="${EX_ERR}"
+
+    # make few attempts to check systemctl status
+    while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${systemctl_status}" -ne "${EX_OK}" ]]; do
+      attempts=$((attempts + 1))
+      kubectl exec "${node}" -c root-container -- systemctl status --no-pager
+      systemctl_status="${?}"
+      log_debug "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${systemctl_status} <<<<<"
+      if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
+        log_debug "Sleeping 5s..."
+        sleep 5
+      fi
+    done
+
+    if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
+      test_status="${FAIL}"
       break # break at first node error
     fi
   done
 
+  log_debug ""
+  log_debug "[${test_status}] systemctl is running in all network node containers"
+  log_debug ""
+
   # assert success
-  [[ "${systemctl_status}" -eq "${EX_OK}" ]]
+  [[ "${test_status}" = "${PASS}" ]]
 }
