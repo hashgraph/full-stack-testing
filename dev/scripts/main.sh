@@ -4,6 +4,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly SCRIPT_DIR
 CHART_DIR="${SCRIPT_DIR}/../../charts/hedera-network"
 
+function setup_cluster() {
+  local cluster_name=$1
+  [[ -z "${cluster_name}" ]] && echo "ERROR: Cluster name is required" && return 1
+
+  local count=$(kind get clusters -q | grep -c "${cluster_name}")
+  if [[ $count -eq 0 ]]; then
+  		echo "Creating cluster ${cluster_name}"
+		  kind create cluster -n "${cluster_name}"
+	else
+	    echo "Cluster '${cluster_name}' found"
+  fi
+}
+
 function install_chart() {
   local node_setup_script=$1
 

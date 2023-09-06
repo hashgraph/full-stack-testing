@@ -19,6 +19,7 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	destroy-network test
 
 # Setup variables
+CLUSTER_NAME="fst"
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
@@ -41,7 +42,7 @@ setup:
 
 .PHONY: setup-cluster
 setup-cluster:
-	kind create cluster -n fst
+	source "${SCRIPTS_DIR}/main.sh" && setup_cluster "${CLUSTER_NAME}"
 
 .PHONY: destroy-cluster
 destroy-cluster:
@@ -216,7 +217,7 @@ destroy-test-container:
 ######################################### CI #################################
 .PHONY: local-kubectl-bats
 local-kubectl-bats:
-	source "${SCRIPTS_DIR}/${DOCKER_SCRIPT}" && build_kubectl_bats && load_kubectl_bats_image
+	source "${SCRIPTS_DIR}/${DOCKER_SCRIPT}" && build_kubectl_bats "${CLUSTER_NAME}"
 
 .PHONY: deploy-all
 deploy-all:
@@ -240,5 +241,5 @@ destroy-all:
 	-$(MAKE) destroy-prometheus-operator
 
 .PHONY: ci-test
-ci-test: local-kubectl-bats
+ci-test: setup-cluster local-kubectl-bats
 	$(MAKE) deploy-all CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
