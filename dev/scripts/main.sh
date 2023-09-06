@@ -8,7 +8,7 @@ function setup_cluster() {
   local cluster_name=$1
   [[ -z "${cluster_name}" ]] && echo "ERROR: Cluster name is required" && return 1
 
-  local count=$(kind get clusters -q | grep -c "${cluster_name}")
+  local count=$(kind get clusters -q | grep -c -sw "${cluster_name}")
   if [[ $count -eq 0 ]]; then
 	    echo "Cluster '${cluster_name}' not found"
 		  kind create cluster -n "${cluster_name}"

@@ -35,8 +35,8 @@ function deploy-prometheus-operator() {
   local crd_count=$(kubectl get crd | grep -c "monitoring.coreos.com" )
   if [[ $crd_count -ne 10 ]]; then
 	  kubectl create -f "${PROMETHEUS_OPERATOR_YAML}"
-	  kubectl get pods
-	  kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus-operator --timeout 300s
+	  kubectl get pods --all-namespaces
+	  kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus-operator --timeout 300s --all-namespaces
 	else
 	  echo "Prometheus operator CRD is already installed"
 	  echo ""

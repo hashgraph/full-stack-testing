@@ -102,6 +102,7 @@ jobs:
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
+          cluster_name: fst
           version: v0.19.0
           verbosity: 3
           wait: 120s
@@ -116,7 +117,7 @@ jobs:
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
-          make setup-cluster deploy-prometheus-operator
+          make deploy-prometheus-operator
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
