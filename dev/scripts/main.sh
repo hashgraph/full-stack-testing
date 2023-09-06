@@ -15,6 +15,10 @@ function setup_cluster() {
 	else
 	    echo "Cluster '${cluster_name}' found"
   fi
+
+	kubectl config use-context "kind-${cluster_name}"
+	kubectl config set-context --current --namespace=default
+	kubectl config get-contexts
 }
 
 function install_chart() {

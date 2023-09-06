@@ -23,7 +23,7 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	ci-test
 
 # Setup variables
-CLUSTER_NAME="fst"
+CLUSTER_NAME="${CLUSTER_NAME:-fst}"
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
