@@ -12,11 +12,11 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	setup \
 	setup-cluster \
 	deploy-chart \
+	destroy-chart \
 	helm-test \
 	deploy-network  \
 	destroy-test-container \
 	destroy-network test
-
 
 # Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
@@ -24,9 +24,12 @@ CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
 
+CHART_VALUES_FILES= # extra values
+
 # scripts
 TELEMETRY_SCRIPT="telemetry.sh"
 GATEWAY_API_SCRIPT="gateway.sh"
+DOCKER_SCRIPT="docker.sh"
 
 .PHONY: all
 all: setup setup-cluster reset
@@ -40,67 +43,52 @@ setup:
 setup-cluster:
 	kind create cluster -n fst
 
+.PHONY: destroy-cluster
+destroy-cluster:
+	kind delete cluster -n fst
+
+.PHONY: install-chart
+install-chart:
+	source "${SCRIPTS_DIR}/main.sh" && install_chart "${SCRIPT_NAME}"
+
+.PHONY: uninstall-chart
+uninstall-chart:
+	source "${SCRIPTS_DIR}/main.sh" && uninstall_chart
+
 .PHONY: update-helm-dependencies
 update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator deploy-gateway-api
-	echo ">> Deploying helm chart..." && \
-	echo "" && \
-	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
-		helm install fst ../charts/hedera-network --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
-	else \
-		helm install fst ../charts/hedera-network ; \
-	fi \
+deploy-chart:
+	$(MAKE) update-helm-dependencies
+	$(MAKE) deploy-minio-operator-if-required
+	$(MAKE)	deploy-prometheus-operator
+	$(MAKE) deploy-gateway-api
+	$(MAKE) install-chart
 
-.PHONY: helm-test
-helm-test:
-	echo "" && \
-	echo ">> Running helm test..." && \
-	echo "" && \
-	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
-	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
-    #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
-	helm test fst --filter 'name=network-test' && \
-    EXIT_CODE=$$? && \
-	kubectl logs network-test && \
-	exit $${EXIT_CODE}
+.PHONY: destroy-chart
+destroy-chart:
+	-$(MAKE) uninstall-chart
+	-$(MAKE) destroy-gateway-api
+	-$(MAKE) destroy-prometheus-operator
+	-$(MAKE) undeploy-minio-operator
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
 	echo "" && \
+    echo ">> Service Information...." && \
+    echo "" && \
+	kubectl get svc -o wide && \
+	echo "" && \
 	echo ">> Pod Information...." && \
 	echo "" && \
 	kubectl get pods -o wide && \
-	echo "" && \
-    echo ">> Service Information...." && \
-    echo "" && \
-	kubectl get svc -o wide
-
-.PHONY: destroy-test-container
-destroy-test-container:
-	echo "" && \
-	echo ">> Deleting test container..." && \
-	kubectl delete pod network-test || true
+	echo ">> Waiting for network-node pods to be active (first deployment takes ~10m)...." && \
+  	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
 
 .PHONY: destroy-network
-destroy-network: destroy-test-container
-	echo "" && \
-	echo ">> Uninstalling helm chart..." && \
- 	helm uninstall fst && \
- 	sleep 10
-
-.PHONY: test
-test:
-	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
-	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
-	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
-	function cleanup_test {
-		$(MAKE) destroy-network
-	}
-	trap cleanup_test EXIT # always destroy-network on exit
-	$(MAKE) setup deploy-minio-operator-if-required update-helm-dependencies deploy-network helm-test setup-nodes start-nodes
+destroy-network: destroy-test-container destroy-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup
@@ -184,8 +172,8 @@ destroy-prometheus:
 deploy-minio-operator:
 	@echo ">> Deploying minio operator..."; \
 	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace --version 5.0.7 minio-operator operator && \
-	echo ">> Waiting for minio operator to be ready..." && \
-	kubectl --namespace=minio-operator  wait --for=condition=available --timeout=600s deployment.apps/minio-operator && \
+	echo ">> Waiting for minio operator to be available (timeout 300s)..." && \
+	kubectl --namespace=minio-operator  wait --for=condition=Available --timeout=300s deployment.apps/minio-operator && \
 	sleep 5
 
 .PHONY: is-minio-operator-installed
@@ -203,3 +191,54 @@ deploy-minio-operator-if-required:
 undeploy-minio-operator:
 	echo ">> Deploying minio operator..." && \
 	helm delete  --namespace=minio-operator minio-operator
+
+
+######################################### Helm Chart Test #################################
+.PHONY: helm-test
+helm-test:
+	echo "" && \
+	echo ">> Running helm test...(first run takes ~2m)" && \
+	echo "" && \
+	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
+	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
+    #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
+	helm test fst --filter 'name=network-test' && \
+    EXIT_CODE=$$? && \
+	kubectl logs network-test && \
+	exit $${EXIT_CODE}
+
+.PHONY: destroy-test-container
+destroy-test-container:
+	echo "" && \
+	echo ">> Deleting test container..." && \
+	kubectl delete pod network-test || true
+
+######################################### CI #################################
+.PHONY: local-kubectl-bats
+local-kubectl-bats:
+	source "${SCRIPTS_DIR}/${DOCKER_SCRIPT}" && build_kubectl_bats && load_kubectl_bats_image
+
+.PHONY: deploy-all
+deploy-all:
+	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
+	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
+	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
+	function cleanup_test {
+		$(MAKE) destroy-network
+	}
+	trap cleanup_test EXIT # always destroy-network on exit
+	$(MAKE) setup
+	$(MAKE) deploy-network
+	$(MAKE) helm-test
+	$(MAKE) setup-nodes
+	$(MAKE) start-nodes
+
+.PHONY: destroy-all
+destroy-all:
+	-$(MAKE) destroy-network
+	-$(MAKE) undeploy-minio-operator
+	-$(MAKE) destroy-prometheus-operator
+
+.PHONY: ci-test
+ci-test: local-kubectl-bats
+	$(MAKE) deploy-all CHART_VALUES_FILES="--values ci/ci-values.yaml"
