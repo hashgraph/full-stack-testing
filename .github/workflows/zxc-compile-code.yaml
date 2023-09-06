@@ -116,7 +116,7 @@ jobs:
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
-          make deploy-prometheus-operator
+          make setup-cluster deploy-prometheus-operator
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info

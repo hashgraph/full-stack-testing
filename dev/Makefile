@@ -15,8 +15,12 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	destroy-chart \
 	helm-test \
 	deploy-network  \
+	destroy-network \
 	destroy-test-container \
-	destroy-network test
+	deploy-all \
+	destroy-all \
+	local-kubectl-bats \
+	ci-test
 
 # Setup variables
 CLUSTER_NAME="fst"

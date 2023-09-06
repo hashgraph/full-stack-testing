@@ -10,7 +10,7 @@ function setup_cluster() {
 
   local count=$(kind get clusters -q | grep -c "${cluster_name}")
   if [[ $count -eq 0 ]]; then
-  		echo "Creating cluster ${cluster_name}"
+	    echo "Cluster '${cluster_name}' not found"
 		  kind create cluster -n "${cluster_name}"
 	else
 	    echo "Cluster '${cluster_name}' found"
