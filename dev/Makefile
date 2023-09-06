@@ -23,7 +23,7 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	ci-test
 
 # Setup variables
-CLUSTER_NAME="${CLUSTER_NAME:-fst}"
+CLUSTER_NAME ?="fst"
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
@@ -46,6 +46,7 @@ setup:
 
 .PHONY: setup-cluster
 setup-cluster:
+	echo "Cluster name: ${CLUSTER_NAME}" && \
 	source "${SCRIPTS_DIR}/main.sh" && setup_cluster "${CLUSTER_NAME}"
 
 .PHONY: destroy-cluster

@@ -122,7 +122,6 @@ jobs:
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         run: |
-          kubectl config set-context --current --namespace=default
           kubectl config get-contexts
           kubectl get crd
 
