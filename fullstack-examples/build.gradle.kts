@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+plugins {
+    id("com.hedera.fullstack.conventions")
+    id("com.hedera.fullstack.jpms-modules")
+}
 
 dependencies { api(platform(project(":fullstack-bom"))) }
 
