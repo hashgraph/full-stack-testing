@@ -17,6 +17,9 @@
     - name: otel-otlp
       containerPort: 4317
       protocol: TCP
+    - name: prometheus
+      containerPort: 8889
+      protocol: TCP
   {{- with default $defaults.livenessProbe $otel.livenessProbe }}
   livenessProbe:
     {{- toYaml . | nindent 4 }}
@@ -27,7 +30,7 @@
   {{- end }}
   volumeMounts:
     - name: otel-collector-volume
-      mountPath: /etc/otel-collector-config.yaml
+      mountPath: /etc/otelcol-contrib/config.yaml
       subPath: config.yaml #key in the configmap
       readOnly: true
   {{- with default $defaults.resources $otel.resources }}

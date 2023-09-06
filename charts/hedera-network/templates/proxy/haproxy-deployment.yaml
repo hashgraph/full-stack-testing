@@ -8,7 +8,7 @@ kind: Deployment
 metadata:
   name: haproxy-{{ $node.name }}
 spec:
-  replicas: {{ default $defaults.replica $haproxy.replica }}
+  replicas: 1
   selector:
     matchLabels:
       app: haproxy-{{ $node.name }}

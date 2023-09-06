@@ -11,6 +11,7 @@ spec:
     requests:
       memory: 400Mi
   enableAdminAPI: false
+  enableRemoteWriteReceiver: true
 ---
 apiVersion: v1
 kind: Service
