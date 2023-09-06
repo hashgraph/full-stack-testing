@@ -147,13 +147,13 @@ jobs:
       - name: Helm Chart Test (Direct Install)
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make test SCRIPT_NAME=direct-install.sh
+        run: make ci-test SCRIPT_NAME=direct-install.sh
 
       # This step tests the Helm chart NMT mode of operation which uses the ubi8-init-dind image.
       - name: Helm Chart Test (NMT Install)
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make test SCRIPT_NAME=nmt-install.sh
+        run: make ci-test SCRIPT_NAME=nmt-install.sh
 
       - name: Compile
         id: gradle-build

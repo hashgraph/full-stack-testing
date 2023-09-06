@@ -241,4 +241,4 @@ destroy-all:
 
 .PHONY: ci-test
 ci-test: local-kubectl-bats
-	$(MAKE) deploy-all CHART_VALUES_FILES="--values ci/ci-values.yaml"
+	$(MAKE) deploy-all CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
