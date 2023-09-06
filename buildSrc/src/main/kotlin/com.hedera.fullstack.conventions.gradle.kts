@@ -21,10 +21,7 @@ plugins {
     id("java-library")
     id("jacoco")
 
-    // JPMS Support
-    id("com.hedera.fullstack.jpms-modules")
-
-    // Conventions Plugins
+   // Conventions Plugins
     id("com.hedera.fullstack.spotless-conventions")
     id("com.hedera.fullstack.spotless-java-conventions")
     id("com.hedera.fullstack.spotless-kotlin-conventions")
