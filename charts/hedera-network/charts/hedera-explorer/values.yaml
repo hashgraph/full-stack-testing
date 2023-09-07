@@ -24,8 +24,8 @@ autoscaling:
   minReplicas: 1
 
 # Environment variables to add to the container. The value can either be a string or an EnvVarSource. Evaluated as a template.
-env:
-  DOCKER_LOCAL_MIRROR_NODE_URL: "http://localhost:5551"
+env: {}
+  # DOCKER_LOCAL_MIRROR_NODE_URL: "http://localhost:5551"
   # BAR:
   #   valueFrom:
   #     secretKeyRef:
@@ -140,18 +140,47 @@ updateStrategy:
 volumeMounts:
   cache:
     mountPath: /var/cache/nginx
-  configfile:
-      mountPath: /app/networks-config.json
-      subPath: networks-config.json
+  nginx-config:
+    mountPath: /etc/nginx/nginx.conf
+    subPath: nginx.conf
+  hedera-explorer-config:
+    mountPath: /app/networks-config.json
+    subPath: networks-config.json
 
 # Volume mounts to add to the container. The key is the volume name and the value is the volume definition. Evaluated as a template.
 volumes:
   cache:
     emptyDir: {}
-  configfile:
+  nginx-config:
     configMap:
-      name: hedera-mirror-explorer-networks-config
-      items:
-        - key: networks-config.json
-          path: networks-config.json
+      name: '{{ include "hedera-explorer.fullname" . }}-config'
+  hedera-explorer-config:
+    configMap:
+      name: '{{ include "hedera-explorer.fullname" . }}-config'
 
+# Add custom reverse proxy configuration
+# Primary use case is to allow access to mirror node api via hedera explorer url
+proxyPass: {}
+  # /api: http://fst-rest
+
+config: |
+  [
+    {
+      "name": "mainnet",
+      "displayName": "MAINNET",
+      "url": "https://mainnet-public.mirrornode.hedera.com/",
+      "ledgerID": "00"
+    },
+    {
+      "name": "testnet",
+      "displayName": "TESTNET",
+      "url": "https://testnet.mirrornode.hedera.com/",
+      "ledgerID": "01"
+    },
+    {
+      "name": "previewnet",
+      "displayName": "PREVIEWNET",
+      "url": "https://previewnet.mirrornode.hedera.com/",
+      "ledgerID": "02"
+    }
+  ]

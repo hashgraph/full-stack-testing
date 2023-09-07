@@ -42,3 +42,4 @@ dependencies:
     version: 5.0.7
     repository: https://operator.min.io/
     condition: cloud.minio.enable
+
