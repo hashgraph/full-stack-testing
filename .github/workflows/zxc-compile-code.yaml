@@ -102,6 +102,7 @@ jobs:
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
+          cluster_name: fst
           version: v0.19.0
           verbosity: 3
           wait: 120s
@@ -122,7 +123,6 @@ jobs:
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         run: |
-          kubectl config set-context --current --namespace=default
           kubectl config get-contexts
           kubectl get crd
 
@@ -147,13 +147,13 @@ jobs:
       - name: Helm Chart Test (Direct Install)
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make test SCRIPT_NAME=direct-install.sh
+        run: make ci-test SCRIPT_NAME=direct-install.sh
 
       # This step tests the Helm chart NMT mode of operation which uses the ubi8-init-dind image.
       - name: Helm Chart Test (NMT Install)
         working-directory: dev
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make test SCRIPT_NAME=nmt-install.sh
+        run: make ci-test SCRIPT_NAME=nmt-install.sh
 
       - name: Compile
         id: gradle-build
