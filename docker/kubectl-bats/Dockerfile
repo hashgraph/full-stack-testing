@@ -23,10 +23,12 @@ USER root
 
 # setup bats
 RUN apt-get update && \
-    apt-get install -y git vim && \
+    apt-get install -y curl git vim python3 python3-pip && \
     git clone https://github.com/bats-core/bats-core.git "${BATS_HOME}"/bats-core && \
     git clone https://github.com/bats-core/bats-support.git "${BATS_HOME}"/test_helper/bats-support && \
-    git clone https://github.com/bats-core/bats-assert.git "${BATS_HOME}"/test_helper/bats-assert
+    git clone https://github.com/bats-core/bats-assert.git "${BATS_HOME}"/test_helper/bats-assert && \
+    pip3 install -U niet && \
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 #switch back to user 1001
 USER 1001
