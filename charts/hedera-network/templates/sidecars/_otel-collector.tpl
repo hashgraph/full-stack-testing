@@ -8,26 +8,26 @@
   securityContext:
     {{- include "fullstack.root.security.context" . | nindent 4 }}
   ports:
-    - name: otel-health
-      containerPort: 13133
-      protocol: TCP
-    - name: otel-metrics
-      containerPort: 8888
-      protocol: TCP
-    - name: otel-otlp
+    - name: otlp # otel port defined in otel-collector config
       containerPort: 4317
       protocol: TCP
-    - name: prometheus
+    - name: prometheus # prometheus exporter port as specified in otel-collector-config.yaml
       containerPort: 8889
       protocol: TCP
-  {{- with default $defaults.livenessProbe $otel.livenessProbe }}
+    - name: health # for otel-collector liveness check
+      containerPort: 13133
+      protocol: TCP
+    - name: metrics # default metrics port exposed by the otel-collector itself
+      containerPort: 8888
+      protocol: TCP
   livenessProbe:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-  {{- with default $defaults.readinessProbe $otel.readinessProbe }}
+    httpGet:
+      path: /
+      port: health
   readinessProbe:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    httpGet:
+      path: /
+      port: health
   volumeMounts:
     - name: otel-collector-volume
       mountPath: /etc/otelcol-contrib/config.yaml

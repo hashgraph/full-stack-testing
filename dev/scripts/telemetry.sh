@@ -61,7 +61,7 @@ function deploy-prometheus() {
 	kubectl create -f "${PROMETHEUS_RBAC_YAML}"
 	sleep 10
 	kubectl create -f "${PROMETHEUS_YAML}"
-	echo "Waiting for prometheus to be active..."
+	echo "Waiting for prometheus to be active (timeout 300s)..."
 	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus -n default  --timeout 300s
 }
 
@@ -82,7 +82,8 @@ function deploy-prometheus-example-app() {
 	echo "PROMETHEUS_EXAMPLE_APP_YAML: ${PROMETHEUS_EXAMPLE_APP_YAML}"
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl create -f "${PROMETHEUS_EXAMPLE_APP_YAML}"
-	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 60s
+  echo "Waiting for prometheus example app to be active (timeout 300s)..."
+	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 300s
 }
 
 function destroy-prometheus-example-app() {
@@ -93,4 +94,81 @@ function destroy-prometheus-example-app() {
 	kubectl delete -f "${PROMETHEUS_EXAMPLE_APP_YAML}"
 	local status="$?"
 	[[ "${status}" = 0 ]] && sleep 10
+}
+
+function expose_prometheus() {
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace default port-forward $POD_NAME 9090 &
+  echo "Prometheus is exposed from ${POD_NAME} to port 9090"
+}
+
+function unexpose_prometheus() {
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  export PID=$(ps aux | grep "port-forward ${POD_NAME}" | sed -n 2p | awk '{ print $2 }')
+  [[ -z "${PID}" ]] && echo "No Prometheus port-forward PID is found" && return 0
+
+  if [[ "${PID}" ]]; then
+    echo ""
+    echo "Un-exposing Prometheus: ${POD_NAME} for PID: ${PID}"
+    echo "-----------------------------------------------------------------------------------------------------"
+    kill "${PID}" &>/dev/null || true
+  fi
+}
+
+function deploy_grafana_tempo() {
+  echo ""
+	echo "Deploying Grafana"
+  echo "-----------------------------------------------------------------------------------------------------"
+  helm repo add grafana https://grafana.github.io/helm-charts
+  helm repo update
+  helm upgrade --install tempo grafana/tempo
+  echo "Waiting for tempo to be active (timeout 300s)..."
+  kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l "app.kubernetes.io/name=tempo,app.kubernetes.io/instance=tempo" --timeout=300s
+
+  helm upgrade -f "${TELEMETRY_DIR}/grafana/grafana-values.yaml" --install grafana grafana/grafana
+  echo "Waiting for grafana to be active (timeout 300s)..."
+  kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" --timeout=300s
+}
+
+function destroy_grafana_tempo() {
+  echo ""
+	echo "Destroying Grafana"
+  echo "-----------------------------------------------------------------------------------------------------"
+  helm delete grafana
+  helm delete tempo
+}
+
+function expose_grafana() {
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace default port-forward $POD_NAME 3000 &
+  echo "Grafana is exposed from ${POD_NAME} to port 3000"
+}
+
+function unexpose_grafana() {
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+  export PID=$(ps aux | grep "port-forward ${POD_NAME}" | sed -n 2p | awk '{ print $2 }')
+  [[ -z "${PID}" ]] && echo "No Grafana port-forward PID is found" && return 0
+
+  if [[ "${PID}" ]]; then
+    echo ""
+    echo "Un-exposing Grafana: ${POD_NAME} for PID: ${PID}"
+    echo "-----------------------------------------------------------------------------------------------------"
+    kill "${PID}" &>/dev/null || true
+  fi
+}
+
+function deploy_tracing_example_app() {
+  echo ""
+	echo "Deploying Example Tracing App"
+  echo "-----------------------------------------------------------------------------------------------------"
+  kubectl create -f "${TELEMETRY_DIR}/grafana/example-tracing-app.yaml"
+  echo "Waiting for tracing example app to be active (timeout 300s)..."
+	kubectl wait --for=condition=Ready pods -l  app=xk6-tracing -n default --timeout 300s
+}
+
+function destroy_tracing_example_app() {
+  echo ""
+	echo "Destroying Example Tracing App"
+  echo "-----------------------------------------------------------------------------------------------------"
+  kubectl delete -f "${TELEMETRY_DIR}/grafana/example-tracing-app.yaml"
 }

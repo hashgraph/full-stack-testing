@@ -92,6 +92,12 @@ deploy-network: deploy-chart
 	kubectl get pods -o wide && \
 	echo ">> Waiting for network-node pods to be active (first deployment takes ~10m)...." && \
   	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
+	echo "" && \
+    echo ">> Service Information...." && \
+    echo "" && \
+	kubectl get svc -o wide && \
+	echo ">> Waiting for pods to be up (timeout 600s)" && \
+	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
 
 .PHONY: destroy-network
 destroy-network: destroy-test-container destroy-chart
@@ -151,7 +157,7 @@ destroy-gateway-api:
 	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_haproxy_ingress
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
-######################################### Prometheus #################################
+######################################### Telemetry #################################
 .PHONY: fetch-prometheus-operator-bundle
 fetch-prometheus-operator-bundle:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && fetch-prometheus-operator-bundle
@@ -164,14 +170,31 @@ deploy-prometheus-operator: fetch-prometheus-operator-bundle
 destroy-prometheus-operator:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
 
+.PHONY: deploy-grafana-tempo
+deploy-grafana-tempo:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy_grafana_tempo && expose_grafana
+
+.PHONY: destroy-grafana-tempo
+destroy-grafana-tempo:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_grafana && destroy_grafana_tempo
+
 .PHONY: deploy-prometheus
 deploy-prometheus: deploy-prometheus-operator
-	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus && expose_prometheus
 
 .PHONY: destroy-prometheus
 destroy-prometheus:
-	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus
-	make destroy-prometheus-operator
+	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_prometheus && destroy-prometheus
+	-${MAKE} destroy-prometheus-operator
+
+.PHONY: deploy-telemetry-stack
+deploy-telemetry-stack: deploy-prometheus deploy-grafana-tempo
+
+.PHONY: destroy-telemetry-stack
+destroy-telemetry-stack:
+	# Note: - prefix ensures errors are ignored and continues
+	-${MAKE} destroy-prometheus
+	-${MAKE} destroy-grafana-tempo
 
 ######################################### MinIO #################################
 .PHONY: deploy-minio-operator
