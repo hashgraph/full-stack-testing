@@ -7,6 +7,7 @@ rules:
     resources:
       - pods
       - pods/log
+      - secrets
     verbs:
       - get
       - list
