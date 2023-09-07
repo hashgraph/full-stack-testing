@@ -81,36 +81,54 @@ function check_test_status() {
 }
 
 function get_config_val() {
-  local val_path=$1
-  ret=$(helm get values fst -a | tail -n +2 | niet "${val_path}" )
+  local config_path=$1
+  ret=$(helm get values fst -a | tail -n +2 | niet "${config_path}" )
   echo "${ret}"
+  log_debug "${enable_config_path} => ${ret}"
+}
+
+function get_config_val_upper() {
+  local config_path=$1
+  local config_val=$(get_config_val "${config_path}" | tr '[:lower:]' '[:upper:]' )
+  echo "${config_val}"
+}
+
+function get_sidecar_status() {
+  local pod=$1
+  local sidecar_name=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+  [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+
+  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | xargs)
+  echo "${sidecar_status}"
+}
+
+function is_sidecar_ready() {
+  local pod=$1
+  local sidecar_name=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+  [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+
+  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | tr '[:lower:]' '[:upper:]')
+  log_debug "${sidecar_name} in pod ${pod} is ready: ${sidecar_status}"
+
+  [[ "${sidecar_status}" = "TRUE" ]] && return "${EX_OK}"
+  return "${EX_ERR}"
 }
 
 function has_sidecar() {
-  local val_path=$1
-  local name=$2
-  local sidecars=("${3}") # convert to an array
+  local pod=$1
+  local sidecar_name=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+  [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
 
-  log_debug "Checking sidecar with: ${KEY} => ${VAL}";
-  log_debug "Received sidecar list: ${sidecars[*]}"
+  local sidecars=$(kubectl get pods "${pod}" -o jsonpath='{.spec.containers[*].name}')
+  log_debug "Sidecar list in pod ${pod}: ${sidecars}"
 
-  set -o pipefail
-  local should_enable=$(get_config_val "${val_path}" | tr '[:lower:]' '[:upper:]' ) || return "${EX_ERR}"
-  if [[ -z "${should_enable}" ]]; then
-    return "${EX_ERR}"
+  local found="FALSE"
+  if [[ "${sidecars}" =~ ${sidecar_name} ]]; then
+    found="TRUE"
   fi
 
-  log_debug "Found config: ${val_path} = ${should_enable}"
-
-  local is_enabled="FALSE"
-  if [[ "${sidecars[*]}" =~ ${name} ]]; then
-    is_enabled="TRUE"
-    log_debug "Found sidecar: ${name}"
-  fi
-
-  if [[ "${is_enabled}" != "${should_enable}" ]]; then
-    return "${EX_ERR}"
-  fi
-
-  return "${EX_OK}"
+  echo "${found}"
 }
