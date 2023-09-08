@@ -6,7 +6,8 @@ metadata:
   name: network-{{ $nodeConfig.name }}-svc
   labels:
     fullstack.hedera.com/type: network-node-svc
-    fullstack.hedera.com/node-name: {{ $nodeConfig.name }} 
+    fullstack.hedera.com/node-name: {{ $nodeConfig.name }}
+    fullstack.hedera.com/prometheus-endpoint: active
 spec:
   selector:
     app: network-{{ $nodeConfig.name }}
