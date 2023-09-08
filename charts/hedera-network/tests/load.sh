@@ -16,11 +16,13 @@ function load_test_helpers() {
   # load test helper scripts
   echo "Loading test helper scripts..."
   load "${TESTS_DIR}/helper.sh"
+  load "${TESTS_DIR}/logging.sh"
 }
 
 function _common_setup() {
   load_bats_helpers
   load_test_helpers
+
 }
 
 _common_setup

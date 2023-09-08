@@ -79,3 +79,56 @@ function check_test_status() {
   echo "output = ${output}"
   [[ "${status}" -eq 0 ]]
 }
+
+function get_config_val() {
+  local config_path=$1
+  ret=$(helm get values fst -a | tail -n +2 | niet "${config_path}" )
+  echo "${ret}"
+  log_debug "${enable_config_path} => ${ret}"
+}
+
+function get_config_val_upper() {
+  local config_path=$1
+  local config_val=$(get_config_val "${config_path}" | tr '[:lower:]' '[:upper:]' )
+  echo "${config_val}"
+}
+
+function get_sidecar_status() {
+  local pod=$1
+  local sidecar_name=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+  [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+
+  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | xargs)
+  echo "${sidecar_status}"
+}
+
+function is_sidecar_ready() {
+  local pod=$1
+  local sidecar_name=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+  [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+
+  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | tr '[:lower:]' '[:upper:]')
+  log_debug "${sidecar_name} in pod ${pod} is ready: ${sidecar_status}"
+
+  [[ "${sidecar_status}" = "TRUE" ]] && return "${EX_OK}"
+  return "${EX_ERR}"
+}
+
+function has_sidecar() {
+  local pod=$1
+  local sidecar_name=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+  [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
+
+  local sidecars=$(kubectl get pods "${pod}" -o jsonpath='{.spec.containers[*].name}')
+  log_debug "Sidecar list in pod ${pod}: ${sidecars}"
+
+  local found="FALSE"
+  if [[ "${sidecars}" =~ ${sidecar_name} ]]; then
+    found="TRUE"
+  fi
+
+  echo "${found}"
+}
