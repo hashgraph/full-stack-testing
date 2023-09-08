@@ -6,6 +6,15 @@ function clear_log() {
   fi
 }
 
+function cat_log() {
+  if [[ -f "${LOG_DIR}/${LOG_FILE}" ]]; then
+    cat "${LOG_DIR}/${LOG_FILE}"
+  else
+    log_debug "ERROR: log file '${LOG_DIR}/${LOG_FILE}' does not exist"
+  fi
+}
+
+
 function log() {
   local level=$1
   local msg=$2

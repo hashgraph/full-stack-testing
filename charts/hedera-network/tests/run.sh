@@ -27,3 +27,5 @@ fi
 
 # uncomment in order to inspect tmpdir
 #"${BATS_HOME}/bats-core/bin/bats" --no-tempdir-cleanup .
+
+[[ "${OUTPUT_LOG}" = "true" ]] && cat_log

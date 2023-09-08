@@ -132,3 +132,45 @@ function has_sidecar() {
 
   echo "${found}"
 }
+
+function is_pod_ready() {
+  local pod=$1
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_pod_ready)" && return "${EX_ERR}"
+
+  local pod_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}" | tr '[:lower:]' '[:upper:]')
+  log_debug "Pod '${pod}' is ready: ${pod_status}"
+
+  [[ "${pod_status}" = "TRUE" ]] && return "${EX_OK}"
+  return "${EX_ERR}"
+}
+
+function get_pod_label() {
+  local pod=$1
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed" && return "${EX_ERR}"
+
+  local label=$2
+  [[ -z "${pod}" ]] && echo "ERROR: Label name is needed" && return "${EX_ERR}"
+
+
+  log_debug "Checking for pod ${pod}(timeout 300s)..."
+  if [ ! $(kubectl wait --for=condition=Initialized pods "${pod}" --timeout 300s) ]; then
+    log_debug "ERROR: Pod ${pod} is not available" &&  return "${EX_ERR}"
+  fi
+
+  log_debug "Checking label ${label} for pod ${pod}"
+  local escaped_label="${label//./\\.}"
+  local label_val=$(kubectl get pod "${pod}" -o jsonpath="{.metadata.labels.${escaped_label}}" | xargs)
+  log_debug "Pod '${pod}' label '${label}': ${label_val}"
+
+  echo "${label_val}"
+}
+
+function get_pod_by_label() {
+  local label=$1
+  [[ -z "${pod}" ]] && echo "ERROR: Label name is needed" && return "${EX_ERR}"
+
+  log_debug "Getting pod by label '${label}'"
+  local escaped_label="${label//./\\.}"
+  local pod_name=$(kubectl get pods -l "${label}" -o jsonpath="{.items[0].metadata.name}")
+  echo "${pod_name}"
+}
