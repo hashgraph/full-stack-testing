@@ -36,9 +36,6 @@ TELEMETRY_SCRIPT="telemetry.sh"
 GATEWAY_API_SCRIPT="gateway.sh"
 DOCKER_SCRIPT="docker.sh"
 
-.PHONY: all
-all: setup setup-cluster reset
-
 .PHONY: setup
 setup:
 	rm -f "${TMP_DIR}/"*.*
@@ -233,6 +230,7 @@ helm-test:
     #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
 	helm test fst --filter 'name=network-test' && \
     EXIT_CODE=$$? && \
+    echo "Helm test exit code: ${EXIT_CODE}" && \
 	kubectl logs network-test && \
 	exit $${EXIT_CODE}
 
