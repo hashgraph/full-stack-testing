@@ -7,6 +7,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: haproxy-{{ $node.name }}-svc
+  labels:
+    fullstack.hedera.com/type: haproxy-svc
+    fullstack.hedera.com/node-name: {{ $node.name }}
+    fullstack.hedera.com/prometheus-endpoint: active
 spec:
   {{- if default $defaults.loadBalancerEnabled $haproxy.loadBalancerEnabled | eq "true" }}
   type: LoadBalancer
@@ -20,6 +24,9 @@ spec:
     - name: tls-grpc-client-port
       port: 50212
       targetPort: 50212
+    - name: prometheus # stats port
+      port: 14567
+      targetPort: 14567
 {{- end }}
 {{- end }}
 
