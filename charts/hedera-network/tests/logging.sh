@@ -8,6 +8,7 @@ function clear_log() {
 
 function cat_log() {
   if [[ -f "${LOG_DIR}/${LOG_FILE}" ]]; then
+    echo "****** TEST LOG: ${LOG_DIR}/${LOG_FILE} *****"
     cat "${LOG_DIR}/${LOG_FILE}"
   else
     log_debug "ERROR: log file '${LOG_DIR}/${LOG_FILE}' does not exist"

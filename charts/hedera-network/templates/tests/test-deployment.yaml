@@ -28,6 +28,8 @@ spec:
       env:
         - name: TESTS_DIR
           value: "/tests" # should be same as mountPath
+        - name: OUTPUT_LOG # outputs the logs from the tests
+          value: "true"
       command:
         - "/bin/bash"
         - "-c"
