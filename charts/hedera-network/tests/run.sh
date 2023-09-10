@@ -24,8 +24,13 @@ if [[ -z "${test_file}" ]]; then
 else
   "${BATS_HOME}/bats-core/bin/bats" "${TESTS_DIR}/${test_file}"
 fi
+readonly bats_exec_status=$?
 
 # uncomment in order to inspect tmpdir
 #"${BATS_HOME}/bats-core/bin/bats" --no-tempdir-cleanup .
 
-[[ "${OUTPUT_LOG}" = "true" ]] && cat_log
+if [[ "${OUTPUT_LOG}" = "true" ]]; then
+  cat_log
+fi
+
+exit "${bats_exec_status}"
