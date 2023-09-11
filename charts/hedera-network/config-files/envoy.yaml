@@ -47,7 +47,7 @@ static_resources:
       address:
         socket_address:
           address: 0.0.0.0
-          port_value: 19901 # custom prometheus metrics port
+          port_value: 9090 # custom prometheus metrics port
       filter_chains:
         - filters:
           - name: envoy.filters.network.http_connection_manager
