@@ -7,6 +7,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: envoy-proxy-{{ $node.name }}-svc
+  labels:
+    fullstack.hedera.com/type: envoy-proxy-svc
+    fullstack.hedera.com/node-name: {{ $node.name }}
+    fullstack.hedera.com/prometheus-endpoint: active
 spec:
   {{- if default $defaults.loadBalancerEnabled $envoyProxy.loadBalancerEnabled | eq "true" }}
   type: LoadBalancer
@@ -14,8 +18,12 @@ spec:
   selector:
     app: envoy-proxy-{{ $node.name }}
   ports:
-    - port: 8080
-      targetPort: 8080
+    - name: hedera-grpc-web
+      port: 8080
+      targetPort: 8080 # hedera-grpc-web-listener port
+    - name: prometheus # port name must be prometheus for prometheus-svc-monitor
+      port: 9090
+      targetPort: 9090 # envoy-proxy's prometheus-listener port
 {{- end }}
 {{- end }}
 
