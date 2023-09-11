@@ -61,7 +61,7 @@ function direct_install() {
 }
 
 function run_helm_chart_tests() {
-  local test_name=$1 # name in the tests/test-deployment.yaml file
+  local test_name=$1 # pod name in the tests/test-deployment.yaml file
   [[ -z "${test_name}" ]] && echo "ERROR: test name is required" && return 1
 
   echo ""
@@ -74,9 +74,9 @@ function run_helm_chart_tests() {
   echo "Helm test status: ${test_status}"
 
   echo ""
-  echo "***Helm test logs***"
+	echo "kubectl logs ${test_name}"
   echo "=========================================="
-	kubectl logs network-test
+	kubectl logs "${test_name}"
 
 	if [[ "${test_status}" != "Succeeded" ]]; then
 	  exit 1
