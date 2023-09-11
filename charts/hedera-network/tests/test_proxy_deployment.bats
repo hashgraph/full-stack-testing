@@ -26,7 +26,7 @@ setup() {
       local haproxy_pod=$(get_pod_by_label "app=haproxy-${node_name},fullstack.hedera.com/type=haproxy")
 
       log_debug "Checking HAProxy pod ${haproxy_pod}"
-      is_pod_ready "${pod}" || test_status="${FAIL}"
+      is_pod_ready "${haproxy_pod}" || test_status="${FAIL}"
 
       [ "${test_status}" = "FAIL" ] && break
     done
@@ -62,7 +62,7 @@ setup() {
       local envoy_proxy_pod=$(get_pod_by_label "app=envoy-proxy-${node_name},fullstack.hedera.com/type=envoy-proxy")
 
       log_debug "Checking Envoy Proxy pod ${envoy_proxy_pod}"
-      is_pod_ready "${pod}" || test_status="${FAIL}"
+      is_pod_ready "${envoy_proxy_pod}" || test_status="${FAIL}"
 
       [ "${test_status}" = "FAIL" ] && break
     done
