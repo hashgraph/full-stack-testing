@@ -20,6 +20,7 @@ public interface ResourceUtils {
      or do we want even more high level generic functions, i.e we should not even know about platform.txt and config.txt
      */
     // config.txt
+     PlatformConfigurationBuilder getPlatformConfigurationBuilder(NetworkDeployment networkDeployment);
      String getPlatformConfiguration(NetworkDeployment networkDeployment);
 
      // settings.txt

@@ -3,11 +3,11 @@ package com.hedera.fullstack.infrastructure.api.model;
 import java.net.InetAddress;
 
 public class DeploymentTopology {
-    InetAddress getIPAddress(Component component) {
+    public InetAddress getIPAddress(Component component, int replica) {
         return null;
     }
 
-    String getDeployedName(Component component) {
+    public String getDeployedName(Component component, int replica) {
         return null;
     }
 }

@@ -5,6 +5,7 @@ import com.hedera.fullstack.infrastructure.api.model.Component;
 import com.hedera.fullstack.infrastructure.api.model.DeploymentTopology;
 import com.hedera.fullstack.infrastructure.api.model.LogFile;
 import com.hedera.fullstack.infrastructure.api.model.Topology;
+import com.hedera.fullstack.resource.generator.api.PlatformConfigurationBuilder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,6 +32,7 @@ public interface NetworkDeployment {
      String getId();
      String getName();
      Topology getTopology();
+
      DeploymentTopology getDeploymentTopology();
 
      /* File operations */

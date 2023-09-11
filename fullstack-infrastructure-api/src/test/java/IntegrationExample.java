@@ -5,6 +5,7 @@ import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.model.Component;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.Topology;
+import com.hedera.fullstack.resource.generator.api.PlatformConfigurationBuilder;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
 
 import java.io.IOException;
@@ -29,32 +30,31 @@ public class IntegrationExample {
 
         // Step 1. Create the NetworkDeployment
         // who carries the software version, nmt version etc. ?
-        NetworkDeployment h = testTookKit.create(hederaNetworkTopology);
+        NetworkDeployment networkDeployment = testTookKit.create(hederaNetworkTopology);
         // should have
         // - TODO: config builder
+        //   Junit can fill in more stuff in the builder the config builder
         // - ip and names of the pods created
-
-        // this return type should have the config builder
-        // Junit should fill in more stuff in the builder the config builder
-        // should contain sanitized version of ips and pod names, should not container k8s specific stuff
-        var deploymentTopology = h.getDeploymentTopology();
+        // Should contain sanitized version of ips and pod names, should not container k8s specific stuff
+        PlatformConfigurationBuilder platformConfigBuilder = null; // get this
 
         // Step 2. Configure the NetworkDeployment
-        testTookKit.configure(h);
-
+        testTookKit.configure(networkDeployment);
 
         // Step 3. Start the NetworkDeployment
-        testTookKit.startNetworkDeployment(h);
+        testTookKit.startNetworkDeployment(networkDeployment);
 
         // Step 4. Execute the tests
         //  we need the all the IP addresses and ports to create the hedera client
-        var t = h.getTopology();
+        var deploymentTopology = networkDeployment.getDeploymentTopology();
+        deploymentTopology.getIPAddress(Component.NODE_SOFTWARE_POD, 1);
+        // configure the hedera client and execute tests
 
         // Step 4.a may need to copy files to node
 
         // Step 5. Delete the network
         try {
-            testTookKit.deleteNetworkDeployments(h.getId());
+            testTookKit.deleteNetworkDeployments(networkDeployment.getId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
