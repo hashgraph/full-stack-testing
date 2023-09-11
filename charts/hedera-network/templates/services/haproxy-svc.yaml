@@ -25,8 +25,8 @@ spec:
       port: 50212
       targetPort: 50212
     - name: prometheus # port name must be prometheus for prometheus-svc-monitor
-      port: 14567 # stats port
-      targetPort: 14567
+      port: 9090
+      targetPort: 9090 # stats port
 {{- end }}
 {{- end }}
 

@@ -11,8 +11,8 @@
     - name: otlp # otel port defined in otel-collector config
       containerPort: 4317
       protocol: TCP
-    - name: prometheus # prometheus exporter port as specified in otel-collector-config.yaml
-      containerPort: 8889
+    - name: prometheus
+      containerPort: 9090
       protocol: TCP
     - name: health # for otel-collector liveness check
       containerPort: 13133

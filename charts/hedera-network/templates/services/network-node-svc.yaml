@@ -31,6 +31,6 @@ spec:
   # Rather than exposing the node's metrics port 9999 directly, we expose otel-collect's prometheus port here.
   - name: prometheus # port name must be prometheus for prometheus-svc-monitor
     protocol: TCP
-    port: 8889 # otel-collector's prometheus exporter port
-    targetPort: 8889
+    port: 9090
+    targetPort: 9090 # otel-collector's prometheus exporter port
 {{- end }}
