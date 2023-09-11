@@ -36,9 +36,6 @@ TELEMETRY_SCRIPT="telemetry.sh"
 GATEWAY_API_SCRIPT="gateway.sh"
 DOCKER_SCRIPT="docker.sh"
 
-.PHONY: all
-all: setup setup-cluster reset
-
 .PHONY: setup
 setup:
 	rm -f "${TMP_DIR}/"*.*
@@ -225,16 +222,7 @@ undeploy-minio-operator:
 ######################################### Helm Chart Test #################################
 .PHONY: helm-test
 helm-test:
-	echo "" && \
-	echo ">> Running helm test...(first run takes ~2m)" && \
-	echo "" && \
-	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
-	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
-    #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
-	helm test fst --filter 'name=network-test' && \
-    EXIT_CODE=$$? && \
-	kubectl logs network-test && \
-	exit $${EXIT_CODE}
+	source "${SCRIPTS_DIR}/main.sh" && run_helm_chart_tests "network-test"
 
 .PHONY: destroy-test-container
 destroy-test-container:

@@ -27,6 +27,7 @@ spec:
       labels:
         app: network-{{ $node.name }}
         fullstack.hedera.com/type: network-node
+        fullstack.hedera.com/node-name: {{ $node.name }}
     spec:
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:

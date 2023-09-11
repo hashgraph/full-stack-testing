@@ -59,3 +59,26 @@ function direct_install() {
     helm install fst "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}"
   fi
 }
+
+function run_helm_chart_tests() {
+  local test_name=$1 # pod name in the tests/test-deployment.yaml file
+  [[ -z "${test_name}" ]] && echo "ERROR: test name is required" && return 1
+
+  echo ""
+  echo "Running helm chart tests (first run takes ~2m)... "
+  echo "-----------------------------------------------------------------------------------------------------"
+
+	helm test fst --filter name="${test_name}"
+
+  local test_status=$(kubectl get pod "${test_name}" -o jsonpath='{.status.phase}' | xargs)
+  echo "Helm test status: ${test_status}"
+
+  echo ""
+	echo "kubectl logs ${test_name}"
+  echo "=========================================="
+	kubectl logs "${test_name}"
+
+	if [[ "${test_status}" != "Succeeded" ]]; then
+	  exit 1
+	fi
+}
