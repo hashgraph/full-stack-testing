@@ -164,7 +164,7 @@ defaults:
       resources: {}
       receivers:
         prometheus:
-          scrapeTargets: [ 0.0.0.0:9999 ]  # hedera node metrics are exposed at port 9090
+          scrapeTargets: [ 0.0.0.0:9999 ]  # hedera node metrics are exposed at port 9999
           scrapeInterval: 5s
       exporters:
         otlp:

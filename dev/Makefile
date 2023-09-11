@@ -181,8 +181,7 @@ deploy-prometheus: deploy-prometheus-operator
 
 .PHONY: destroy-prometheus
 destroy-prometheus:
-	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_prometheus && destroy-prometheus
-	-${MAKE} destroy-prometheus-operator
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_prometheus && destroy-prometheus
 
 .PHONY: deploy-telemetry-stack
 deploy-telemetry-stack: deploy-prometheus deploy-grafana-tempo

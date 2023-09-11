@@ -24,9 +24,9 @@ spec:
     - name: tls-grpc-client-port
       port: 50212
       targetPort: 50212
-    - name: prometheus # stats port
-      port: 14567
-      targetPort: 14567
+    - name: prometheus
+      port: 9090
+      targetPort: 9090 # stats port
 {{- end }}
 {{- end }}
 

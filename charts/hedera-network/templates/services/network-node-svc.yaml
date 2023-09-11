@@ -29,8 +29,8 @@ spec:
     targetPort: 50212
   # Node metrics port
   # Rather than exposing the node's metrics port 9999 directly, we expose otel-collect's prometheus port here.
-  - name: prometheus # otel-collector's prometheus exporter port
+  - name: prometheus
     protocol: TCP
-    port: 8889
-    targetPort: 8889
+    port: 9090
+    targetPort: 9090 # otel-collector's prometheus exporter port
 {{- end }}
