@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+pluginManagement { includeBuild("build-logic") }
+
 plugins { id("com.gradle.enterprise").version("3.13.2") }
 
 rootProject.name = "full-stack-testing"
 
 includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/issues/26
+
+include(":fullstack-bom")
 
 // Include the subprojects
 include(":fullstack-alerting-api")
@@ -26,8 +30,6 @@ include(":fullstack-alerting-api")
 include(":fullstack-alerting-core")
 
 include(":fullstack-assertj-extensions")
-
-include(":fullstack-bom")
 
 include(":fullstack-base-api")
 
