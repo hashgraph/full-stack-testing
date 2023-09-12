@@ -1,6 +1,7 @@
 package com.hedera.fullstack.infrastructure.api.model;
 
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
+import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +34,11 @@ public class HederaNetworkK8s implements NetworkDeployment {
     }
 
     @Override
+    public PlatformConfiguration.Builder getPlatformConfigurationBuilder() {
+        return null;
+    }
+
+    @Override
     public File getFile(Component component, int replica, String filePath) throws FileNotFoundException {
         return null;
     }
@@ -47,7 +53,6 @@ public class HederaNetworkK8s implements NetworkDeployment {
 
     }
 
-
     @Override
     public String getFileContents(Component component, int replica, String path) throws FileNotFoundException {
         return null;
@@ -59,7 +64,7 @@ public class HederaNetworkK8s implements NetworkDeployment {
     }
 
     @Override
-    public String getLogs(Component component, int replica, LogFile logfile) {
+    public String getLogs(Component component, int replica) {
         return null;
     }
 

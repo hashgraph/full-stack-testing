@@ -9,6 +9,10 @@ public class NodeDetails {
         this.ipAddress = builder.ipAddress;
     }
 
+    public NodeDetails(String name, String ipAddress) {
+        this.name = name;
+        this.ipAddress = ipAddress;
+    }
     public String getName() {
         return name;
     }

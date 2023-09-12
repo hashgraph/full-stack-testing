@@ -3,7 +3,7 @@ package com.hedera.fullstack.infrastructure.api.providers;
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
-import com.hedera.fullstack.infrastructure.api.INSTALL_TYPE;
+import com.hedera.fullstack.infrastructure.api.model.INSTALL_TYPE;
 import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.Topology;

@@ -1,11 +1,12 @@
 import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.infrastructure.api.INSTALL_TYPE;
+import com.hedera.fullstack.infrastructure.api.model.INSTALL_TYPE;
 import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.model.Component;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.Topology;
-import com.hedera.fullstack.resource.generator.api.PlatformConfigurationBuilder;
+import com.hedera.fullstack.resource.generator.api.NodeDetails;
+import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
 
 import java.io.IOException;
@@ -32,11 +33,13 @@ public class IntegrationExample {
         // who carries the software version, nmt version etc. ?
         NetworkDeployment networkDeployment = testTookKit.create(hederaNetworkTopology);
         // should have
-        // - TODO: config builder
-        //   Junit can fill in more stuff in the builder the config builder
+        // - Junit can fill in more stuff in the builder the config builder
         // - ip and names of the pods created
         // Should contain sanitized version of ips and pod names, should not container k8s specific stuff
-        PlatformConfigurationBuilder platformConfigBuilder = null; // get this
+        PlatformConfiguration.Builder platformConfigBuilder = networkDeployment.getPlatformConfigurationBuilder();
+        // The Junit tests can add things in the platform config builder
+        platformConfigBuilder.addNodeDetail(new NodeDetails("abc","127.0.0.1"));
+        platformConfigBuilder.addNodeDetail(new NodeDetails("abc","127.0.0.1"));
 
         // Step 2. Configure the NetworkDeployment
         testTookKit.configure(networkDeployment);
@@ -75,7 +78,6 @@ public class IntegrationExample {
 
             String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment);
             String platformSettings = resourceUtils.getPlatformSettings(networkDeployment);
-
             String buildZipURL = resourceUtils.getBuildZipURL(SemanticVersion.ZERO);
 
             // Configuring the platform

@@ -1,5 +1,6 @@
 package com.hedera.fullstack.infrastructure.api;
 
+import com.hedera.fullstack.infrastructure.api.model.INSTALL_TYPE;
 import com.hedera.fullstack.infrastructure.api.model.Topology;
 
 import java.util.List;

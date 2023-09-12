@@ -3,10 +3,10 @@ package com.hedera.fullstack.resource.generator.api;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlatformConfigurationBuilder {
+public class PlatformConfiguration {
     private final List<NodeDetails> nodeDetails;
 
-    private PlatformConfigurationBuilder(Builder builder) {
+    private PlatformConfiguration(Builder builder) {
         this.nodeDetails = builder.nodeDetails;
     }
 
@@ -31,8 +31,8 @@ public class PlatformConfigurationBuilder {
             return this;
         }
 
-        public PlatformConfigurationBuilder build() {
-            return new PlatformConfigurationBuilder(this);
+        public PlatformConfiguration build() {
+            return new PlatformConfiguration(this);
         }
     }
 
@@ -45,24 +45,5 @@ public class PlatformConfigurationBuilder {
         }
         sb.append("]}");
         return sb.toString();
-    }
-
-    public static void main(String[] args) {
-        NodeDetails node1 = new NodeDetails.Builder()
-                .setName("Node1")
-                .setIpAddress("192.168.1.1")
-                .build();
-
-        NodeDetails node2 = new NodeDetails.Builder()
-                .setName("Node2")
-                .setIpAddress("192.168.1.2")
-                .build();
-
-        PlatformConfigurationBuilder config = new PlatformConfigurationBuilder.Builder()
-                .addNodeDetail(node1)
-                .addNodeDetail(node2)
-                .build();
-
-        System.out.println(config);
     }
 }

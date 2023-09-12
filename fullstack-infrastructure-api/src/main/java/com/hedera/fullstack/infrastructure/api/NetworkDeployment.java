@@ -3,9 +3,8 @@ package com.hedera.fullstack.infrastructure.api;
 
 import com.hedera.fullstack.infrastructure.api.model.Component;
 import com.hedera.fullstack.infrastructure.api.model.DeploymentTopology;
-import com.hedera.fullstack.infrastructure.api.model.LogFile;
 import com.hedera.fullstack.infrastructure.api.model.Topology;
-import com.hedera.fullstack.resource.generator.api.PlatformConfigurationBuilder;
+import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,16 +23,13 @@ import java.nio.file.Path;
 **/
 public interface NetworkDeployment {
 
-     //- config builder
-     //- ip address of components
-     //- no k8s details
-
-
      String getId();
      String getName();
      Topology getTopology();
 
      DeploymentTopology getDeploymentTopology();
+
+     PlatformConfiguration.Builder getPlatformConfigurationBuilder();
 
      /* File operations */
      File getFile(Component component, int replica, String filePath) throws FileNotFoundException;
@@ -44,8 +40,8 @@ public interface NetworkDeployment {
      String getFileContents(Component component, int replica,String path) throws FileNotFoundException;
      void putContentsFile(Component component, int replica,Path path, String fileContents) throws IOException;
 
-     /* Logs */
-     String getLogs(Component component, int replica, LogFile logfile);
+     /* k8s pod Logs */
+     String getLogs(Component component, int replica);
 
      /* Component operations */
      //TODO: sync+async return type
