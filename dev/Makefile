@@ -214,8 +214,8 @@ deploy-minio-operator-if-required:
 
 .PHONY: undeploy-minio-operator
 undeploy-minio-operator:
-	echo ">> Deploying minio operator..." && \
-	helm delete  --namespace=minio-operator minio-operator
+	echo ">> Deleting minio operator..." && \
+	helm delete --namespace=minio-operator minio-operator
 
 
 ######################################### Helm Chart Test #################################
