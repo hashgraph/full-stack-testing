@@ -165,8 +165,8 @@ function test_http_route() {
   kubectl apply -f "${GATEWAY_API_DIR}/http-debug.yaml"
   kubectl wait --for=condition=Ready pods -l app=http-debug -n default
 
-  local local_port=8080
-  local gateway_port=80
+  local local_port=3100
+  local gateway_port=3100 # needs to match the port specified at: $.Values.gatewayApi.gateway.listeners.httpDebug
   expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
 
   local route_host="debug.fst.local"
@@ -203,8 +203,8 @@ function test_grpc_route() {
   kubectl apply -f "${GATEWAY_API_DIR}/grpc-debug.yaml"
   kubectl wait --for=condition=Ready pods -l app=grpc-debug -n default
 
-  local local_port=9090
-  local gateway_port=9090
+  local local_port=3101
+  local gateway_port=3101 # needs to match the port specified at: $.Values.gatewayApi.gateway.listeners.tcpDebug
   expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
 
   local route_host="debug.fst.local"
@@ -240,8 +240,8 @@ function test_tcp_route() {
   kubectl apply -f "${GATEWAY_API_DIR}/tcp-debug.yaml"
   kubectl wait --for=condition=Ready pods -l app=tcp-debug -n default
 
-  local local_port=9000
-  local gateway_port=9000
+  local local_port=3101
+  local gateway_port=3101 # needs to match the port specified at: $.Values.gatewayApi.gateway.listeners.tcpDebug
   expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
   sleep 1
 

@@ -48,7 +48,7 @@ metadata:
 spec:
   parentRefs:
     - name: fst
-      sectionName: grpc-debug
+      sectionName: tcp-debug
   rules:
     - backendRefs:
         - group: ""

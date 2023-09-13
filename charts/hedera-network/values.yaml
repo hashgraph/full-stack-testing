@@ -40,6 +40,25 @@ gatewayApi:
   gateway:
     name: "fst"
     enable: "true"
+    listeners:
+      gossip:
+        port: 51000 # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
+        enable: "false" # by default, we don't need to expose the gossip ports
+      grpc: # non-tls-grpc-port
+        port: 52000 # i.e. node0:52000 ... node999: 52999, points to 50211 port in haproxy or network-node
+        enable: "true"
+      grpcs: # tls-grpc-port
+        port: 53000 # i.e. node0:53000 ... node999: 53999, points to 50212 port in haproxy or network-node
+        enable: "true"
+      grpcWeb:
+        port: 18000 # i.e. node0:18000 ... node999: 18999, points to 8080 port in envoy proxy
+        enable: "true"
+      httpDebug: # this helps debugging gateway if needed by provisioning a mock http app
+        port: 3100
+        enable: "true"
+      tcpDebug: # this helps debugging gateway if needed by provisioning a mock grpc app
+        port: 3101
+        enable: "true"
   route:
     hostname: "{{ .node.name }}.fst.local"
 
