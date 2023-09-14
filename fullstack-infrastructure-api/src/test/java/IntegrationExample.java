@@ -76,8 +76,8 @@ public class IntegrationExample {
             ResourceUtils resourceUtils = null;
             String version = null;
 
-            String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment);
-            String platformSettings = resourceUtils.getPlatformSettings(networkDeployment);
+            String platformConfig = resourceUtils.getPlatformConfiguration("networkDeployment");
+            String platformSettings = resourceUtils.getPlatformSettings("networkDeployment");
             String buildZipURL = resourceUtils.getBuildZipURL(SemanticVersion.ZERO);
 
             // Configuring the platform

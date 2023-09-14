@@ -8,13 +8,14 @@ import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.Topology;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
+import io.fabric8.kubernetes.client.KubernetesClient;
 
 import java.util.List;
 
 public class K8sInfrastructureManager implements InfrastructureManager {
     ResourceUtils resources;
     HelmClient helmClient;
-
+    KubernetesClient k8sClient;
 
     @Override
     public NetworkDeployment createNetworkDeployment(Topology hederaNetwork, INSTALL_TYPE installType) {
