@@ -28,9 +28,11 @@ spec:
       env:
         - name: TESTS_DIR
           value: "/tests" # should be same as mountPath
+        - name: OUTPUT_LOG # outputs the logs from the tests
+          value: "true"
       command:
         - "/bin/bash"
         - "-c"
-        - /tests/run.sh
-        #- "while true;do echo sleeping; sleep 10;done"
+        - "/tests/run.sh"
+        #- "while true;do echo sleeping for 60s; sleep 60;done" # keep the test container running so that we can debug issues
   restartPolicy: Never

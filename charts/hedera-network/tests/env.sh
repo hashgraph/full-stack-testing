@@ -14,10 +14,16 @@ fi
 BATS_HOME="${BATS_HOME:-../../../dev/bats}"
 TESTS_DIR="${TESTS_DIR:-.}"
 
+OUTPUT_LOG="${OUTPUT_LOG}"
+LOG_DIR="${LOG_DIR:-/tmp/bats-test-logs}"
+LOG_FILE="test.log"
+[ ! -d "${LOG_DIR}" ] && mkdir "${LOG_DIR}"
+
 echo ""
-echo "Mandatory variables"
+echo "Env variables"
 echo "=============================================="
 echo "ENV_FILE: ${ENV_FILE}"
 echo "BATS_HOME: ${BATS_HOME}"
 echo "TESTS_DIR: ${TESTS_DIR}"
+echo "OUTPUT_LOG: ${OUTPUT_LOG}"
 

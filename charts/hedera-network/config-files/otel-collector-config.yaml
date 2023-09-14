@@ -2,68 +2,59 @@ receivers:
   otlp:
     protocols:
       grpc:
-  hostmetrics:
-    collection_interval: "15s"
-    scrapers:
-      cpu:
-      disk:
-      load:
-      filesystem:
-      memory:
-      network:
-      paging:
-      processes:
+      http:
 
-exporters:
+  # Collect node metrics
   prometheus:
-    endpoint: "0.0.0.0:8889"
-    const_labels:
-      source: p-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="p-otel-collector"}
-  {{- if eq .otelDefaults.prometheusRemoteWrite.enable "true" }}
-  prometheusremotewrite:
-    endpoint: "{{ .otelDefaults.prometheusRemoteWrite.endpoint }}"
-    tls:
-      insecure: true
-    external_labels:
-      source: prw-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="prw-otel-collector"}
-  {{- end }}
-#  logging:
-#    verbosity: detailed
-#    sampling_initial: 5
-
-
-#  jaeger:
-#    endpoint: jaeger-all-in-one:14250
-#    tls:
-#      insecure: true
-#
-#  otlp:
-#    endpoint: tempo:4317
-#    tls:
-#      insecure: true
+    config:
+      scrape_configs:
+        - job_name: 'node-metrics-scraper' # network-node metrics
+          scrape_interval: {{ .otelDefaults.receivers.prometheus.scrapeInterval }}
+          static_configs:
+            - targets: {{ .otelDefaults.receivers.prometheus.scrapeTargets }}
 
 processors:
   batch:
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:9090" # note: network-node-svc exposes this port for all prometheus metrics instead of node's port 9999
+    const_labels:
+      source: p-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="p-otel-collector"}
+
+  {{- if eq .otelDefaults.exporters.prometheusRemoteWrite.enable "true" }}
+  prometheusremotewrite:
+    endpoint: "{{ .otelDefaults.exporters.prometheusRemoteWrite.endpoint }}"
+    tls:
+      {{- .otelDefaults.exporters.prometheusRemoteWrite.tls | toYaml | nindent 6 }}
+    external_labels:
+      source: prw-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="prw-otel-collector"}
+  {{- end }}
+
+  otlp:
+    endpoint: "{{ .otelDefaults.exporters.otlp.endpoint }}"
+    {{- if .otelDefaults.exporters.otlp.headers }}
+    headers:
+      {{- .otelDefaults.exporters.otlp.headers | toYaml | nindent 6 }}
+    {{- end }}
+    tls:
+      {{- .otelDefaults.exporters.otlp.tls | toYaml | nindent 6 }}
+
 extensions:
   health_check:
 
 service:
-#  telemetry:
-#    logs:
-#      level: "debug"
-#      development: true
   extensions: [health_check]
   pipelines:
-    #traces:
-    #  receivers: [otlp]
-    #  processors: [batch]
-    #  exporters: [logging, otlp, jaeger]
-    metrics:
-      receivers: [otlp, hostmetrics]
+    traces:
+      receivers: [otlp]
       processors: [batch]
-      exporters: 
-         - prometheus
-         {{- if eq .otelDefaults.prometheusRemoteWrite.enable "true" }}
-         - prometheusremotewrite
-         {{- end }}
-#      exporters: [logging, prometheus{{ if eq .otelDefaults.prometheusRemoteWrite.enable "true" }}, prometheusremotewrite{{ end }}]
+      exporters: [otlp]
+    metrics:
+      receivers: [prometheus]
+      processors: [batch]
+      exporters:
+        - prometheus
+        {{- if eq .otelDefaults.exporters.prometheusRemoteWrite.enable "true" }}
+        - prometheusremotewrite
+        {{- end }}

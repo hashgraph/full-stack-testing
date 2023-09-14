@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app: envoy-proxy-{{ $node.name }}
+        fullstack.hedera.com/type: envoy-proxy
     spec:
       volumes:
         - name: config-volume

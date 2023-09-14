@@ -18,6 +18,7 @@ import com.hedera.fullstack.gradle.helm.release.HelmArtifactTask
 
 plugins {
     id("com.hedera.fullstack.conventions")
+    id("com.hedera.fullstack.jpms-modules")
     id("com.hedera.fullstack.maven-publish")
 }
 

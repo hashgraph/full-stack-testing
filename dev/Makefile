@@ -12,24 +12,29 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	setup \
 	setup-cluster \
 	deploy-chart \
+	destroy-chart \
 	helm-test \
 	deploy-network  \
+	destroy-network \
 	destroy-test-container \
-	destroy-network test
-
+	deploy-all \
+	destroy-all \
+	local-kubectl-bats \
+	ci-test
 
 # Setup variables
+CLUSTER_NAME ?="fst"
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
 
+CHART_VALUES_FILES= # extra values
+
 # scripts
 TELEMETRY_SCRIPT="telemetry.sh"
 GATEWAY_API_SCRIPT="gateway.sh"
-
-.PHONY: all
-all: setup setup-cluster reset
+DOCKER_SCRIPT="docker.sh"
 
 .PHONY: setup
 setup:
@@ -38,69 +43,61 @@ setup:
 
 .PHONY: setup-cluster
 setup-cluster:
-	kind create cluster -n fst
+	echo "Cluster name: ${CLUSTER_NAME}" && \
+	source "${SCRIPTS_DIR}/main.sh" && setup_cluster "${CLUSTER_NAME}"
+
+.PHONY: destroy-cluster
+destroy-cluster:
+	kind delete cluster -n fst
+
+.PHONY: install-chart
+install-chart:
+	source "${SCRIPTS_DIR}/main.sh" && install_chart "${SCRIPT_NAME}"
+
+.PHONY: uninstall-chart
+uninstall-chart:
+	source "${SCRIPTS_DIR}/main.sh" && uninstall_chart
 
 .PHONY: update-helm-dependencies
 update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
 .PHONY: deploy-chart
-deploy-chart: deploy-minio-operator-if-required deploy-prometheus-operator deploy-gateway-api
-	echo ">> Deploying helm chart..." && \
-	echo "" && \
-	if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then \
-		helm install fst ../charts/hedera-network --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind ; \
-	else \
-		helm install fst ../charts/hedera-network ; \
-	fi \
+deploy-chart:
+	$(MAKE) update-helm-dependencies
+	$(MAKE) deploy-minio-operator-if-required
+	$(MAKE)	deploy-prometheus-operator
+	$(MAKE) deploy-gateway-api
+	$(MAKE) install-chart
 
-.PHONY: helm-test
-helm-test:
-	echo "" && \
-	echo ">> Running helm test..." && \
-	echo "" && \
-	# We have to specify the specific test name here, otherwise it executes all tests from the subcharts as well.
-	# I had to remove --logs, because --logs ignores filter and tries to get logs for all test pods
-    #  - Error: unable to get pod logs for fst-graphql-test: pods "fst-graphql-test" not found
-	helm test fst --filter 'name=network-test' && \
-    EXIT_CODE=$$? && \
-	kubectl logs network-test && \
-	exit $${EXIT_CODE}
+.PHONY: destroy-chart
+destroy-chart:
+	-$(MAKE) uninstall-chart
+	-$(MAKE) destroy-gateway-api
+	-$(MAKE) destroy-prometheus-operator
+	-$(MAKE) undeploy-minio-operator
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
 	echo "" && \
+    echo ">> Service Information...." && \
+    echo "" && \
+	kubectl get svc -o wide && \
+	echo "" && \
 	echo ">> Pod Information...." && \
 	echo "" && \
 	kubectl get pods -o wide && \
+	echo ">> Waiting for network-node pods to be active (first deployment takes ~10m)...." && \
+  	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
 	echo "" && \
     echo ">> Service Information...." && \
     echo "" && \
-	kubectl get svc -o wide
-
-.PHONY: destroy-test-container
-destroy-test-container:
-	echo "" && \
-	echo ">> Deleting test container..." && \
-	kubectl delete pod network-test || true
+	kubectl get svc -o wide && \
+	echo ">> Waiting for pods to be up (timeout 600s)" && \
+	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
 
 .PHONY: destroy-network
-destroy-network: destroy-test-container
-	echo "" && \
-	echo ">> Uninstalling helm chart..." && \
- 	helm uninstall fst && \
- 	sleep 10
-
-.PHONY: test
-test:
-	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
-	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
-	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
-	function cleanup_test {
-		$(MAKE) destroy-network
-	}
-	trap cleanup_test EXIT # always destroy-network on exit
-	$(MAKE) setup deploy-minio-operator-if-required update-helm-dependencies deploy-network helm-test setup-nodes start-nodes
+destroy-network: destroy-test-container destroy-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup
@@ -157,7 +154,7 @@ destroy-gateway-api:
 	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_haproxy_ingress
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
-######################################### Prometheus #################################
+######################################### Telemetry #################################
 .PHONY: fetch-prometheus-operator-bundle
 fetch-prometheus-operator-bundle:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && fetch-prometheus-operator-bundle
@@ -170,22 +167,38 @@ deploy-prometheus-operator: fetch-prometheus-operator-bundle
 destroy-prometheus-operator:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
 
+.PHONY: deploy-grafana-tempo
+deploy-grafana-tempo:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy_grafana_tempo && expose_grafana
+
+.PHONY: destroy-grafana-tempo
+destroy-grafana-tempo:
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_grafana && destroy_grafana_tempo
+
 .PHONY: deploy-prometheus
 deploy-prometheus: deploy-prometheus-operator
-	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus && expose_prometheus
 
 .PHONY: destroy-prometheus
 destroy-prometheus:
-	-source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus
-	make destroy-prometheus-operator
+	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_prometheus && destroy-prometheus
+
+.PHONY: deploy-telemetry-stack
+deploy-telemetry-stack: deploy-prometheus deploy-grafana-tempo
+
+.PHONY: destroy-telemetry-stack
+destroy-telemetry-stack:
+	# Note: - prefix ensures errors are ignored and continues
+	-${MAKE} destroy-prometheus
+	-${MAKE} destroy-grafana-tempo
 
 ######################################### MinIO #################################
 .PHONY: deploy-minio-operator
 deploy-minio-operator:
 	@echo ">> Deploying minio operator..."; \
 	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace --version 5.0.7 minio-operator operator && \
-	echo ">> Waiting for minio operator to be ready..." && \
-	kubectl --namespace=minio-operator  wait --for=condition=available --timeout=600s deployment.apps/minio-operator && \
+	echo ">> Waiting for minio operator to be available (timeout 300s)..." && \
+	kubectl --namespace=minio-operator  wait --for=condition=Available --timeout=300s deployment.apps/minio-operator && \
 	sleep 5
 
 .PHONY: is-minio-operator-installed
@@ -201,5 +214,47 @@ deploy-minio-operator-if-required:
 
 .PHONY: undeploy-minio-operator
 undeploy-minio-operator:
-	echo ">> Deploying minio operator..." && \
-	helm delete  --namespace=minio-operator minio-operator
+	echo ">> Deleting minio operator..." && \
+	helm delete --namespace=minio-operator minio-operator
+
+
+######################################### Helm Chart Test #################################
+.PHONY: helm-test
+helm-test:
+	source "${SCRIPTS_DIR}/main.sh" && run_helm_chart_tests "network-test"
+
+.PHONY: destroy-test-container
+destroy-test-container:
+	echo "" && \
+	echo ">> Deleting test container..." && \
+	kubectl delete pod network-test || true
+
+######################################### CI #################################
+.PHONY: local-kubectl-bats
+local-kubectl-bats:
+	source "${SCRIPTS_DIR}/${DOCKER_SCRIPT}" && build_kubectl_bats "${CLUSTER_NAME}"
+
+.PHONY: deploy-all
+deploy-all:
+	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
+	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
+	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
+	function cleanup_test {
+		$(MAKE) destroy-network
+	}
+	trap cleanup_test EXIT # always destroy-network on exit
+	$(MAKE) setup
+	$(MAKE) deploy-network
+	$(MAKE) helm-test
+	$(MAKE) setup-nodes
+	$(MAKE) start-nodes
+
+.PHONY: destroy-all
+destroy-all:
+	-$(MAKE) destroy-network
+	-$(MAKE) undeploy-minio-operator
+	-$(MAKE) destroy-prometheus-operator
+
+.PHONY: ci-test
+ci-test: setup-cluster local-kubectl-bats
+	$(MAKE) deploy-all CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"

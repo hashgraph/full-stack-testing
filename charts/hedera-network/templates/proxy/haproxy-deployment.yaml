@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app: haproxy-{{ $node.name }}
+        fullstack.hedera.com/type: haproxy
     spec:
       volumes:
         - name: haproxy-config-volume

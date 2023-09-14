@@ -6,29 +6,31 @@ metadata:
   name: network-{{ $nodeConfig.name }}-svc
   labels:
     fullstack.hedera.com/type: network-node-svc
-    fullstack.hedera.com/node-name: {{ $nodeConfig.name }} 
+    fullstack.hedera.com/node-name: {{ $nodeConfig.name }}
+    fullstack.hedera.com/prometheus-endpoint: active
 spec:
   selector:
     app: network-{{ $nodeConfig.name }}
   ports:
+  # GOSSIP port is used by nodes for gossip protocol
   - name: gossip
     protocol: TCP
     port: 50111 # gossip port
     targetPort: 50111
+  # GRPC-NON-TLS port is used for services API
   - name: grpc-non-tls
     protocol: TCP
     port: 50211 # non-tls grpc client port
     targetPort: 50211
+  # GRPC-TLS port
   - name: grpc-tls
     protocol: TCP
     port: 50212 # tls grpc client port
     targetPort: 50212
-  - name: otel-metrics
+  # Node metrics port
+  # Rather than exposing the node's metrics port 9999 directly, we expose otel-collect's prometheus port here.
+  - name: prometheus # port name must be prometheus for prometheus-svc-monitor
     protocol: TCP
-    port: 8888
-    targetPort: 8888
-  - name: prometheus
-    protocol: TCP
-    port: 8889
-    targetPort: 8889
+    port: 9090
+    targetPort: 9090 # otel-collector's prometheus exporter port
 {{- end }}

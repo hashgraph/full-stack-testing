@@ -27,6 +27,10 @@ appVersion: "0.7.0"
 kubeVersion: ">=1.25.0"
 
 dependencies:
+  - name: hedera-explorer
+    version: 0.2.0
+    condition: cloud.minio.enable
+
   - name: hedera-mirror
     alias: hedera-mirror-node
     version: 0.86.0
@@ -38,3 +42,4 @@ dependencies:
     version: 5.0.7
     repository: https://operator.min.io/
     condition: cloud.minio.enable
+
