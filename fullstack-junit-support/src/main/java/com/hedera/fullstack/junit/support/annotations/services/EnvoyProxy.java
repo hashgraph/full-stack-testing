@@ -26,4 +26,12 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-public @interface EnvoyProxy {}
+public @interface EnvoyProxy {
+    /**
+     * The number of Envoy Proxy servers to deploy. Defaults to 1 if not specified. The value provided must be greater
+     * than or equal to 1 and less than or equal to the total number of application nodes in the deployment.
+     *
+     * @return the number of Envoy Proxy servers to deploy.
+     */
+    int value() default 1;
+}

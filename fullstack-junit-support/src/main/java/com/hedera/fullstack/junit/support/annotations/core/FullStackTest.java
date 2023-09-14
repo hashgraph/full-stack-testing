@@ -66,31 +66,4 @@ public @interface FullStackTest {
      * @see TestExecutionMode
      */
     TestExecutionMode mode() default TestExecutionMode.DEFAULT;
-
-    /**
-     * The Full Stack test execution framework for the node software. The default value is
-     * {@link TestExecutorType#JAVA_DIRECT}.
-     *
-     * <p>
-     * Full Stack tests support two execution frameworks:
-     * <ul>
-     *     <li>{@link TestExecutorType#JAVA_DIRECT}</li>
-     *     <li>{@link TestExecutorType#NODE_MGMT_TOOLS}</li>
-     * </ul>
-     *
-     * <p>
-     * The {@link TestExecutorType#JAVA_DIRECT} framework executes the node software using the {@code ubi8-init-java17}
-     * docker container image. The {@code ubi8-init-java17} image is built from the {@code ubi8-init} image and
-     * includes the Java 17 JDK. Tests using this framework are executed directly in the container using the embedded
-     * Java 17 JDK. Node Management Tools are not available when using this framework and are not used for any of the
-     * provisioning, configuration, or monitoring operations.
-     *
-     * <p>
-     * The {@link TestExecutorType#NODE_MGMT_TOOLS} framework executes the node software using the {@code ubi8-init-dind}
-     * docker container image. The {@code ubi8-init-dind} image is built from the {@code ubi8-init} image and includes
-     * the Docker daemon. Tests using this framework are provisioned and executed via the Node Management Tools.
-     *
-     * @return the execution framework used by this test.
-     */
-    TestExecutorType executor() default TestExecutorType.JAVA_DIRECT;
 }

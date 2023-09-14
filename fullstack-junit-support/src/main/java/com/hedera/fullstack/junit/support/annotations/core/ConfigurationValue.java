@@ -20,7 +20,8 @@ import java.lang.annotation.*;
 
 /**
  * Represents a generic configuration value which comprises a key and value pair. This annotation may only be used
- * in conjunction with other annotations and may not be directly applied to test classes or methods.
+ * in conjunction with other annotations and may not be directly applied to test classes or methods. Either the
+ * {@link #value()} or {@link #values()} must be specified but not both.
  */
 @Inherited
 @Documented
@@ -36,8 +37,17 @@ public @interface ConfigurationValue {
 
     /**
      * The value of the specified configuration key/name. Depending on the context, the value format may vary.
+     * Mutually exclusive with {@link #values()}.
      *
      * @return the value of the specified configuration key/name.
      */
-    String value();
+    String value() default "";
+
+    /**
+     * The values of the specified configuration key/name. Depending on the context, the value format may vary.
+     * Mutually exclusive with {@link #value()}.
+     *
+     * @return the values of the specified configuration key/name.
+     */
+    String[] values() default {};
 }
