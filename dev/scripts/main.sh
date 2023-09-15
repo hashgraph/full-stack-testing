@@ -79,6 +79,7 @@ function run_helm_chart_tests() {
 	kubectl logs "${test_name}"
 
 	if [[ "${test_status}" != "Succeeded" ]]; then
-	  exit 1
+	  echo "Returning exit code 1"
+	  return 1
 	fi
 }
