@@ -29,8 +29,7 @@ RUN apt-get update && \
     git clone https://github.com/bats-core/bats-assert.git "${BATS_HOME}"/test_helper/bats-assert && \
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash && \
     curl -L https://github.com/mikefarah/yq/releases/download/v4.34.2/yq_linux_amd64 -o /usr/bin/yq && \
-    chmod +x /usr/bin/yq && \
-    helm version && yq --version
+    chmod +x /usr/bin/yq
 
 #switch back to user 1001
 USER 1001
