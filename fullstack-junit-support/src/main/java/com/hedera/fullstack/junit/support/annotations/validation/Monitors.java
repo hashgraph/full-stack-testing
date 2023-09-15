@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.junit.support.annotations.validation;
 
+import com.hedera.fullstack.junit.support.annotations.core.ConfigurationValue;
 import com.hedera.fullstack.junit.support.annotations.flow.SuppressMonitors;
 import com.hedera.fullstack.monitoring.api.Monitor;
 import java.lang.annotation.*;
@@ -41,4 +42,11 @@ public @interface Monitors {
      * @return an array of {@link Monitor} implementations.
      */
     Class<? extends Monitor>[] value();
+
+    /**
+     * An array of optional configuration key and value pairs to be passed to the {@link Monitor} implementations.
+     *
+     * @return an array of {@link ConfigurationValue} annotations.
+     */
+    ConfigurationValue[] config() default {};
 }

@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.junit.support.annotations.validation;
 
+import com.hedera.fullstack.junit.support.annotations.core.ConfigurationValue;
 import com.hedera.fullstack.junit.support.annotations.flow.SuppressValidators;
 import com.hedera.fullstack.validator.api.Validator;
 import java.lang.annotation.*;
@@ -42,4 +43,11 @@ public @interface Validators {
      * @return an array of {@link Validator} implementations.
      */
     Class<? extends Validator>[] value();
+
+    /**
+     * An array of optional configuration key and value pairs to be passed to the {@link Validator} implementations.
+     *
+     * @return an array of {@link ConfigurationValue} annotations.
+     */
+    ConfigurationValue[] config() default {};
 }

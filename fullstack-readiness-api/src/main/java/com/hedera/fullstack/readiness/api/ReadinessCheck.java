@@ -16,6 +16,9 @@
 
 package com.hedera.fullstack.readiness.api;
 
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.ApplicationNode;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Deployment;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Node;
 import java.time.Duration;
 
 @FunctionalInterface
@@ -23,7 +26,7 @@ public interface ReadinessCheck {
     Duration DEFAULT_CHECK_INTERVAL = Duration.ofSeconds(1);
     Duration DEFAULT_CHECK_TIMEOUT = Duration.ofSeconds(60);
 
-    boolean ready();
+    boolean ready(Deployment deployment);
 
     default Duration checkInterval() {
         return DEFAULT_CHECK_INTERVAL;
@@ -31,5 +34,9 @@ public interface ReadinessCheck {
 
     default Duration checkTimeout() {
         return DEFAULT_CHECK_TIMEOUT;
+    }
+
+    default boolean appliesTo(Class<? extends Node<?>> nodeClass) {
+        return ApplicationNode.class.isAssignableFrom(nodeClass);
     }
 }

@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.junit.support.annotations.validation;
 
+import com.hedera.fullstack.junit.support.annotations.core.ConfigurationValue;
 import com.hedera.fullstack.junit.support.annotations.flow.SuppressReadinessChecks;
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
 import java.lang.annotation.*;
@@ -42,4 +43,11 @@ public @interface ReadinessChecks {
      * @return an array of {@link ReadinessCheck} implementations.
      */
     Class<? extends ReadinessCheck>[] value();
+
+    /**
+     * An array of optional configuration key and value pairs to be passed to the {@link ReadinessCheck} implementations.
+     *
+     * @return an array of {@link ConfigurationValue} annotations.
+     */
+    ConfigurationValue[] config() default {};
 }
