@@ -258,3 +258,7 @@ destroy-all:
 .PHONY: ci-test
 ci-test: setup-cluster local-kubectl-bats
 	$(MAKE) deploy-all CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+
+.PHONY: ci-deploy-network
+ci-deploy-network: setup-cluster local-kubectl-bats
+	$(MAKE) deploy-network CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
