@@ -82,15 +82,50 @@ function check_test_status() {
 
 function get_config_val() {
   local config_path=$1
-  ret=$(helm get values fst -a | tail -n +2 | niet "${config_path}" )
+  log_debug "Get config command: helm get values fst -a | yq '${config_path}'"
+  ret=$(helm get values fst -a | yq "${config_path}" )
   echo "${ret}"
-  log_debug "${enable_config_path} => ${ret}"
+  log_debug "${config_path} => ${ret}"
 }
 
 function get_config_val_upper() {
   local config_path=$1
   local config_val=$(get_config_val "${config_path}" | tr '[:lower:]' '[:upper:]' )
   echo "${config_val}"
+}
+
+function is_enabled_for_node() {
+  local node_name=$1
+  [[ -z "${node_name}" ]] && echo "ERROR: Node name is needed" && return "${EX_ERR}"
+
+  local config_path=$2
+  [[ -z "${config_path}" ]] && echo "ERROR: Config path is needed" && return "${EX_ERR}"
+
+  log_debug "Checking config '${config_path}' for node '${node_name}"
+
+  local default_config_path=".defaults${config_path}"
+  local node_config_path=".hedera.nodes[] | select(.name==\"${node_name}\") | ${config_path}"
+  local default_val=$(get_config_val_upper "${default_config_path}")
+  local node_val=$(get_config_val_upper "${node_config_path}")
+  log_debug "Default config: ${default_val}"
+  log_debug "Node config: ${node_val}"
+
+  if [ -z "${node_val}" ] || [ "${node_val}" = "FALSE" ]; then
+    echo "FALSE"
+    return
+  fi
+
+  if [ "${node_val}" = "TRUE" ]; then
+    echo "TRUE"
+    return
+  fi
+
+  if [ "${default_val}" = "TRUE" ]; then
+    echo "TRUE"
+    return
+  fi
+
+  echo "FALSE"
 }
 
 function get_sidecar_status() {
@@ -110,6 +145,7 @@ function is_sidecar_ready() {
   [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
 
   local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | tr '[:lower:]' '[:upper:]')
+  [ -z "${sidecar_status}" ] && sidecar_status="FALSE"
   log_debug "${sidecar_name} in pod ${pod} is ready: ${sidecar_status}"
 
   [[ "${sidecar_status}" = "TRUE" ]] && return "${EX_OK}"
@@ -138,6 +174,8 @@ function is_pod_ready() {
   [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_pod_ready)" && return "${EX_ERR}"
 
   local pod_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}" | tr '[:lower:]' '[:upper:]')
+  [ -z "${pod_status}" ] && pod_status="FALSE"
+
   log_debug "Pod '${pod}' is ready: ${pod_status}"
 
   [[ "${pod_status}" = "TRUE" ]] && return "${EX_OK}"
@@ -152,12 +190,13 @@ function get_pod_label() {
   [[ -z "${pod}" ]] && echo "ERROR: Label name is needed" && return "${EX_ERR}"
 
 
-  log_debug "Checking for pod ${pod}(timeout 300s)..."
-  if [ ! $(kubectl wait --for=condition=Initialized pods "${pod}" --timeout 300s) ]; then
+  log_debug "Checking for pod '${pod}'(timeout 300s)..."
+  $(kubectl wait --for=condition=Initialized pods "${pod}" --timeout 300s) > /dev/null 2>&1
+  if [ $? = 1 ]; then
     log_debug "ERROR: Pod ${pod} is not available" &&  return "${EX_ERR}"
   fi
 
-  log_debug "Checking label ${label} for pod ${pod}"
+  log_debug "Checking label '${label}' for pod '${pod}'"
   local escaped_label="${label//./\\.}"
   local label_val=$(kubectl get pod "${pod}" -o jsonpath="{.metadata.labels.${escaped_label}}" | xargs)
   log_debug "Pod '${pod}' label '${label}': ${label_val}"
@@ -173,4 +212,20 @@ function get_pod_by_label() {
   local escaped_label="${label//./\\.}"
   local pod_name=$(kubectl get pods -l "${label}" -o jsonpath="{.items[0].metadata.name}")
   echo "${pod_name}"
+}
+
+function is_route_accepted() {
+  local route_type=$1
+  [[ -z "${route_type}" ]] && echo "ERROR: Route type is needed" && return "${EX_ERR}"
+
+  local route_name=$2
+  [[ -z "${route_name}" ]] && echo "ERROR: Route name is needed" && return "${EX_ERR}"
+
+  local route_status=$(kubectl get "${route_type}" "${route_name}" -o jsonpath="{.status.parents[*].conditions[?(@.type=='Accepted')].status}" | tr '[:lower:]' '[:upper:]')
+  [ -z "${route_status}" ] && route_status="FALSE"
+
+  log_debug "${route_type} '${route_name}' is accepted: ${route_status}"
+
+  [[ "${route_status}" = "TRUE" ]] && return "${EX_OK}"
+  return "${EX_ERR}"
 }

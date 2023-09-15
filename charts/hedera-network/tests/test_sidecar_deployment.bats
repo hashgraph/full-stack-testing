@@ -26,6 +26,7 @@ function run_default_sidecar_check() {
     local sidecar_exists=$(has_sidecar "${pod}" "${sidecar_name}" )
     log_debug "${sidecar_name} exists in pod ${pod}: ${sidecar_exists} "
 
+    log_debug "${should_enable} ${sidecar_exists}"
     if [ "${should_enable}" = "TRUE" ] && [ "${sidecar_exists}" = "TRUE" ]; then
       is_sidecar_ready "${pod}" "${sidecar_name}" || test_status="${FAIL}"
     elif [[ "${should_enable}" != "${sidecar_exists}" ]]; then
@@ -45,35 +46,35 @@ function run_default_sidecar_check() {
 
 @test "Check record-stream-uploader sidecar" {
   local sidecar_name="record-stream-uploader"
-  local enable_config_path="defaults.sidecars.recordStreamUploader.enable"
+  local enable_config_path=".defaults.sidecars.recordStreamUploader.enable"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check event-stream-uploader sidecar" {
   local sidecar_name="event-stream-uploader"
-  local enable_config_path="defaults.sidecars.eventStreamUploader.enable"
+  local enable_config_path=".defaults.sidecars.eventStreamUploader.enable"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check account-balance-uploader sidecar" {
   local sidecar_name="account-balance-uploader"
-  local enable_config_path="defaults.sidecars.accountBalanceUploader.enable"
+  local enable_config_path=".defaults.sidecars.accountBalanceUploader.enable"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check backup-uploader sidecar" {
   local sidecar_name="backup-uploader"
-  local enable_config_path="defaults.sidecars.backupUploader.enable"
+  local enable_config_path=".defaults.sidecars.backupUploader.enable"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check otel-collector sidecar" {
   local sidecar_name="otel-collector"
-  local enable_config_path="defaults.sidecars.otelCollector.enable"
+  local enable_config_path=".defaults.sidecars.otelCollector.enable"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }

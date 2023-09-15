@@ -221,7 +221,7 @@ undeploy-minio-operator:
 ######################################### Helm Chart Test #################################
 .PHONY: helm-test
 helm-test:
-	source "${SCRIPTS_DIR}/main.sh" && run_helm_chart_tests "network-test"
+	source "${SCRIPTS_DIR}/main.sh" && run_helm_chart_tests "network-test" || exit 1
 
 .PHONY: destroy-test-container
 destroy-test-container:
@@ -234,6 +234,10 @@ destroy-test-container:
 local-kubectl-bats:
 	source "${SCRIPTS_DIR}/${DOCKER_SCRIPT}" && build_kubectl_bats "${CLUSTER_NAME}"
 
+# Here we run all steps in sequence, if any step fails, deploy-all trap the EXIT and run cleanup
+.PHONY: run-deploy-seq
+run-deploy-seq: setup deploy-network helm-test setup-nodes start-nodes
+
 .PHONY: deploy-all
 deploy-all:
 	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
@@ -243,11 +247,7 @@ deploy-all:
 		$(MAKE) destroy-network
 	}
 	trap cleanup_test EXIT # always destroy-network on exit
-	$(MAKE) setup
-	$(MAKE) deploy-network
-	$(MAKE) helm-test
-	$(MAKE) setup-nodes
-	$(MAKE) start-nodes
+	$(MAKE) run-deploy-seq
 
 .PHONY: destroy-all
 destroy-all:
@@ -258,3 +258,8 @@ destroy-all:
 .PHONY: ci-test
 ci-test: setup-cluster local-kubectl-bats
 	$(MAKE) deploy-all CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+
+.PHONY: ci-deploy-network
+ci-deploy-network: setup-cluster local-kubectl-bats
+	$(MAKE) deploy-network CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+	$(MAKE) helm-test
