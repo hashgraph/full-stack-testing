@@ -22,18 +22,23 @@ setup() {
       local node_name=$(get_pod_label "${pod}" "fullstack.hedera.com/node-name")
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
-      log_debug "Checking HAProxy for network-node '${node_name}'"
-      local haproxy_pod=$(get_pod_by_label "app=haproxy-${node_name},fullstack.hedera.com/type=haproxy")
-
-      log_debug "Checking HAProxy pod ${haproxy_pod}"
-      is_pod_ready "${haproxy_pod}" || test_status="${FAIL}"
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enable")
+      if [ "${is_enabled}" = "TRUE" ]; then
+        log_debug "HAProxy is enabled for node '${node_name}'"
+        log_debug "Checking HAProxy for network-node '${node_name}'"
+        local haproxy_pod=$(get_pod_by_label "app=haproxy-${node_name},fullstack.hedera.com/type=haproxy")
+        log_debug "Checking HAProxy pod ${haproxy_pod}"
+        is_pod_ready "${haproxy_pod}" || test_status="${FAIL}"
+      else
+        log_debug "HAProxy is not enabled for node '${node_name}'. Skipping check"
+      fi
 
       [ "${test_status}" = "FAIL" ] && break
     done
   fi
 
   log_debug ""
-  log_debug "[${test_status}] HAProxy is running"
+  log_debug "[${test_status}] HAProxy Check"
   log_debug ""
 
   # assert success
@@ -58,18 +63,24 @@ setup() {
       local node_name=$(get_pod_label "${pod}" "fullstack.hedera.com/node-name")
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
-      log_debug "Checking Envoy proxy for network-node '${node_name}'"
-      local envoy_proxy_pod=$(get_pod_by_label "app=envoy-proxy-${node_name},fullstack.hedera.com/type=envoy-proxy")
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".envoyProxy.enable")
+      if [ "${is_enabled}" = "TRUE" ]; then
+        log_debug "EnvoyProxy is enabled for node '${node_name}'"
+        log_debug "Checking Envoy proxy for network-node '${node_name}'"
+        local envoy_proxy_pod=$(get_pod_by_label "app=envoy-proxy-${node_name},fullstack.hedera.com/type=envoy-proxy")
 
-      log_debug "Checking Envoy Proxy pod ${envoy_proxy_pod}"
-      is_pod_ready "${envoy_proxy_pod}" || test_status="${FAIL}"
+        log_debug "Checking Envoy Proxy pod ${envoy_proxy_pod}"
+        is_pod_ready "${envoy_proxy_pod}" || test_status="${FAIL}"
+      else
+        log_debug "EnvoyProxy is not enabled for node '${node_name}'. Skipping check"
+      fi
 
       [ "${test_status}" = "FAIL" ] && break
     done
   fi
 
   log_debug ""
-  log_debug "[${test_status}] Envoy Proxy is running"
+  log_debug "[${test_status}] Envoy Proxy Check"
   log_debug ""
 
   # assert success
