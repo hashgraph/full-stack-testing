@@ -236,7 +236,7 @@ local-kubectl-bats:
 
 # Here we run all steps in sequence, if any step fails, deploy-all trap the EXIT and run cleanup
 .PHONY: run-deploy-seq
-.run-deploy-seq: setup deploy-network helm-test setup-nodes start-nodes
+run-deploy-seq: setup deploy-network helm-test setup-nodes start-nodes
 
 .PHONY: deploy-all
 deploy-all:
