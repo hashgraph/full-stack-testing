@@ -40,7 +40,7 @@ setup() {
   log_debug ""
 
   # assert success
-  [[ "${test_status}" = "${PASSs}" ]]
+  [[ "${test_status}" = "${PASS}" ]]
 }
 
 @test "Check HAProxy GRPC routes" {
