@@ -62,6 +62,8 @@ gatewayApi:
   route:
     hostname: "{{ .node.name }}.fst.local"
 
+namespace: default
+
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:
