@@ -109,6 +109,7 @@ function destroy_envoy_gateway_api() {
   if [[ "${helm_chart}" ]]; then
     helm uninstall envoy-gateway -n envoy-gateway-system
     kubectl delete ns envoy-gateway-system
+    kubectl delete ns gateway-system
   fi
 
   uninstall_crd "gateway.networking.k8s.io"
