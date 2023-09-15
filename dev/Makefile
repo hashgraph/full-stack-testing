@@ -262,3 +262,4 @@ ci-test: setup-cluster local-kubectl-bats
 .PHONY: ci-deploy-network
 ci-deploy-network: setup-cluster local-kubectl-bats
 	$(MAKE) deploy-network CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+	$(MAKE) helm-test
