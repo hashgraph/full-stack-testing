@@ -47,7 +47,7 @@ public record KeyValuePair<K, V>(K key, V value) {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (!(o instanceof KeyValuePair<?, ?> that)) return false;
-        return Objects.equals(key, that.key) && Objects.equals(value, that.value);
+        return Objects.equals(key, that.key);
     }
 
     @Override

@@ -28,7 +28,7 @@ public class KeyValuePairTest {
     void testKeyValuePair() {
         KeyValuePair<String, String> kvp1 = new KeyValuePair<>("key", "value");
         KeyValuePair<String, String> kvp1v2 = new KeyValuePair<>("key", "value2");
-        assertThat(kvp1).isNotEqualTo(kvp1v2);
+        assertThat(kvp1).isEqualTo(kvp1v2);
         assertThat(kvp1.hashCode()).isEqualTo(kvp1v2.hashCode());
     }
 }
