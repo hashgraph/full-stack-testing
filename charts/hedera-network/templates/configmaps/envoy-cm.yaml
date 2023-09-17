@@ -5,6 +5,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: envoy-proxy-cm-{{ $node.name }}
+  namespace: {{ include "fullstack.namespace" $ }}
 data:
   envoy.yaml: |
     {{- tpl ($.Files.Get "config-files/envoy.yaml") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}
