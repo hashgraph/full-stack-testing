@@ -23,7 +23,6 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 	ci-test
 
 # Setup variables
-CLUSTER_NAME ?="fst"
 SCRIPTS_DIR=$(PWD)/scripts
 CHART_DIR=$(PWD)/../charts/hedera-network
 SCRIPT_NAME=direct-install.sh
@@ -38,17 +37,15 @@ DOCKER_SCRIPT="docker.sh"
 
 .PHONY: setup
 setup:
-	rm -f "${TMP_DIR}/"*.*
-	cp "${SCRIPTS_DIR}/template.env" "${TMP_DIR}/.env"
+	source "${SCRIPTS_DIR}/main.sh" && setup
 
 .PHONY: setup-cluster
 setup-cluster:
-	echo "Cluster name: ${CLUSTER_NAME}" && \
-	source "${SCRIPTS_DIR}/main.sh" && setup_cluster "${CLUSTER_NAME}"
+	source "${SCRIPTS_DIR}/main.sh" && setup_cluster
 
 .PHONY: destroy-cluster
 destroy-cluster:
-	kind delete cluster -n fst
+	source "${SCRIPTS_DIR}/main.sh" && destroy_cluster
 
 .PHONY: install-chart
 install-chart:
@@ -155,12 +152,8 @@ destroy-gateway-api:
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
 ######################################### Telemetry #################################
-.PHONY: fetch-prometheus-operator-bundle
-fetch-prometheus-operator-bundle:
-	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && fetch-prometheus-operator-bundle
-
 .PHONY: deploy-prometheus-operator
-deploy-prometheus-operator: fetch-prometheus-operator-bundle
+deploy-prometheus-operator:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus-operator
 
 .PHONY: destroy-prometheus-operator

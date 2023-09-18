@@ -1,17 +1,10 @@
 #!/usr/bin/env bash
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-readonly SCRIPT_DIR
-readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
-readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"
+CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "${CUR_DIR}/env.sh"
+setup_kubectl_context
 
 # Run the below command to retrieve the latest version
 # curl -s "https://api.github.com/repos/prometheus-operator/prometheus-operator/releases/latest" | jq -cr .tag_name
-readonly PROMETHEUS_VERSION=v0.67.1
-readonly PROMETHEUS_OPERATOR_YAML="${PROMETHEUS_DIR}/prometheus-operator.yaml"
-readonly PROMETHEUS_YAML="${PROMETHEUS_DIR}/prometheus.yaml"
-readonly PROMETHEUS_RBAC_YAML="${PROMETHEUS_DIR}/prometheus-rbac.yaml"
-readonly PROMETHEUS_EXAMPLE_APP_YAML="${PROMETHEUS_DIR}/example-app.yaml"
 
 function fetch-prometheus-operator-bundle() {
 	if [[ ! -f "${PROMETHEUS_OPERATOR_YAML}" ]]; then \
@@ -28,6 +21,8 @@ function fetch-prometheus-operator-bundle() {
 }
 
 function deploy-prometheus-operator() {
+  fetch-prometheus-operator-bundle
+
   echo ""
 	echo "Deploying prometheus operator"
 	echo "PROMETHEUS_OPERATOR_YAML: ${PROMETHEUS_OPERATOR_YAML}"
@@ -59,10 +54,29 @@ function deploy-prometheus() {
 	echo "PROMETHEUS_YAML: ${PROMETHEUS_YAML}"
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl create -f "${PROMETHEUS_RBAC_YAML}"
+
+	# create ClusterRole binding with the correct namespace
+	# NOTE: take care of indentation in the yaml if it needs to be updated
+	echo "
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: prometheus
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: prometheus
+  subjects:
+    - kind: ServiceAccount
+      name: prometheus
+      namespace: ${NAMESPACE}" | kubectl create -f -
+
 	sleep 10
+
 	kubectl create -f "${PROMETHEUS_YAML}"
+
 	echo "Waiting for prometheus to be active (timeout 300s)..."
-	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus -n default  --timeout 300s
+	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus --timeout 300s -n "${NAMESPACE}"
 }
 
 function destroy-prometheus() {
@@ -71,8 +85,9 @@ function destroy-prometheus() {
 	echo "PROMETHEUS_RBAC_YAML: ${PROMETHEUS_RBAC_YAML}"
 	echo "PROMETHEUS_YAML: ${PROMETHEUS_YAML}"
   echo "-----------------------------------------------------------------------------------------------------"
-	kubectl delete -f "${PROMETHEUS_YAML}"
-	kubectl delete -f "${PROMETHEUS_RBAC_YAML}"
+	kubectl delete -f "${PROMETHEUS_YAML}" || true
+	kubectl delete -f "${PROMETHEUS_RBAC_YAML}" || true
+	kubectl delete clusterrolebindings prometheus || true
 	sleep 5
 }
 
@@ -83,7 +98,7 @@ function deploy-prometheus-example-app() {
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl create -f "${PROMETHEUS_EXAMPLE_APP_YAML}"
   echo "Waiting for prometheus example app to be active (timeout 300s)..."
-	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app -n default --timeout 300s
+	kubectl wait --for=condition=Ready pods -l  app=prometheus-example-app --timeout 300s
 }
 
 function destroy-prometheus-example-app() {
@@ -97,13 +112,13 @@ function destroy-prometheus-example-app() {
 }
 
 function expose_prometheus() {
-  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace default port-forward $POD_NAME 9090 &
+  export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  kubectl port-forward "${POD_NAME}" 9090 &
   echo "Prometheus is exposed from ${POD_NAME} to port 9090"
 }
 
 function unexpose_prometheus() {
-  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
+  export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=prometheus,app.kubernetes.io/instance=prometheus" -o jsonpath="{.items[0].metadata.name}")
   export PID=$(ps aux | grep "port-forward ${POD_NAME}" | sed -n 2p | awk '{ print $2 }')
   [[ -z "${PID}" ]] && echo "No Prometheus port-forward PID is found" && return 0
 
@@ -139,13 +154,13 @@ function destroy_grafana_tempo() {
 }
 
 function expose_grafana() {
-  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace default port-forward $POD_NAME 3000 &
+  export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+  kubectl port-forward $POD_NAME 3000 &
   echo "Grafana is exposed from ${POD_NAME} to port 3000"
 }
 
 function unexpose_grafana() {
-  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
+  export POD_NAME=$(kubectl get pods -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" -o jsonpath="{.items[0].metadata.name}")
   export PID=$(ps aux | grep "port-forward ${POD_NAME}" | sed -n 2p | awk '{ print $2 }')
   [[ -z "${PID}" ]] && echo "No Grafana port-forward PID is found" && return 0
 
@@ -163,7 +178,7 @@ function deploy_tracing_example_app() {
   echo "-----------------------------------------------------------------------------------------------------"
   kubectl create -f "${TELEMETRY_DIR}/grafana/example-tracing-app.yaml"
   echo "Waiting for tracing example app to be active (timeout 300s)..."
-	kubectl wait --for=condition=Ready pods -l  app=xk6-tracing -n default --timeout 300s
+	kubectl wait --for=condition=Ready pods -l  app=xk6-tracing --timeout 300s
 }
 
 function destroy_tracing_example_app() {
