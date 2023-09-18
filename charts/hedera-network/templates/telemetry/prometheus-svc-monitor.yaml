@@ -3,7 +3,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: network-node-monitor
-  namespace: {{ include "fullstack.namespace" $ }}
+  namespace: {{ default .Release.Namespace .Values.global.namespaceOverride }}
   labels:
     fullstack.hedera.com/type: network-node-svc-monitor
 spec:

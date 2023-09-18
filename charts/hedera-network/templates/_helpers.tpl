@@ -1,10 +1,3 @@
-{{/*
-Namespace
-*/}}
-{{- define "fullstack.namespace" -}}
-{{- default .Release.Namespace .Values.global.namespaceOverride -}}
-{{- end -}}
-
 {{- define "fullstack.hedera.security.context" -}}
 runAsUser: 2000
 runAsGroup: 2000
