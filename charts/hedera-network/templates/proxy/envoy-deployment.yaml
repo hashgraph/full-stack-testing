@@ -7,7 +7,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: envoy-proxy-{{ $node.name }}
-  namespace: {{ default .Release.Namespace .Values.global.namespaceOverride }}
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
   replicas: 1
   selector:
