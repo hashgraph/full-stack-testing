@@ -29,8 +29,6 @@ function setup_temp_dir() {
 	  echo "File list in ${TMP_DIR}"
 	  ls -la "${TMP_DIR}"
 	fi
-
-	cat "${TMP_DIR}/.env"
 }
 
 function load_env_file() {
@@ -46,6 +44,11 @@ function setup_kubectl_context() {
   load_env_file
   [[ -z "${CLUSTER_NAME}" ]] && echo "ERROR: Cluster name is required" && return 1
   [[ -z "${NAMESPACE}" ]] && echo "ERROR: Namespace name is required" && return 1
+
+  kubectl get ns "${NAMESPACE}" &>/dev/null
+  if [[ $? -ne 0 ]]; then
+    kubectl create ns "${NAMESPACE}"
+  fi
 
   echo "List of namespaces:"
 	kubectl get ns
