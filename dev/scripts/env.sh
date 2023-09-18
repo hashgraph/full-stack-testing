@@ -29,6 +29,8 @@ function setup_temp_dir() {
 	  echo "File list in ${TMP_DIR}"
 	  ls -la "${TMP_DIR}"
 	fi
+
+	cat "${TMP_DIR}/.env"
 }
 
 function load_env_file() {
