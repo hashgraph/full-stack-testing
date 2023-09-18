@@ -17,6 +17,13 @@ metadata:
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     app: network-{{ $node.name }}
+  {{- if $.Values.deployment.podLabels }}
+    {{- $.Values.deployment.podLabels | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if $.Values.deployment.podAnnotations }}
+  annotations:
+    {{- $.Values.deployment.podAnnotations | toYaml | nindent 4 }}
+  {{- end }}
 spec:
   replicas: 1
   serviceName: "network-{{ $node.name }}"
@@ -30,6 +37,18 @@ spec:
         fullstack.hedera.com/type: network-node
         fullstack.hedera.com/node-name: {{ $node.name }}
     spec:
+      {{- if $.Values.deployment.nodeSelectors }}
+      nodeSelector:
+      {{- $.Values.deployment.nodeSelectors | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if $.Values.deployment.tolerations }}
+      tolerations:
+      {{- $.Values.deployment.tolerations | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if $.Values.deployment.affinity }}
+      affinity:
+      {{- $.Values.deployment.affinity | toYaml | nindent 8 }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
         - name: hgcapp-storage # change me
