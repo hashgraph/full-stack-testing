@@ -1,5 +1,8 @@
 # WARNING: Use double quotes for all values. This is because we need to be careful about booleans.
 
+global:
+  namespaceOverride: ""
+
 # cloud configuration
 cloud:
   minio:
@@ -62,7 +65,6 @@ gatewayApi:
   route:
     hostname: "{{ .node.name }}.fst.local"
 
-namespace: default
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
@@ -197,7 +199,7 @@ defaults:
             insecure: true
         prometheusRemoteWrite:
           enable: "false"
-          endpoint: "http://prometheus.default.svc:9090/api/v1/write"
+          endpoint: "" # e.g. http://prometheus.<NAMESPACE>.svc:9090/api/v1/write
           tls:
             insecure: true
 
@@ -223,6 +225,8 @@ minio-server:
       requestAutoCert: false
 
 hedera-mirror-node:
+  global:
+    namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
   # importer is a component of the hedera mirror node
   # config for subchart hedera-mirror/importer
   importer:
@@ -249,6 +253,8 @@ hedera-mirror-node:
               # for s3 configuration of mirror node look at uploader-mirror-secrets.yaml
 
 hedera-explorer:
+  global:
+    namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
   # The hedera explorer UI /api url will proxy  all request to mirror node
   #
   # Without this we would need to expose the mirror node rest API publicly and specify its public url in the network config below

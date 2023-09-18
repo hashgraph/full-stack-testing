@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: otel-collector-cm
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 data:
   config.yaml: |
   {{- tpl (.Files.Get "config-files/otel-collector-config.yaml") ( dict "otelDefaults" $.Values.defaults.sidecars.otelCollector "Template" $.Template )  | nindent 4 }}

@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v0.7.1}"
+CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "${CUR_DIR}/env.sh"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
-readonly SCRIPT_DIR
+GATEWAY_API_VERSION="${GATEWAY_API_VERSION:-v0.7.1}"
 
 function deploy_haproxy_ingress() {
   deploy_gateway_api_crd

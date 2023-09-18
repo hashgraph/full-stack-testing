@@ -5,6 +5,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: haproxy-cm-{{ $node.name }}
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 data:
   haproxy.cfg: |
     {{- tpl ($.Files.Get "config-files/haproxy.cfg") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}

@@ -14,6 +14,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: network-{{ $node.name }}
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     app: network-{{ $node.name }}
 spec:
