@@ -67,33 +67,6 @@ function deploy_gateway_api_crd() {
 	fi
 }
 
-function deploy_fst_gateway_class() {
-  echo ""
-	echo "Installing FST Gateway Class: ${GATEWAY_CLASS_NAME}"
-  echo "-----------------------------------------------------------------------------------------------------"
-  local fst_gateway_class_type=$(kubectl get gc "${GATEWAY_CLASS_NAME}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
-  if [[ ! "${fst_gateway_class_type}" = "gateway-class" ]]; then
-    kubectl create -f "${COMMON_RESOURCES}/fst-gateway.yaml"
-    kubectl wait --for=condition=Accepted gc "${GATEWAY_CLASS_NAME}" --timeout=300s
-  else
-    echo "FST Gateway Class '${GATEWAY_CLASS_NAME}' is already installed"
-    echo ""
-  fi
-}
-
-function destroy_fst_gateway_class() {
-  echo ""
-	echo "Uninstalling FST Gateway Class: ${GATEWAY_CLASS_NAME}"
-  echo "-----------------------------------------------------------------------------------------------------"
-  local fst_gateway_class_type=$(kubectl get gc "${GATEWAY_CLASS_NAME}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
-  if [[ ! "${fst_gateway_class_type}" = "gateway-class" ]]; then
-    kubectl delete -f "${COMMON_RESOURCES}/fst-gateway.yaml"
-    sleep 2s
-  fi
-  echo "FST Gateway Class '${GATEWAY_CLASS_NAME}' is uninstalled"
-  echo ""
-}
-
 function deploy_envoy_gateway_api() {
   echo ""
 	echo "Installing Envoy Gateway API"
@@ -106,8 +79,6 @@ function deploy_envoy_gateway_api() {
     echo "Envoy Gateway API is already installed"
     echo ""
   fi
-
-  deploy_fst_gateway_class
 
   get_gateway_status
 }
@@ -134,8 +105,6 @@ function destroy_envoy_gateway_api() {
 	echo "Uninstalling Envoy Gateway API"
   echo "-----------------------------------------------------------------------------------------------------"
   get_gateway_status
-
-  destroy_fst_gateway_class
 
   # Uninstall helm chart
   local helm_chart=$(helm list --all-namespaces | grep envoy-gateway)

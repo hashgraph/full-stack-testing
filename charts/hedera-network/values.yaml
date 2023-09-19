@@ -26,6 +26,7 @@ terminationGracePeriodSeconds: 10
 
 # helm test container
 tester:
+  clusterRoleName: "pod-monitor-role" # this is a shared cluster role for all namespaces
   image:
     registry: "ghcr.io"
     repository: "hashgraph/full-stack-testing/kubectl-bats"
@@ -36,7 +37,7 @@ tester:
 # gateway-api configuration
 gatewayApi:
   gatewayClass:
-    name: "fst-gateway-class"
+    name: "fst-gateway-class" # this is a shared gateway class for all namespaces
   gateway:
     name: "fst"
     enable: "true"

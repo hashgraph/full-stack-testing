@@ -28,6 +28,86 @@ function destroy_cluster() {
 	kubectl delete ns "${NAMESPACE}" || true
 }
 
+function deploy_shared() {
+  deploy_pod_monitor_role
+  deploy_fst_gateway_class
+}
+
+function destroy_shared() {
+  destroy_pod_monitor_role
+  destroy_fst_gateway_class
+}
+
+function deploy_pod_monitor_role() {
+  setup_kubectl_context
+
+	echo "Installing pod monitor role: ${POD_MONITOR_ROLE}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local pod_monitor_role=$(kubectl get ClusterRole "${POD_MONITOR_ROLE}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
+  if [[ -z "${pod_monitor_role}" ]]; then
+    kubectl create -f "${COMMON_RESOURCES}/pod-monitor-role.yaml"
+  else
+    echo "Pod monitor role '${POD_MONITOR_ROLE}' is already installed"
+    echo ""
+  fi
+
+  echo "-----------------------Pod Monitor Role------------------------------------------------------------------------------"
+  kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
+  echo ""
+}
+
+function destroy_pod_monitor_role() {
+  setup_kubectl_context
+
+	echo "Uninstalling pod monitor role: ${POD_MONITOR_ROLE}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local pod_monitor_role=$(kubectl get ClusterRole "${POD_MONITOR_ROLE}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
+  if [[ -n "${pod_monitor_role}" ]]; then
+    kubectl delete -f "${COMMON_RESOURCES}/pod-monitor-role.yaml"
+  fi
+
+  echo "-----------------------Pod Monitor Role------------------------------------------------------------------------------"
+  kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
+
+  echo "Pod monitor role '${POD_MONITOR_ROLE}' is uninstalled"
+  echo ""
+}
+
+function deploy_fst_gateway_class() {
+  echo ""
+	echo "Installing FST Gateway Class: ${GATEWAY_CLASS_NAME}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local fst_gateway_class_type=$(kubectl get gc "${GATEWAY_CLASS_NAME}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
+  if [[ ! "${fst_gateway_class_type}" = "gateway-class" ]]; then
+    kubectl create -f "${COMMON_RESOURCES}/fst-gateway.yaml"
+    kubectl wait --for=condition=Accepted gc "${GATEWAY_CLASS_NAME}" --timeout=300s
+  else
+    echo "FST Gateway Class '${GATEWAY_CLASS_NAME}' is already installed"
+    echo ""
+  fi
+
+  echo "-----------------------Gateway Class------------------------------------------------------------------------------"
+  kubectl get gatewayclass
+  echo ""
+}
+
+function destroy_fst_gateway_class() {
+  echo ""
+	echo "Uninstalling FST Gateway Class: ${GATEWAY_CLASS_NAME}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local fst_gateway_class_type=$(kubectl get gc "${GATEWAY_CLASS_NAME}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
+  if [[ ! "${fst_gateway_class_type}" = "gateway-class" ]]; then
+    kubectl delete -f "${COMMON_RESOURCES}/fst-gateway.yaml"
+    sleep 2s
+  fi
+
+  echo "-----------------------Gateway Class------------------------------------------------------------------------------"
+  kubectl get gatewayclass
+
+  echo "FST Gateway Class '${GATEWAY_CLASS_NAME}' is uninstalled"
+  echo ""
+}
+
 function install_chart() {
   local node_setup_script=$1
   [[ -z "${node_setup_script}" ]] && echo "ERROR: [install_chart] Node setup script name is required" && return 1

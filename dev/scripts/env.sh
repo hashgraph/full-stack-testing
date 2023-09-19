@@ -6,10 +6,11 @@ readonly SCRIPT_DIR
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly CHART_DIR="${SCRIPT_DIR}/../../charts/hedera-network"
 
+POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
+GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
 # telemetry related env variables
 readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"
-readonly GATEWAY_CLASS_NAME="fst-gateway-class"
 readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
 readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"
