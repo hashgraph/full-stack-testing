@@ -36,10 +36,7 @@ tester:
 # gateway-api configuration
 gatewayApi:
   gatewayClass:
-    name: "fst"
-    enable: "true"
-    controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
-#    controllerName: "haproxy-ingress.github.io/controller"
+    name: "fst-gateway-class"
   gateway:
     name: "fst"
     enable: "true"

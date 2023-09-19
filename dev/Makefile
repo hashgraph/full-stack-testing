@@ -59,20 +59,21 @@ uninstall-chart:
 update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
+.PHONY: deploy-common
+deploy-common: update-helm-dependencies deploy-gateway-api deploy-prometheus-operator deploy-minio-operator-if-required
+
+.PHONY: destroy-common
+destroy-common: destroy-gateway-api destroy-prometheus-operator undeploy-minio-operator
+
 .PHONY: deploy-chart
 deploy-chart:
-	$(MAKE) update-helm-dependencies
-	$(MAKE) deploy-minio-operator-if-required
-	$(MAKE)	deploy-prometheus-operator
-	$(MAKE) deploy-gateway-api
+	$(MAKE) deploy-common
 	$(MAKE) install-chart
 
 .PHONY: destroy-chart
 destroy-chart:
 	-$(MAKE) uninstall-chart
-	-$(MAKE) destroy-gateway-api
-	-$(MAKE) destroy-prometheus-operator
-	-$(MAKE) undeploy-minio-operator
+	-$(MAKE) destroy-common
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
