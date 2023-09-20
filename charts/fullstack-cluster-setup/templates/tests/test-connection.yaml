@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "fullstack-cluster-setup.fullname" . }}-test-connection"
+  labels:
+    {{- include "fullstack-cluster-setup.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: echo
+      image: busybox
+      command: ['echo']
+      args: [ "FIXME: update test"]
+  restartPolicy: Never

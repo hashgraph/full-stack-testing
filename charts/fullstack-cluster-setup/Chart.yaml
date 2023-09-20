@@ -1,6 +1,6 @@
 apiVersion: v2
-name: hedera-network
-description: A Helm chart for the Hedera network
+name: fullstack-cluster-setup
+description: A Helm chart to setup shared resources for fullstack-testing
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -22,28 +22,3 @@ version: 0.8.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "0.8.0"
-
-# This is range of versions of Kubernetes server that is supported by this chart.
-kubeVersion: ">=1.25.0"
-
-dependencies:
-  - name: fullstack-cluster-setup
-    version: 0.8.0 # same as this chart's version
-    repository: file://../fullstack-cluster-setup
-
-  - name: hedera-explorer
-    version: 0.2.0
-    condition: cloud.minio.enable
-
-  - name: hedera-mirror
-    alias: hedera-mirror-node
-    version: 0.86.0
-    repository: https://hashgraph.github.io/hedera-mirror-node/charts
-    condition: cloud.minio.enable
-
-  - name: tenant
-    alias: minio-server
-    version: 5.0.7
-    repository: https://operator.min.io/
-    condition: cloud.minio.enable
-

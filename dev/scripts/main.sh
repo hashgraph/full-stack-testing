@@ -29,11 +29,13 @@ function destroy_cluster() {
 }
 
 function deploy_shared() {
+  return # skip
   deploy_pod_monitor_role
   deploy_fst_gateway_class
 }
 
 function destroy_shared() {
+  return # skip
   destroy_pod_monitor_role
   destroy_fst_gateway_class
 }
