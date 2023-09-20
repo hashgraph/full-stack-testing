@@ -17,12 +17,12 @@
 package com.hedera.fullstack.examples.readiness;
 
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
-import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Deployment;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.NetworkDeployment;
 
 public class NodeActiveReadinessCheck implements ReadinessCheck {
 
     @Override
-    public boolean ready(final Deployment deployment) {
+    public boolean ready(final NetworkDeployment deployment) {
         return true;
     }
 }

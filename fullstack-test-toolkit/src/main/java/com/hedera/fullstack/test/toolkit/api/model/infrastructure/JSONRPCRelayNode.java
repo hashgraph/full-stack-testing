@@ -16,4 +16,6 @@
 
 package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
-public non-sealed interface MirrorNode extends Node<MirrorNode> {}
+import com.hedera.fullstack.test.toolkit.api.model.traits.Indexed;
+
+public non-sealed interface JSONRPCRelayNode extends Indexed, Node<JSONRPCRelayNode> {}

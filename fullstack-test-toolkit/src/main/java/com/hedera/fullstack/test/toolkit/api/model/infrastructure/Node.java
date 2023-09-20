@@ -19,4 +19,4 @@ package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 import com.hedera.fullstack.test.toolkit.api.model.traits.Named;
 import com.hedera.fullstack.test.toolkit.api.model.traits.Tagged;
 
-public sealed interface Node<T> extends Named, Tagged, Comparable<T> permits ApplicationNode, MirrorNode, RelayNode {}
+public sealed interface Node<T> extends Named, Tagged, Comparable<T> permits EnvoyProxyDeployment, HAProxyDeployment, JSONRPCRelayNode, MinioDeployment, MirrorNodeDeployment, MirrorNodeExplorerDeployment, NodeSoftwarePodNode {}

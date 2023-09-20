@@ -18,4 +18,4 @@ package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
 import com.hedera.fullstack.test.toolkit.api.model.traits.Indexed;
 
-public non-sealed interface ApplicationNode extends Indexed, Node<ApplicationNode> {}
+public non-sealed interface NodeSoftwarePodNode extends Indexed, Node<NodeSoftwarePodNode> {}

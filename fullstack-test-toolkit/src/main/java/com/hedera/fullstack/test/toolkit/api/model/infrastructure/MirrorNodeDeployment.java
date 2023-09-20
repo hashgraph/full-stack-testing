@@ -16,6 +16,4 @@
 
 package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
-import com.hedera.fullstack.test.toolkit.api.model.traits.Indexed;
-
-public non-sealed interface RelayNode extends Indexed, Node<RelayNode> {}
+public non-sealed interface MirrorNodeDeployment extends Node<MirrorNodeDeployment> {}

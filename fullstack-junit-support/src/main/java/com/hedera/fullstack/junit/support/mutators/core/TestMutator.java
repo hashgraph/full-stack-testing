@@ -18,20 +18,20 @@ package com.hedera.fullstack.junit.support.mutators.core;
 
 import com.hedera.fullstack.monitoring.api.Monitor;
 import com.hedera.fullstack.readiness.api.ReadinessCheck;
-import com.hedera.fullstack.test.toolkit.api.model.infrastructure.ApplicationNode;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.NodeSoftwarePodNode;
 import com.hedera.fullstack.validator.api.Validator;
 
 public interface TestMutator {
 
     CheckMutator<Validator, TestMutator> validators();
 
-    CheckMutator<Validator, TestMutator> validators(ApplicationNode node);
+    CheckMutator<Validator, TestMutator> validators(NodeSoftwarePodNode node);
 
     CheckMutator<Monitor, TestMutator> monitors();
 
-    CheckMutator<Monitor, TestMutator> monitors(ApplicationNode node);
+    CheckMutator<Monitor, TestMutator> monitors(NodeSoftwarePodNode node);
 
     CheckMutator<ReadinessCheck, TestMutator> readinessChecks();
 
-    CheckMutator<ReadinessCheck, TestMutator> readinessChecks(ApplicationNode node);
+    CheckMutator<ReadinessCheck, TestMutator> readinessChecks(NodeSoftwarePodNode node);
 }

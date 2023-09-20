@@ -16,7 +16,7 @@
 
 package com.hedera.fullstack.monitoring.api;
 
-import com.hedera.fullstack.test.toolkit.api.model.infrastructure.ApplicationNode;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.NodeSoftwarePodNode;
 import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Node;
 import java.time.Duration;
 
@@ -32,6 +32,6 @@ public interface Monitor {
     }
 
     default boolean appliesTo(Class<? extends Node<?>> nodeClass) {
-        return ApplicationNode.class.isAssignableFrom(nodeClass);
+        return NodeSoftwarePodNode.class.isAssignableFrom(nodeClass);
     }
 }

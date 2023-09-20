@@ -37,7 +37,7 @@ import com.hedera.fullstack.junit.support.annotations.validation.Monitors;
 import com.hedera.fullstack.junit.support.annotations.validation.ReadinessChecks;
 import com.hedera.fullstack.junit.support.annotations.validation.Validators;
 import com.hedera.fullstack.junit.support.mutators.core.TestMutator;
-import com.hedera.fullstack.test.toolkit.api.model.infrastructure.Deployment;
+import com.hedera.fullstack.test.toolkit.api.model.infrastructure.NetworkDeployment;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
 
@@ -69,7 +69,7 @@ class InvalidStateSignatureTest {
         @ConfigurationValue(name = "issTestingTool.plannedISSs", value = "180:0-1-2-3"),
     })
     @DisplayName("ISS-catastrophic-1k-5m")
-    void catastrophic_1k_5m(Deployment deployment, TestMutator tm) {
+    void catastrophic_1k_5m(NetworkDeployment deployment, TestMutator tm) {
         final PlatformStatusValidator psv = PlatformStatusValidator.builder()
                 .nodeId("default")
                 .steps("REPLAYING_EVENTS", "OBSERVING", "CHECKING", "ACTIVE", "CHECKING")

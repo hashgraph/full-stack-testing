@@ -18,10 +18,13 @@ package com.hedera.fullstack.test.toolkit.api.model.infrastructure;
 
 import com.hedera.fullstack.test.toolkit.api.model.traits.Named;
 
-public interface Deployment extends Named {
-    NodeSet<ApplicationNode> nodes();
+public interface NetworkDeployment extends Named {
+    NodeSet<NodeSoftwarePodNode> nodeSoftwarePodNodes();
 
-    NodeSet<RelayNode> relayNodes();
+    NodeSet<JSONRPCRelayNode> jsonRPCRelayNodes();
 
-    MirrorNode mirrorNode();
+    MirrorNodeDeployment mirrorNodeDeployment();
+
+    MinioDeployment minioDeployment();
+
 }
