@@ -1,7 +1,4 @@
 dependencies:
-- name: fullstack-cluster-setup
-  repository: file://../fullstack-cluster-setup
-  version: 0.8.0
 - name: hedera-explorer
   repository: ""
   version: 0.2.0
@@ -11,5 +8,5 @@ dependencies:
 - name: tenant
   repository: https://operator.min.io/
   version: 5.0.7
-digest: sha256:9a0efa0e5072182ee9f074f550352dfe783b34eccedcdc93206c133df0b4f743
-generated: "2023-09-20T13:08:05.601534+10:00"
+digest: sha256:cf355b295abceb5814ef57d3e146ec9d4e8db7365a700079d683bd5f766ad374
+generated: "2023-09-20T13:51:41.203996+10:00"

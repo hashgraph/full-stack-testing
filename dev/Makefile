@@ -61,14 +61,14 @@ update-helm-dependencies:
 
 .PHONY: deploy-shared
 deploy-shared: update-helm-dependencies deploy-gateway-api deploy-prometheus-operator deploy-minio-operator-if-required
-	source "${SCRIPTS_DIR}/main.sh" && deploy_shared
+	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 
 .PHONY: destroy-shared
 destroy-shared:
 	-$(MAKE) source "${SCRIPTS_DIR}/main.sh" && destroy_shared
 	-$(MAKE) undeploy-minio-operator
 	-$(MAKE) destroy-prometheus-operator
-	-$(MAKE) destroy-gateway-api
+	-$(MAKE) destroy-gateway-api # should be destroyed at the end when no more gateway-api CRDs are required
 
 .PHONY: deploy-chart
 deploy-chart:
@@ -100,7 +100,7 @@ deploy-network: deploy-chart
 	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
 
 .PHONY: destroy-network
-destroy-network: destroy-test-container destroy-chart
+destroy-network: destroy-test-container uninstall-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup

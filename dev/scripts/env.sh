@@ -4,6 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 readonly SCRIPT_DIR
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
+readonly SETUP_CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-cluster-setup"
 readonly CHART_DIR="${SCRIPT_DIR}/../../charts/hedera-network"
 
 POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
@@ -69,8 +70,9 @@ function setup() {
 
 setup
 
-echo ""
+echo "--------------------------Env Setup: fullstack-testing ------------------------------------------------"
 echo "CLUSTER_NAME: ${CLUSTER_NAME}"
+echo "RELEASE_NAME: ${HELM_RELEASE_NAME}"
 echo "USER: ${USER}"
 echo "NAMESPACE: ${NAMESPACE}"
 echo "SCRIPT_DIR: ${SCRIPT_DIR}"

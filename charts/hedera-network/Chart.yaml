@@ -27,10 +27,6 @@ appVersion: "0.8.0"
 kubeVersion: ">=1.25.0"
 
 dependencies:
-  - name: fullstack-cluster-setup
-    version: 0.8.0 # same as this chart's version
-    repository: file://../fullstack-cluster-setup
-
   - name: hedera-explorer
     version: 0.2.0
     condition: cloud.minio.enable

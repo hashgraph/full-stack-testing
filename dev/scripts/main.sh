@@ -29,84 +29,48 @@ function destroy_cluster() {
 }
 
 function deploy_shared() {
-  return # skip
-  deploy_pod_monitor_role
-  deploy_fst_gateway_class
+  deploy_fullstack_cluster_setup_chart
 }
 
 function destroy_shared() {
-  return # skip
-  destroy_pod_monitor_role
-  destroy_fst_gateway_class
+  destroy_fullstack_cluster_setup_chart
 }
 
-function deploy_pod_monitor_role() {
+function deploy_fullstack_cluster_setup_chart() {
   setup_kubectl_context
 
-	echo "Installing pod monitor role: ${POD_MONITOR_ROLE}"
+	echo "Installing fullstack-cluster-setup chart"
   echo "-----------------------------------------------------------------------------------------------------"
-  local pod_monitor_role=$(kubectl get ClusterRole "${POD_MONITOR_ROLE}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
-  if [[ -z "${pod_monitor_role}" ]]; then
-    kubectl create -f "${COMMON_RESOURCES}/pod-monitor-role.yaml"
+  local count=$(helm list --all-namespaces -q | grep -c "fullstack-cluster-setup")
+  if [[ $count -eq 0 ]]; then
+    helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}"
   else
-    echo "Pod monitor role '${POD_MONITOR_ROLE}' is already installed"
+    echo "fullstack-cluster-setup chart is already installed"
     echo ""
   fi
 
-  echo "-----------------------Pod Monitor Role------------------------------------------------------------------------------"
+  echo "-----------------------Shared Resources------------------------------------------------------------------------------"
   kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
-  echo ""
-}
-
-function destroy_pod_monitor_role() {
-  setup_kubectl_context
-
-	echo "Uninstalling pod monitor role: ${POD_MONITOR_ROLE}"
-  echo "-----------------------------------------------------------------------------------------------------"
-  local pod_monitor_role=$(kubectl get ClusterRole "${POD_MONITOR_ROLE}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
-  if [[ -n "${pod_monitor_role}" ]]; then
-    kubectl delete -f "${COMMON_RESOURCES}/pod-monitor-role.yaml"
-  fi
-
-  echo "-----------------------Pod Monitor Role------------------------------------------------------------------------------"
-  kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
-
-  echo "Pod monitor role '${POD_MONITOR_ROLE}' is uninstalled"
-  echo ""
-}
-
-function deploy_fst_gateway_class() {
-  echo ""
-	echo "Installing FST Gateway Class: ${GATEWAY_CLASS_NAME}"
-  echo "-----------------------------------------------------------------------------------------------------"
-  local fst_gateway_class_type=$(kubectl get gc "${GATEWAY_CLASS_NAME}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
-  if [[ ! "${fst_gateway_class_type}" = "gateway-class" ]]; then
-    kubectl create -f "${COMMON_RESOURCES}/fst-gateway.yaml"
-    kubectl wait --for=condition=Accepted gc "${GATEWAY_CLASS_NAME}" --timeout=300s
-  else
-    echo "FST Gateway Class '${GATEWAY_CLASS_NAME}' is already installed"
-    echo ""
-  fi
-
-  echo "-----------------------Gateway Class------------------------------------------------------------------------------"
   kubectl get gatewayclass
   echo ""
 }
 
-function destroy_fst_gateway_class() {
-  echo ""
-	echo "Uninstalling FST Gateway Class: ${GATEWAY_CLASS_NAME}"
+function destroy_fullstack_cluster_setup_chart() {
+  setup_kubectl_context
+
+	echo "Uninstalling fullstack-cluster-setup chart"
   echo "-----------------------------------------------------------------------------------------------------"
-  local fst_gateway_class_type=$(kubectl get gc "${GATEWAY_CLASS_NAME}" -o jsonpath='{.metadata.labels.fullstack\.hedera\.com\/type}')
-  if [[ ! "${fst_gateway_class_type}" = "gateway-class" ]]; then
-    kubectl delete -f "${COMMON_RESOURCES}/fst-gateway.yaml"
-    sleep 2s
+  local count=$(helm list --all-namespaces -q | grep -c "fullstack-cluster-setup")
+  if [[ $count -ne 0 ]]; then
+    helm uninstall -n "${NAMESPACE}" "fullstack-cluster-setup"
+  else
+    echo "fullstack-cluster-setup chart is already installed"
+    echo ""
   fi
 
-  echo "-----------------------Gateway Class------------------------------------------------------------------------------"
+  echo "-----------------------Shared Resources------------------------------------------------------------------------------"
+  kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
   kubectl get gatewayclass
-
-  echo "FST Gateway Class '${GATEWAY_CLASS_NAME}' is uninstalled"
   echo ""
 }
 
@@ -121,10 +85,15 @@ function install_chart() {
   echo "SCRIPT_NAME: ${node_setup_script}"
   echo "Values: -f ${CHART_DIR}/values.yaml --values ${CHART_VALUES_FILES}"
   echo "-----------------------------------------------------------------------------------------------------"
-  if [ "${node_setup_script}" = "nmt-install.sh" ]; then
-    nmt_install
+  local count=$(helm list -q | grep -c "${HELM_RELEASE_NAME}")
+  if [[ $count -eq 0 ]]; then
+    if [ "${node_setup_script}" = "nmt-install.sh" ]; then
+      nmt_install
+    else
+      direct_install
+    fi
   else
-    direct_install
+    echo "${HELM_RELEASE_NAME} is already installed"
   fi
 }
 
@@ -134,8 +103,11 @@ function uninstall_chart() {
   echo ""
   echo "Uninstalling helm chart... "
   echo "-----------------------------------------------------------------------------------------------------"
- 	helm uninstall "${HELM_RELEASE_NAME}"
- 	sleep 10
+  local count=$(helm list -q | grep -c "${HELM_RELEASE_NAME}")
+  if [[ $count -ne 0 ]]; then
+ 	  helm uninstall "${HELM_RELEASE_NAME}"
+ 	  sleep 10
+ 	fi
 }
 
 function nmt_install() {

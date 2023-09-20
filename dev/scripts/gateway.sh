@@ -114,9 +114,6 @@ function destroy_envoy_gateway_api() {
     kubectl delete ns gateway-system
   fi
 
-  uninstall_crd "gateway.networking.k8s.io"
-  uninstall_crd "gateway.envoyproxy.io"
-
 	echo "Envoy Gateway API is uninstalled"
 	echo ""
 }
