@@ -68,3 +68,12 @@ function setup() {
 }
 
 setup
+
+echo ""
+echo "CLUSTER_NAME: ${CLUSTER_NAME}"
+echo "USER: ${USER}"
+echo "NAMESPACE: ${NAMESPACE}"
+echo "SCRIPT_DIR: ${SCRIPT_DIR}"
+echo "TMP_DIR: ${TMP_DIR}"
+echo "-----------------------------------------------------------------------------------------------------"
+echo ""
