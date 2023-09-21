@@ -140,7 +140,7 @@ function expose_envoy_gateway_svc() {
 
   unexpose_envoy_gateway_svc || true
 
-  ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=fst -o jsonpath="{.items[0].metadata.name}" )
+  ENVOY_SERVICE=$(kubectl get svc -n envoy-gateway-system --selector=gateway.envoyproxy.io/owning-gateway-namespace="${NAMESPACE}",gateway.envoyproxy.io/owning-gateway-name=fst -o jsonpath="{.items[0].metadata.name}" )
   echo ""
 	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on ${local_port}:${gateway_port}"
   echo "-----------------------------------------------------------------------------------------------------"
