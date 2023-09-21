@@ -28,8 +28,14 @@ spec:
       env:
         - name: TESTS_DIR
           value: "/tests" # should be same as mountPath
+        - name: LOG_DIR
+          value: "/tmp/fullstack-testing-logs"
         - name: OUTPUT_LOG # outputs the logs from the tests
           value: "true"
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
       command:
         - "/bin/bash"
         - "-c"

@@ -144,7 +144,7 @@ function run_helm_chart_tests() {
   [[ -z "${test_name}" ]] && echo "ERROR: test name is required" && return 1
 
   echo ""
-  echo "Running helm chart tests (first run takes ~2m)... "
+  echo "Running helm chart tests (takes ~5m)... "
   echo "-----------------------------------------------------------------------------------------------------"
 
 	helm test "${HELM_RELEASE_NAME}" --filter name="${test_name}"

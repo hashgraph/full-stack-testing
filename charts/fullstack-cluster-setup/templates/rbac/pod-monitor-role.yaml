@@ -8,6 +8,8 @@ rules:
   - apiGroups: [ "" ]
     resources:
       - pods
+      - services
+      - clusterroles
       - pods/log
       - secrets
     verbs:

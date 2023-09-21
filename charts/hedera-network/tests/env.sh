@@ -6,24 +6,23 @@
 # load .env file if it exists in order to load variables with custom values
 ENV_FILE="$(dirname "${BASH_SOURCE[0]}")/.env"
 if [[ -f "${ENV_FILE}" ]]; then
-  export $(cat "${ENV_FILE}" | xargs)
+  set -a
+  # shellcheck source=./../temp/.env
+  source "${ENV_FILE}"
+  set +a
 fi
-
 
 # set global env variables if not set
 BATS_HOME="${BATS_HOME:-../../../dev/bats}"
 TESTS_DIR="${TESTS_DIR:-.}"
-
-OUTPUT_LOG="${OUTPUT_LOG}"
-LOG_DIR="${LOG_DIR:-/tmp/bats-test-logs}"
-LOG_FILE="test.log"
 [ ! -d "${LOG_DIR}" ] && mkdir "${LOG_DIR}"
 
-echo ""
-echo "Env variables"
-echo "=============================================="
+echo "--------------------------Env Setup: fullstack-testing Helm Test------------------------------------------------"
+echo "NAMESPACE: ${NAMESPACE}"
 echo "ENV_FILE: ${ENV_FILE}"
 echo "BATS_HOME: ${BATS_HOME}"
 echo "TESTS_DIR: ${TESTS_DIR}"
+echo "LOG: ${LOG_DIR}/${LOG_FILE}"
 echo "OUTPUT_LOG: ${OUTPUT_LOG}"
-
+echo "-----------------------------------------------------------------------------------------------------"
+echo ""
