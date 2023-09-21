@@ -144,10 +144,10 @@ function run_helm_chart_tests() {
   [[ -z "${test_name}" ]] && echo "ERROR: test name is required" && return 1
 
   echo ""
-  echo "Running helm chart tests (takes ~5m)... "
+  echo "Running helm chart tests (takes ~5m, timeout 15m)... "
   echo "-----------------------------------------------------------------------------------------------------"
 
-	helm test "${HELM_RELEASE_NAME}" --filter name="${test_name}"
+	helm test "${HELM_RELEASE_NAME}" --filter name="${test_name}" --timeout 15m
 
   local test_status=$(kubectl get pod "${test_name}" -o jsonpath='{.status.phase}' | xargs)
   echo "Helm test status: ${test_status}"
