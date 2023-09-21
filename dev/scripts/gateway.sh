@@ -148,7 +148,7 @@ function expose_envoy_gateway_svc() {
 }
 
 function unexpose_envoy_gateway_svc() {
-  export GATEWAY_SVC_PID=$(ps aux | grep "kubectl port-forward svc/${ENVOY_SERVICE}" | sed -n 2p | awk '{ print $2 }')
+  export GATEWAY_SVC_PID=$(ps aux | grep "kubectl port-forward svc/${ENVOY_SERVICE}" | grep -v "grep" | sed -n 1p | awk '{ print $2 }')
   [[ -z "${GATEWAY_SVC_PID}" ]] && echo "No Envoy Gateway Service PID is found" && return 0
 
   if [[ "${GATEWAY_SVC_PID}" ]]; then
