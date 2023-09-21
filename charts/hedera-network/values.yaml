@@ -290,7 +290,17 @@ deployment:
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
   affinity: {}
   priorityClassName: {}
-  podDisruptionBudget: {}
+  ## PodDisruptionBudget for fullstack testing pods
+  ## Default backend Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param deployment.podDisruptionBudget.create Enable Pod Disruption Budget configuration
+  ## @param deployment.podDisruptionBudget.minAvailable Minimum number/percentage of pods that should remain scheduled
+  ## @param deployment.podDisruptionBudget.maxUnavailable Maximum number/percentage of pods that should remain scheduled
+  ##
+  podDisruptionBudget:
+    create: false
+    minAvailable: 1
+    maxUnavailable: ""
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section

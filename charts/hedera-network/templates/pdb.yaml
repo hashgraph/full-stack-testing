@@ -1,0 +1,22 @@
+{{- if .Values.deployment.podDisruptionBudget.create }}
+{{ range $index, $node := $.Values.hedera.nodes }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: network-{{ $node.name }}-pdb
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
+  labels:
+    fullstack.hedera.com/type: pod-disruption-budget
+    fullstack.hedera.com/node-name: {{ $node.name }}
+spec:
+  selector:
+    matchLabels:
+      app: network-{{ $node.name }}
+  {{- if .Values.deployment.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.deployment.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  {{- if .Values.deployment.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.deployment.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+{{- end }}
+{{ end }}
