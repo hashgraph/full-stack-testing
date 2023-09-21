@@ -30,6 +30,8 @@ spec:
           value: "/tests" # should be same as mountPath
         - name: LOG_DIR
           value: "/tmp/fullstack-testing-logs"
+        - name: LOG_FILE
+          value: "helm-test.log"
         - name: OUTPUT_LOG # outputs the logs from the tests
           value: "true"
         - name: NAMESPACE
