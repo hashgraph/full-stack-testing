@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
-if [[ ! -f "${CUR_DIR}/.env" ]]; then
-  cp "${CUR_DIR}/env.template" "${CUR_DIR}/.env"
-fi
-
 source "${CUR_DIR}/env.sh"
 source "${CUR_DIR}/logging.sh"
 
