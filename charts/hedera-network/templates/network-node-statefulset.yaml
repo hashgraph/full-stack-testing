@@ -49,6 +49,9 @@ spec:
       affinity:
       {{- $.Values.deployment.affinity | toYaml | nindent 8 }}
       {{- end }}
+      {{- if $.Values.deployment.priorityClassName }}
+      priorityClassName: {{ $.Values.deployment.priorityClassName }}
+      {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
         - name: hgcapp-storage # change me

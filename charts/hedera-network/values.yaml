@@ -289,6 +289,8 @@ deployment:
   # Use complete affinity spec starting with key "nodeAffinity:"
   # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
   affinity: {}
+  priorityClassName: {}
+  podDisruptionBudget: {}
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
