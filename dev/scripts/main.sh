@@ -28,6 +28,52 @@ function destroy_cluster() {
 	kubectl delete ns "${NAMESPACE}" || true
 }
 
+function deploy_shared() {
+  deploy_fullstack_cluster_setup_chart
+}
+
+function destroy_shared() {
+  destroy_fullstack_cluster_setup_chart
+}
+
+function deploy_fullstack_cluster_setup_chart() {
+  setup_kubectl_context
+
+	echo "Installing fullstack-cluster-setup chart"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local count=$(helm list --all-namespaces -q | grep -c "fullstack-cluster-setup")
+  if [[ $count -eq 0 ]]; then
+    helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}"
+  else
+    echo "fullstack-cluster-setup chart is already installed"
+    echo ""
+  fi
+
+  echo "-----------------------Shared Resources------------------------------------------------------------------------------"
+  kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
+  kubectl get gatewayclass
+  echo ""
+}
+
+function destroy_fullstack_cluster_setup_chart() {
+  setup_kubectl_context
+
+	echo "Uninstalling fullstack-cluster-setup chart"
+  echo "-----------------------------------------------------------------------------------------------------"
+  local count=$(helm list --all-namespaces -q | grep -c "fullstack-cluster-setup")
+  if [[ $count -ne 0 ]]; then
+    helm uninstall -n "${NAMESPACE}" "fullstack-cluster-setup"
+  else
+    echo "fullstack-cluster-setup chart is already installed"
+    echo ""
+  fi
+
+  echo "-----------------------Shared Resources------------------------------------------------------------------------------"
+  kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
+  kubectl get gatewayclass
+  echo ""
+}
+
 function install_chart() {
   local node_setup_script=$1
   [[ -z "${node_setup_script}" ]] && echo "ERROR: [install_chart] Node setup script name is required" && return 1
@@ -39,10 +85,15 @@ function install_chart() {
   echo "SCRIPT_NAME: ${node_setup_script}"
   echo "Values: -f ${CHART_DIR}/values.yaml --values ${CHART_VALUES_FILES}"
   echo "-----------------------------------------------------------------------------------------------------"
-  if [ "${node_setup_script}" = "nmt-install.sh" ]; then
-    nmt_install
+  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
+  if [[ $count -eq 0 ]]; then
+    if [ "${node_setup_script}" = "nmt-install.sh" ]; then
+      nmt_install
+    else
+      direct_install
+    fi
   else
-    direct_install
+    echo "${HELM_RELEASE_NAME} is already installed"
   fi
 }
 
@@ -50,10 +101,16 @@ function uninstall_chart() {
   [[ -z "${HELM_RELEASE_NAME}" ]] && echo "ERROR: [uninstall_chart] Helm release name is required" && return 1
 
   echo ""
-  echo "Uninstalling helm chart... "
-  echo "-----------------------------------------------------------------------------------------------------"
- 	helm uninstall "${HELM_RELEASE_NAME}"
- 	sleep 10
+  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
+  if [[ $count -ne 0 ]]; then
+    echo "Uninstalling helm chart ${HELM_RELEASE_NAME} in namespace ${NAMESPACE}... "
+    echo "-----------------------------------------------------------------------------------------------------"
+ 	  helm uninstall -n "${NAMESPACE}" "${HELM_RELEASE_NAME}"
+ 	  sleep 10
+    echo "Uninstalled helm chart ${HELM_RELEASE_NAME} in namespace ${NAMESPACE}"
+  else
+    echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
+ 	fi
 }
 
 function nmt_install() {
@@ -87,10 +144,10 @@ function run_helm_chart_tests() {
   [[ -z "${test_name}" ]] && echo "ERROR: test name is required" && return 1
 
   echo ""
-  echo "Running helm chart tests (first run takes ~2m)... "
+  echo "Running helm chart tests (takes ~5m, timeout 15m)... "
   echo "-----------------------------------------------------------------------------------------------------"
 
-	helm test "${HELM_RELEASE_NAME}" --filter name="${test_name}"
+	helm test "${HELM_RELEASE_NAME}" --filter name="${test_name}" --timeout 15m
 
   local test_status=$(kubectl get pod "${test_name}" -o jsonpath='{.status.phase}' | xargs)
   echo "Helm test status: ${test_status}"

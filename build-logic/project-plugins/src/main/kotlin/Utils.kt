@@ -39,6 +39,30 @@ class Utils {
             updateStringInFile(manifestFile, "appVersion:", "appVersion: \"${newVersion}\"")
         }
 
+        @JvmStatic
+        fun updateHelmChartVersion(project: Project, newVersion: SemVer) {
+            updateHelmCharts(project) {chart ->
+                updateHelmChartVersion(project, chart.name, newVersion)
+            }
+         }
+
+        @JvmStatic
+        fun updateHelmChartAppVersion(project: Project, newVersion: SemVer) {
+            updateHelmCharts(project) {chart ->
+                updateHelmChartAppVersion(project, chart.name, newVersion)
+            }
+        }
+
+        @JvmStatic
+        fun updateHelmCharts(project: Project, fn: (File) -> Unit) {
+            val chartDir = File(project.rootProject.projectDir, "charts")
+            chartDir.listFiles()?.forEach { chart ->
+                if (chart.isDirectory && File(chart, "Chart.yaml").exists()) {
+                    fn(chart)
+                }
+            }
+        }
+
         private fun updateStringInFile(file: File, startsWith: String, newString: String, ignoreLeadingSpace: Boolean = true) {
             var lines: List<String> = mutableListOf()
 

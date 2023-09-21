@@ -59,20 +59,26 @@ uninstall-chart:
 update-helm-dependencies:
 	helm dependency update ../charts/hedera-network
 
+.PHONY: deploy-shared
+deploy-shared: update-helm-dependencies deploy-gateway-api deploy-prometheus-operator deploy-minio-operator-if-required
+	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
+
+.PHONY: destroy-shared
+destroy-shared:
+	-$(MAKE) source "${SCRIPTS_DIR}/main.sh" && destroy_shared
+	-$(MAKE) undeploy-minio-operator
+	-$(MAKE) destroy-prometheus-operator
+	-$(MAKE) destroy-gateway-api # should be destroyed at the end when no more gateway-api CRDs are required
+
 .PHONY: deploy-chart
 deploy-chart:
-	$(MAKE) update-helm-dependencies
-	$(MAKE) deploy-minio-operator-if-required
-	$(MAKE)	deploy-prometheus-operator
-	$(MAKE) deploy-gateway-api
+	$(MAKE) deploy-shared
 	$(MAKE) install-chart
 
 .PHONY: destroy-chart
 destroy-chart:
 	-$(MAKE) uninstall-chart
-	-$(MAKE) destroy-gateway-api
-	-$(MAKE) destroy-prometheus-operator
-	-$(MAKE) undeploy-minio-operator
+	-$(MAKE) destroy-shared
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
@@ -94,7 +100,7 @@ deploy-network: deploy-chart
 	kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
 
 .PHONY: destroy-network
-destroy-network: destroy-test-container destroy-chart
+destroy-network: destroy-test-container uninstall-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup
@@ -220,7 +226,7 @@ helm-test:
 destroy-test-container:
 	echo "" && \
 	echo ">> Deleting test container..." && \
-	kubectl delete pod network-test || true
+	kubectl delete pod network-test -n "${NAMESPACE}" || true
 
 ######################################### CI #################################
 .PHONY: local-kubectl-bats

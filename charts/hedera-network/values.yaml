@@ -26,6 +26,7 @@ terminationGracePeriodSeconds: 10
 
 # helm test container
 tester:
+  clusterRoleName: "pod-monitor-role" # this is a shared cluster role for all namespaces
   image:
     registry: "ghcr.io"
     repository: "hashgraph/full-stack-testing/kubectl-bats"
@@ -36,10 +37,7 @@ tester:
 # gateway-api configuration
 gatewayApi:
   gatewayClass:
-    name: "fst"
-    enable: "true"
-    controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
-#    controllerName: "haproxy-ingress.github.io/controller"
+    name: "fst-gateway-class" # this is a shared gateway class for all namespaces
   gateway:
     name: "fst"
     enable: "true"
@@ -71,8 +69,8 @@ gatewayApi:
 defaults:
   resources:
     requests:
-      cpu: 1
-      memory: 2G
+      cpu: 100m
+      memory: 100Mi
     limits:
       cpu: 1
       memory: 2G

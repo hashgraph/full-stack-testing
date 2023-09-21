@@ -50,8 +50,6 @@ tasks.register("githubVersionSummary") {
     }
 }
 
-val HEDERA_NETWORK_CHART = "hedera-network"
-
 tasks.register("versionAsSpecified") {
     group = "versioning"
     doLast {
@@ -59,8 +57,8 @@ tasks.register("versionAsSpecified") {
             ?: throw IllegalArgumentException("No newVersion property provided! Please add the parameter -PnewVersion=<version> when running this task.")
 
         val newVer = SemVer.parse(verStr)
-        Utils.updateHelmChartVersion(project, HEDERA_NETWORK_CHART, newVer)
-        Utils.updateHelmChartAppVersion(project, HEDERA_NETWORK_CHART, newVer)
+        Utils.updateHelmChartVersion(project, newVer)
+        Utils.updateHelmChartAppVersion(project, newVer)
         Utils.updateVersion(project, newVer)
     }
 }
@@ -71,8 +69,8 @@ tasks.register("versionAsSnapshot") {
         val currVer = SemVer.parse(project.version.toString())
         val newVer = SemVer(currVer.major, currVer.minor, currVer.patch, "SNAPSHOT")
 
-        Utils.updateHelmChartVersion(project, HEDERA_NETWORK_CHART, newVer)
-        Utils.updateHelmChartAppVersion(project, HEDERA_NETWORK_CHART, newVer)
+        Utils.updateHelmChartVersion(project, newVer)
+        Utils.updateHelmChartAppVersion(project, newVer)
         Utils.updateVersion(project, newVer)
     }
 }
