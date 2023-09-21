@@ -44,4 +44,6 @@ class ChartInstallRequestTest {
                 .isEqualTo(opts)
                 .isNotEqualTo(InstallChartOptions.defaults());
     }
+
+    // TODO: test ChartInstallRequest apply method using mock of builder to verify calls
 }

@@ -16,6 +16,8 @@
 
 package com.hedera.fullstack.helm.client.model.install;
 
+import java.util.Set;
+
 /**
  * The builder for the {@link InstallChartOptions}.
  */
@@ -29,10 +31,11 @@ public final class InstallChartOptionsBuilder {
     private boolean passCredentials;
     private String password;
     private String repo;
+    private Set<String> set;
     private boolean skipCrds;
     private String timeout;
     private String username;
-    private String values;
+    private Set<String> values;
     private boolean verify;
     private String version;
     private boolean waitFor;
@@ -150,6 +153,17 @@ public final class InstallChartOptionsBuilder {
     }
 
     /**
+     * set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
+     *
+     * @param valueOverride set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
+     * @return the current InstallChartOptionsBuilder.
+     */
+    public InstallChartOptionsBuilder set(Set<String> valueOverride) {
+        this.set = valueOverride;
+        return this;
+    }
+
+    /**
      * if set, no CRDs will be installed. By default, CRDs are installed if not already present.
      *
      * @param skipCrds if set, no CRDs will be installed. By default, CRDs are installed if not already present.
@@ -188,7 +202,7 @@ public final class InstallChartOptionsBuilder {
      * @param values specify values in a YAML file or a URL (can specify multiple).
      * @return the current InstallChartOptionsBuilder.
      */
-    public InstallChartOptionsBuilder values(String values) {
+    public InstallChartOptionsBuilder values(Set<String> values) {
         this.values = values;
         return this;
     }
@@ -247,6 +261,7 @@ public final class InstallChartOptionsBuilder {
                 passCredentials,
                 password,
                 repo,
+                set,
                 skipCrds,
                 timeout,
                 username,

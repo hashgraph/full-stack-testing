@@ -29,6 +29,7 @@ import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
 import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
@@ -137,5 +138,32 @@ class HelmExecutionTest {
                                 .level(Level.DEBUG)
                                 .message("ResponseAs exiting with exitCode: 0")
                                 .build()));
+    }
+
+    @Test
+    @DisplayName("Test response as throws HelmExecutionException with standard error and standard out")
+    void testResponseAsThrowsHelmExecutionException() throws InterruptedException, IOException {
+        doReturn(inputStreamMock).when(processMock).getInputStream();
+        doReturn(inputStreamMock).when(processMock).getErrorStream();
+        final HelmExecution helmExecution = Mockito.spy(new HelmExecution(processMock));
+        final Duration timeout = Duration.ofSeconds(1);
+        doReturn(1).when(helmExecution).exitCode();
+        doReturn(true).when(helmExecution).waitFor(any(Duration.class));
+        String standardOutputMessage = "standardOutput Message";
+        doReturn(new ByteArrayInputStream(standardOutputMessage.getBytes()))
+                .when(helmExecution)
+                .standardOutput();
+        String standardErrorMessage = "standardError Message";
+        doReturn(new ByteArrayInputStream(standardErrorMessage.getBytes()))
+                .when(helmExecution)
+                .standardError();
+
+        HelmExecutionException exception = assertThrows(HelmExecutionException.class, () -> {
+            helmExecution.responseAs(Repository.class, timeout);
+        });
+
+        assertThat(exception.getMessage()).contains("Execution of the Helm command failed with exit code: 1");
+        assertThat(exception.getStdOut()).contains(standardOutputMessage);
+        assertThat(exception.getStdErr()).contains(standardErrorMessage);
     }
 }

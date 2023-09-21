@@ -16,7 +16,9 @@
 
 package com.hedera.fullstack.helm.client.execution;
 
+import com.hedera.fullstack.base.api.collections.KeyValuePair;
 import com.hedera.fullstack.helm.client.HelmConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -28,7 +30,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class HelmExecutionBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(HelmExecutionBuilder.class);
-
+    public static final String NAME_MUST_NOT_BE_NULL = "name must not be null";
+    public static final String VALUE_MUST_NOT_BE_NULL = "value must not be null";
     /**
      * The path to the helm executable.
      */
@@ -42,7 +45,12 @@ public final class HelmExecutionBuilder {
     /**
      * The arguments to be passed to the helm command.
      */
-    private final Map<String, String> arguments;
+    private final Set<KeyValuePair<String, String>> arguments;
+
+    /**
+     * The arguments of sets to be passed to the helm command.
+     */
+    private final Set<KeyValuePair<String, Set<String>>> argumentsSet;
 
     /**
      * The flags to be passed to the helm command.
@@ -72,11 +80,15 @@ public final class HelmExecutionBuilder {
     public HelmExecutionBuilder(final Path helmExecutable) {
         this.helmExecutable = Objects.requireNonNull(helmExecutable, "helmExecutable must not be null");
         this.subcommands = new ArrayList<>();
-        this.arguments = new HashMap<>();
+        this.arguments = new HashSet<>();
+        this.argumentsSet = new HashSet<>();
         this.positionals = new ArrayList<>();
         this.flags = new ArrayList<>();
         this.environmentVariables = new HashMap<>();
-        this.workingDirectory = this.helmExecutable.getParent();
+
+        String workingDirectory = System.getenv("PWD");
+        this.workingDirectory =
+                workingDirectory == null ? this.helmExecutable.getParent() : new File(workingDirectory).toPath();
     }
 
     /**
@@ -100,12 +112,26 @@ public final class HelmExecutionBuilder {
      * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
      */
     public HelmExecutionBuilder argument(final String name, final String value) {
-        Objects.requireNonNull(name, "name must not be null");
-        Objects.requireNonNull(value, "value must not be null");
-        this.arguments.put(name, value);
+        Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
+        this.arguments.add(new KeyValuePair<>(name, value));
         return this;
     }
 
+    /**
+     * Adds an argument of sets to the helm command.
+     *
+     * @param name  the name of the argument.
+     * @param value the set of value arguments.
+     * @return this builder.
+     * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
+     */
+    public HelmExecutionBuilder argumentSet(final String name, final Set<String> value) {
+        Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
+        this.argumentsSet.add(new KeyValuePair<>(name, value));
+        return this;
+    }
     /**
      * Adds a positional argument to the helm command.
      *
@@ -114,7 +140,7 @@ public final class HelmExecutionBuilder {
      * @throws NullPointerException if {@code value} is {@code null}.
      */
     public HelmExecutionBuilder positional(final String value) {
-        Objects.requireNonNull(value, "value must not be null");
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
         this.positionals.add(value);
         return this;
     }
@@ -128,8 +154,8 @@ public final class HelmExecutionBuilder {
      * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
      */
     public HelmExecutionBuilder environmentVariable(final String name, final String value) {
-        Objects.requireNonNull(name, "name must not be null");
-        Objects.requireNonNull(value, "value must not be null");
+        Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
         this.environmentVariables.put(name, value);
         return this;
     }
@@ -191,18 +217,20 @@ public final class HelmExecutionBuilder {
         command.addAll(subcommands);
         command.addAll(flags);
 
-        for (final Map.Entry<String, String> entry : arguments.entrySet()) {
-            command.add(String.format("--%s", entry.getKey()));
-            command.add(entry.getValue());
-        }
+        arguments.forEach(entry -> {
+            command.add(String.format("--%s", entry.key()));
+            command.add(entry.value());
+        });
+
+        argumentsSet.forEach(entry -> entry.value().forEach(value -> {
+            command.add(String.format("--%s", entry.key()));
+            command.add(value);
+        }));
 
         command.addAll(positionals);
 
         String[] commandArray = command.toArray(new String[0]);
-        LOGGER.atDebug()
-                .setMessage("Helm command: {}")
-                .addArgument(String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)))
-                .log();
+        LOGGER.debug("Helm command: {}", String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)));
 
         return commandArray;
     }

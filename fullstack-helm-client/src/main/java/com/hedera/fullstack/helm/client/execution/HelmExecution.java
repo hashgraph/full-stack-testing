@@ -218,30 +218,26 @@ public final class HelmExecution {
         }
 
         if (exitCode() != 0) {
-            throw new HelmExecutionException(exitCode());
+            throw new HelmExecutionException(
+                    exitCode(),
+                    StreamUtils.streamToString(suppressExceptions(this::standardOutput)),
+                    StreamUtils.streamToString(suppressExceptions(this::standardError)));
         }
-
         final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
-        LOGGER.atDebug()
-                .setMessage(
-                        "ResponseAs exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
-                .addArgument(this::exitCode)
-                .addArgument(responseClass.getName())
-                .addArgument(standardOutput)
-                .addArgument(standardError)
-                .log();
+        LOGGER.debug(
+                "ResponseAs exiting with exitCode: {}%n\tResponseClass: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                exitCode(), responseClass.getName(), standardOutput, standardError);
 
         try {
             return OBJECT_MAPPER.readValue(standardOutput, responseClass);
         } catch (final Exception e) {
-            LOGGER.atWarn()
-                    .setMessage("ResponseAs failed to deserialize response into class: {}\n\tresponse: {}")
-                    .addArgument(responseClass.getName())
-                    .addArgument(standardOutput)
-                    .setCause(e)
-                    .log();
+            LOGGER.warn(
+                    String.format(
+                            "ResponseAs failed to deserialize response into class: %s%n\tresponse: %s",
+                            responseClass.getName(), standardOutput),
+                    e);
 
             throw new HelmParserException(String.format(MSG_DESERIALIZATION_ERROR, responseClass.getName()), e);
         }
@@ -291,14 +287,9 @@ public final class HelmExecution {
         final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
-        LOGGER.atDebug()
-                .setMessage(
-                        "ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}")
-                .addArgument(this::exitCode)
-                .addArgument(responseClass.getName())
-                .addArgument(standardOutput)
-                .addArgument(standardError)
-                .log();
+        LOGGER.debug(
+                "ResponseAsList exiting with exitCode: {}%n\tResponseClass: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                exitCode(), responseClass.getName(), standardOutput, standardError);
 
         try {
             return OBJECT_MAPPER
@@ -306,13 +297,11 @@ public final class HelmExecution {
                     .<T>readValues(standardOutput)
                     .readAll();
         } catch (final Exception e) {
-            LOGGER.atWarn()
-                    .setMessage(
-                            "ResponseAsList failed to deserialize the output into a list of the specified class: {}\n\tresponse: {}")
-                    .addArgument(responseClass.getName())
-                    .addArgument(standardOutput)
-                    .setCause(e)
-                    .log();
+            LOGGER.warn(
+                    String.format(
+                            "ResponseAsList failed to deserialize the output into a list of the specified class: %s%n\tresponse: %s",
+                            responseClass.getName(), standardOutput),
+                    e);
 
             throw new HelmParserException(String.format(MSG_LIST_DESERIALIZATION_ERROR, responseClass.getName()), e);
         }
@@ -349,20 +338,14 @@ public final class HelmExecution {
         final String standardOutput = StreamUtils.streamToString(suppressExceptions(this::standardOutput));
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
-        LOGGER.atDebug()
-                .setMessage("Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
-                .addArgument(this::exitCode)
-                .addArgument(standardOutput)
-                .addArgument(standardError)
-                .log();
+        LOGGER.debug(
+                "Call exiting with exitCode: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                exitCode(), standardOutput, standardError);
 
         if (exitCode() != 0) {
-            LOGGER.atWarn()
-                    .setMessage("Call failed with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}")
-                    .addArgument(this::exitCode)
-                    .addArgument(standardOutput)
-                    .addArgument(standardError)
-                    .log();
+            LOGGER.warn(
+                    "Call failed with exitCode: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                    exitCode(), standardOutput, standardError);
 
             throw new HelmExecutionException(exitCode(), standardError, standardOutput);
         }

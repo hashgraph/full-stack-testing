@@ -17,12 +17,24 @@
 package com.hedera.fullstack.helm.client.test.model;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
+import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class InstallChartOptionsBuilderTest {
+    @Mock
+    private HelmExecutionBuilder builderMock;
 
     @Test
     @DisplayName("Test InstallChartOptionsBuilder")
@@ -37,10 +49,11 @@ class InstallChartOptionsBuilderTest {
                 .passCredentials(true)
                 .password("password")
                 .repo("repo")
+                .set(Set.of("set", "livenessProbe.exec.command=[cat,docroot/CHANGELOG.txt]"))
                 .skipCrds(true)
                 .timeout("timeout")
                 .username("username")
-                .values("values")
+                .values(Set.of("values1", "values2"))
                 .verify(true)
                 .version("version")
                 .waitFor(true)
@@ -55,12 +68,19 @@ class InstallChartOptionsBuilderTest {
         assertTrue(options.passCredentials());
         assertEquals("password", options.password());
         assertEquals("repo", options.repo());
+        assertTrue(options.set().stream().anyMatch("livenessProbe.exec.command=[cat,docroot/CHANGELOG.txt]"::equals));
+        assertTrue(options.set().stream().anyMatch("set"::equals));
         assertTrue(options.skipCrds());
         assertEquals("timeout", options.timeout());
         assertEquals("username", options.username());
-        assertEquals("values", options.values());
+        assertTrue(options.values().stream().anyMatch("values1"::equals));
+        assertTrue(options.values().stream().anyMatch("values2"::equals));
         assertTrue(options.verify());
         assertEquals("version", options.version());
         assertTrue(options.waitFor());
+
+        options.apply(builderMock);
+
+        verify(builderMock, times(2)).argumentSet(anyString(), anySet());
     }
 }
