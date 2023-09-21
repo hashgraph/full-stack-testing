@@ -298,7 +298,7 @@ deployment:
   ## @param deployment.podDisruptionBudget.maxUnavailable Maximum number/percentage of pods that should remain scheduled
   ##
   podDisruptionBudget:
-    create: false
+    create: true
     minAvailable: 1
     maxUnavailable: ""
 
