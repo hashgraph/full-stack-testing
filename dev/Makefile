@@ -226,7 +226,7 @@ helm-test:
 destroy-test-container:
 	echo "" && \
 	echo ">> Deleting test container..." && \
-	kubectl delete pod network-test || true
+	kubectl delete pod network-test -n "${NAMESPACE}" || true
 
 ######################################### CI #################################
 .PHONY: local-kubectl-bats

@@ -85,7 +85,7 @@ function install_chart() {
   echo "SCRIPT_NAME: ${node_setup_script}"
   echo "Values: -f ${CHART_DIR}/values.yaml --values ${CHART_VALUES_FILES}"
   echo "-----------------------------------------------------------------------------------------------------"
-  local count=$(helm list -q | grep -c "${HELM_RELEASE_NAME}")
+  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
   if [[ $count -eq 0 ]]; then
     if [ "${node_setup_script}" = "nmt-install.sh" ]; then
       nmt_install
@@ -101,12 +101,15 @@ function uninstall_chart() {
   [[ -z "${HELM_RELEASE_NAME}" ]] && echo "ERROR: [uninstall_chart] Helm release name is required" && return 1
 
   echo ""
-  echo "Uninstalling helm chart... "
-  echo "-----------------------------------------------------------------------------------------------------"
-  local count=$(helm list -q | grep -c "${HELM_RELEASE_NAME}")
+  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
   if [[ $count -ne 0 ]]; then
- 	  helm uninstall "${HELM_RELEASE_NAME}"
+    echo "Uninstalling helm chart ${HELM_RELEASE_NAME} in namespace ${NAMESPACE}... "
+    echo "-----------------------------------------------------------------------------------------------------"
+ 	  helm uninstall -n "${NAMESPACE}" "${HELM_RELEASE_NAME}"
  	  sleep 10
+    echo "Uninstalled helm chart ${HELM_RELEASE_NAME} in namespace ${NAMESPACE}"
+  else
+    echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
  	fi
 }
 
