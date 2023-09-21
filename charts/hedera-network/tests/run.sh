@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+CUR_DIR=$(dirname "${BASH_SOURCE[0]}")
 source "${CUR_DIR}/env.sh"
 source "${CUR_DIR}/logging.sh"
 
