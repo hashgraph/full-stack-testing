@@ -227,7 +227,7 @@ public final class HelmExecution {
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
         LOGGER.debug(
-                "ResponseAs exiting with exitCode: {}%n\tResponseClass: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                "ResponseAs exiting with exitCode: {}TODO\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}",
                 exitCode(), responseClass.getName(), standardOutput, standardError);
 
         try {
@@ -288,7 +288,7 @@ public final class HelmExecution {
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
         LOGGER.debug(
-                "ResponseAsList exiting with exitCode: {}%n\tResponseClass: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                "ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}",
                 exitCode(), responseClass.getName(), standardOutput, standardError);
 
         try {
@@ -339,12 +339,12 @@ public final class HelmExecution {
         final String standardError = StreamUtils.streamToString(suppressExceptions(this::standardError));
 
         LOGGER.debug(
-                "Call exiting with exitCode: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                "Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}",
                 exitCode(), standardOutput, standardError);
 
         if (exitCode() != 0) {
             LOGGER.warn(
-                    "Call failed with exitCode: {}%n\tstandardOutput: {}%n\tstandardError: {}",
+                    "Call failed with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}",
                     exitCode(), standardOutput, standardError);
 
             throw new HelmExecutionException(exitCode(), standardError, standardOutput);
