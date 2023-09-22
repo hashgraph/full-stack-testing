@@ -228,7 +228,10 @@ public final class HelmExecution {
 
         LOGGER.debug(
                 "ResponseAs exiting with exitCode: {}TODO\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}",
-                exitCode(), responseClass.getName(), standardOutput, standardError);
+                exitCode(),
+                responseClass.getName(),
+                standardOutput,
+                standardError);
 
         try {
             return OBJECT_MAPPER.readValue(standardOutput, responseClass);
@@ -289,7 +292,10 @@ public final class HelmExecution {
 
         LOGGER.debug(
                 "ResponseAsList exiting with exitCode: {}\n\tResponseClass: {}\n\tstandardOutput: {}\n\tstandardError: {}",
-                exitCode(), responseClass.getName(), standardOutput, standardError);
+                exitCode(),
+                responseClass.getName(),
+                standardOutput,
+                standardError);
 
         try {
             return OBJECT_MAPPER
@@ -340,12 +346,16 @@ public final class HelmExecution {
 
         LOGGER.debug(
                 "Call exiting with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}",
-                exitCode(), standardOutput, standardError);
+                exitCode(),
+                standardOutput,
+                standardError);
 
         if (exitCode() != 0) {
             LOGGER.warn(
                     "Call failed with exitCode: {}\n\tstandardOutput: {}\n\tstandardError: {}",
-                    exitCode(), standardOutput, standardError);
+                    exitCode(),
+                    standardOutput,
+                    standardError);
 
             throw new HelmExecutionException(exitCode(), standardError, standardOutput);
         }
