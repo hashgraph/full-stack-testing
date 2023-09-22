@@ -275,7 +275,9 @@ hedera-explorer:
 deployment:
   podAnnotations: {}
   podLabels: {}
-  nodeSelectors: {}
+  nodeSelectors:
+    fullstack-scheduling.io/os: linux
+    fullstack-scheduling.io/role: network
   tolerations:
     - key: "fullstack-scheduling.io/os"
       operator: "Equal"
