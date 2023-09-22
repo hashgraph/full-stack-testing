@@ -14,6 +14,15 @@
  * limitations under the License.
  */
 
-includeBuild("project-plugins")
+plugins {
+    `kotlin-dsl`
+}
 
-includeBuild("settings-plugins")
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.gradle:gradle-enterprise-gradle-plugin:3.14.1")
+}

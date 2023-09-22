@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-includeBuild("project-plugins")
+pluginManagement {
+    includeBuild("../build-logic")
+    includeBuild("..")
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 
-includeBuild("settings-plugins")
+rootProject.name = "fullstack-examples"
+
+includeBuild("..")
