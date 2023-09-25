@@ -43,7 +43,7 @@ jobs:
           java-version: 17.0.7
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        uses: gradle/gradle-build-action@b5126f31dbc19dd434c3269bf8c28c315e121da2 # v2.8.1
         with:
           gradle-version: wrapper
 
@@ -57,7 +57,7 @@ jobs:
       # Snyk will fail if the code does not compile and the error messages are less than helpful. Therefore, we will
       # compile the code first and then run Snyk so that we can get diagnostic information if the code does not compile.
       - name: Compile
-        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        uses: gradle/gradle-build-action@b5126f31dbc19dd434c3269bf8c28c315e121da2 # v2.8.1
         with:
           gradle-version: wrapper
           arguments: assemble --scan
