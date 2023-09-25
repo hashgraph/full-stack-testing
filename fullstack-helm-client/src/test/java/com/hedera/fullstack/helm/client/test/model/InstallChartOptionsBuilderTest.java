@@ -17,14 +17,14 @@
 package com.hedera.fullstack.helm.client.test.model;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
-import java.util.Set;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,11 +49,11 @@ class InstallChartOptionsBuilderTest {
                 .passCredentials(true)
                 .password("password")
                 .repo("repo")
-                .set(Set.of("set", "livenessProbe.exec.command=[cat,docroot/CHANGELOG.txt]"))
+                .set(List.of("set", "livenessProbe.exec.command=[cat,docroot/CHANGELOG.txt]"))
                 .skipCrds(true)
                 .timeout("timeout")
                 .username("username")
-                .values(Set.of("values1", "values2"))
+                .values(List.of("values1", "values2"))
                 .verify(true)
                 .version("version")
                 .waitFor(true)
@@ -81,6 +81,6 @@ class InstallChartOptionsBuilderTest {
 
         options.apply(builderMock);
 
-        verify(builderMock, times(2)).argumentSet(anyString(), anySet());
+        verify(builderMock, times(2)).keyListOfValuesPair(anyString(), anyList());
     }
 }

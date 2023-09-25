@@ -45,12 +45,12 @@ public final class HelmExecutionBuilder {
     /**
      * The arguments to be passed to the helm command.
      */
-    private final Set<KeyValuePair<String, String>> arguments;
+    private final HashMap<String, String> arguments;
 
     /**
-     * The arguments of sets to be passed to the helm command.
+     * The list of key value pairs where the value is a list of values for the given key.
      */
-    private final Set<KeyValuePair<String, Set<String>>> argumentsSet;
+    private final List<KeyValuePair<String, List<String>>> keyListOfValuesPairList;
 
     /**
      * The flags to be passed to the helm command.
@@ -80,14 +80,14 @@ public final class HelmExecutionBuilder {
     public HelmExecutionBuilder(final Path helmExecutable) {
         this.helmExecutable = Objects.requireNonNull(helmExecutable, "helmExecutable must not be null");
         this.subcommands = new ArrayList<>();
-        this.arguments = new HashSet<>();
-        this.argumentsSet = new HashSet<>();
+        this.arguments = new HashMap<>();
+        this.keyListOfValuesPairList = new ArrayList<>();
         this.positionals = new ArrayList<>();
         this.flags = new ArrayList<>();
         this.environmentVariables = new HashMap<>();
 
         String workingDirectoryString = System.getenv("PWD");
-        this.workingDirectory = workingDirectoryString == null
+        this.workingDirectory = (workingDirectoryString == null || workingDirectoryString.isBlank())
                 ? this.helmExecutable.getParent()
                 : new File(workingDirectoryString).toPath();
     }
@@ -115,22 +115,23 @@ public final class HelmExecutionBuilder {
     public HelmExecutionBuilder argument(final String name, final String value) {
         Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
         Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
-        this.arguments.add(new KeyValuePair<>(name, value));
+        this.arguments.put(name, value);
         return this;
     }
 
     /**
-     * Adds an argument of sets to the helm command.
+     * Adds a key with a provided list of values to the helm command.  This is used for options that have can have
+     * multiple values for a single key.  (e.g. --set and --values)
      *
-     * @param name  the name of the argument.
-     * @param value the set of value arguments.
+     * @param name  the key for the key/value pair.
+     * @param value the list of values for the given key.
      * @return this builder.
      * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
      */
-    public HelmExecutionBuilder argumentSet(final String name, final Set<String> value) {
+    public HelmExecutionBuilder keyListOfValuesPair(final String name, final List<String> value) {
         Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
         Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
-        this.argumentsSet.add(new KeyValuePair<>(name, value));
+        this.keyListOfValuesPairList.add(new KeyValuePair<>(name, value));
         return this;
     }
 
@@ -219,12 +220,12 @@ public final class HelmExecutionBuilder {
         command.addAll(subcommands);
         command.addAll(flags);
 
-        arguments.forEach(entry -> {
-            command.add(String.format("--%s", entry.key()));
-            command.add(entry.value());
+        arguments.forEach((key, value) -> {
+            command.add(String.format("--%s", key));
+            command.add(value);
         });
 
-        argumentsSet.forEach(entry -> entry.value().forEach(value -> {
+        keyListOfValuesPairList.forEach(entry -> entry.value().forEach(value -> {
             command.add(String.format("--%s", entry.key()));
             command.add(value);
         }));

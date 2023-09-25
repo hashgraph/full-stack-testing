@@ -18,7 +18,7 @@ package com.hedera.fullstack.helm.client.model.install;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.Options;
-import java.util.Set;
+import java.util.List;
 
 /**
  * The options to be supplied to the helm install command.
@@ -56,11 +56,11 @@ public record InstallChartOptions(
         boolean passCredentials,
         String password,
         String repo,
-        Set<String> set,
+        List<String> set,
         boolean skipCrds,
         String timeout,
         String username,
-        Set<String> values,
+        List<String> values,
         boolean verify,
         String version,
         boolean waitFor)
@@ -98,7 +98,7 @@ public record InstallChartOptions(
         }
 
         if (set() != null) {
-            builder.argumentSet("set", set());
+            builder.keyListOfValuesPair("set", set());
         }
 
         if (timeout() != null) {
@@ -110,7 +110,7 @@ public record InstallChartOptions(
         }
 
         if (values() != null) {
-            builder.argumentSet("values", values());
+            builder.keyListOfValuesPair("values", values());
         }
 
         if (version() != null) {

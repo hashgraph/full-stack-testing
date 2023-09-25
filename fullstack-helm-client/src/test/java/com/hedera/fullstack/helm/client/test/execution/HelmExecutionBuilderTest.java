@@ -25,14 +25,14 @@ import org.junit.jupiter.api.Test;
 
 class HelmExecutionBuilderTest {
     @Test
-    @DisplayName("Test argumentSet null checks")
-    void testArgumentSetNullChecks() {
+    @DisplayName("Test keyListOfValuesPair null checks")
+    void testKeyListOfValuesPairNullChecks() {
         HelmExecutionBuilder builder = new HelmExecutionBuilder(new File(".").toPath());
         assertThrows(NullPointerException.class, () -> {
-            builder.argumentSet(null, null);
+            builder.keyListOfValuesPair(null, null);
         });
         assertThrows(NullPointerException.class, () -> {
-            builder.argumentSet("test string", null);
+            builder.keyListOfValuesPair("test string", null);
         });
     }
 
