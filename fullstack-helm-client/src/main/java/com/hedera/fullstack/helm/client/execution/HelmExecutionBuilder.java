@@ -86,9 +86,10 @@ public final class HelmExecutionBuilder {
         this.flags = new ArrayList<>();
         this.environmentVariables = new HashMap<>();
 
-        String workingDirectory = System.getenv("PWD");
-        this.workingDirectory =
-                workingDirectory == null ? this.helmExecutable.getParent() : new File(workingDirectory).toPath();
+        String workingDirectoryString = System.getenv("PWD");
+        this.workingDirectory = workingDirectoryString == null
+                ? this.helmExecutable.getParent()
+                : new File(workingDirectoryString).toPath();
     }
 
     /**
@@ -132,6 +133,7 @@ public final class HelmExecutionBuilder {
         this.argumentsSet.add(new KeyValuePair<>(name, value));
         return this;
     }
+
     /**
      * Adds a positional argument to the helm command.
      *
@@ -161,13 +163,13 @@ public final class HelmExecutionBuilder {
     }
 
     /**
-     * Sets the working directory for the helm process.
+     * Sets the Path of the working directory for the helm process.
      *
-     * @param workingDirectory the working directory.
+     * @param workingDirectoryPath the Path of the working directory.
      * @return this builder.
      */
-    public HelmExecutionBuilder workingDirectory(final Path workingDirectory) {
-        this.workingDirectory = Objects.requireNonNull(workingDirectory, "workingDirectory must not be null");
+    public HelmExecutionBuilder workingDirectory(final Path workingDirectoryPath) {
+        this.workingDirectory = Objects.requireNonNull(workingDirectoryPath, "workingDirectoryPath must not be null");
         return this;
     }
 
@@ -230,7 +232,10 @@ public final class HelmExecutionBuilder {
         command.addAll(positionals);
 
         String[] commandArray = command.toArray(new String[0]);
-        LOGGER.debug("Helm command: {}", String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                    "Helm command: {}", String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)));
+        }
 
         return commandArray;
     }

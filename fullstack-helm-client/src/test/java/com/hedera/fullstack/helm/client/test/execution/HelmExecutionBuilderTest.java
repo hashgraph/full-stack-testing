@@ -23,7 +23,7 @@ import java.io.File;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class HelmExecutionBuilderTest {
+class HelmExecutionBuilderTest {
     @Test
     @DisplayName("Test argumentSet null checks")
     void testArgumentSetNullChecks() {
