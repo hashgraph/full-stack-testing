@@ -163,6 +163,14 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
 
+      - name: Examples Compile
+        id: gradle-build
+        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        with:
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: assemble --scan
+          build-root-directory: fullstack-examples
+
       - name: Spotless Check
         uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
         if: ${{ inputs.enable-spotless-check && steps.gradle-build.conclusion == 'success' && !cancelled() }}
@@ -177,6 +185,15 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: check --scan
+
+      - name: Examples Unit Tests
+        id: gradle-test
+        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
+        with:
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: check --scan
+          build-root-directory: fullstack-examples
 
       - name: Publish Unit Test Report
         uses: actionite/publish-unit-test-result-action@1e01e49081c6c4073913aa4b7980fa83e709f322 # v2.3.0
