@@ -164,7 +164,7 @@ jobs:
           arguments: assemble --scan
 
       - name: Examples Compile
-        id: gradle-build
+        id: gradle-build-examples
         uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -187,9 +187,9 @@ jobs:
           arguments: check --scan
 
       - name: Examples Unit Tests
-        id: gradle-test
+        id: gradle-test-examples
         uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
-        if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-unit-tests && steps.gradle-build-examples.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: check --scan
