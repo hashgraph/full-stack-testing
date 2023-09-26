@@ -20,6 +20,7 @@ import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmClientBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptionsBuilder;
+import java.util.ArrayList;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
@@ -78,10 +79,10 @@ public abstract class HelmInstallChartTask extends DefaultTask {
             optionsBuilder.createNamespace(getCreateNamespace().get());
         }
         if (getSet().isPresent()) {
-            optionsBuilder.set(getSet().get());
+            optionsBuilder.set(new ArrayList<>(getSet().get()));
         }
         if (getValues().isPresent()) {
-            optionsBuilder.values(getValues().get());
+            optionsBuilder.values(new ArrayList<>(getValues().get()));
         }
         helmClient.installChart(
                 getRelease().getOrNull(),
