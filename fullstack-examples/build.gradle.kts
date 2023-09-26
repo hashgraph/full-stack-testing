@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 
 plugins {
     id("java")
-    id("com.hedera.fullstack.umbrella")
+    id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.jpms-modules")
     id("com.hedera.fullstack.fullstack-gradle-plugin")

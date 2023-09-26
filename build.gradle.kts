@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.umbrella") }
+plugins { id("com.hedera.fullstack.root") }
 
 repositories {
     // mavenLocal() // uncomment to use local maven repository

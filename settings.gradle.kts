@@ -48,8 +48,8 @@ include(":fullstack-datasource-api")
 
 include(":fullstack-datasource-core")
 
-// TODO: re-enable once we have a way to run the fullstack-examples without IntelliJ and Sonar issues
-//includeBuild("fullstack-examples")
+// TODO: re-enable once we have a way to run the *-examples without IntelliJ and Sonar issues
+// includeBuild("fullstack-examples")
 
 include(":fullstack-gradle-plugin")
 
