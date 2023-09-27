@@ -109,7 +109,7 @@ class HelmInstallChartTaskTest {
     void testErrorThrownWhenChartNotFound() {
         assertThrows(HelmExecutionException.class, () -> {
             HelmInstallChartTask helmInstallChartTask = project.getTasks()
-                    .create("helmInstallChart", HelmInstallChartTask.class, task -> {
+                    .create("helmInstallNonExistingChartChart", HelmInstallChartTask.class, task -> {
                         task.getChart().set("not-a-chart");
                         task.getCreateNamespace().set(true);
                         task.getNamespace().set("test-failure");
