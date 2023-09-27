@@ -20,6 +20,7 @@ import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptio
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.hedera.fullstack.helm.client.HelmClient;
+import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import java.io.File;
@@ -101,5 +102,21 @@ class HelmInstallChartTaskTest {
             suppressExceptions(() -> helmClient.uninstallChart(RELEASE_NAME));
             suppressExceptions(() -> helmClient.removeRepository(REPOSITORY));
         }
+    }
+
+    @Test
+    @DisplayName("test an error is thrown when the chart is not found")
+    void testErrorThrownWhenChartNotFound() {
+        assertThrows(HelmExecutionException.class, () -> {
+            HelmInstallChartTask helmInstallChartTask = project.getTasks()
+                    .create("helmInstallChart", HelmInstallChartTask.class, task -> {
+                        task.getChart().set("not-a-chart");
+                        task.getCreateNamespace().set(true);
+                        task.getNamespace().set("test-failure");
+                        task.getRelease().set("not-a-release");
+                        task.getRepo().set("not-a-repo");
+                    });
+            helmInstallChartTask.installChart();
+        });
     }
 }

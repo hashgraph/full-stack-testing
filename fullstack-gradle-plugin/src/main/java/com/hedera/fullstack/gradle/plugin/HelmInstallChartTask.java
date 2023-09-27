@@ -64,7 +64,6 @@ public abstract class HelmInstallChartTask extends DefaultTask {
     @Input
     @Optional
     @Option(option = "values", description = "Specify values in a YAML file or a URL (can specify multiple)")
-    // TODO: enhance to support multiple values files
     public abstract SetProperty<String> getValues();
 
     @TaskAction
@@ -84,12 +83,16 @@ public abstract class HelmInstallChartTask extends DefaultTask {
         if (getValues().isPresent()) {
             optionsBuilder.values(new ArrayList<>(getValues().get()));
         }
-        helmClient.installChart(
-                getRelease().getOrNull(),
-                new Chart(getChart().getOrNull(), getRepo().getOrNull()),
-                optionsBuilder.build());
-
-        getProject().getLogger().info("testing...");
-        // TODO log to gradle stdout if there is an error
+        try {
+            helmClient.installChart(
+                    getRelease().getOrNull(),
+                    new Chart(getChart().getOrNull(), getRepo().getOrNull()),
+                    optionsBuilder.build());
+        } catch (Exception e) {
+            this.getProject()
+                    .getLogger()
+                    .error("HelmInstallChartTask.installChart() An ERROR occurred while installing the chart: ", e);
+            throw e;
+        }
     }
 }
