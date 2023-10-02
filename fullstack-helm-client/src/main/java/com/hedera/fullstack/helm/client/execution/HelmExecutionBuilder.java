@@ -48,9 +48,9 @@ public final class HelmExecutionBuilder {
     private final HashMap<String, String> arguments;
 
     /**
-     * The list of key value pairs where the value is a list of values for the given key.
+     * The list of options and a list of their one or more values.
      */
-    private final List<KeyValuePair<String, List<String>>> keyListOfValuesPairList;
+    private final List<KeyValuePair<String, List<String>>> optionsWithMultipleValues;
 
     /**
      * The flags to be passed to the helm command.
@@ -81,7 +81,7 @@ public final class HelmExecutionBuilder {
         this.helmExecutable = Objects.requireNonNull(helmExecutable, "helmExecutable must not be null");
         this.subcommands = new ArrayList<>();
         this.arguments = new HashMap<>();
-        this.keyListOfValuesPairList = new ArrayList<>();
+        this.optionsWithMultipleValues = new ArrayList<>();
         this.positionals = new ArrayList<>();
         this.flags = new ArrayList<>();
         this.environmentVariables = new HashMap<>();
@@ -120,18 +120,18 @@ public final class HelmExecutionBuilder {
     }
 
     /**
-     * Adds a key with a provided list of values to the helm command.  This is used for options that have can have
-     * multiple values for a single key.  (e.g. --set and --values)
+     * Adds an option with a provided list of values to the helm command.  This is used for options that have can have
+     * multiple values for a single option.  (e.g. --set and --values)
      *
-     * @param name  the key for the key/value pair.
-     * @param value the list of values for the given key.
+     * @param name  the name of the option.
+     * @param value the list of values for the given option.
      * @return this builder.
      * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
      */
-    public HelmExecutionBuilder keyListOfValuesPair(final String name, final List<String> value) {
+    public HelmExecutionBuilder optionsWithMultipleValues(final String name, final List<String> value) {
         Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
         Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
-        this.keyListOfValuesPairList.add(new KeyValuePair<>(name, value));
+        this.optionsWithMultipleValues.add(new KeyValuePair<>(name, value));
         return this;
     }
 
@@ -225,7 +225,7 @@ public final class HelmExecutionBuilder {
             command.add(value);
         });
 
-        keyListOfValuesPairList.forEach(entry -> entry.value().forEach(value -> {
+        optionsWithMultipleValues.forEach(entry -> entry.value().forEach(value -> {
             command.add(String.format("--%s", entry.key()));
             command.add(value);
         }));

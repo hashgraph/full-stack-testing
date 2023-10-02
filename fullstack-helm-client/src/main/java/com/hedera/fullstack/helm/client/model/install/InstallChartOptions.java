@@ -98,7 +98,7 @@ public record InstallChartOptions(
         }
 
         if (set() != null) {
-            builder.keyListOfValuesPair("set", set());
+            builder.optionsWithMultipleValues("set", set());
         }
 
         if (timeout() != null) {
@@ -110,7 +110,7 @@ public record InstallChartOptions(
         }
 
         if (values() != null) {
-            builder.keyListOfValuesPair("values", values());
+            builder.optionsWithMultipleValues("values", values());
         }
 
         if (version() != null) {

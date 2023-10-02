@@ -25,14 +25,14 @@ import org.junit.jupiter.api.Test;
 
 class HelmExecutionBuilderTest {
     @Test
-    @DisplayName("Test keyListOfValuesPair null checks")
-    void testKeyListOfValuesPairNullChecks() {
+    @DisplayName("Test optionsWithMultipleValues null checks")
+    void testOptionsWithMultipleValuesNullChecks() {
         HelmExecutionBuilder builder = new HelmExecutionBuilder(new File(".").toPath());
         assertThrows(NullPointerException.class, () -> {
-            builder.keyListOfValuesPair(null, null);
+            builder.optionsWithMultipleValues(null, null);
         });
         assertThrows(NullPointerException.class, () -> {
-            builder.keyListOfValuesPair("test string", null);
+            builder.optionsWithMultipleValues("test string", null);
         });
     }
 

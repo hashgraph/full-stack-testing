@@ -81,6 +81,6 @@ class InstallChartOptionsBuilderTest {
 
         options.apply(builderMock);
 
-        verify(builderMock, times(2)).keyListOfValuesPair(anyString(), anyList());
+        verify(builderMock, times(2)).optionsWithMultipleValues(anyString(), anyList());
     }
 }
