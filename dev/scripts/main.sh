@@ -8,10 +8,12 @@ function setup_cluster() {
   [[ -z "${NAMESPACE}" ]] && echo "ERROR: [setup_cluster] Namespace name is required" && return 1
 
 	echo "Cluster name: ${CLUSTER_NAME}"
-  local count=$(kind get clusters -q | grep -c -sw "${CLUSTER_NAME}")
+  local count
+
+  count=$(kind get clusters -q | grep -c -sw "${CLUSTER_NAME}")
   if [[ $count -eq 0 ]]; then
 	    echo "Cluster '${CLUSTER_NAME}' not found"
-		  kind create cluster -n "${CLUSTER_NAME}"
+		  kind create cluster -n "${CLUSTER_NAME}" --config="${CUR_DIR}/../dev-cluster.yaml"
 		  kubectl create ns "${NAMESPACE}"
 	else
 	    echo "Cluster '${CLUSTER_NAME}' found"
