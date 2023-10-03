@@ -58,7 +58,11 @@ function setup_kubectl_context() {
 	kubectl get ns
 
 	echo "Setting kubectl context..."
-	kubectl config use-context "kind-${CLUSTER_NAME}"
+	local count
+	count=$(kubectl config get-contexts --no-headers | grep -c "kind-${CLUSTER_NAME}")
+	if [[ $count -ne 0 ]]; then
+	  kubectl config use-context "kind-${CLUSTER_NAME}"
+	fi
 	kubectl config set-context --current --namespace="${NAMESPACE}"
 	kubectl config get-contexts
 }

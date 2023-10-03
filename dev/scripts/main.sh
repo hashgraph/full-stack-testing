@@ -14,7 +14,6 @@ function setup_cluster() {
   if [[ $count -eq 0 ]]; then
 	    echo "Cluster '${CLUSTER_NAME}' not found"
 		  kind create cluster -n "${CLUSTER_NAME}" --config="${CUR_DIR}/../dev-cluster.yaml"
-		  kubectl create ns "${NAMESPACE}"
 	else
 	    echo "Cluster '${CLUSTER_NAME}' found"
   fi
@@ -113,6 +112,8 @@ function uninstall_chart() {
   else
     echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
  	fi
+
+	kubectl delete ns "${NAMESPACE}" || true
 }
 
 function nmt_install() {
