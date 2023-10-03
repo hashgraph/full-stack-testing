@@ -3,8 +3,10 @@
 # Every script must load (source) this in the beginning
 # Warning: avoid making these variables readonly since it can be sourced multiple times
 
+CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
 # load .env file if it exists in order to load variables with custom values
-ENV_FILE="$(dirname "${BASH_SOURCE[0]}")/.env"
+ENV_FILE="${CUR_DIR}/.env"
 if [[ -f "${ENV_FILE}" ]]; then
   set -a
   # shellcheck source=./../temp/.env
@@ -13,8 +15,15 @@ if [[ -f "${ENV_FILE}" ]]; then
 fi
 
 # set global env variables if not set
-BATS_HOME="${BATS_HOME:-../../../dev/bats}"
-TESTS_DIR="${TESTS_DIR:-.}"
+BATS_HOME="${BATS_HOME:-${CUR_DIR}/../../../dev/bats}"
+TESTS_DIR="${TESTS_DIR:-${CUR_DIR}}"
+
+TOTAL_NODES="${TOTAL_NODES:-3}"
+USER="${USER:-changeme}"
+NAMESPACE="${NAMESPACE:-fst-${USER}}"
+LOG_DIR="${LOG_DIR:-${CUR_DIR}/logs}"
+LOG_FILE="${LOG_FILE:-helm-test.log}"
+OUTPUT_LOG="${OUTPUT_LOG:-false}"
 [ ! -d "${LOG_DIR}" ] && mkdir "${LOG_DIR}"
 
 echo "--------------------------Env Setup: fullstack-testing Helm Test------------------------------------------------"
