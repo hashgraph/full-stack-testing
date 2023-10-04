@@ -102,7 +102,7 @@ jobs:
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
-          cluster_name: fst
+          config: dev/dev-cluster.yaml
           version: v0.19.0
           verbosity: 3
           wait: 120s
@@ -125,6 +125,7 @@ jobs:
         run: |
           kubectl config get-contexts
           kubectl get crd
+          kubectl get node --show-labels
 
       # This step is currently required because the Hedera Services artifacts are not publicly accessible.
       # May be removed once the artifacts are publicly accessible.

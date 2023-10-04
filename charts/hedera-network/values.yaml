@@ -5,8 +5,6 @@ global:
 
 # cloud configuration
 cloud:
-  minio:
-    enable: true
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
@@ -14,6 +12,8 @@ cloud:
     enable: "true"
   gcs:
     enable: "true"
+  minio:
+    enable: true
 
 # telemetry configurations
 telemetry:
@@ -26,6 +26,7 @@ terminationGracePeriodSeconds: 10
 
 # helm test container
 tester:
+  deployPodMonitor: "true"
   clusterRoleName: "pod-monitor-role" # this is a shared cluster role for all namespaces
   image:
     registry: "ghcr.io"
@@ -62,7 +63,6 @@ gatewayApi:
         enable: "true"
   route:
     hostname: "{{ .node.name }}.fst.local"
-
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
@@ -222,7 +222,9 @@ minio-server:
     certificate:
       requestAutoCert: false
 
+# hedera mirror node configuration
 hedera-mirror-node:
+  enable: true
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
   # importer is a component of the hedera mirror node
@@ -250,7 +252,9 @@ hedera-mirror-node:
               bucketName: "fst-streams"
               # for s3 configuration of mirror node look at uploader-mirror-secrets.yaml
 
+# hedera explorer configuration
 hedera-explorer:
+  enable: true
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
   # The hedera explorer UI /api url will proxy  all request to mirror node
@@ -271,6 +275,39 @@ hedera-explorer:
         "ledgerID": "03"
       }
     ]
+
+# common deployment configuration
+deployment:
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelectors:
+    fullstack-scheduling.io/os: linux
+    fullstack-scheduling.io/role: network
+  tolerations:
+    - key: "fullstack-scheduling.io/os"
+      operator: "Equal"
+      value: "linux"
+      effect: "NoSchedule"
+    - key: "fullstack-scheduling.io/role"
+      operator: "Equal"
+      value: "network"
+      effect: "NoSchedule"
+  # Specify pod affinity
+  # Use complete affinity spec starting with key "nodeAffinity:"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  affinity: {}
+  priorityClassName: {}
+  ## PodDisruptionBudget for fullstack testing pods
+  ## Default backend Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param deployment.podDisruptionBudget.create Enable Pod Disruption Budget configuration
+  ## @param deployment.podDisruptionBudget.minAvailable Minimum number/percentage of pods that should remain scheduled
+  ## @param deployment.podDisruptionBudget.maxUnavailable Maximum number/percentage of pods that should remain scheduled
+  ##
+  podDisruptionBudget:
+    create: true
+    minAvailable: 1
+    maxUnavailable: ""
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
