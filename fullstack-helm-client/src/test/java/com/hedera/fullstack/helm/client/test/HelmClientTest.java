@@ -18,10 +18,12 @@ package com.hedera.fullstack.helm.client.test;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Named.named;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
+import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
@@ -32,6 +34,7 @@ import com.jcovalent.junit.logging.LogEntry;
 import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
 import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
+import java.io.File;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.*;
@@ -88,8 +91,10 @@ class HelmClientTest {
 
     @BeforeAll
     static void beforeAll() {
-        helmClient =
-                HelmClient.builder().defaultNamespace("helm-client-test-ns").build();
+        helmClient = HelmClient.builder()
+                .defaultNamespace("helm-client-test-ns")
+                .workingDirectory(new File(".").toPath())
+                .build();
         assertThat(helmClient).isNotNull();
     }
 
@@ -358,5 +363,22 @@ class HelmClientTest {
         } finally {
             suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
         }
+    }
+
+    @Test
+    @DisplayName("Test Helm dependency update subcommand")
+    void testHelmDependencyUpdate() {
+        helmClient.dependencyUpdate("../charts/hedera-network");
+    }
+
+    @Test
+    @DisplayName("Test Helm dependency build subcommand failure")
+    void testHelmDependencyBuildFailure() {
+        HelmExecutionException exception =
+                assertThrows(HelmExecutionException.class, () -> helmClient.dependencyUpdate("../charts/not-a-chart"));
+        assertThat(exception.getMessage()).contains("Execution of the Helm command failed with exit code: 1");
+        assertThat(exception.getStdOut())
+                .contains(
+                        "Error: could not find ../charts/not-a-chart: stat ../charts/not-a-chart: no such file or directory");
     }
 }

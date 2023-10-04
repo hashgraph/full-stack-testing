@@ -41,6 +41,15 @@ public interface HelmClientBuilder {
     HelmClientBuilder defaultNamespace(String namespace);
 
     /**
+     * Sets the working directory for the {@link HelmClient} instance.
+     * @param workingDirectory the working directory.
+     * @return the {@link HelmClientBuilder} instance.
+     * @implNote The working directory is set to the pwd if not explicitly provided, if that fails it will use the
+     * parent folder of the helm executable.
+     */
+    HelmClientBuilder workingDirectory(Path workingDirectory);
+
+    /**
      * Sets the Kubernetes API server address and port number for the {@link HelmClient} instance.
      *
      * @param kubeApiServer the Kubernetes API server address and port number.
