@@ -18,6 +18,7 @@ package com.hedera.fullstack.helm.client.model.install;
 
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.model.Options;
+import java.util.List;
 
 /**
  * The options to be supplied to the helm install command.
@@ -32,6 +33,7 @@ import com.hedera.fullstack.helm.client.model.Options;
  * @param passCredentials  - pass credentials to all domains.
  * @param password         - chart repository password where to locate the requested chart.
  * @param repo             - chart repository url where to locate the requested chart.
+ * @param set              - set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)
  * @param skipCrds         - if set, no CRDs will be installed. By default, CRDs are installed if not already present.
  * @param timeout          - time to wait for any individual Kubernetes operation (like Jobs for hooks) (default 5m0s).
  * @param username         - chart repository username where to locate the requested chart.
@@ -54,10 +56,11 @@ public record InstallChartOptions(
         boolean passCredentials,
         String password,
         String repo,
+        List<String> set,
         boolean skipCrds,
         String timeout,
         String username,
-        String values,
+        List<String> values,
         boolean verify,
         String version,
         boolean waitFor)
@@ -94,6 +97,10 @@ public record InstallChartOptions(
             builder.argument("repo", repo());
         }
 
+        if (set() != null) {
+            builder.optionsWithMultipleValues("set", set());
+        }
+
         if (timeout() != null) {
             builder.argument("timeout", timeout());
         }
@@ -103,7 +110,7 @@ public record InstallChartOptions(
         }
 
         if (values() != null) {
-            builder.argument("values", values());
+            builder.optionsWithMultipleValues("values", values());
         }
 
         if (version() != null) {

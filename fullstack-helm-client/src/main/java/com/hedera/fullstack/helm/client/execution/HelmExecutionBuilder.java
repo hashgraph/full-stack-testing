@@ -16,7 +16,9 @@
 
 package com.hedera.fullstack.helm.client.execution;
 
+import com.hedera.fullstack.base.api.collections.KeyValuePair;
 import com.hedera.fullstack.helm.client.HelmConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
@@ -28,7 +30,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class HelmExecutionBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(HelmExecutionBuilder.class);
-
+    public static final String NAME_MUST_NOT_BE_NULL = "name must not be null";
+    public static final String VALUE_MUST_NOT_BE_NULL = "value must not be null";
     /**
      * The path to the helm executable.
      */
@@ -42,7 +45,12 @@ public final class HelmExecutionBuilder {
     /**
      * The arguments to be passed to the helm command.
      */
-    private final Map<String, String> arguments;
+    private final HashMap<String, String> arguments;
+
+    /**
+     * The list of options and a list of their one or more values.
+     */
+    private final List<KeyValuePair<String, List<String>>> optionsWithMultipleValues;
 
     /**
      * The flags to be passed to the helm command.
@@ -73,10 +81,15 @@ public final class HelmExecutionBuilder {
         this.helmExecutable = Objects.requireNonNull(helmExecutable, "helmExecutable must not be null");
         this.subcommands = new ArrayList<>();
         this.arguments = new HashMap<>();
+        this.optionsWithMultipleValues = new ArrayList<>();
         this.positionals = new ArrayList<>();
         this.flags = new ArrayList<>();
         this.environmentVariables = new HashMap<>();
-        this.workingDirectory = this.helmExecutable.getParent();
+
+        String workingDirectoryString = System.getenv("PWD");
+        this.workingDirectory = (workingDirectoryString == null || workingDirectoryString.isBlank())
+                ? this.helmExecutable.getParent()
+                : new File(workingDirectoryString).toPath();
     }
 
     /**
@@ -100,9 +113,25 @@ public final class HelmExecutionBuilder {
      * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
      */
     public HelmExecutionBuilder argument(final String name, final String value) {
-        Objects.requireNonNull(name, "name must not be null");
-        Objects.requireNonNull(value, "value must not be null");
+        Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
         this.arguments.put(name, value);
+        return this;
+    }
+
+    /**
+     * Adds an option with a provided list of values to the helm command.  This is used for options that have can have
+     * multiple values for a single option.  (e.g. --set and --values)
+     *
+     * @param name  the name of the option.
+     * @param value the list of values for the given option.
+     * @return this builder.
+     * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
+     */
+    public HelmExecutionBuilder optionsWithMultipleValues(final String name, final List<String> value) {
+        Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
+        this.optionsWithMultipleValues.add(new KeyValuePair<>(name, value));
         return this;
     }
 
@@ -114,7 +143,7 @@ public final class HelmExecutionBuilder {
      * @throws NullPointerException if {@code value} is {@code null}.
      */
     public HelmExecutionBuilder positional(final String value) {
-        Objects.requireNonNull(value, "value must not be null");
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
         this.positionals.add(value);
         return this;
     }
@@ -128,20 +157,20 @@ public final class HelmExecutionBuilder {
      * @throws NullPointerException if either {@code name} or {@code value} is {@code null}.
      */
     public HelmExecutionBuilder environmentVariable(final String name, final String value) {
-        Objects.requireNonNull(name, "name must not be null");
-        Objects.requireNonNull(value, "value must not be null");
+        Objects.requireNonNull(name, NAME_MUST_NOT_BE_NULL);
+        Objects.requireNonNull(value, VALUE_MUST_NOT_BE_NULL);
         this.environmentVariables.put(name, value);
         return this;
     }
 
     /**
-     * Sets the working directory for the helm process.
+     * Sets the Path of the working directory for the helm process.
      *
-     * @param workingDirectory the working directory.
+     * @param workingDirectoryPath the Path of the working directory.
      * @return this builder.
      */
-    public HelmExecutionBuilder workingDirectory(final Path workingDirectory) {
-        this.workingDirectory = Objects.requireNonNull(workingDirectory, "workingDirectory must not be null");
+    public HelmExecutionBuilder workingDirectory(final Path workingDirectoryPath) {
+        this.workingDirectory = Objects.requireNonNull(workingDirectoryPath, "workingDirectoryPath must not be null");
         return this;
     }
 
@@ -191,18 +220,23 @@ public final class HelmExecutionBuilder {
         command.addAll(subcommands);
         command.addAll(flags);
 
-        for (final Map.Entry<String, String> entry : arguments.entrySet()) {
-            command.add(String.format("--%s", entry.getKey()));
-            command.add(entry.getValue());
-        }
+        arguments.forEach((key, value) -> {
+            command.add(String.format("--%s", key));
+            command.add(value);
+        });
+
+        optionsWithMultipleValues.forEach(entry -> entry.value().forEach(value -> {
+            command.add(String.format("--%s", entry.key()));
+            command.add(value);
+        }));
 
         command.addAll(positionals);
 
         String[] commandArray = command.toArray(new String[0]);
-        LOGGER.atDebug()
-                .setMessage("Helm command: {}")
-                .addArgument(String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)))
-                .log();
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                    "Helm command: {}", String.join(" ", Arrays.copyOfRange(commandArray, 1, commandArray.length)));
+        }
 
         return commandArray;
     }

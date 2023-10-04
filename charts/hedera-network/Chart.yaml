@@ -24,18 +24,20 @@ version: 0.8.0
 appVersion: "0.8.0"
 
 # This is range of versions of Kubernetes server that is supported by this chart.
-kubeVersion: ">=1.25.0"
+# Note we need to use -0 suffix to support GKE version
+# Reference: https://github.com/helm/helm/issues/3810#issuecomment-379877753
+kubeVersion: ">=1.25.0-0"
 
 dependencies:
   - name: hedera-explorer
     version: 0.2.0
-    condition: cloud.minio.enable
+    condition: hedera-explorer.enable
 
   - name: hedera-mirror
     alias: hedera-mirror-node
     version: 0.86.0
     repository: https://hashgraph.github.io/hedera-mirror-node/charts
-    condition: cloud.minio.enable
+    condition: hedera-mirror-node.enable
 
   - name: tenant
     alias: minio-server

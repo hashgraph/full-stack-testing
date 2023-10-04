@@ -32,7 +32,7 @@ function import {
 
 function get_pod_list() {
   local pattern=$1
-  local resp=$(kubectl get pods -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}' | grep "${pattern}")
+  local resp=$(kubectl get pods -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}' -n "${NAMESPACE}"  | grep "${pattern}")
   echo "${resp}"
 }
 
@@ -82,8 +82,8 @@ function check_test_status() {
 
 function get_config_val() {
   local config_path=$1
-  log_debug "Get config command: helm get values fst -a | yq '${config_path}'"
-  ret=$(helm get values fst -a | yq "${config_path}" )
+  log_debug "Get config command: helm get values fst -a -n ${NAMESPACE} | yq '${config_path}'"
+  ret=$(helm get values fst -a -n "${NAMESPACE}" | yq "${config_path}" )
   echo "${ret}"
   log_debug "${config_path} => ${ret}"
 }
@@ -101,7 +101,7 @@ function is_enabled_for_node() {
   local config_path=$2
   [[ -z "${config_path}" ]] && echo "ERROR: Config path is needed" && return "${EX_ERR}"
 
-  log_debug "Checking config '${config_path}' for node '${node_name}"
+  log_debug "Checking config '${config_path}' for node '${node_name} in namespace ${NAMESPACE} "
 
   local default_config_path=".defaults${config_path}"
   local node_config_path=".hedera.nodes[] | select(.name==\"${node_name}\") | ${config_path}"
@@ -134,7 +134,7 @@ function get_sidecar_status() {
   [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
   [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
 
-  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | xargs)
+  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" -n "${NAMESPACE}" | xargs)
   echo "${sidecar_status}"
 }
 
@@ -144,9 +144,9 @@ function is_sidecar_ready() {
   [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
   [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
 
-  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" | tr '[:lower:]' '[:upper:]')
+  local sidecar_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.containerStatuses[?(@.name=='${sidecar_name}')].ready}" -n "${NAMESPACE}" | tr '[:lower:]' '[:upper:]')
   [ -z "${sidecar_status}" ] && sidecar_status="FALSE"
-  log_debug "${sidecar_name} in pod ${pod} is ready: ${sidecar_status}"
+  log_debug "${sidecar_name} in pod ${pod} is ready in namespace ${NAMESPACE} : ${sidecar_status}"
 
   [[ "${sidecar_status}" = "TRUE" ]] && return "${EX_OK}"
   return "${EX_ERR}"
@@ -158,8 +158,8 @@ function has_sidecar() {
   [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_sidecar_ready)" && return "${EX_ERR}"
   [[ -z "${sidecar_name}" ]] && echo "ERROR: Sidecar name is needed (is_sidecar_ready)" && return "${EX_ERR}"
 
-  local sidecars=$(kubectl get pods "${pod}" -o jsonpath='{.spec.containers[*].name}')
-  log_debug "Sidecar list in pod ${pod}: ${sidecars}"
+  local sidecars=$(kubectl get pods "${pod}" -o jsonpath='{.spec.containers[*].name}' -n "${NAMESPACE}")
+  log_debug "Sidecar list in pod ${pod} in namespace ${NAMESPACE} : ${sidecars}"
 
   local found="FALSE"
   if [[ "${sidecars}" =~ ${sidecar_name} ]]; then
@@ -173,10 +173,10 @@ function is_pod_ready() {
   local pod=$1
   [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_pod_ready)" && return "${EX_ERR}"
 
-  local pod_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}" | tr '[:lower:]' '[:upper:]')
+  local pod_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}" -n "${NAMESPACE}" | tr '[:lower:]' '[:upper:]')
   [ -z "${pod_status}" ] && pod_status="FALSE"
 
-  log_debug "Pod '${pod}' is ready: ${pod_status}"
+  log_debug "Pod '${pod}' is ready in namespace ${NAMESPACE} : ${pod_status}"
 
   [[ "${pod_status}" = "TRUE" ]] && return "${EX_OK}"
   return "${EX_ERR}"
@@ -190,15 +190,15 @@ function get_pod_label() {
   [[ -z "${pod}" ]] && echo "ERROR: Label name is needed" && return "${EX_ERR}"
 
 
-  log_debug "Checking for pod '${pod}'(timeout 300s)..."
-  $(kubectl wait --for=condition=Initialized pods "${pod}" --timeout 300s) > /dev/null 2>&1
+  log_debug "Checking for pod '${pod}' in namespace ${NAMESPACE} (timeout 300s)..."
+  $(kubectl wait --for=condition=Initialized pods "${pod}" --timeout 300s -n "${NAMESPACE}") > /dev/null 2>&1
   if [ $? = 1 ]; then
     log_debug "ERROR: Pod ${pod} is not available" &&  return "${EX_ERR}"
   fi
 
-  log_debug "Checking label '${label}' for pod '${pod}'"
+  log_debug "Checking label '${label}' for pod '${pod}' in namespace ${NAMESPACE} "
   local escaped_label="${label//./\\.}"
-  local label_val=$(kubectl get pod "${pod}" -o jsonpath="{.metadata.labels.${escaped_label}}" | xargs)
+  local label_val=$(kubectl get pod "${pod}" -o jsonpath="{.metadata.labels.${escaped_label}}" -n "${NAMESPACE}" | xargs)
   log_debug "Pod '${pod}' label '${label}': ${label_val}"
 
   echo "${label_val}"
@@ -208,9 +208,9 @@ function get_pod_by_label() {
   local label=$1
   [[ -z "${pod}" ]] && echo "ERROR: Label name is needed" && return "${EX_ERR}"
 
-  log_debug "Getting pod by label '${label}'"
+  log_debug "Getting pod by label '${label}' in namespace ${NAMESPACE} "
   local escaped_label="${label//./\\.}"
-  local pod_name=$(kubectl get pods -l "${label}" -o jsonpath="{.items[0].metadata.name}")
+  local pod_name=$(kubectl get pods -l "${label}" -o jsonpath="{.items[0].metadata.name}" -n "${NAMESPACE}")
   echo "${pod_name}"
 }
 
@@ -221,10 +221,10 @@ function is_route_accepted() {
   local route_name=$2
   [[ -z "${route_name}" ]] && echo "ERROR: Route name is needed" && return "${EX_ERR}"
 
-  local route_status=$(kubectl get "${route_type}" "${route_name}" -o jsonpath="{.status.parents[*].conditions[?(@.type=='Accepted')].status}" | tr '[:lower:]' '[:upper:]')
+  local route_status=$(kubectl get "${route_type}" "${route_name}" -o jsonpath="{.status.parents[*].conditions[?(@.type=='Accepted')].status}" -n "${NAMESPACE}" | tr '[:lower:]' '[:upper:]')
   [ -z "${route_status}" ] && route_status="FALSE"
 
-  log_debug "${route_type} '${route_name}' is accepted: ${route_status}"
+  log_debug "${route_type} '${route_name}' in namespace ${NAMESPACE} is accepted: ${route_status}"
 
   [[ "${route_status}" = "TRUE" ]] && return "${EX_OK}"
   return "${EX_ERR}"

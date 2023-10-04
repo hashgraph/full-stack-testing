@@ -102,7 +102,7 @@ jobs:
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
-          cluster_name: fst
+          config: dev/dev-cluster.yaml
           version: v0.19.0
           verbosity: 3
           wait: 120s
@@ -125,6 +125,7 @@ jobs:
         run: |
           kubectl config get-contexts
           kubectl get crd
+          kubectl get node --show-labels
 
       # This step is currently required because the Hedera Services artifacts are not publicly accessible.
       # May be removed once the artifacts are publicly accessible.
@@ -162,12 +163,30 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
 
+      - name: Examples Compile
+        id: gradle-build-examples
+        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        with:
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: assemble --scan
+          build-root-directory: fullstack-examples
+          gradle-executable: gradlew
+
       - name: Spotless Check
         uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
         if: ${{ inputs.enable-spotless-check && steps.gradle-build.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: spotlessCheck --scan
+
+      - name: Examples Spotless Check
+        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        if: ${{ inputs.enable-spotless-check && steps.gradle-build-examples.conclusion == 'success' && !cancelled() }}
+        with:
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: spotlessCheck --scan
+          build-root-directory: fullstack-examples
+          gradle-executable: gradlew
 
       - name: Unit Tests
         id: gradle-test
@@ -176,6 +195,16 @@ jobs:
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: check --scan
+
+      - name: Examples Unit Tests
+        id: gradle-test-examples
+        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        if: ${{ inputs.enable-unit-tests && steps.gradle-build-examples.conclusion == 'success' && !cancelled() && !failure() }}
+        with:
+          gradle-version: ${{ inputs.gradle-version }}
+          arguments: check --scan
+          build-root-directory: fullstack-examples
+          gradle-executable: gradlew
 
       - name: Publish Unit Test Report
         uses: actionite/publish-unit-test-result-action@1e01e49081c6c4073913aa4b7980fa83e709f322 # v2.3.0

@@ -54,7 +54,11 @@ class HelmClientTest {
 
     private static final String HAPROXY_RELEASE_NAME = "haproxy-release";
 
-    private static HelmClient defaultClient;
+    private static final Repository INCUBATOR_REPOSITORY =
+            new Repository("incubator", "https://charts.helm.sh/incubator");
+
+    private static final Repository JETSTACK_REPOSITORY = new Repository("jetstack", "https://charts.jetstack.io");
+    private static HelmClient helmClient;
     private static final int INSTALL_TIMEOUT = 10;
 
     private static final List<LogEntry> EXPECTED_LOG_ENTRIES = List.of(
@@ -83,8 +87,9 @@ class HelmClientTest {
 
     @BeforeAll
     static void beforeAll() {
-        defaultClient = HelmClient.defaultClient();
-        assertThat(defaultClient).isNotNull();
+        helmClient =
+                HelmClient.builder().defaultNamespace("helm-client-test-ns").build();
+        assertThat(helmClient).isNotNull();
     }
 
     void removeRepoIfPresent(HelmClient client, Repository repo) {
@@ -94,10 +99,17 @@ class HelmClientTest {
         }
     }
 
+    void addRepoIfMissing(HelmClient client, Repository repo) {
+        final List<Repository> repositories = client.listRepositories();
+        if (!repositories.contains(repo)) {
+            client.addRepository(repo);
+        }
+    }
+
     @Test
     @DisplayName("Version Command Executes Successfully")
     void testVersionCommand() {
-        final SemanticVersion helmVersion = defaultClient.version();
+        final SemanticVersion helmVersion = helmClient.version();
         assertThat(helmVersion).isNotNull().isNotEqualTo(SemanticVersion.ZERO);
 
         assertThat(helmVersion.major()).isGreaterThanOrEqualTo(3);
@@ -108,27 +120,27 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository List Executes Successfully")
     void testRepositoryListCommand() {
-        final List<Repository> repositories = defaultClient.listRepositories();
+        final List<Repository> repositories = helmClient.listRepositories();
         assertThat(repositories).isNotNull();
     }
 
     @Test
     @DisplayName("Repository Add Executes Successfully")
     void testRepositoryAddCommand() {
-        final int originalRepoListSize = defaultClient.listRepositories().size();
-        removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
+        final int originalRepoListSize = helmClient.listRepositories().size();
+        removeRepoIfPresent(helmClient, INCUBATOR_REPOSITORY);
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(INGRESS_REPOSITORY));
-            final List<Repository> repositories = defaultClient.listRepositories();
+            assertThatNoException().isThrownBy(() -> helmClient.addRepository(INCUBATOR_REPOSITORY));
+            final List<Repository> repositories = helmClient.listRepositories();
             assertThat(repositories)
                     .isNotNull()
                     .isNotEmpty()
-                    .contains(INGRESS_REPOSITORY)
+                    .contains(INCUBATOR_REPOSITORY)
                     .hasSize(originalRepoListSize + 1);
         } finally {
-            assertThatNoException().isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY));
-            final List<Repository> repositories = defaultClient.listRepositories();
+            assertThatNoException().isThrownBy(() -> helmClient.removeRepository(INCUBATOR_REPOSITORY));
+            final List<Repository> repositories = helmClient.listRepositories();
             assertThat(repositories).isNotNull().hasSize(originalRepoListSize);
         }
     }
@@ -136,19 +148,19 @@ class HelmClientTest {
     @Test
     @DisplayName("Repository Remove Executes With Error")
     void testRepositoryRemoveCommand_WithError(final LoggingOutput loggingOutput) {
-        removeRepoIfPresent(defaultClient, INGRESS_REPOSITORY);
+        removeRepoIfPresent(helmClient, JETSTACK_REPOSITORY);
 
-        int existingRepoCount = defaultClient.listRepositories().size();
+        int existingRepoCount = helmClient.listRepositories().size();
         final String expectedMessage;
 
         if (existingRepoCount == 0) {
             expectedMessage = "Error: no repositories configured";
         } else {
-            expectedMessage = String.format("Error: no repo named \"%s\" found", INGRESS_REPOSITORY.name());
+            expectedMessage = String.format("Error: no repo named \"%s\" found", JETSTACK_REPOSITORY.name());
         }
 
         assertThatException()
-                .isThrownBy(() -> defaultClient.removeRepository(INGRESS_REPOSITORY))
+                .isThrownBy(() -> helmClient.removeRepository(JETSTACK_REPOSITORY))
                 .withStackTraceContaining(expectedMessage);
         LoggingOutputAssert.assertThat(loggingOutput)
                 .hasAtLeastOneEntry(List.of(
@@ -166,19 +178,17 @@ class HelmClientTest {
     @DisplayName("Install Chart Executes Successfully")
     @Timeout(INSTALL_TIMEOUT)
     void testInstallChartCommand(final LoggingOutput loggingOutput) {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+        addRepoIfMissing(helmClient, HAPROXYTECH_REPOSITORY);
 
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            Release release = defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
+            suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
             assertThat(release).isNotNull();
             assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
             assertThat(release.info().description()).isEqualTo("Install complete");
             assertThat(release.info().status()).isEqualTo("deployed");
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
         }
         LoggingOutputAssert.assertThat(loggingOutput).hasAtLeastOneEntry(EXPECTED_LOG_ENTRIES);
     }
@@ -186,16 +196,14 @@ class HelmClientTest {
     private static void testChartInstallWithCleanup(
             InstallChartOptions options, List<LogEntry> expectedLogEntries, final LoggingOutput loggingOutput) {
         try {
-            assertThatNoException().isThrownBy(() -> defaultClient.addRepository(HAPROXYTECH_REPOSITORY));
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            Release release = defaultClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options);
+            suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
+            Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART, options);
             assertThat(release).isNotNull();
             assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
             assertThat(release.info().description()).isEqualTo("Install complete");
             assertThat(release.info().status()).isEqualTo("deployed");
         } finally {
-            suppressExceptions(() -> defaultClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            suppressExceptions(() -> defaultClient.removeRepository(HAPROXYTECH_REPOSITORY));
+            suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
         }
         LoggingOutputAssert.assertThat(loggingOutput).hasAtLeastOneEntry(expectedLogEntries);
     }
@@ -205,7 +213,7 @@ class HelmClientTest {
     @MethodSource
     @DisplayName("Parameterized Chart Installation with Options Executes Successfully")
     void testChartInstallOptions(ChartInstallOptionsTestParameters parameters, final LoggingOutput loggingOutput) {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+        addRepoIfMissing(helmClient, HAPROXYTECH_REPOSITORY);
         testChartInstallWithCleanup(parameters.options(), parameters.expectedLogEntries(), loggingOutput);
     }
 
@@ -329,7 +337,7 @@ class HelmClientTest {
     @DisplayName("Install Chart with Provenance Validation")
     @Disabled("Provenance validation is not supported in our unit tests due to lack of signed charts.")
     void testInstallChartWithProvenanceValidation(final LoggingOutput loggingOutput) {
-        removeRepoIfPresent(defaultClient, HAPROXYTECH_REPOSITORY);
+        addRepoIfMissing(helmClient, HAPROXYTECH_REPOSITORY);
 
         final InstallChartOptions options =
                 InstallChartOptions.builder().createNamespace(true).verify(true).build();
