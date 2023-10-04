@@ -84,7 +84,7 @@ function install_chart() {
   echo ""
   echo "Installing helm chart... "
   echo "SCRIPT_NAME: ${node_setup_script}"
-  echo "Values: -f ${CHART_DIR}/values.yaml --values ${CHART_VALUES_FILES}"
+  echo "Additional values: ${CHART_VALUES_FILES}"
   echo "-----------------------------------------------------------------------------------------------------"
   local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
   if [[ $count -eq 0 ]]; then
