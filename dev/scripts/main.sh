@@ -18,7 +18,9 @@ function setup_cluster() {
 	    echo "Cluster '${CLUSTER_NAME}' found"
   fi
 
-	setup_kubectl_context
+  setup_kubectl_context
+
+  log_time "setup_cluster"
 }
 
 function destroy_cluster() {
@@ -54,6 +56,8 @@ function deploy_fullstack_cluster_setup_chart() {
   kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
   kubectl get gatewayclass
   echo ""
+
+  log_time "deploy_fullstack_cluster_setup_chart"
 }
 
 function destroy_fullstack_cluster_setup_chart() {
@@ -73,6 +77,8 @@ function destroy_fullstack_cluster_setup_chart() {
   kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
   kubectl get gatewayclass
   echo ""
+
+  log_time "destroy_fullstack_cluster_setup_chart"
 }
 
 function install_chart() {
@@ -96,6 +102,8 @@ function install_chart() {
   else
     echo "${HELM_RELEASE_NAME} is already installed"
   fi
+
+  log_time "install_chart"
 }
 
 function uninstall_chart() {
@@ -113,7 +121,9 @@ function uninstall_chart() {
     echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
  	fi
 
-	kubectl delete ns "${NAMESPACE}" || true
+  kubectl delete ns "${NAMESPACE}" || true
+
+  log_time "uninstall_chart"
 }
 
 function nmt_install() {
@@ -164,4 +174,6 @@ function run_helm_chart_tests() {
 	  echo "Returning exit code 1"
 	  return 1
 	fi
+
+  log_time "run_helm_chart_tests"
 }

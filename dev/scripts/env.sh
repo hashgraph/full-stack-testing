@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+start_time=$(date +%s)
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 readonly SCRIPT_DIR
@@ -70,6 +72,19 @@ function setup_kubectl_context() {
 function setup() {
   setup_temp_dir
   load_env_file
+}
+
+function log_time() {
+  local end_time duration execution_time
+
+  local func_name=$1
+
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
+  execution_time=$(printf "%.2f seconds" "${duration}")
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo "<<< ${func_name} execution took: ${execution_time} >>>"
+  echo "-----------------------------------------------------------------------------------------------------"
 }
 
 setup
