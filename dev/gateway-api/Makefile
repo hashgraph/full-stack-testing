@@ -1,3 +1,6 @@
+# Force the use of bash as the shell for more features
+SHELL=/bin/bash
+
 SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 .ONESHELL:
 

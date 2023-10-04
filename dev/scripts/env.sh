@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 
+start_time=$(date +%s)
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 readonly SCRIPT_DIR
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
+readonly SETUP_CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-cluster-setup"
 readonly CHART_DIR="${SCRIPT_DIR}/../../charts/hedera-network"
 
+POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
+GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
 # telemetry related env variables
+readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"
 readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
 readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"
@@ -54,7 +60,11 @@ function setup_kubectl_context() {
 	kubectl get ns
 
 	echo "Setting kubectl context..."
-	kubectl config use-context "kind-${CLUSTER_NAME}"
+	local count
+	count=$(kubectl config get-contexts --no-headers | grep -c "kind-${CLUSTER_NAME}")
+	if [[ $count -ne 0 ]]; then
+	  kubectl config use-context "kind-${CLUSTER_NAME}"
+	fi
 	kubectl config set-context --current --namespace="${NAMESPACE}"
 	kubectl config get-contexts
 }
@@ -64,4 +74,27 @@ function setup() {
   load_env_file
 }
 
+function log_time() {
+  local end_time duration execution_time
+
+  local func_name=$1
+
+  end_time=$(date +%s)
+  duration=$((end_time - start_time))
+  execution_time=$(printf "%.2f seconds" "${duration}")
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo "<<< ${func_name} execution took: ${execution_time} >>>"
+  echo "-----------------------------------------------------------------------------------------------------"
+}
+
 setup
+
+echo "--------------------------Env Setup: fullstack-testing ------------------------------------------------"
+echo "CLUSTER_NAME: ${CLUSTER_NAME}"
+echo "RELEASE_NAME: ${HELM_RELEASE_NAME}"
+echo "USER: ${USER}"
+echo "NAMESPACE: ${NAMESPACE}"
+echo "SCRIPT_DIR: ${SCRIPT_DIR}"
+echo "TMP_DIR: ${TMP_DIR}"
+echo "-----------------------------------------------------------------------------------------------------"
+echo ""
