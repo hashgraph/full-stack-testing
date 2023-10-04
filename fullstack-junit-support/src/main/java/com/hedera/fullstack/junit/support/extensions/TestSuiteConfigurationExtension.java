@@ -16,10 +16,16 @@
 
 package com.hedera.fullstack.junit.support.extensions;
 
+import com.hedera.fullstack.junit.support.annotations.application.ApplicationNodes;
+import com.hedera.fullstack.junit.support.annotations.application.PlatformApplication;
+import com.hedera.fullstack.junit.support.annotations.application.PlatformConfiguration;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestInstanceFactoryContext;
 import org.junit.jupiter.api.extension.TestInstancePostProcessor;
 import org.junit.jupiter.api.extension.TestInstancePreConstructCallback;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Initializes the test class instance for the test suite. This initializer is responsible for reading the class level
@@ -37,7 +43,8 @@ public class TestSuiteConfigurationExtension implements TestInstancePreConstruct
      */
     @Override
     public void preConstructTestInstance(
-            final TestInstanceFactoryContext factoryContext, final ExtensionContext context) throws Exception {}
+            final TestInstanceFactoryContext factoryContext, final ExtensionContext context) throws Exception {
+    }
 
     /**
      * Callback that is invoked <em>after</em> the test instance has been created and configured.
