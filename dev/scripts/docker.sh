@@ -14,4 +14,6 @@ function build_kubectl_bats() {
   echo "-----------------------------------------------------------------------------------------------------"
   cd "${DOCKERFILE_DIR}/kubectl-bats" && docker build -t "${KUBECTL_BATS_IMAGE}" .
   kind load docker-image "${KUBECTL_BATS_IMAGE}" -n "${CLUSTER_NAME}"
+
+  log_time "build_kubectl_bats"
 }

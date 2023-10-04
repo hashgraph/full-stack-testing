@@ -21,6 +21,8 @@ function deploy_haproxy_ingress() {
 	  echo "HAProxy Ingress Controller is already installed"
 	  echo ""
   fi
+
+  log_time "deploy_haproxy_ingress"
 }
 
 function destroy_haproxy_ingress() {
@@ -40,6 +42,8 @@ function destroy_haproxy_ingress() {
 
 	echo "HAProxy Ingress Controller is uninstalled"
 	echo ""
+
+	log_time "destroy_haproxy_ingress"
 }
 
 function deploy_gateway_api_crd() {
@@ -81,6 +85,8 @@ function deploy_envoy_gateway_api() {
   fi
 
   get_gateway_status
+
+  log_time "deploy_envoy_gateway_api"
 }
 
 function get_gateway_status() {
@@ -116,6 +122,8 @@ function destroy_envoy_gateway_api() {
 
 	echo "Envoy Gateway API is uninstalled"
 	echo ""
+
+	log_time "destroy_envoy_gateway_api"
 }
 
 function uninstall_crd() {
@@ -129,6 +137,8 @@ function uninstall_crd() {
       kubectl delete crd "${name}"
     done
 	fi
+
+	log_time "uninstall_crd"
 }
 
 function expose_envoy_gateway_svc() {
@@ -145,6 +155,8 @@ function expose_envoy_gateway_svc() {
 	echo "Exposing Envoy Gateway Service: ${ENVOY_SERVICE} on ${local_port}:${gateway_port}"
   echo "-----------------------------------------------------------------------------------------------------"
   kubectl port-forward "svc/${ENVOY_SERVICE}" -n envoy-gateway-system "${local_port}":"${gateway_port}" &
+
+  log_time "expose_envoy_gateway_svc"
 }
 
 function unexpose_envoy_gateway_svc() {
@@ -157,6 +169,8 @@ function unexpose_envoy_gateway_svc() {
     echo "-----------------------------------------------------------------------------------------------------"
     kill "${GATEWAY_SVC_PID}" &>/dev/null || true
   fi
+
+  log_time "unexpose_envoy_gateway_svc"
 }
 
 function test_http_route() {
@@ -195,6 +209,8 @@ function test_http_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   unexpose_envoy_gateway_svc || true
   kubectl delete -f "${GATEWAY_API_DIR}/http-debug.yaml"
+
+  log_time "test_http_route"
 }
 
 function test_grpc_route() {
@@ -232,6 +248,8 @@ function test_grpc_route() {
   echo "-----------------------------------------------------------------------------------------------------"
   unexpose_envoy_gateway_svc || true
   kubectl delete -f "${GATEWAY_API_DIR}/grpc-debug.yaml"
+
+  log_time "test_grpc_route"
 }
 
 function test_tcp_route() {
@@ -266,4 +284,6 @@ function test_tcp_route() {
   rm deleteme.txt
   unexpose_envoy_gateway_svc || true
   kubectl delete -f "${GATEWAY_API_DIR}/tcp-debug.yaml"
+
+  log_time "test_tcp_route"
 }
