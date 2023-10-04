@@ -22,8 +22,6 @@ plugins {
 }
 
 javaModuleDependencies {
-    versionsFromConsistentResolution(":fullstack-helm-client")
-
     moduleNameToGA.put("com.hedera.fullstack.junit.support", "com.hedera.fullstack:fullstack-junit-support")
     moduleNameToGA.put("com.hedera.fullstack.test.toolkit", "com.hedera.fullstack:fullstack-test-toolkit")
 }
