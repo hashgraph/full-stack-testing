@@ -236,12 +236,8 @@ destroy-test-container:
 local-kubectl-bats:
 	source "${SCRIPTS_DIR}/${DOCKER_SCRIPT}" && build_kubectl_bats "${CLUSTER_NAME}"
 
-# Here we run all steps in sequence, if any step fails, deploy-all trap the EXIT and run cleanup
-.PHONY: run-deploy-seq
-run-deploy-seq: setup deploy-network helm-test setup-nodes start-nodes
-
-.PHONY: deploy-all
-deploy-all:
+.PHONY: ci-test
+ci-test:
 	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
 	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
 	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
@@ -250,17 +246,7 @@ deploy-all:
 		$(MAKE) destroy-network
 	}
 	trap cleanup_test EXIT # always destroy-network on exit
-	$(MAKE) run-deploy-seq
-
-.PHONY: destroy-all
-destroy-all:
-	-$(MAKE) destroy-network
-	-$(MAKE) undeploy-minio-operator
-	-$(MAKE) destroy-prometheus-operator
-
-.PHONY: ci-test
-ci-test: setup-cluster local-kubectl-bats
-	$(MAKE) deploy-all CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+	$(MAKE) ci-deploy-network setup-nodes start-nodes
 
 .PHONY: ci-deploy-network
 ci-deploy-network: setup-cluster local-kubectl-bats
