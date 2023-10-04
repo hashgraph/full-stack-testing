@@ -16,19 +16,12 @@
 
 package com.hedera.fullstack.helm.client.model;
 
-import java.util.Objects;
-
 /**
  * Represents a chart and is used to interact with the Helm install and uninstall commands.
  * @param repoName the name of repository which contains the Helm chart.
  * @param name the name of the Helm chart.
  */
 public record Chart(String name, String repoName) {
-
-    public Chart {
-        Objects.requireNonNull(repoName, "repoName must not be null");
-    }
-
     public Chart(String name) {
         this(name, null);
     }

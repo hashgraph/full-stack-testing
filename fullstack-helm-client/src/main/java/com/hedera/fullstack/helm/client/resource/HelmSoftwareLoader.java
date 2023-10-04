@@ -63,9 +63,10 @@ public final class HelmSoftwareLoader {
      * Unpacks the Helm executable contained in the JAR file into a temporary directory.
      *
      * @return the path to the Helm executable.
-     * @throws HelmConfigurationException if the Helm executable cannot be unpacked or the
-     *                                    operating system/architecture combination is not supported.
-     * @implNote This method expects the executable to be present at the following location in the JAR file: {@code /software/<os>/<arch>/helm}.
+     * @throws HelmConfigurationException if the Helm executable cannot be unpacked or the operating system/architecture
+     *                                    combination is not supported.
+     * @implNote This method expects the executable to be present at the following location in the JAR file:
+     * {@code /software/<os>/<arch>/helm}.
      */
     public static Path installSupportedVersion() {
         try {
@@ -86,12 +87,11 @@ public final class HelmSoftwareLoader {
                 pathBuilder.append(".exe");
             }
 
-            LOGGER.atDebug()
-                    .setMessage("Loading Helm executable from JAR file.  [os={}, arch={}, path={}]")
-                    .addArgument(os.name())
-                    .addArgument(arch.name())
-                    .addArgument(pathBuilder.toString())
-                    .log();
+            LOGGER.debug(
+                    "Loading Helm executable from JAR file.  [os={}, arch={}, path={}]",
+                    os.name(),
+                    arch.name(),
+                    pathBuilder);
 
             return RESOURCE_LOADER.load(pathBuilder.toString());
         } catch (IOException | SecurityException | IllegalStateException e) {
