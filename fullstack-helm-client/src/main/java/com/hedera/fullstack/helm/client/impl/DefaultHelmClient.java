@@ -25,9 +25,11 @@ import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.Version;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthentication;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartInstallRequest;
+import com.hedera.fullstack.helm.client.proxy.request.chart.ChartTestRequest;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartUninstallRequest;
 import com.hedera.fullstack.helm.client.proxy.request.common.VersionRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryAddRequest;
@@ -115,6 +117,14 @@ public final class DefaultHelmClient implements HelmClient {
     @Override
     public void uninstallChart(final String releaseName) {
         executeInternal(new ChartUninstallRequest(releaseName), Void.class, (b, c) -> {
+            b.call();
+            return null;
+        });
+    }
+
+    @Override
+    public void testChart(final String releaseName, final TestChartOptions options) {
+        executeInternal(new ChartTestRequest(releaseName, options), Void.class, (b, c) -> {
             b.call();
             return null;
         });

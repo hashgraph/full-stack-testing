@@ -26,6 +26,7 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntry;
 import com.jcovalent.junit.logging.LogEntryBuilder;
@@ -343,5 +344,19 @@ class HelmClientTest {
                 InstallChartOptions.builder().createNamespace(true).verify(true).build();
 
         testChartInstallWithCleanup(options, EXPECTED_LOG_ENTRIES, loggingOutput);
+    }
+
+    @Test
+    @DisplayName("Helm Test subcommand with options")
+    void testTestChartWithOptions() {
+        addRepoIfMissing(helmClient, HAPROXYTECH_REPOSITORY);
+        final TestChartOptions options =
+                TestChartOptions.builder().timeout("60s").filter("haproxy").build();
+        suppressExceptions(() -> helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART));
+        try {
+            helmClient.testChart(HAPROXY_RELEASE_NAME, options);
+        } finally {
+            suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
+        }
     }
 }
