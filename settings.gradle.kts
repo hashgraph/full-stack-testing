@@ -16,7 +16,10 @@
 
 pluginManagement { includeBuild("build-logic") }
 
-plugins { id("com.gradle.enterprise").version("3.13.2") }
+plugins {
+    id("com.gradle.enterprise").version("3.14.1")
+    id("com.hedera.fullstack.settings")
+}
 
 rootProject.name = "full-stack-testing"
 
@@ -45,7 +48,8 @@ include(":fullstack-datasource-api")
 
 include(":fullstack-datasource-core")
 
-include(":fullstack-examples")
+// TODO: re-enable once we have a way to run the *-examples without IntelliJ and Sonar issues
+// includeBuild("fullstack-examples")
 
 include(":fullstack-gradle-plugin")
 

@@ -14,6 +14,27 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.conventions") }
+plugins {
+    id("java-gradle-plugin")
+    id("com.gradle.plugin-publish").version("1.2.1")
+    id("com.hedera.fullstack.conventions")
+    id("com.hedera.fullstack.maven-publish")
+}
 
-dependencies { api(platform(project(":fullstack-bom"))) }
+dependencies {
+    api(platform(project(":fullstack-bom")))
+    implementation(project(":fullstack-helm-client"))
+}
+
+gradlePlugin {
+    plugins {
+        create("fullstackPlugin") {
+            id = "com.hedera.fullstack.fullstack-gradle-plugin"
+            group = "com.hedera.fullstack"
+            implementationClass = "com.hedera.fullstack.gradle.plugin.FullstackPlugin"
+            displayName = "Fullstack Plugin"
+            description =
+                "The Fullstack Plugin provides tools for working with Fullstack infrastructure."
+        }
+    }
+}

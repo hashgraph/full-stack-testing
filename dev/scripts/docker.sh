@@ -10,8 +10,10 @@ function build_kubectl_bats() {
   [[ -z "${CLUSTER_NAME}" ]] && echo "ERROR: [build_kubectl_bats] Cluster name is required" && return 1
 
   echo ""
-	echo "Building kubectl-bats image"
+  echo "Building kubectl-bats image"
   echo "-----------------------------------------------------------------------------------------------------"
-	cd "${DOCKERFILE_DIR}/kubectl-bats" && docker build -t "${KUBECTL_BATS_IMAGE}" .
+  cd "${DOCKERFILE_DIR}/kubectl-bats" && docker build -t "${KUBECTL_BATS_IMAGE}" .
   kind load docker-image "${KUBECTL_BATS_IMAGE}" -n "${CLUSTER_NAME}"
+
+  log_time "build_kubectl_bats"
 }

@@ -18,6 +18,8 @@ function fetch-prometheus-operator-bundle() {
 		[[ "${status}" != 0 ]] && rm "${PROMETHEUS_OPERATOR_YAML}" && echo "ERROR: Failed to fetch prometheus bundle"
 		return "${status}"
 	fi
+
+	log_time "fetch-prometheus-operator-bundle"
 }
 
 function deploy-prometheus-operator() {
@@ -36,6 +38,8 @@ function deploy-prometheus-operator() {
 	  echo "Prometheus operator CRD is already installed"
 	  echo ""
 	fi
+
+	log_time "deploy-prometheus-operator"
 }
 
 function destroy-prometheus-operator() {
@@ -45,6 +49,8 @@ function destroy-prometheus-operator() {
   echo "-----------------------------------------------------------------------------------------------------"
 	kubectl delete -f "${PROMETHEUS_OPERATOR_YAML}"
 	sleep 10
+
+	log_time "destroy-prometheus-operator"
 }
 
 function deploy-prometheus() {
@@ -77,6 +83,8 @@ function deploy-prometheus() {
 
 	echo "Waiting for prometheus to be active (timeout 300s)..."
 	kubectl wait --for=condition=Ready pods -l  app.kubernetes.io/name=prometheus --timeout 300s -n "${NAMESPACE}"
+
+	log_time "deploy-prometheus"
 }
 
 function destroy-prometheus() {
@@ -89,6 +97,8 @@ function destroy-prometheus() {
 	kubectl delete -f "${PROMETHEUS_RBAC_YAML}" || true
 	kubectl delete clusterrolebindings prometheus || true
 	sleep 5
+
+	log_time "destroy-prometheus"
 }
 
 function deploy-prometheus-example-app() {
@@ -143,6 +153,8 @@ function deploy_grafana_tempo() {
   helm upgrade -f "${TELEMETRY_DIR}/grafana/grafana-values.yaml" --install grafana grafana/grafana
   echo "Waiting for grafana to be active (timeout 300s)..."
   kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l "app.kubernetes.io/name=grafana,app.kubernetes.io/instance=grafana" --timeout=300s
+
+  log_time "deploy_grafana_tempo"
 }
 
 function destroy_grafana_tempo() {
