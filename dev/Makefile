@@ -138,7 +138,10 @@ run-func:
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && ${FUNC}
 
 .PHONY: start
-start: deploy-minio-operator-if-required update-helm-dependencies deploy-network setup-nodes start-nodes
+start: ci-deploy-network setup-nodes start-nodes
+
+.PHONY: stop
+stop: stop-nodes destroy-network
 
 .PHONY: restart
 restart: stop-nodes start-nodes
@@ -242,7 +245,8 @@ deploy-all:
 	# Enable cleanup_test function so that even if test fails, we cleanup the cluster.
 	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
 	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
-	function cleanup_test {
+	# NOTE: It needs latest make (version ~=4.3)
+	function cleanup_test () {
 		$(MAKE) destroy-network
 	}
 	trap cleanup_test EXIT # always destroy-network on exit
