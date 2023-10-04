@@ -113,7 +113,7 @@ function uninstall_chart() {
     echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
  	fi
 
-# 	kubectl delete ns "${NAMESPACE}" || true
+	kubectl delete ns "${NAMESPACE}" || true
 }
 
 function nmt_install() {
