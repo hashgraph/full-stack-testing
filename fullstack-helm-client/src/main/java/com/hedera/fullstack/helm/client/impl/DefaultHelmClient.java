@@ -25,6 +25,7 @@ import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.Version;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
 import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthentication;
@@ -33,6 +34,7 @@ import com.hedera.fullstack.helm.client.proxy.request.chart.ChartInstallRequest;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartTestRequest;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartUninstallRequest;
 import com.hedera.fullstack.helm.client.proxy.request.common.VersionRequest;
+import com.hedera.fullstack.helm.client.proxy.request.release.ReleaseListRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryAddRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryListRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryRemoveRequest;
@@ -151,6 +153,11 @@ public final class DefaultHelmClient implements HelmClient {
             b.call();
             return null;
         });
+    }
+
+    @Override
+    public List<ReleaseItem> listReleases() {
+        return executeAsList(new ReleaseListRequest(), ReleaseItem.class);
     }
 
     @Override

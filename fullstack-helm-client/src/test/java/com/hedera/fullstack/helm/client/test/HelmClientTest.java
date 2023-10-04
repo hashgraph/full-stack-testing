@@ -28,6 +28,7 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
 import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntry;
@@ -62,6 +63,8 @@ class HelmClientTest {
             new Repository("incubator", "https://charts.helm.sh/incubator");
 
     private static final Repository JETSTACK_REPOSITORY = new Repository("jetstack", "https://charts.jetstack.io");
+
+    private static final String NAMESPACE = "helm-client-test-ns";
     private static HelmClient helmClient;
     private static final int INSTALL_TIMEOUT = 10;
 
@@ -92,7 +95,7 @@ class HelmClientTest {
     @BeforeAll
     static void beforeAll() {
         helmClient = HelmClient.builder()
-                .defaultNamespace("helm-client-test-ns")
+                .defaultNamespace(NAMESPACE)
                 .workingDirectory(new File(".").toPath())
                 .build();
         assertThat(helmClient).isNotNull();
@@ -189,6 +192,16 @@ class HelmClientTest {
         try {
             suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
             Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
+            List<ReleaseItem> releaseItems = helmClient.listReleases();
+            assertThat(releaseItems).isNotNull().isNotEmpty();
+            ReleaseItem releaseItem = releaseItems.stream()
+                    .filter(item -> item.name().equals(HAPROXY_RELEASE_NAME))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(releaseItem).isNotNull();
+            assertThat(releaseItem.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(releaseItem.namespace()).isEqualTo(NAMESPACE);
+            assertThat(releaseItem.status()).isEqualTo("deployed");
             assertThat(release).isNotNull();
             assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
             assertThat(release.info().description()).isEqualTo("Install complete");
