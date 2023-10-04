@@ -240,13 +240,14 @@ public final class ArtifactLoader {
                             .map(Path::toAbsolutePath)
                             .forEach(this::addArtifact);
                 } catch (final IOException e) {
-                    LOGGER.atWarn()
-                            .setCause(e)
-                            .log("Failed to walk directory, skipping artifact identification [ path = '{}' ]", current);
+                    LOGGER.warn(
+                            String.format(
+                                    "Failed to walk directory, skipping artifact identification [ path = '%s' ]",
+                                    current),
+                            e);
                 }
             } else {
-                LOGGER.atWarn()
-                        .log("Skipping artifact identification, file is not a JAR archive [ path = '{}' ]", current);
+                LOGGER.warn("Skipping artifact identification, file is not a JAR archive [ path = '{}' ]", current);
             }
         }
     }
@@ -266,12 +267,11 @@ public final class ArtifactLoader {
                 classPath.add(artifact);
             }
         } catch (final IOException e) {
-            LOGGER.atWarn()
-                    .setCause(e)
-                    .log(
-                            "Failed to identify artifact, an I/O error occurred [ fileName = '{}', path = '{}' ]",
-                            artifact.getFileName(),
-                            artifact);
+            LOGGER.warn(
+                    String.format(
+                            "Failed to identify artifact, an I/O error occurred [ fileName = '%s', path = '%s' ]",
+                            artifact.getFileName(), artifact),
+                    e);
         }
     }
 
@@ -308,11 +308,11 @@ public final class ArtifactLoader {
                     try {
                         return uri.toURL();
                     } catch (final MalformedURLException e) {
-                        LOGGER.atWarn()
-                                .setCause(e)
-                                .log(
-                                        "Failed to convert path to URL, unable to load class path entry [ path = '{}' ]",
-                                        uri.getPath());
+                        LOGGER.warn(
+                                String.format(
+                                        "Failed to convert path to URL, unable to load class path entry [ path = '%s' ]",
+                                        uri.getPath()),
+                                e);
                         return null;
                     }
                 })
@@ -331,7 +331,7 @@ public final class ArtifactLoader {
         Objects.requireNonNull(parentLayer, "parentLayer must not be null");
 
         if (modulePath.isEmpty()) {
-            LOGGER.atDebug().log("No module path entries found, skipping module layer creation");
+            LOGGER.debug("No module path entries found, skipping module layer creation");
             return;
         }
 
@@ -341,10 +341,10 @@ public final class ArtifactLoader {
                     parentLayer.configuration().resolveAndBind(finder, ModuleFinder.of(), Collections.emptySet());
             moduleLayer = parentLayer.defineModulesWithOneLoader(cfg, classLoader);
         } catch (LayerInstantiationException | SecurityException e) {
-            LOGGER.atError().setCause(e).log("Failed to instantiate module layer, unable to load module path entries");
+            LOGGER.error("Failed to instantiate module layer, unable to load module path entries", e);
             throw new ArtifactLoadingException(e);
         } catch (FindException | ResolutionException e) {
-            LOGGER.atError().setCause(e).log("Failed to resolve modules, unable to load module path entries");
+            LOGGER.error("Failed to resolve modules, unable to load module path entries", e);
             throw new ArtifactLoadingException(e);
         }
     }

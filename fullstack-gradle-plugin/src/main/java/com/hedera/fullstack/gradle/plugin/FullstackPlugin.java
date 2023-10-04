@@ -16,4 +16,12 @@
 
 package com.hedera.fullstack.gradle.plugin;
 
-public class Dummy {}
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
+
+public class FullstackPlugin implements Plugin<Project> {
+    @Override
+    public void apply(Project project) {
+        // currently no implementation is needed
+    }
+}

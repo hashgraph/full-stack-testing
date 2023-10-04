@@ -10,7 +10,7 @@ setup() {
   log_debug "Expected total nodes: ${TOTAL_NODES}"
   log_debug "----------------------------------------------------------------------------"
 
-  kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s || return "${EX_ERR}"
+  kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s -n "${NAMESPACE}" || return "${EX_ERR}"
 
   local resp="$(get_pod_list network-node)"
   local nodes=(${resp}) # convert into an array
@@ -53,7 +53,7 @@ setup() {
     # make few attempts to check systemctl status
     while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${systemctl_status}" -ne "${EX_OK}" ]]; do
       attempts=$((attempts + 1))
-      kubectl exec "${node}" -c root-container -- systemctl status --no-pager
+      kubectl exec "${node}" -c root-container -n "${NAMESPACE}" -- systemctl status --no-pager
       systemctl_status="${?}"
       log_debug "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${systemctl_status} <<<<<"
       if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then

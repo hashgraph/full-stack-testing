@@ -1,16 +1,4 @@
-{{- if $.Values.gatewayApi.gatewayClass.enable | eq "true" }}
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: GatewayClass
-metadata:
-  name: {{ $.Values.gatewayApi.gatewayClass.name }}
-  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
-  labels:
-    fullstack.hedera.com/type: gateway-class
-spec:
-  controllerName: {{ $.Values.gatewayApi.gatewayClass.controllerName }}
-{{- end }}
 {{- if $.Values.gatewayApi.gateway.enable | eq "true" }}
----
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
