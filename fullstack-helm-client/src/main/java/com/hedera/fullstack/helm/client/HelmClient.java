@@ -102,6 +102,14 @@ public interface HelmClient {
     void testChart(String releaseName, TestChartOptions options);
 
     /**
+     * Executes the Helm CLI {@code dependency update} sub-command and updates the dependencies of the specified Helm
+     * chart.
+     *
+     * @param chartName the name of the chart to update.
+     */
+    void dependencyUpdate(String chartName);
+
+    /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.
      *
      * @return a new {@link HelmClientBuilder} instance.
