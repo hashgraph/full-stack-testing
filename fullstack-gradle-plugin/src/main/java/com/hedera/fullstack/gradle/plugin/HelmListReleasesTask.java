@@ -27,21 +27,30 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.options.Option;
 
-public abstract class HelmListReleasesTask extends DefaultTask {
+public abstract class HelmReleaseExistsTask extends DefaultTask {
+    @Input
+    @Option(option = "release", description = "The release to verify exists")
+    public abstract Property<String> getRelease();
+
     @Input
     @Optional
     @Option(option = "namespace", description = "The namespace to use when listing the releases")
     public abstract Property<String> getNamespace();
 
+    @Input
+    @Optional
+    @Option(option = "allNamespaces", description = "True if we should list releases in all namespaces")
+    public abstract Property<Boolean> getAllNamespaces();
+
     @TaskAction
-    List<ReleaseItem> listReleases() {
+    void releaseExists() {
         HelmClientBuilder helmClientBuilder = HelmClient.builder();
         if (getNamespace().isPresent()) {
             helmClientBuilder.defaultNamespace(getNamespace().get());
         }
         HelmClient helmClient = helmClientBuilder.build();
         try {
-            return helmClient.listReleases();
+            List<ReleaseItem> releaseItems = helmClient.listReleases(getAllNamespaces().getOrElse(false));
         } catch (Exception e) {
             this.getProject()
                     .getLogger()
