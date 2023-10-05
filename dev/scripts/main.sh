@@ -121,7 +121,8 @@ function uninstall_chart() {
     echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
  	fi
 
-  kubectl delete ns "${NAMESPACE}" || true
+  # it is needed for GKE deployment
+  kubectl delete secret "sh.helm.release.v1.${HELM_RELEASE_NAME}.v1" || true
 
   log_time "uninstall_chart"
 }

@@ -217,6 +217,18 @@ minio-server:
         name: pool-1
         volumesPerServer: 1
         size: 10Gi
+        nodeSelector:
+          fullstack-scheduling.io/os: linux
+          fullstack-scheduling.io/role: network
+        tolerations:
+          - key: "fullstack-scheduling.io/os"
+            operator: "Equal"
+            value: "linux"
+            effect: "NoSchedule"
+          - key: "fullstack-scheduling.io/role"
+            operator: "Equal"
+            value: "network"
+            effect: "NoSchedule"
     configuration:
       name: minio-secrets
     certificate:
@@ -230,6 +242,18 @@ hedera-mirror-node:
   # importer is a component of the hedera mirror node
   # config for subchart hedera-mirror/importer
   importer:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
     envFrom:
       - secretRef:
           name: mirror-passwords
@@ -251,10 +275,180 @@ hedera-mirror-node:
               allowAnonymousAccess: false
               bucketName: "fst-streams"
               # for s3 configuration of mirror node look at uploader-mirror-secrets.yaml
+  graphql:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+  grpc:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+  monitor:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+  postgresql:
+    postgresql:
+      nodeSelector:
+        fullstack-scheduling.io/os: linux
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+    pgpool:
+      nodeSelector:
+        fullstack-scheduling.io/os: linux
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+    witness:
+      nodeSelector:
+        fullstack-scheduling.io/os: linux
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+  redis:
+    master:
+      nodeSelector:
+        fullstack-scheduling.io/os: linux
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+    replica:
+      nodeSelector:
+        fullstack-scheduling.io/os: linux
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+  rest:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+    monitor:
+      nodeSelector:
+        fullstack-scheduling.io/os: linux
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+  rosetta:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+  web3:
+    nodeSelector:
+      fullstack-scheduling.io/os: linux
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
 
 # hedera explorer configuration
 hedera-explorer:
   enable: true
+  nodeSelector:
+    fullstack-scheduling.io/os: linux
+    fullstack-scheduling.io/role: network
+  tolerations:
+    - key: "fullstack-scheduling.io/os"
+      operator: "Equal"
+      value: "linux"
+      effect: "NoSchedule"
+    - key: "fullstack-scheduling.io/role"
+      operator: "Equal"
+      value: "network"
+      effect: "NoSchedule"
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
   # The hedera explorer UI /api url will proxy  all request to mirror node
@@ -280,7 +474,7 @@ hedera-explorer:
 deployment:
   podAnnotations: {}
   podLabels: {}
-  nodeSelectors:
+  nodeSelector:
     fullstack-scheduling.io/os: linux
     fullstack-scheduling.io/role: network
   tolerations:
