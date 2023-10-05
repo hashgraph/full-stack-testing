@@ -19,10 +19,14 @@ package com.hedera.fullstack.helm.client.proxy.request.release;
 import com.hedera.fullstack.helm.client.execution.HelmExecutionBuilder;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 
-public record ReleaseListRequest() implements HelmRequest {
+public record ReleaseListRequest(boolean allNamespaces) implements HelmRequest {
     @Override
     public void apply(HelmExecutionBuilder builder) {
         builder.argument("output", "json");
+
+        if (allNamespaces) {
+            builder.flag("--all-namespaces");
+        }
 
         builder.subcommands("list");
     }

@@ -104,10 +104,10 @@ public interface HelmClient {
 
     /**
      * Executes the Helm CLI {@code list} sub-command and returns the list of releases.
-     *
+     * @param allNamespaces if {@code true}, list releases across all namespaces.
      * @return the list of releases.
      */
-    List<ReleaseItem> listReleases();
+    List<ReleaseItem> listReleases(boolean allNamespaces);
 
     /**
      * Executes the Helm CLI {@code dependency update} sub-command and updates the dependencies of the specified Helm

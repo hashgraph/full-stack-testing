@@ -191,10 +191,31 @@ class HelmClientTest {
 
         try {
             suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
-            List<ReleaseItem> releaseItems = helmClient.listReleases();
+            final Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
+
+            // verify the returned release object
+            assertThat(release).isNotNull();
+            assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(release.info().description()).isEqualTo("Install complete");
+            assertThat(release.info().status()).isEqualTo("deployed");
+
+            // verify the release through the helm list command using the namespace of the helm client
+            final List<ReleaseItem> specificNamespaceReleaseItems = helmClient.listReleases(false);
+            assertThat(specificNamespaceReleaseItems).isNotNull().isNotEmpty();
+            final ReleaseItem specificNamespaceReleaseItem = specificNamespaceReleaseItems.stream()
+                    .filter(item -> item.name().equals(HAPROXY_RELEASE_NAME))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(specificNamespaceReleaseItem).isNotNull();
+            assertThat(specificNamespaceReleaseItem.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(specificNamespaceReleaseItem.namespace()).isEqualTo(NAMESPACE);
+            assertThat(specificNamespaceReleaseItem.status()).isEqualTo("deployed");
+            HelmClient defaultHelmClient = HelmClient.defaultClient();
+
+            // verify the release through the helm list command using the default namespace specifying --all-namespaces
+            final List<ReleaseItem> releaseItems = defaultHelmClient.listReleases(true);
             assertThat(releaseItems).isNotNull().isNotEmpty();
-            ReleaseItem releaseItem = releaseItems.stream()
+            final ReleaseItem releaseItem = releaseItems.stream()
                     .filter(item -> item.name().equals(HAPROXY_RELEASE_NAME))
                     .findFirst()
                     .orElse(null);
@@ -202,10 +223,6 @@ class HelmClientTest {
             assertThat(releaseItem.name()).isEqualTo(HAPROXY_RELEASE_NAME);
             assertThat(releaseItem.namespace()).isEqualTo(NAMESPACE);
             assertThat(releaseItem.status()).isEqualTo("deployed");
-            assertThat(release).isNotNull();
-            assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
-            assertThat(release.info().description()).isEqualTo("Install complete");
-            assertThat(release.info().status()).isEqualTo("deployed");
         } finally {
             suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
         }

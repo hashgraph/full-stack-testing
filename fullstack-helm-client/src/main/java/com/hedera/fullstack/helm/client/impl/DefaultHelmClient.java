@@ -156,8 +156,8 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     @Override
-    public List<ReleaseItem> listReleases() {
-        return executeAsList(new ReleaseListRequest(), ReleaseItem.class);
+    public List<ReleaseItem> listReleases(boolean allNamespaces) {
+        return executeAsList(new ReleaseListRequest(allNamespaces), ReleaseItem.class);
     }
 
     @Override
