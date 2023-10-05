@@ -105,7 +105,7 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
@@ -141,7 +141,7 @@ jobs:
           echo "options=${SONAR_OPTS}" >> "${GITHUB_OUTPUT}"
 
       - name: SonarCloud Scan
-        uses: gradle/gradle-build-action@243af859f8ca30903d9d7f7936897ca0358ba691 # v2.7.1
+        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
         env:
           GITHUB_TOKEN: ${{ secrets.access-token }}
           SONAR_TOKEN: ${{ secrets.sonar-token }}
@@ -187,7 +187,7 @@ jobs:
           fi
 
       - name: Publish Snyk Reports
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         with:
           name: Snyk Reports
