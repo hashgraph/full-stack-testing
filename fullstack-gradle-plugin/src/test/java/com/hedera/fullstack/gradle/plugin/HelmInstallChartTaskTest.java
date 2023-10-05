@@ -17,12 +17,14 @@
 package com.hedera.fullstack.gradle.plugin;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -68,7 +70,7 @@ class HelmInstallChartTaskTest {
                         task.getSet().add("defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind");
                         task.getValues().add(valuesFilePath);
                     });
-            assertEquals("fst", helmInstallChartTask.getRelease().get());
+            assertThat(helmInstallChartTask.getRelease().get()).isEqualTo("fst");
             helmInstallChartTask.installChart();
         } finally {
             // TODO: comment this out as workaround until we no longer need manual use of make command
@@ -79,8 +81,8 @@ class HelmInstallChartTaskTest {
     @Test
     @DisplayName("Simple Helm Install Chart Task")
     void testHelmInstallChartTaskSimple() {
-        HelmClient helmClient =
-                HelmClient.builder().defaultNamespace("simple-test").build();
+        final String namespace = "simple-test";
+        HelmClient helmClient = HelmClient.builder().defaultNamespace(namespace).build();
         suppressExceptions(() -> helmClient.uninstallChart(RELEASE_NAME));
         suppressExceptions(() -> helmClient.removeRepository(REPOSITORY));
         final List<Repository> repositories = helmClient.listRepositories();
@@ -92,15 +94,29 @@ class HelmInstallChartTaskTest {
                     .create("helmInstallChart", HelmInstallChartTask.class, task -> {
                         task.getChart().set(CHART.name());
                         task.getCreateNamespace().set(true);
-                        task.getNamespace().set("simple-test");
+                        task.getNamespace().set(namespace);
                         task.getRelease().set(RELEASE_NAME);
                         task.getRepo().set(CHART.repoName());
                     });
-            assertEquals(RELEASE_NAME, helmInstallChartTask.getRelease().get());
+            assertThat(helmInstallChartTask.getRelease().get()).isEqualTo(RELEASE_NAME);
             helmInstallChartTask.installChart();
+            HelmListReleasesTask helmListReleasesTask = project.getTasks()
+                    .create("helmListReleases", HelmListReleasesTask.class, task -> {
+                        task.getNamespace().set(namespace);
+                    });
+            List<ReleaseItem> releaseItems = helmListReleasesTask.listReleases();
+            assertThat(releaseItems).isNotNull().isNotEmpty();
+            ReleaseItem releaseItem = releaseItems.stream()
+                    .filter(item -> item.name().equals(RELEASE_NAME))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(releaseItem).isNotNull();
+            assertThat(releaseItem.name()).isEqualTo(RELEASE_NAME);
+            assertThat(releaseItem.namespace()).isEqualTo(namespace);
+            assertThat(releaseItem.status()).isEqualTo("deployed");
             HelmUninstallChartTask helmUninstallChartTask = project.getTasks()
                     .create("helmUninstallChart", HelmUninstallChartTask.class, task -> {
-                        task.getNamespace().set("simple-test");
+                        task.getNamespace().set(namespace);
                         task.getRelease().set(RELEASE_NAME);
                     });
             helmUninstallChartTask.uninstallChart();

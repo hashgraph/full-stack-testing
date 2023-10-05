@@ -15,6 +15,7 @@
  */
 
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
+import com.hedera.fullstack.gradle.plugin.HelmListReleasesTask
 import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
 
 plugins {
@@ -51,6 +52,8 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
     namespace.set("nginx-ns")
     release.set("nginx-release")
 }
+
+tasks.register<HelmListReleasesTask>("helmListRelease") { namespace.set("nginx-ns") }
 
 tasks.check {
     dependsOn("helmInstallNginxChart")
