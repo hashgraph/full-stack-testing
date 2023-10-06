@@ -73,8 +73,10 @@ public abstract class HelmReleaseExistsTask extends DefaultTask {
         }
 
         if (releaseItem == null) {
-            throw new RuntimeException("HelmReleaseExistsTask.releaseExists(): Release "
-                    + getRelease().get() + " does not exist");
+            final String errorMessage = "HelmReleaseExistsTask.releaseExists(): Release "
+                    + getRelease().get() + " does not exist";
+            this.getProject().getLogger().error(errorMessage);
+            throw new RuntimeException(errorMessage);
         }
     }
 }
