@@ -38,7 +38,7 @@ public class TestSetupExtension implements BeforeEachCallback {
      * @param context the current extension context; never {@code null}
      * @throws Exception if an error occurs during callback execution.
      *
-     * <p><img src=annotation-processing.drawio.png></img></p>
+     * <p><img alt="annotation processing call flow" src="annotation-processing.drawio.png"/></p>
      */
     @Override
     public void beforeEach(final ExtensionContext context) throws Exception {
