@@ -237,6 +237,14 @@ minio-server:
 # hedera mirror node configuration
 hedera-mirror-node:
   enable: true
+  graphql: # not needed for default FST use case
+    enabled: false
+  rosetta: # not needed for default FST use case
+    enabled: false
+  monitor: # not needed for default FST use case
+    enabled: false
+  redis:
+    enabled: false # not needed for default FST use case
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
   # importer is a component of the hedera mirror node
@@ -275,19 +283,19 @@ hedera-mirror-node:
               allowAnonymousAccess: false
               bucketName: "fst-streams"
               # for s3 configuration of mirror node look at uploader-mirror-secrets.yaml
-  graphql:
-    nodeSelector:
-      fullstack-scheduling.io/os: linux
-      fullstack-scheduling.io/role: network
-    tolerations:
-      - key: "fullstack-scheduling.io/os"
-        operator: "Equal"
-        value: "linux"
-        effect: "NoSchedule"
-      - key: "fullstack-scheduling.io/role"
-        operator: "Equal"
-        value: "network"
-        effect: "NoSchedule"
+            parser:
+              record:
+                entity:
+                  notify:
+                    enabled: true
+                  redis:
+                    enabled: false
+      management:
+        endpoint:
+          health:
+            group:
+              readiness:
+                exclude: redis
   grpc:
     nodeSelector:
       fullstack-scheduling.io/os: linux
@@ -301,19 +309,18 @@ hedera-mirror-node:
         operator: "Equal"
         value: "network"
         effect: "NoSchedule"
-  monitor:
-    nodeSelector:
-      fullstack-scheduling.io/os: linux
-      fullstack-scheduling.io/role: network
-    tolerations:
-      - key: "fullstack-scheduling.io/os"
-        operator: "Equal"
-        value: "linux"
-        effect: "NoSchedule"
-      - key: "fullstack-scheduling.io/role"
-        operator: "Equal"
-        value: "network"
-        effect: "NoSchedule"
+    config:
+      hedera:
+        mirror:
+          grpc:
+            listener:
+              type: NOTIFY
+      management:
+        endpoint:
+          health:
+            group:
+              readiness:
+                exclude: redis
   postgresql:
     postgresql:
       nodeSelector:
@@ -329,58 +336,7 @@ hedera-mirror-node:
           value: "network"
           effect: "NoSchedule"
     pgpool:
-      nodeSelector:
-        fullstack-scheduling.io/os: linux
-        fullstack-scheduling.io/role: network
-      tolerations:
-        - key: "fullstack-scheduling.io/os"
-          operator: "Equal"
-          value: "linux"
-          effect: "NoSchedule"
-        - key: "fullstack-scheduling.io/role"
-          operator: "Equal"
-          value: "network"
-          effect: "NoSchedule"
-    witness:
-      nodeSelector:
-        fullstack-scheduling.io/os: linux
-        fullstack-scheduling.io/role: network
-      tolerations:
-        - key: "fullstack-scheduling.io/os"
-          operator: "Equal"
-          value: "linux"
-          effect: "NoSchedule"
-        - key: "fullstack-scheduling.io/role"
-          operator: "Equal"
-          value: "network"
-          effect: "NoSchedule"
-  redis:
-    master:
-      nodeSelector:
-        fullstack-scheduling.io/os: linux
-        fullstack-scheduling.io/role: network
-      tolerations:
-        - key: "fullstack-scheduling.io/os"
-          operator: "Equal"
-          value: "linux"
-          effect: "NoSchedule"
-        - key: "fullstack-scheduling.io/role"
-          operator: "Equal"
-          value: "network"
-          effect: "NoSchedule"
-    replica:
-      nodeSelector:
-        fullstack-scheduling.io/os: linux
-        fullstack-scheduling.io/role: network
-      tolerations:
-        - key: "fullstack-scheduling.io/os"
-          operator: "Equal"
-          value: "linux"
-          effect: "NoSchedule"
-        - key: "fullstack-scheduling.io/role"
-          operator: "Equal"
-          value: "network"
-          effect: "NoSchedule"
+      replicaCount: 0
   rest:
     nodeSelector:
       fullstack-scheduling.io/os: linux
@@ -395,31 +351,7 @@ hedera-mirror-node:
         value: "network"
         effect: "NoSchedule"
     monitor:
-      nodeSelector:
-        fullstack-scheduling.io/os: linux
-        fullstack-scheduling.io/role: network
-      tolerations:
-        - key: "fullstack-scheduling.io/os"
-          operator: "Equal"
-          value: "linux"
-          effect: "NoSchedule"
-        - key: "fullstack-scheduling.io/role"
-          operator: "Equal"
-          value: "network"
-          effect: "NoSchedule"
-  rosetta:
-    nodeSelector:
-      fullstack-scheduling.io/os: linux
-      fullstack-scheduling.io/role: network
-    tolerations:
-      - key: "fullstack-scheduling.io/os"
-        operator: "Equal"
-        value: "linux"
-        effect: "NoSchedule"
-      - key: "fullstack-scheduling.io/role"
-        operator: "Equal"
-        value: "network"
-        effect: "NoSchedule"
+      enabled: false
   web3:
     nodeSelector:
       fullstack-scheduling.io/os: linux

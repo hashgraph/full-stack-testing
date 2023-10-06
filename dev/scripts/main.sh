@@ -122,7 +122,11 @@ function uninstall_chart() {
  	fi
 
   # it is needed for GKE deployment
-  kubectl delete secret "sh.helm.release.v1.${HELM_RELEASE_NAME}.v1" || true
+  local has_secret
+  has_secret=$(kubectl get secret | grep -c "sh.helm.release.v1.${HELM_RELEASE_NAME}.*")
+  if [[ $has_secret ]]; then
+    kubectl delete secret "sh.helm.release.v1.${HELM_RELEASE_NAME}.v1" || true
+  fi
 
   log_time "uninstall_chart"
 }
