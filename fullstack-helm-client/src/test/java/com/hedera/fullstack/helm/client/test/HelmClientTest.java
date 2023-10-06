@@ -18,19 +18,24 @@ package com.hedera.fullstack.helm.client.test;
 
 import static com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Named.named;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.helm.client.HelmClient;
+import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
+import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import com.jcovalent.junit.logging.JCovalentLoggingSupport;
 import com.jcovalent.junit.logging.LogEntry;
 import com.jcovalent.junit.logging.LogEntryBuilder;
 import com.jcovalent.junit.logging.LoggingOutput;
 import com.jcovalent.junit.logging.assertj.LoggingOutputAssert;
+import java.io.File;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.*;
@@ -58,6 +63,8 @@ class HelmClientTest {
             new Repository("incubator", "https://charts.helm.sh/incubator");
 
     private static final Repository JETSTACK_REPOSITORY = new Repository("jetstack", "https://charts.jetstack.io");
+
+    private static final String NAMESPACE = "helm-client-test-ns";
     private static HelmClient helmClient;
     private static final int INSTALL_TIMEOUT = 10;
 
@@ -87,8 +94,10 @@ class HelmClientTest {
 
     @BeforeAll
     static void beforeAll() {
-        helmClient =
-                HelmClient.builder().defaultNamespace("helm-client-test-ns").build();
+        helmClient = HelmClient.builder()
+                .defaultNamespace(NAMESPACE)
+                .workingDirectory(new File(".").toPath())
+                .build();
         assertThat(helmClient).isNotNull();
     }
 
@@ -182,11 +191,38 @@ class HelmClientTest {
 
         try {
             suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
-            Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
+            final Release release = helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART);
+
+            // verify the returned release object
             assertThat(release).isNotNull();
             assertThat(release.name()).isEqualTo(HAPROXY_RELEASE_NAME);
             assertThat(release.info().description()).isEqualTo("Install complete");
             assertThat(release.info().status()).isEqualTo("deployed");
+
+            // verify the release through the helm list command using the namespace of the helm client
+            final List<ReleaseItem> specificNamespaceReleaseItems = helmClient.listReleases(false);
+            assertThat(specificNamespaceReleaseItems).isNotNull().isNotEmpty();
+            final ReleaseItem specificNamespaceReleaseItem = specificNamespaceReleaseItems.stream()
+                    .filter(item -> item.name().equals(HAPROXY_RELEASE_NAME))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(specificNamespaceReleaseItem).isNotNull();
+            assertThat(specificNamespaceReleaseItem.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(specificNamespaceReleaseItem.namespace()).isEqualTo(NAMESPACE);
+            assertThat(specificNamespaceReleaseItem.status()).isEqualTo("deployed");
+            HelmClient defaultHelmClient = HelmClient.defaultClient();
+
+            // verify the release through the helm list command using the default namespace specifying --all-namespaces
+            final List<ReleaseItem> releaseItems = defaultHelmClient.listReleases(true);
+            assertThat(releaseItems).isNotNull().isNotEmpty();
+            final ReleaseItem releaseItem = releaseItems.stream()
+                    .filter(item -> item.name().equals(HAPROXY_RELEASE_NAME))
+                    .findFirst()
+                    .orElse(null);
+            assertThat(releaseItem).isNotNull();
+            assertThat(releaseItem.name()).isEqualTo(HAPROXY_RELEASE_NAME);
+            assertThat(releaseItem.namespace()).isEqualTo(NAMESPACE);
+            assertThat(releaseItem.status()).isEqualTo("deployed");
         } finally {
             suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
         }
@@ -343,5 +379,36 @@ class HelmClientTest {
                 InstallChartOptions.builder().createNamespace(true).verify(true).build();
 
         testChartInstallWithCleanup(options, EXPECTED_LOG_ENTRIES, loggingOutput);
+    }
+
+    @Test
+    @DisplayName("Helm Test subcommand with options")
+    void testTestChartWithOptions() {
+        addRepoIfMissing(helmClient, HAPROXYTECH_REPOSITORY);
+        final TestChartOptions options =
+                TestChartOptions.builder().timeout("60s").filter("haproxy").build();
+        suppressExceptions(() -> helmClient.installChart(HAPROXY_RELEASE_NAME, HAPROXY_CHART));
+        try {
+            helmClient.testChart(HAPROXY_RELEASE_NAME, options);
+        } finally {
+            suppressExceptions(() -> helmClient.uninstallChart(HAPROXY_RELEASE_NAME));
+        }
+    }
+
+    @Test
+    @DisplayName("Test Helm dependency update subcommand")
+    void testHelmDependencyUpdate() {
+        helmClient.dependencyUpdate("../charts/hedera-network");
+    }
+
+    @Test
+    @DisplayName("Test Helm dependency build subcommand failure")
+    void testHelmDependencyBuildFailure() {
+        HelmExecutionException exception =
+                assertThrows(HelmExecutionException.class, () -> helmClient.dependencyUpdate("../charts/not-a-chart"));
+        assertThat(exception.getMessage()).contains("Execution of the Helm command failed with exit code: 1");
+        assertThat(exception.getStdOut())
+                .contains(
+                        "Error: could not find ../charts/not-a-chart: stat ../charts/not-a-chart: no such file or directory");
     }
 }

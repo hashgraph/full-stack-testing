@@ -98,8 +98,13 @@ class HelmInstallChartTaskTest {
                     });
             assertEquals(RELEASE_NAME, helmInstallChartTask.getRelease().get());
             helmInstallChartTask.installChart();
+            HelmUninstallChartTask helmUninstallChartTask = project.getTasks()
+                    .create("helmUninstallChart", HelmUninstallChartTask.class, task -> {
+                        task.getNamespace().set("simple-test");
+                        task.getRelease().set(RELEASE_NAME);
+                    });
+            helmUninstallChartTask.uninstallChart();
         } finally {
-            suppressExceptions(() -> helmClient.uninstallChart(RELEASE_NAME));
             suppressExceptions(() -> helmClient.removeRepository(REPOSITORY));
         }
     }

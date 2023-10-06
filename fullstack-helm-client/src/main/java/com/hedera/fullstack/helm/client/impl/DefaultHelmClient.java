@@ -25,11 +25,16 @@ import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.Version;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
+import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import com.hedera.fullstack.helm.client.proxy.request.HelmRequest;
 import com.hedera.fullstack.helm.client.proxy.request.authentication.KubeAuthentication;
+import com.hedera.fullstack.helm.client.proxy.request.chart.ChartDependencyUpdateRequest;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartInstallRequest;
+import com.hedera.fullstack.helm.client.proxy.request.chart.ChartTestRequest;
 import com.hedera.fullstack.helm.client.proxy.request.chart.ChartUninstallRequest;
 import com.hedera.fullstack.helm.client.proxy.request.common.VersionRequest;
+import com.hedera.fullstack.helm.client.proxy.request.release.ReleaseListRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryAddRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryListRequest;
 import com.hedera.fullstack.helm.client.proxy.request.repository.RepositoryRemoveRequest;
@@ -68,6 +73,11 @@ public final class DefaultHelmClient implements HelmClient {
     private final String defaultNamespace;
 
     /**
+     * The working directory to use when executing Helm commands.
+     */
+    private final Path workingDirectory;
+
+    /**
      * Creates a new instance of the {@link DefaultHelmClient} class.
      *
      * @param helmExecutable   the path to the Helm executable.
@@ -76,9 +86,26 @@ public final class DefaultHelmClient implements HelmClient {
      */
     public DefaultHelmClient(
             final Path helmExecutable, final KubeAuthentication authentication, final String defaultNamespace) {
+        this(helmExecutable, authentication, defaultNamespace, null);
+    }
+
+    /**
+     * Creates a new instance of the {@link DefaultHelmClient} class.
+     *
+     * @param helmExecutable   the path to the Helm executable.
+     * @param authentication   the authentication configuration to use when executing Helm commands.
+     * @param defaultNamespace the default namespace to use when executing Helm commands.
+     * @param workingDirectory the working directory to use when executing Helm commands.
+     */
+    public DefaultHelmClient(
+            final Path helmExecutable,
+            final KubeAuthentication authentication,
+            final String defaultNamespace,
+            final Path workingDirectory) {
         this.helmExecutable = Objects.requireNonNull(helmExecutable, "helmExecutable must not be null");
         this.authentication = Objects.requireNonNull(authentication, "authentication must not be null");
         this.defaultNamespace = defaultNamespace;
+        this.workingDirectory = workingDirectory;
     }
 
     @Override
@@ -120,6 +147,27 @@ public final class DefaultHelmClient implements HelmClient {
         });
     }
 
+    @Override
+    public void testChart(final String releaseName, final TestChartOptions options) {
+        executeInternal(new ChartTestRequest(releaseName, options), Void.class, (b, c) -> {
+            b.call();
+            return null;
+        });
+    }
+
+    @Override
+    public List<ReleaseItem> listReleases(boolean allNamespaces) {
+        return executeAsList(new ReleaseListRequest(allNamespaces), ReleaseItem.class);
+    }
+
+    @Override
+    public void dependencyUpdate(final String chartName) {
+        executeInternal(new ChartDependencyUpdateRequest(chartName), Void.class, (b, c) -> {
+            b.call();
+            return null;
+        });
+    }
+
     /**
      * Applies the default namespace and authentication configuration to the given builder.
      *
@@ -130,11 +178,16 @@ public final class DefaultHelmClient implements HelmClient {
             builder.argument(NAMESPACE_ARG_NAME, defaultNamespace);
         }
 
+        if (workingDirectory != null) {
+            builder.workingDirectory(workingDirectory);
+        }
+
         authentication.apply(builder);
     }
 
     /**
-     * Executes the given request and returns the response as the given class. The request is executed using the default namespace.
+     * Executes the given request and returns the response as the given class. The request is executed using the default
+     * namespace.
      *
      * @param request       the request to execute.
      * @param responseClass the class of the response.
@@ -162,7 +215,8 @@ public final class DefaultHelmClient implements HelmClient {
     }
 
     /**
-     * Executes the given request and returns the response as a list of the given class. The request is executed using the default namespace.
+     * Executes the given request and returns the response as a list of the given class. The request is executed using
+     * the default namespace.
      *
      * @param request       the request to execute.
      * @param responseClass the class of the response.
