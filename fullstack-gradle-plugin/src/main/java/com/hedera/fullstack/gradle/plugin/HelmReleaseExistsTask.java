@@ -20,6 +20,7 @@ import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmClientBuilder;
 import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
 import java.util.List;
+import java.util.Objects;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
@@ -44,18 +45,36 @@ public abstract class HelmReleaseExistsTask extends DefaultTask {
 
     @TaskAction
     void releaseExists() {
-        HelmClientBuilder helmClientBuilder = HelmClient.builder();
-        if (getNamespace().isPresent()) {
-            helmClientBuilder.defaultNamespace(getNamespace().get());
-        }
-        HelmClient helmClient = helmClientBuilder.build();
+        ReleaseItem releaseItem;
         try {
-            List<ReleaseItem> releaseItems = helmClient.listReleases(getAllNamespaces().getOrElse(false));
+            final String release = getRelease().getOrNull();
+            Objects.requireNonNull(release, "release must not be null");
+
+            HelmClientBuilder helmClientBuilder = HelmClient.builder();
+            if (getNamespace().isPresent()) {
+                helmClientBuilder.defaultNamespace(getNamespace().get());
+            }
+
+            HelmClient helmClient = helmClientBuilder.build();
+            List<ReleaseItem> releaseItems =
+                    helmClient.listReleases(getAllNamespaces().getOrElse(false));
+            releaseItem = releaseItems.stream()
+                    .filter(item -> item.name().equals(release))
+                    .findFirst()
+                    .orElse(null);
         } catch (Exception e) {
             this.getProject()
                     .getLogger()
-                    .error("HelmListReleasesTask.listReleases() An ERROR occurred while listing the releases: ", e);
+                    .error(
+                            "HelmReleaseExistsTask.releaseExists() An ERROR occurred while listing the releases: "
+                                    + e.getMessage(),
+                            e);
             throw e;
+        }
+
+        if (releaseItem == null) {
+            throw new RuntimeException("HelmReleaseExistsTask.releaseExists(): Release "
+                    + getRelease().get() + " does not exist");
         }
     }
 }

@@ -24,7 +24,6 @@ import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmExecutionException;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
-import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -100,20 +99,12 @@ class HelmInstallChartTaskTest {
                     });
             assertThat(helmInstallChartTask.getRelease().get()).isEqualTo(RELEASE_NAME);
             helmInstallChartTask.installChart();
-            HelmListReleasesTask helmListReleasesTask = project.getTasks()
-                    .create("helmListReleases", HelmListReleasesTask.class, task -> {
+            HelmReleaseExistsTask helmReleaseExistsTask = project.getTasks()
+                    .create("helmReleaseExists", HelmReleaseExistsTask.class, task -> {
                         task.getNamespace().set(namespace);
+                        task.getRelease().set(RELEASE_NAME);
                     });
-            List<ReleaseItem> releaseItems = helmListReleasesTask.listReleases();
-            assertThat(releaseItems).isNotNull().isNotEmpty();
-            ReleaseItem releaseItem = releaseItems.stream()
-                    .filter(item -> item.name().equals(RELEASE_NAME))
-                    .findFirst()
-                    .orElse(null);
-            assertThat(releaseItem).isNotNull();
-            assertThat(releaseItem.name()).isEqualTo(RELEASE_NAME);
-            assertThat(releaseItem.namespace()).isEqualTo(namespace);
-            assertThat(releaseItem.status()).isEqualTo("deployed");
+            helmReleaseExistsTask.releaseExists();
             HelmUninstallChartTask helmUninstallChartTask = project.getTasks()
                     .create("helmUninstallChart", HelmUninstallChartTask.class, task -> {
                         task.getNamespace().set(namespace);
