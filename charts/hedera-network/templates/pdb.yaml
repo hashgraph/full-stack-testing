@@ -4,7 +4,7 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: network-node-pdb-{{ $node.name }}
+  name: {{ $.Release.Name }}-node-pdb-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     fullstack.hedera.com/type: pod-disruption-budget

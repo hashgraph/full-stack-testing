@@ -4,17 +4,17 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: haproxy-cm-{{ $node.name }}
+  name: {{ $.Release.Name }}-haproxy-cm-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 data:
   haproxy.cfg: |
-    {{- tpl ($.Files.Get "config-files/haproxy.cfg") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}
+    {{- tpl ($.Files.Get "config-files/haproxy.cfg") (dict "nodeConfig" $node "Template" $.Template "Release" $.Release ) | nindent 4 }}
 ---
 {{ end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: haproxy-ofac-cm
+  name: {{ $.Release.Name }}-haproxy-ofac-cm
 data:
   ofacBlock.acl: |
     {{- .Files.Get "config-files/ofacBlock.acl" | nindent 4  }}

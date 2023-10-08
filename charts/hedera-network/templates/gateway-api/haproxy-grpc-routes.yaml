@@ -6,18 +6,18 @@
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: TCPRoute
 metadata:
-  name: haproxy-grpc-route-{{ $node.name }}
+  name: {{ $.Release.Name }}-haproxy-grpc-route-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     fullstack.hedera.com/type: tcp-route
     fullstack.hedera.com/nodeName: {{ $node.name }}
 spec:
   parentRefs:
-    - name: fst
+    - name: {{ $.Values.gatewayApi.gateway.name }}
       sectionName: grpc-{{ $node.name }}
   rules:
     - backendRefs:
-      - name: haproxy-{{ $node.name }}-svc
+      - name: {{ $.Release.Name }}-haproxy-{{ $node.name }}-svc
         port: 50211
 {{- end }}
 {{- end }}

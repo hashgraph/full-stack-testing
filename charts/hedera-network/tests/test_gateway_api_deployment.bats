@@ -22,7 +22,7 @@ setup() {
       local node_name=$(get_pod_label "${pod}" "fullstack.hedera.com/node-name")
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
-      local route_name="envoy-grpc-web-route-${node_name}"
+      local route_name="${RELEASE_NAME}-envoy-grpc-web-route-${node_name}"
       local is_enabled=$(is_enabled_for_node "${node_name}" ".envoyProxy.enable")
       if [ "${is_enabled}" = "TRUE" ]; then
         log_debug "EnvoyProxy enabled for node '${node_name}'"
@@ -61,7 +61,7 @@ setup() {
       local node_name=$(get_pod_label "${pod}" "fullstack.hedera.com/node-name")
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
-      local route_name="haproxy-grpc-route-${node_name}"
+      local route_name="${RELEASE_NAME}-haproxy-grpc-route-${node_name}"
       local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enable")
       if [ "${is_enabled}" = "TRUE" ]; then
         log_debug "HAProxy enabled for node '${node_name}'"

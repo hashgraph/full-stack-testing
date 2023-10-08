@@ -17,7 +17,7 @@ you have the network deployed already.
   ```
   - once the `network-test` container is running, use another terminal to shell into it using command below
   ```
-  kubectl exec -it network-test -- bash 
+  kubectl exec -it "${RELEASE_NAME}-network-test" -- bash # where RELEASE_NAME is helm chart release name
   ```
   - Then you can run the test inside the container to debug 
   ```

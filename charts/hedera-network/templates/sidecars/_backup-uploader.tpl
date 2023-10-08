@@ -2,6 +2,7 @@
 {{- $backupUploader := .backupUploader | required "context must include 'backupUploader'!" -}}
 {{- $defaults := .defaults | required "context must include 'defaults'!" }}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
+{{- $release := .release | required "context must include 'release'!" -}}
 - name: {{ default "backup-uploader" $backupUploader.nameOverride }}
   image: {{ include "fullstack.container.image" (dict "image" $backupUploader.image "Chart" $chart "defaults" $defaults) }}
   imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $backupUploader.image "defaults" $defaults) }}
@@ -16,7 +17,7 @@
       value: {{ default $defaults.config.backupBucket ($backupUploader.config).backupBucket | quote }}
   envFrom:
     - secretRef:
-        name: backup-uploader-secrets
+        name: {{ $release.Name }}-backup-uploader-secrets
   {{- with $backupUploader.resources }}
   resources:
     {{- toYaml . | nindent 4 }}

@@ -6,7 +6,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: envoy-proxy-{{ $node.name }}
+  name: {{ $.Release.Name }}-envoy-proxy-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
   replicas: 1
@@ -38,7 +38,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: envoy-proxy-cm-{{ $node.name }}
+            name: {{ $.Release.Name }}-envoy-proxy-cm-{{ $node.name }}
       containers:
       - name: {{ default $defaults.nameOverride $envoyProxy.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $envoyProxy.image "Chart" $.Chart "defaults" $defaults ) }}

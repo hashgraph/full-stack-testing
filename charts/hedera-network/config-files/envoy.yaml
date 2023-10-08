@@ -81,7 +81,7 @@ static_resources:
             - endpoint:
                 address:
                   socket_address:
-                    address: network-{{ .nodeConfig.name }}-svc
+                    address: {{ .Release.Name }}-network-{{ .nodeConfig.name }}-svc
                     port_value: 50211
     - name: envoy-admin
       connect_timeout: 0.25s

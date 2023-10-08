@@ -221,13 +221,13 @@ undeploy-minio-operator:
 ######################################### Helm Chart Test #################################
 .PHONY: helm-test
 helm-test:
-	source "${SCRIPTS_DIR}/main.sh" && run_helm_chart_tests "network-test" || exit 1
+	source "${SCRIPTS_DIR}/main.sh" && run_helm_chart_tests || exit 1
 
 .PHONY: destroy-test-container
 destroy-test-container:
 	echo "" && \
 	echo ">> Deleting test container..." && \
-	kubectl delete pod network-test -n "${NAMESPACE}" || true
+	kubectl delete pod "${RELEASE_NAME}-network-test" -n "${NAMESPACE}" || true
 
 ######################################### CI #################################
 .PHONY: local-kubectl-bats

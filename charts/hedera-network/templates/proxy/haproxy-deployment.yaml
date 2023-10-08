@@ -6,7 +6,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: haproxy-{{ $node.name }}
+  name: {{ $.Release.Name }}-haproxy-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
   replicas: 1
@@ -38,10 +38,10 @@ spec:
       volumes:
         - name: haproxy-config-volume
           configMap:
-            name: haproxy-cm-{{ $node.name }}
+            name: {{ $.Release.Name }}-haproxy-cm-{{ $node.name }}
         - name: haproxy-ofac-volume
           configMap:
-            name: haproxy-ofac-cm
+            name: {{ $.Release.Name }}-haproxy-ofac-cm
       containers:
       - name: {{ default $defaults.nameOverride $haproxy.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $haproxy.image "Chart" $.Chart "defaults" $defaults ) }}

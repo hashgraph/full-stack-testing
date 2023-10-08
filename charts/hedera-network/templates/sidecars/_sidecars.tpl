@@ -7,6 +7,7 @@
 {{- $otelCollector := .otelCollector | required "context must include 'otelCollector'!" -}}
 {{- $cloud := .cloud | required "context must include 'cloud'!" -}}
 {{- $chart := .chart | required "context must include 'chart'!" -}}
+{{- $release := .release | required "context must include 'Release'!" -}}
 {{- $nodeId := .node.accountId -}}
 {{- $minioserver := .minioserver -}}
   {{- if default $defaults.sidecars.recordStreamUploader.enable  $recordStream.enable | eq "true" }}
@@ -26,7 +27,7 @@
   {{- end }}
   {{- if default $defaults.sidecars.backupUploader.enable  $backupUploader.enable | eq "true" }}
   # Sidecar: Backup Uploader
-  {{- $data := dict "backupUploader" $backupUploader "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.backupUploader -}}
+  {{- $data := dict "backupUploader" $backupUploader "cloud" $cloud "chart" $chart "defaults" $defaults.sidecars.backupUploader "release" $release -}}
   {{ include "fullstack.sidecars.backupUploader " $data | nindent 0 }}
   {{- end }}
   {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}

@@ -13,7 +13,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: network-{{ $node.name }}
+  name: {{ $.Release.Name }}-network-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     app: network-{{ $node.name }}
@@ -59,7 +59,7 @@ spec:
         {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}
         - name: otel-collector-volume
           configMap:
-            name: otel-collector-cm
+            name: {{ $.Release.Name }}-otel-collector-cm
         {{- end }}
       initContainers:
       # Init Container
@@ -101,5 +101,6 @@ spec:
         "node" $node
         "defaults" $defaults
         "minioserver" (index $.Values "minio-server")
+        "release" $.Release
         ) | nindent 6 }}
 {{ end }}
