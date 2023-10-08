@@ -49,7 +49,7 @@ function setup_node_all() {
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
 
     create_hapi_directories "${pod}" || return "${EX_ERR}"
     copy_platform "${pod}" || return "${EX_ERR}"
@@ -85,7 +85,7 @@ function start_node_all() {
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
     start_service "${pod}" || return "${EX_ERR}"
     log_time "start_node"
   done
@@ -106,7 +106,7 @@ function stop_node_all() {
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
     stop_service "${pod}" || return "${EX_ERR}"
     log_time "stop_node"
   done

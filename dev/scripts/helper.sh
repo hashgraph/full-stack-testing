@@ -20,6 +20,7 @@ readonly HGCAPP_DIR="/opt/hgcapp"
 readonly NMT_DIR="${HGCAPP_DIR}/node-mgmt-tools"
 readonly HAPI_PATH="${HGCAPP_DIR}/services-hedera/HapiApp2.0"
 readonly HEDERA_HOME_DIR="/home/hedera"
+readonly RELEASE_NAME="${RELEASE_NAME:-fst}"
 
 readonly NMT_VERSION="${NMT_VERSION:-v2.0.0-alpha.0}"
 readonly NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/releases/tags/${NMT_VERSION}"
@@ -304,13 +305,13 @@ function prep_address_book() {
   # prepare address book lines
   local addresses=()
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
     local max_attempts=$MAX_ATTEMPTS
     local attempts=0
     local status=$(kubectl get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}')
 
     while [[ "${attempts}" -lt "${max_attempts}" &&  "${status}" != "True" ]]; do
-      kubectl get pod network-node0-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")]}'
+      kubectl get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")]}'
 
       echo ""
       echo "Waiting for the pod to be ready - ${pod}: Attempt# ${attempts}/${max_attempts} ..."
@@ -327,8 +328,8 @@ function prep_address_book() {
       return "${EX_ERR}"
     fi
 
-    echo "${KCTL} get svc network-${node_name}-svc -o jsonpath='{.spec.clusterIP}' | xargs"
-    local SVC_IP=$("${KCTL}" get svc "network-${node_name}-svc" -o jsonpath='{.spec.clusterIP}' | xargs)
+    echo "${KCTL} get svc ${RELEASE_NAME}-network-${node_name}-svc -o jsonpath='{.spec.clusterIP}' | xargs"
+    local SVC_IP=$("${KCTL}" get svc "${RELEASE_NAME}-network-${node_name}-svc" -o jsonpath='{.spec.clusterIP}' | xargs)
     if [ -z "${SVC_IP}" ]; then
       echo "Could not detect service IP for ${pod}"
       return "${EX_ERR}"
@@ -674,7 +675,7 @@ function verify_node_all() {
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
     verify_network_state "${pod}" "${MAX_ATTEMPTS}" || return "${EX_ERR}"
     log_time "verify_network_state"
   done
@@ -694,7 +695,7 @@ function replace_keys_all() {
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
     copy_hedera_keys "${pod}" || return "${EX_ERR}"
     copy_node_keys "${node_name}" "${pod}" || return "${EX_ERR}"
     log_time "replace_keys"
@@ -714,7 +715,7 @@ function reset_node_all() {
 
   local node_name
   for node_name in "${NODE_NAMES[@]}"; do
-    local pod="network-${node_name}-0" # pod name
+    local pod="${RELEASE_NAME}-network-${node_name}-0" # pod name
     reset_node "${pod}" || return "${EX_ERR}"
     log_time "reset_node"
   done
