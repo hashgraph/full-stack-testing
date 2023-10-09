@@ -34,6 +34,11 @@ public final class DefaultHelmClientBuilder implements HelmClientBuilder {
     private String defaultNamespace;
 
     /**
+     * The working directory to be used by the {@link HelmClient}.
+     */
+    private Path workingDirectory;
+
+    /**
      * The kubernetes API server address and port number to which the client should connect. Defaults to a {@code null}
      * value which indicates that the Helm {@code --kube-apiserver <address_and_port>} argument should not be specified.
      */
@@ -83,6 +88,12 @@ public final class DefaultHelmClientBuilder implements HelmClientBuilder {
     @Override
     public HelmClientBuilder defaultNamespace(final String namespace) {
         this.defaultNamespace = namespace;
+        return this;
+    }
+
+    @Override
+    public HelmClientBuilder workingDirectory(final Path workingDirectory) {
+        this.workingDirectory = workingDirectory;
         return this;
     }
 
@@ -139,6 +150,6 @@ public final class DefaultHelmClientBuilder implements HelmClientBuilder {
                 kubeTlsServerName,
                 kubeToken,
                 kubeConfig);
-        return new DefaultHelmClient(helmExecutable, kubeAuthentication, defaultNamespace);
+        return new DefaultHelmClient(helmExecutable, kubeAuthentication, defaultNamespace, workingDirectory);
     }
 }

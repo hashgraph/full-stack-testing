@@ -22,6 +22,8 @@ import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.Repository;
 import com.hedera.fullstack.helm.client.model.chart.Release;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptions;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
+import com.hedera.fullstack.helm.client.model.test.TestChartOptions;
 import java.util.List;
 
 /**
@@ -91,6 +93,29 @@ public interface HelmClient {
      * @param releaseName the name of the release to uninstall.
      */
     void uninstallChart(String releaseName);
+
+    /**
+     * Executes the Helm CLI {@code test} sub-command and tests the specified Helm chart.
+     *
+     * @param releaseName the name of the release to test.
+     * @param options     the options to pass to the Helm CLI command.
+     */
+    void testChart(String releaseName, TestChartOptions options);
+
+    /**
+     * Executes the Helm CLI {@code list} sub-command and returns the list of releases.
+     * @param allNamespaces if {@code true}, list releases across all namespaces.
+     * @return the list of releases.
+     */
+    List<ReleaseItem> listReleases(boolean allNamespaces);
+
+    /**
+     * Executes the Helm CLI {@code dependency update} sub-command and updates the dependencies of the specified Helm
+     * chart.
+     *
+     * @param chartName the name of the chart to update.
+     */
+    void dependencyUpdate(String chartName);
 
     /**
      * Creates a new {@link HelmClientBuilder} instance with the default configuration.

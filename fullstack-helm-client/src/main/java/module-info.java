@@ -3,6 +3,8 @@ module com.hedera.fullstack.helm.client {
     exports com.hedera.fullstack.helm.client.model;
     exports com.hedera.fullstack.helm.client.model.chart;
     exports com.hedera.fullstack.helm.client.model.install;
+    exports com.hedera.fullstack.helm.client.model.release;
+    exports com.hedera.fullstack.helm.client.model.test;
     exports com.hedera.fullstack.helm.client.execution;
     exports com.hedera.fullstack.helm.client.proxy.request.chart to
             com.hedera.fullstack.helm.client.test;
