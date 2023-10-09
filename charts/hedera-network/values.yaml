@@ -218,7 +218,6 @@ minio-server:
         volumesPerServer: 1
         size: 10Gi
         nodeSelector:
-          fullstack-scheduling.io/os: linux
           fullstack-scheduling.io/role: network
         tolerations:
           - key: "fullstack-scheduling.io/os"
@@ -251,7 +250,6 @@ hedera-mirror-node:
   # config for subchart hedera-mirror/importer
   importer:
     nodeSelector:
-      fullstack-scheduling.io/os: linux
       fullstack-scheduling.io/role: network
     tolerations:
       - key: "fullstack-scheduling.io/os"
@@ -298,7 +296,6 @@ hedera-mirror-node:
                 exclude: redis
   grpc:
     nodeSelector:
-      fullstack-scheduling.io/os: linux
       fullstack-scheduling.io/role: network
     tolerations:
       - key: "fullstack-scheduling.io/os"
@@ -324,7 +321,6 @@ hedera-mirror-node:
   postgresql:
     postgresql:
       nodeSelector:
-        fullstack-scheduling.io/os: linux
         fullstack-scheduling.io/role: network
       tolerations:
         - key: "fullstack-scheduling.io/os"
@@ -339,7 +335,6 @@ hedera-mirror-node:
       replicaCount: 0
   rest:
     nodeSelector:
-      fullstack-scheduling.io/os: linux
       fullstack-scheduling.io/role: network
     tolerations:
       - key: "fullstack-scheduling.io/os"
@@ -354,7 +349,6 @@ hedera-mirror-node:
       enabled: false
   web3:
     nodeSelector:
-      fullstack-scheduling.io/os: linux
       fullstack-scheduling.io/role: network
     tolerations:
       - key: "fullstack-scheduling.io/os"
@@ -370,7 +364,6 @@ hedera-mirror-node:
 hedera-explorer:
   enable: true
   nodeSelector:
-    fullstack-scheduling.io/os: linux
     fullstack-scheduling.io/role: network
   tolerations:
     - key: "fullstack-scheduling.io/os"
@@ -407,7 +400,6 @@ deployment:
   podAnnotations: {}
   podLabels: {}
   nodeSelector:
-    fullstack-scheduling.io/os: linux
     fullstack-scheduling.io/role: network
   tolerations:
     - key: "fullstack-scheduling.io/os"
