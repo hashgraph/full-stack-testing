@@ -77,7 +77,6 @@ deploy-chart:
 .PHONY: destroy-chart
 destroy-chart:
 	-$(MAKE) uninstall-chart
-	-$(MAKE) destroy-shared
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
