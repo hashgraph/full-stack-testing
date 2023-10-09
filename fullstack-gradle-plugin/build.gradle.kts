@@ -24,6 +24,7 @@ plugins {
 dependencies {
     api(platform(project(":fullstack-bom")))
     implementation(project(":fullstack-helm-client"))
+    testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
 gradlePlugin {
