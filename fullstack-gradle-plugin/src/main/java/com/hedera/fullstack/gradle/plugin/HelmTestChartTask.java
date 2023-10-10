@@ -64,9 +64,7 @@ public abstract class HelmTestChartTask extends DefaultTask {
         try {
             final String releaseName = getRelease().getOrNull();
             Objects.requireNonNull(releaseName, "release name must be specified");
-            helmClient.testChart(
-                    releaseName,
-                    optionsBuilder.build());
+            helmClient.testChart(releaseName, optionsBuilder.build());
         } catch (Exception e) {
             this.getProject()
                     .getLogger()

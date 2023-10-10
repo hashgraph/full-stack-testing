@@ -110,6 +110,14 @@ class HelmInstallChartTaskTest {
                         task.getRelease().set(RELEASE_NAME);
                     });
             helmReleaseExistsTask.releaseExists();
+            HelmTestChartTask helmTestChartTask = project.getTasks()
+                    .create("helmTestChartTask", HelmTestChartTask.class, task -> {
+                        task.getNamespace().set(namespace);
+                        task.getRelease().set(RELEASE_NAME);
+                        task.getFilter().set("test");
+                        task.getTestTimeout().set("15m");
+                    });
+            helmTestChartTask.testChart();
             HelmUninstallChartTask helmUninstallChartTask = project.getTasks()
                     .create("helmUninstallChart", HelmUninstallChartTask.class, task -> {
                         task.getNamespace().set(namespace);
