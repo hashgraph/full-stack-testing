@@ -24,6 +24,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = "fullstack-examples"
+rootProject.name = "fullstack-gradle-plugin"
 
 includeBuild("..")
