@@ -38,11 +38,23 @@ class HelmUninstallChartTaskTest {
     void testErrorThrownWhenChartNotFound() {
         assertThrows(HelmExecutionException.class, () -> {
             HelmUninstallChartTask helmUninstallChartTask = project.getTasks()
-                    .create("helmUninstallNonExistingChartChart", HelmUninstallChartTask.class, task -> {
+                    .create("helmUninstallNonExistingChart", HelmUninstallChartTask.class, task -> {
                         task.getNamespace().set("test-failure");
                         task.getRelease().set("not-a-release");
                     });
             helmUninstallChartTask.uninstallChart();
         });
+    }
+
+    @Test
+    @DisplayName("test that an uninstall will pass without error if the ifExists flag is set")
+    void testUninstallIfExists() {
+        HelmUninstallChartTask helmUninstallChartTask = project.getTasks()
+                .create("helmUninstallIfExists", HelmUninstallChartTask.class, task -> {
+                    task.getNamespace().set("test-failure");
+                    task.getRelease().set("not-a-release");
+                    task.getIfExists().set(true);
+                });
+        helmUninstallChartTask.uninstallChart();
     }
 }

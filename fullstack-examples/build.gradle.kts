@@ -59,8 +59,15 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     release.set("nginx-release")
 }
 
+// This task will succeed because it only uninstalls if the release exists
+tasks.register<HelmUninstallChartTask>("helmUninstallNotAChart") {
+    release.set("not-a-release")
+    ifExists.set(true)
+}
+
 tasks.check {
     dependsOn("helmInstallNginxChart")
     dependsOn("helmNginxExists")
     dependsOn("helmUninstallNginxChart")
+    dependsOn("helmUninstallNotAChart")
 }
