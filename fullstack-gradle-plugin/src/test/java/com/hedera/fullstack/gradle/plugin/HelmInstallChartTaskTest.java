@@ -96,9 +96,14 @@ class HelmInstallChartTaskTest {
                         task.getNamespace().set(namespace);
                         task.getRelease().set(RELEASE_NAME);
                         task.getRepo().set(CHART.repoName());
+                        task.getSkipIfExists().set(true);
                     });
             assertThat(helmInstallChartTask.getRelease().get()).isEqualTo(RELEASE_NAME);
             helmInstallChartTask.installChart();
+
+            // call a second time to test skipIfExists
+            helmInstallChartTask.installChart();
+
             HelmReleaseExistsTask helmReleaseExistsTask = project.getTasks()
                     .create("helmReleaseExists", HelmReleaseExistsTask.class, task -> {
                         task.getNamespace().set(namespace);
