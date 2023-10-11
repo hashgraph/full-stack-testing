@@ -14,48 +14,48 @@
  * limitations under the License.
  */
 
+import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
+import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
+import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
 
 plugins {
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.jpms-modules")
-//    id("com.hedera.fullstack.fullstack-gradle-plugin")
-//    import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
-//            import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
-//            import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
+    id("com.hedera.fullstack.fullstack-gradle-plugin")
 }
 
-//dependencies {
-//    // Bill of Materials
-//    implementation(platform(project(":fullstack-bom")))
-//}
-//
-//tasks.register<HelmInstallChartTask>("helmInstallFstChart") {
-//    createNamespace.set(true)
-//    namespace.set("fst-ns")
-//    release.set("fst")
-//    chart.set("../charts/hedera-network")
-//}
-//
-//tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
-//    createNamespace.set(true)
-//    namespace.set("nginx-ns")
-//    release.set("nginx-release")
-//    chart.set("oci://ghcr.io/nginxinc/charts/nginx-ingress")
-//}
-//
-//tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
-//    namespace.set("nginx-ns")
-//    release.set("nginx-release")
-//}
-//
-//tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
-//    allNamespaces.set(true)
-//    namespace.set("nginx-ns")
-//    release.set("nginx-release")
-//}
-//
-//tasks.check {
-//    dependsOn("helmInstallNginxChart")
-//    dependsOn("helmNginxExists")
-//    dependsOn("helmUninstallNginxChart")
-//}
+dependencies {
+    // Bill of Materials
+    implementation(platform(project(":fullstack-bom")))
+}
+
+tasks.register<HelmInstallChartTask>("helmInstallFstChart") {
+    createNamespace.set(true)
+    namespace.set("fst-ns")
+    release.set("fst")
+    chart.set("../charts/hedera-network")
+}
+
+tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
+    createNamespace.set(true)
+    namespace.set("nginx-ns")
+    release.set("nginx-release")
+    chart.set("oci://ghcr.io/nginxinc/charts/nginx-ingress")
+}
+
+tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
+    namespace.set("nginx-ns")
+    release.set("nginx-release")
+}
+
+tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
+    allNamespaces.set(true)
+    namespace.set("nginx-ns")
+    release.set("nginx-release")
+}
+
+tasks.check {
+    dependsOn("helmInstallNginxChart")
+    dependsOn("helmNginxExists")
+    dependsOn("helmUninstallNginxChart")
+}

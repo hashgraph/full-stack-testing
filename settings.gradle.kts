@@ -16,7 +16,7 @@
 
 pluginManagement {
     includeBuild("build-logic")
-//    includeBuild("fullstack-gradle-plugin")
+    includeBuild("fullstack-gradle-plugin")
 }
 
 plugins {
