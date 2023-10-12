@@ -57,6 +57,8 @@ include(":fullstack-infrastructure-api")
 
 include(":fullstack-infrastructure-core")
 
+include(":fullstack-models")
+
 include(":fullstack-monitoring-api")
 
 include(":fullstack-monitoring-core")

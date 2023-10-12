@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.resource.generator.api;
+package com.hedera.fullstack.test.toolkit.api;
 
 public class Dummy {}

@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.api;
+plugins {
+    id("com.hedera.fullstack.conventions")
+    id("com.hedera.fullstack.jpms-modules")
+    //    id("com.hedera.fullstack.maven-publish")
+}
 
-public class Dummy {}
+dependencies { api(platform(project(":fullstack-bom")))
+    implementation(project(mapOf("path" to ":fullstack-base-api")))
+}
