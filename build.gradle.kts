@@ -14,10 +14,30 @@
  * limitations under the License.
  */
 
-plugins { id("com.hedera.fullstack.root") }
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+plugins {
+    id("com.hedera.fullstack.root")
+    id("com.bmuschko.docker-remote-api").version("9.3.4")
+}
 
 repositories {
     // mavenLocal() // uncomment to use local maven repository
     mavenCentral()
     gradlePluginPortal()
 }
+
+val appVersion = project.version.toString()
+
+fun createDockerBuildTask(taskName: String, containerName: String) {
+    tasks.register<DockerBuildImage>(taskName) {
+        inputDir.set(file("docker/${containerName}"))
+        images.add("ghcr.io/hashgraph/full-stack-testing/${containerName}:${appVersion}")
+    }
+}
+
+createDockerBuildTask("buildKubectlBats", "kubectl-bats")
+
+createDockerBuildTask("buildUbi8InitDind", "ubi8-init-dind")
+
+createDockerBuildTask("buildUbi8InitJava17", "ubi8-init-java17")
