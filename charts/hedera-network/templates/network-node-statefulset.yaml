@@ -37,9 +37,9 @@ spec:
         fullstack.hedera.com/type: network-node
         fullstack.hedera.com/node-name: {{ $node.name }}
     spec:
-      {{- if $.Values.deployment.nodeSelectors }}
+      {{- if $.Values.deployment.nodeSelector }}
       nodeSelector:
-      {{- $.Values.deployment.nodeSelectors | toYaml | nindent 8 }}
+      {{- $.Values.deployment.nodeSelector | toYaml | nindent 8 }}
       {{- end }}
       {{- if $.Values.deployment.tolerations }}
       tolerations:
