@@ -83,7 +83,7 @@ function check_test_status() {
 function get_config_val() {
   local config_path=$1
   log_debug "Get config command: helm get values fst -a -n ${NAMESPACE} | yq '${config_path}'"
-  ret=$(helm get values fst -a -n "${NAMESPACE}" | yq "${config_path}" )
+  ret=$(helm get values ${RELEASE_NAME} -a -n "${NAMESPACE}" | yq "${config_path}" )
   echo "${ret}"
   log_debug "${config_path} => ${ret}"
 }

@@ -9,6 +9,19 @@ readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly SETUP_CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-cluster-setup"
 readonly CHART_DIR="${SCRIPT_DIR}/../../charts/hedera-network"
 
+USER="${USER:-changeme}"
+CLUSTER_NAME="${CLUSTER_NAME:-fst}"
+NAMESPACE="${NAMESPACE:-fst-${USER}}"
+RELEASE_NAME="${RELEASE_NAME:-fst}"
+NMT_VERSION=v2.0.0-alpha.0
+PLATFORM_VERSION=v0.39.1
+
+POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
+GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
+
+#NODE_NAMES=(node0 node1 node2 node3)
+NODE_NAMES=(node0)
+
 POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
@@ -91,7 +104,7 @@ setup
 
 echo "--------------------------Env Setup: fullstack-testing ------------------------------------------------"
 echo "CLUSTER_NAME: ${CLUSTER_NAME}"
-echo "RELEASE_NAME: ${HELM_RELEASE_NAME}"
+echo "RELEASE_NAME: ${RELEASE_NAME}"
 echo "USER: ${USER}"
 echo "NAMESPACE: ${NAMESPACE}"
 echo "SCRIPT_DIR: ${SCRIPT_DIR}"
