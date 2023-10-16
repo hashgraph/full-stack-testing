@@ -50,27 +50,31 @@ function show_env_vars() {
     echo ""
 }
 
+function setup_tmp_dir() {
+    if [ ! -f "${TMP_DIR}/.env" ]; then \
+      echo "Creating .env file from template.env"
+      cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
+      echo "File list in ${TMP_DIR}"
+      ls -la "${TMP_DIR}"
+    fi
+}
+
+function load_env_file() {
+    setup_tmp_dir
+    if [ -f "${TMP_DIR}/.env" ]; then \
+        echo "Loading .env file: ${TMP_DIR}/.env"
+        set -a
+        # shellcheck source=./../temp/.env
+        source "${TMP_DIR}/.env"
+        set +a
+    fi
+}
+
 # ----------------------------- Setup ENV Variables -------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly SCRIPT_DIR
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
-
-# Setup TMP_DIR if required
-if [ ! -f "${TMP_DIR}/.env" ]; then \
-  echo "Creating .env file from template.env"
-  cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
-  echo "File list in ${TMP_DIR}"
-  ls -la "${TMP_DIR}"
-fi
-
-# Load .env file if available
-if [ -f "${TMP_DIR}/.env" ]; then \
-    echo "Loading .env file: ${TMP_DIR}/.env"
-    set -a
-    # shellcheck source=./../temp/.env
-    source "${TMP_DIR}/.env"
-    set +a
-fi
+load_env_file
 
 USER="${USER:-changeme}"
 CLUSTER_NAME="${CLUSTER_NAME:-fst}"
