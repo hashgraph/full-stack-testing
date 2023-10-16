@@ -19,6 +19,7 @@ import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
 import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
 
 plugins {
+    id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.jpms-modules")
     id("com.hedera.fullstack.fullstack-gradle-plugin")
@@ -26,7 +27,7 @@ plugins {
 
 dependencies {
     // Bill of Materials
-    implementation(platform(project(":fullstack-bom")))
+    implementation(platform("com.hedera.fullstack:fullstack-bom"))
 }
 
 tasks.register<HelmInstallChartTask>("helmInstallFstChart") {

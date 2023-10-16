@@ -16,16 +16,14 @@
 
 pluginManagement {
     includeBuild("../build-logic")
+    includeBuild("../fullstack-gradle-plugin")
 }
 
 plugins {
     id("com.hedera.fullstack.settings")
 }
 
-dependencyResolutionManagement {
-    includeBuild("..")
-}
+rootProject.name = "fullstack-examples"
 
-rootProject.name = "fullstack-gradle-plugin"
-
+includeBuild("..")
 includeBuild("../build-logic")

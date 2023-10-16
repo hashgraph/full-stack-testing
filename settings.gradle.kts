@@ -16,7 +16,7 @@
 
 pluginManagement {
     includeBuild("build-logic")
-    includeBuild("fullstack-gradle-plugin")
+//    includeBuild("fullstack-gradle-plugin")
 }
 
 plugins {
@@ -25,9 +25,9 @@ plugins {
 //    id("com.hedera.fullstack.fullstack-gradle-plugin")
 }
 
-//dependencyResolutionManagement {
+dependencyResolutionManagement {
 //    includeBuild("fullstack-gradle-plugin")
-//}
+}
 
 rootProject.name = "full-stack-testing"
 
@@ -55,10 +55,6 @@ include(":fullstack-junit-support")
 include(":fullstack-datasource-api")
 
 include(":fullstack-datasource-core")
-
-include(":fullstack-examples")
-
-//includeBuild("fullstack-gradle-plugin")
 
 include(":fullstack-infrastructure-api")
 
