@@ -70,6 +70,10 @@ function load_env_file() {
     fi
 }
 
+function setup() {
+    load_env_file
+}
+
 # ----------------------------- Setup ENV Variables -------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly SCRIPT_DIR
