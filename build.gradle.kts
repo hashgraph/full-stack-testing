@@ -30,9 +30,15 @@ repositories {
 val appVersion = project.version.toString()
 
 fun createDockerBuildTask(taskName: String, containerName: String) {
-    tasks.register<DockerBuildImage>(taskName) {
+    tasks.register<DockerBuildImage>(taskName + "LinuxAmd64") {
         inputDir.set(file("docker/${containerName}"))
         images.add("ghcr.io/hashgraph/full-stack-testing/${containerName}:${appVersion}")
+        platform = "linux/amd64"
+    }
+    tasks.register<DockerBuildImage>(taskName + "LinuxArm64") {
+        inputDir.set(file("docker/${containerName}"))
+        images.add("ghcr.io/hashgraph/full-stack-testing/${containerName}:${appVersion}")
+        platform = "linux/arm64"
     }
 }
 
