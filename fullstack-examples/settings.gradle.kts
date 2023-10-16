@@ -19,11 +19,10 @@ pluginManagement {
     includeBuild("../fullstack-gradle-plugin")
 }
 
-plugins {
-    id("com.hedera.fullstack.settings")
-}
+plugins { id("com.hedera.fullstack.settings") }
 
 rootProject.name = "fullstack-examples"
 
 includeBuild("..")
+
 includeBuild("../build-logic")

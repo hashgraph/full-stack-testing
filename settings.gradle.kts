@@ -16,17 +16,17 @@
 
 pluginManagement {
     includeBuild("build-logic")
-//    includeBuild("fullstack-gradle-plugin")
+    //    includeBuild("fullstack-gradle-plugin")
 }
 
 plugins {
     id("com.gradle.enterprise").version("3.14.1")
     id("com.hedera.fullstack.settings")
-//    id("com.hedera.fullstack.fullstack-gradle-plugin")
+    //    id("com.hedera.fullstack.fullstack-gradle-plugin")
 }
 
 dependencyResolutionManagement {
-//    includeBuild("fullstack-gradle-plugin")
+    //    includeBuild("fullstack-gradle-plugin")
 }
 
 rootProject.name = "full-stack-testing"
