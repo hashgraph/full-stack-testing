@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import com.hedera.fullstack.gradle.plugin.HelmDependencyUpdateTask
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
+import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
 import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
 
 plugins {
@@ -55,8 +57,26 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     release.set("nginx-release")
 }
 
+tasks.register<HelmDependencyUpdateTask>("helmDependencyUpdate") {
+    chartName.set("../charts/hedera-network")
+}
+
+tasks.register<HelmTestChartTask>("helmTestNginxChart") {
+    namespace.set("nginx-ns")
+    release.set("nginx-release")
+}
+
+// This task will succeed because it only uninstalls if the release exists
+tasks.register<HelmUninstallChartTask>("helmUninstallNotAChart") {
+    release.set("not-a-release")
+    ifExists.set(true)
+}
+
 tasks.check {
     dependsOn("helmInstallNginxChart")
     dependsOn("helmNginxExists")
+    dependsOn("helmTestNginxChart")
     dependsOn("helmUninstallNginxChart")
+    dependsOn("helmDependencyUpdate")
+    dependsOn("helmUninstallNotAChart")
 }

@@ -20,7 +20,10 @@ import com.hedera.fullstack.helm.client.HelmClient;
 import com.hedera.fullstack.helm.client.HelmClientBuilder;
 import com.hedera.fullstack.helm.client.model.Chart;
 import com.hedera.fullstack.helm.client.model.install.InstallChartOptionsBuilder;
+import com.hedera.fullstack.helm.client.model.release.ReleaseItem;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
@@ -66,6 +69,13 @@ public abstract class HelmInstallChartTask extends DefaultTask {
     @Option(option = "values", description = "Specify values in a YAML file or a URL (can specify multiple)")
     public abstract SetProperty<String> getValues();
 
+    @Input
+    @Optional
+    @Option(
+            option = "skipIfExists",
+            description = "Skip installation if the release is already installed, default false")
+    public abstract Property<Boolean> getSkipIfExists();
+
     @TaskAction
     void installChart() {
         HelmClientBuilder helmClientBuilder = HelmClient.builder();
@@ -73,6 +83,7 @@ public abstract class HelmInstallChartTask extends DefaultTask {
             helmClientBuilder.defaultNamespace(getNamespace().get());
         }
         HelmClient helmClient = helmClientBuilder.build();
+
         InstallChartOptionsBuilder optionsBuilder = InstallChartOptionsBuilder.builder();
         if (getCreateNamespace().isPresent()) {
             optionsBuilder.createNamespace(getCreateNamespace().get());
@@ -83,11 +94,29 @@ public abstract class HelmInstallChartTask extends DefaultTask {
         if (getValues().isPresent()) {
             optionsBuilder.values(new ArrayList<>(getValues().get()));
         }
+
         try {
+            final String release = getRelease().getOrNull();
+            Objects.requireNonNull(release, "release must not be null");
+
+            if (getSkipIfExists().getOrElse(false)) {
+                List<ReleaseItem> releaseItems = helmClient.listReleases(false);
+                ReleaseItem releaseItem = releaseItems.stream()
+                        .filter(item -> item.name().equals(release))
+                        .findFirst()
+                        .orElse(null);
+                if (releaseItem != null) {
+                    this.getProject()
+                            .getLogger()
+                            .warn(
+                                    "HelmInstallChartTask.installChart() The release {} already exists, skipping install",
+                                    release);
+                    return;
+                }
+            }
+
             helmClient.installChart(
-                    getRelease().getOrNull(),
-                    new Chart(getChart().getOrNull(), getRepo().getOrNull()),
-                    optionsBuilder.build());
+                    release, new Chart(getChart().getOrNull(), getRepo().getOrNull()), optionsBuilder.build());
         } catch (Exception e) {
             this.getProject()
                     .getLogger()

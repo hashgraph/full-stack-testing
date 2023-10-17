@@ -68,7 +68,6 @@ destroy-shared:
 	-$(MAKE) source "${SCRIPTS_DIR}/main.sh" && destroy_shared
 	-$(MAKE) undeploy-minio-operator
 	-$(MAKE) destroy-prometheus-operator
-	-$(MAKE) destroy-gateway-api # should be destroyed at the end when no more gateway-api CRDs are required
 
 .PHONY: deploy-chart
 deploy-chart:
@@ -78,7 +77,6 @@ deploy-chart:
 .PHONY: destroy-chart
 destroy-chart:
 	-$(MAKE) uninstall-chart
-	-$(MAKE) destroy-shared
 
 .PHONY: deploy-network
 deploy-network: deploy-chart

@@ -4,5 +4,4 @@ name: fst # this is overridden if CLUSTER_NAME env var is set. Check .env file
 nodes:
   - role: control-plane
     labels:
-      fullstack-scheduling.io/os: linux
       fullstack-scheduling.io/role: network

@@ -8,6 +8,22 @@ metadata:
     "helm.sh/hook-delete-policy": before-hook-creation
 spec:
   serviceAccountName: pod-monitor
+    {{- if $.Values.deployment.nodeSelector }}
+  nodeSelector:
+    {{- $.Values.deployment.nodeSelector | toYaml | nindent 8 }}
+    {{- end }}
+    {{- if $.Values.deployment.tolerations }}
+  tolerations:
+    {{- $.Values.deployment.tolerations | toYaml | nindent 8 }}
+    {{- end }}
+    {{- if $.Values.deployment.affinity }}
+  affinity:
+    {{- $.Values.deployment.affinity | toYaml | nindent 8 }}
+    {{- end }}
+    {{- if $.Values.deployment.priorityClassName }}
+  priorityClassName: {{ $.Values.deployment.priorityClassName }}
+    {{- end }}
+  terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
   volumes:
     - name: test-volume
       configMap:
