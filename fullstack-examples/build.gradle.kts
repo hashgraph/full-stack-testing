@@ -16,6 +16,7 @@
 
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
+import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
 import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
 
 plugins {
@@ -46,7 +47,6 @@ tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     namespace.set("nginx-ns")
     release.set("nginx-release")
     chart.set("oci://ghcr.io/nginxinc/charts/nginx-ingress")
-    skipIfExists.set(true)
 }
 
 tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
@@ -60,6 +60,11 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     release.set("nginx-release")
 }
 
+tasks.register<HelmTestChartTask>("helmTestNginxChart") {
+    namespace.set("nginx-ns")
+    release.set("nginx-release")
+}
+
 // This task will succeed because it only uninstalls if the release exists
 tasks.register<HelmUninstallChartTask>("helmUninstallNotAChart") {
     release.set("not-a-release")
@@ -69,6 +74,7 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNotAChart") {
 tasks.check {
     dependsOn("helmInstallNginxChart")
     dependsOn("helmNginxExists")
+    dependsOn("helmTestNginxChart")
     dependsOn("helmUninstallNginxChart")
     dependsOn("helmUninstallNotAChart")
 }
