@@ -15,12 +15,23 @@
  */
 
 plugins {
-    id("com.hedera.fullstack.root")
-    id("com.bmuschko.docker-remote-api").version("9.3.4")
+    id("com.palantir.docker").version("0.35.0")
 }
 
-repositories {
-    // mavenLocal() // uncomment to use local maven repository
-    mavenCentral()
-    gradlePluginPortal()
+var repo = "ghcr.io"
+var registry = "hashgraph/full-stack-testing"
+var containerName = "kubectl-bats"
+var appVersion = project.version.toString()
+
+docker {
+    name = "${repo}/${registry}/${containerName}:${appVersion}"
+    version = "${appVersion}"
+    buildx(true)
+    var isCi = System.getenv("CI")
+    if (isCi != null && !isCi.isEmpty()) {
+        platform('linux/arm64', 'linux/amd64')
+        push(true)
+    } else {
+        load(true) // loads the image into the local docker daemon, doesn't support multi-platform
+    }
 }

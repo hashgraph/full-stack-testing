@@ -14,28 +14,26 @@
  * limitations under the License.
  */
 
-pluginManagement {
-    includeBuild("build-logic")
-    //    includeBuild("fullstack-gradle-plugin")
-}
+pluginManagement { includeBuild("build-logic") }
 
 plugins {
     id("com.gradle.enterprise").version("3.14.1")
     id("com.hedera.fullstack.settings")
-    //    id("com.hedera.fullstack.fullstack-gradle-plugin")
-}
-
-dependencyResolutionManagement {
-    //    includeBuild("fullstack-gradle-plugin")
 }
 
 rootProject.name = "full-stack-testing"
 
 includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/issues/26
 
+// Include the subprojects
+include(":docker-kubectl-bats", "docker/kubectl-bats")
+
+include(":docker-ubi8-init-dind", "docker/ubi8-init-dind")
+
+include(":docker-ubi8-init-java17", "docker/ubi8-init-java17")
+
 include(":fullstack-bom")
 
-// Include the subprojects
 include(":fullstack-alerting-api")
 
 include(":fullstack-alerting-core")
@@ -94,4 +92,9 @@ gradleEnterprise {
             tag("CI")
         }
     }
+}
+
+fun include(name: String, path: String) {
+    include(name)
+    project(name).projectDir = File(rootDir, path)
 }
