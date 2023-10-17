@@ -114,6 +114,7 @@ class HelmInstallChartTaskTest {
                     .create("helmUninstallChart", HelmUninstallChartTask.class, task -> {
                         task.getNamespace().set(namespace);
                         task.getRelease().set(RELEASE_NAME);
+                        task.getIfExists().set(true);
                     });
             helmUninstallChartTask.uninstallChart();
         } finally {
