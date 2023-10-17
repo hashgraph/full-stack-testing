@@ -46,6 +46,7 @@ tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     namespace.set("nginx-ns")
     release.set("nginx-release")
     chart.set("oci://ghcr.io/nginxinc/charts/nginx-ingress")
+    skipIfExists.set(true)
 }
 
 tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
