@@ -46,7 +46,7 @@ dependencies.constraints {
 
     for (p in rootProject.childProjects) {
         val isPublished = p.value.findProperty("mavenPublishingEnabled")?.toString()?.toBoolean() ?: false
-        val excludedProjects = listOf(project.name, project(":fullstack-gradle-plugin").name)
+        val excludedProjects = listOf(project.name)
         if (isPublished && !excludedProjects.contains(p.value.name)) {
             api(project(p.value.path))
         }

@@ -21,7 +21,6 @@ import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
 import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
 
 plugins {
-    id("java")
     id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.jpms-modules")
@@ -29,11 +28,8 @@ plugins {
 }
 
 dependencies {
-    api(platform("com.hedera.fullstack:fullstack-bom"))
-    implementation("com.hedera.fullstack:fullstack-readiness-api")
-    implementation("com.hedera.fullstack:fullstack-monitoring-api")
-    implementation("com.hedera.fullstack:fullstack-test-toolkit")
-    implementation("com.hedera.fullstack:fullstack-validator-api")
+    // Bill of Materials
+    implementation(platform("com.hedera.fullstack:fullstack-bom"))
 }
 
 tasks.register<HelmInstallChartTask>("helmInstallFstChart") {

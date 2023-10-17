@@ -17,13 +17,14 @@
 plugins {
     id("java-gradle-plugin")
     id("com.gradle.plugin-publish").version("1.2.1")
+    id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.maven-publish")
 }
 
 dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-helm-client"))
+    api(platform("com.hedera.fullstack:fullstack-bom"))
+    implementation("com.hedera.fullstack:fullstack-helm-client")
     testImplementation("org.assertj:assertj-core:3.24.2")
 }
 

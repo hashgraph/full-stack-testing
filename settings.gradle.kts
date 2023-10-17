@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-pluginManagement { includeBuild("build-logic") }
+pluginManagement {
+    includeBuild("build-logic")
+    //    includeBuild("fullstack-gradle-plugin")
+}
 
 plugins {
     id("com.gradle.enterprise").version("3.14.1")
     id("com.hedera.fullstack.settings")
+    //    id("com.hedera.fullstack.fullstack-gradle-plugin")
+}
+
+dependencyResolutionManagement {
+    //    includeBuild("fullstack-gradle-plugin")
 }
 
 rootProject.name = "full-stack-testing"
@@ -47,11 +55,6 @@ include(":fullstack-junit-support")
 include(":fullstack-datasource-api")
 
 include(":fullstack-datasource-core")
-
-// TODO: re-enable once we have a way to run the *-examples without IntelliJ and Sonar issues
-// includeBuild("fullstack-examples")
-
-include(":fullstack-gradle-plugin")
 
 include(":fullstack-infrastructure-api")
 

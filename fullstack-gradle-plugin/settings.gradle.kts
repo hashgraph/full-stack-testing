@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-pluginManagement {
-    includeBuild("../build-logic")
-    includeBuild("../fullstack-gradle-plugin")
-}
+pluginManagement { includeBuild("../build-logic") }
 
 plugins { id("com.hedera.fullstack.settings") }
 
-rootProject.name = "fullstack-examples"
+dependencyResolutionManagement { includeBuild("..") }
 
-includeBuild("..")
+rootProject.name = "fullstack-gradle-plugin"
 
 includeBuild("../build-logic")
