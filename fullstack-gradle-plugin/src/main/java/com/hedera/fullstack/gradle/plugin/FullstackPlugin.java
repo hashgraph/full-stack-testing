@@ -24,9 +24,4 @@ public class FullstackPlugin implements Plugin<Project> {
     public void apply(Project project) {
         // currently no implementation is needed
     }
-
-    public void deleteMe() {
-        // this is a dummy method to test the plugin
-        System.out.println("Hello World!");
-    }
 }

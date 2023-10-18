@@ -30,9 +30,4 @@ public class InvalidStateSignatureValidator implements Validator {
     public Future<ValidationResult> validate(ValidationContext context) {
         return null;
     }
-
-    public void deleteMe() {
-        // this is a dummy method to test the plugin
-        System.out.println("Hello World!");
-    }
 }
