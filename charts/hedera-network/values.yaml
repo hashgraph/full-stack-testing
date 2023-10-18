@@ -380,7 +380,7 @@ hedera-explorer:
   #
   # Without this we would need to expose the mirror node rest API publicly and specify its public url in the network config below
   proxyPass:
-    /api: http://fst-rest
+    /api: "http://{{ .Release.Name }}-rest"
 
   # In the json config below we are using the url as "/", instead of a regular http://mainnet.url
   # This makes the explorer UI make a relative request to its own url
