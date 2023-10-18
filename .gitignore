@@ -60,7 +60,6 @@ xcuserdata/
 
 ### Eclipse template
 .metadata
-bin/
 tmp/
 *.tmp
 *.bak
@@ -513,3 +512,4 @@ secring.*
 dev/local-node/config.txt
 dev/temp/.env
 charts/deleteme.yaml
+node_modules
