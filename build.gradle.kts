@@ -16,7 +16,6 @@
 
 plugins {
     id("com.hedera.fullstack.root")
-    id("com.bmuschko.docker-remote-api").version("9.3.4")
 }
 
 repositories {
