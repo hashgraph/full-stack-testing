@@ -20,6 +20,7 @@ readonly HGCAPP_DIR="/opt/hgcapp"
 readonly NMT_DIR="${HGCAPP_DIR}/node-mgmt-tools"
 readonly HAPI_PATH="${HGCAPP_DIR}/services-hedera/HapiApp2.0"
 readonly HEDERA_HOME_DIR="/home/hedera"
+readonly RELEASE_NAME="${RELEASE_NAME:-fst}"
 
 readonly NMT_VERSION="${NMT_VERSION:-v2.0.0-alpha.0}"
 readonly NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/releases/tags/${NMT_VERSION}"
@@ -310,7 +311,7 @@ function prep_address_book() {
     local status=$(kubectl get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}')
 
     while [[ "${attempts}" -lt "${max_attempts}" &&  "${status}" != "True" ]]; do
-      kubectl get pod network-node0-0 -o 'jsonpath={..status.conditions[?(@.type=="Ready")]}'
+      kubectl get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")]}'
 
       echo ""
       echo "Waiting for the pod to be ready - ${pod}: Attempt# ${attempts}/${max_attempts} ..."
