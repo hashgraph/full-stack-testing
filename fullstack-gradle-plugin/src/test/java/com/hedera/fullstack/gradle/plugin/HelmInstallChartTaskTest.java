@@ -78,7 +78,6 @@ class HelmInstallChartTaskTest {
     }
 
     @Test
-    @Disabled("delete me")
     @DisplayName("Simple Helm Install Chart Task")
     void testHelmInstallChartTaskSimple() {
         final String namespace = "simple-test";
