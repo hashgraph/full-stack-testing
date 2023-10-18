@@ -25,12 +25,11 @@ var appVersion = project.version.toString()
 
 docker {
     name = "${repo}/${registry}/${containerName}:${appVersion}"
-    version = "${appVersion}"
-    files('entrypoint.sh', 'network-node.service')
+    version = appVersion
+    files("entrypoint.sh", "network-node.service")
     buildx(true)
-    var isCi = System.getenv("CI")
-    if (isCi != null && !isCi.isEmpty()) {
-        platform('linux/arm64', 'linux/amd64')
+    if (!System.getenv("CI").isNullOrEmpty()) {
+        platform("linux/arm64", "linux/amd64")
         push(true)
     } else {
         load(true) // loads the image into the local docker daemon, doesn't support multi-platform
