@@ -1,0 +1,30 @@
+{
+  "name": "@hedera/fullstack-network-manager",
+  "version": "1.0.0",
+  "description": "Fullstack-Network-Manager is a CLI tool to manage and deploy a Hedera Network using Helm chart for local testing.",
+  "main": "src/index.mjs",
+  "type": "module",
+  "bin": {
+    "fsnetman": "fsnetman.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "fullstack-network-manager",
+    "full-stack-testing"
+  ],
+  "author": "Lenin Mehedy",
+  "license": "Apache2.0",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "esm": "^3.2.25",
+    "figlet": "^1.6.0",
+    "inquirer": "^9.2.11",
+    "winston": "^3.11.0",
+    "yargs": "^17.7.2"
+  }
+}
