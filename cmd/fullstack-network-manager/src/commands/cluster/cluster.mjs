@@ -1,6 +1,6 @@
 // Cluster_class class
 import * as core from '../../core/index.mjs'
-const Cluster_class = class {
+const Cluster = class {
     static create(argv) {
         core.logger.info( "creating cluster '%s'", argv.name)
     }
@@ -10,4 +10,4 @@ const Cluster_class = class {
     }
 }
 
-export { Cluster_class }
+export { Cluster }
