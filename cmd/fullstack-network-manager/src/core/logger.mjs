@@ -1,6 +1,6 @@
 import * as winston from 'winston'
 
-const customFormat= winston.format.combine(
+const customFormat = winston.format.combine(
     winston.format.label({label: 'FST', message: false}),
 
     winston.format.splat(),
@@ -14,7 +14,10 @@ const customFormat= winston.format.combine(
     winston.format.label({label: ''}),
 
     // convert levels to upper case
-    winston.format(data => {data.level = data.level.toUpperCase(); return data})(),
+    winston.format(data => {
+        data.level = data.level.toUpperCase();
+        return data
+    })(),
 
     // use custom format TIMESTAMP [LABEL] LEVEL: MESSAGE
     winston.format.printf(data => {
@@ -29,7 +32,7 @@ const customFormat= winston.format.combine(
         return data;
     })(),
 )
-const logger= winston.createLogger({
+const logger = winston.createLogger({
     level: 'info',
     format: winston.format.combine(
         customFormat,
@@ -43,7 +46,7 @@ const logger= winston.createLogger({
         // - Write all logs with importance level of `info` or less to `combined.log`
         //
         new winston.transports.File({filename: 'combined.log'}),
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({filename: 'error.log', level: 'error'}),
     ],
 });
 
@@ -53,4 +56,4 @@ if (process.env.NODE_ENV !== 'production') {
     }));
 }
 
-export { logger }
+export {logger}

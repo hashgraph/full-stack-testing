@@ -1,4 +1,4 @@
-import { Cluster } from './cluster.mjs'
+import {Cluster} from './cluster.mjs'
 import * as cmdArgs from '../../core/args.mjs'
 
 const createSubCmd = {
@@ -34,4 +34,4 @@ const ClusterCmd = {
     },
 }
 
-export { ClusterCmd }
+export {ClusterCmd}

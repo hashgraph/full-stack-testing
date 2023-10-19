@@ -1,12 +1,15 @@
 # fullstack-network-manager CLI
+
 fullstack-network-manager is a CLI tool to manage and deploy a Hedera Network using Helm chart for local testing.
 
 ## Install
+
 - Run `nmp -i hedera/fullstack-network-manager`
 - Once installed, the CLI will available as the following aliases:
     - `fsnetman`
 
 ## Command Examples
+
 ``` 
 ❯ fsnetman
 Usage: fsnetman <command> [options]

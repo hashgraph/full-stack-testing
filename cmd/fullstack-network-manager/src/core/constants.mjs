@@ -1,5 +1,5 @@
-const USER=`${process.env.USER}`
+const USER = `${process.env.USER}`
 export const constants = {
-    FST_USER:`${USER}`,
-    FST_CLUSTER_NAME:`fst-${USER}`
+    FST_USER: `${USER}`,
+    FST_CLUSTER_NAME: `fst-${USER}`
 }

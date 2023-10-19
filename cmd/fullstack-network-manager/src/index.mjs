@@ -20,4 +20,4 @@ const cli = yargs(hideBin(process.argv))
     .demand(1, 'Select a command')
     .parse()
 
-export { cli, commands }
+export {cli, commands}
