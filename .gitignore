@@ -61,6 +61,7 @@ xcuserdata/
 ### Eclipse template
 .metadata
 tmp/
+bin/
 *.tmp
 *.bak
 *.swp
