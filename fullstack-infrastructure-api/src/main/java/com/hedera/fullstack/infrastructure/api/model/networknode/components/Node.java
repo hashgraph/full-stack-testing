@@ -1,12 +1,15 @@
 package com.hedera.fullstack.infrastructure.api.model.networknode.components;
 
 import com.hedera.fullstack.infrastructure.api.model.Component;
+import com.hedera.fullstack.infrastructure.api.model.Endpoint;
 import com.hedera.fullstack.infrastructure.api.model.traits.PodAware;
+import com.hedera.fullstack.infrastructure.api.model.traits.ServiceAware;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 
-class Node implements Component,  PodAware {
+class Node implements Component, PodAware, ServiceAware {
 
     @Override
     public void start() {
@@ -51,5 +54,10 @@ class Node implements Component,  PodAware {
     @Override
     public void putFile(String containerName, File file, Path remotePath) {
 
+    }
+
+    @Override
+    public List<Endpoint> getEndpoints() {
+        return null;
     }
 }

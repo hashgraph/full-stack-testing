@@ -1,9 +1,10 @@
 import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
+import com.hedera.fullstack.infrastructure.api.model.mirrornode.MirrorNode;
+import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
 import com.hedera.fullstack.model.InstallType;
 import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
-import com.hedera.fullstack.model.NetworkDeploymentModel;
 import com.hedera.fullstack.model.Topology;
 import com.hedera.fullstack.resource.generator.api.NodeDetails;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
@@ -48,9 +49,11 @@ public class IntegrationExample {
 
         // Step 4. Execute the tests
         //  we need the all the IP addresses and ports to create the hedera client
-        var deploymentTopology = networkDeployment.getDeploymentTopology();
-        deploymentTopology.getIPAddress(Workload.NODE_SOFTWARE_POD, 1);
+        var networkNode0 = networkDeployment.workloadByIndex(NetworkNode.class,0);
+
+        //deploymentTopology.get;
         // configure the hedera client and execute tests
+        //networkNode0<>.getComponentByType()
 
         // Step 4.a may need to copy files to node
 
@@ -78,12 +81,12 @@ public class IntegrationExample {
             return  ecosystem;
         }
 
-        public void configure(NetworkDeploymentModel networkDeployment) {
+        public void configure(NetworkDeployment networkDeployment) {
             ResourceUtils resourceUtils = null;
             String version = null;
 
-            String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment);
-            String platformSettings = resourceUtils.getPlatformSettings(networkDeployment);
+            String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment.getTopology());
+            String platformSettings = resourceUtils.getPlatformSettings(networkDeployment.getTopology());
             String buildZipURL = resourceUtils.getBuildZipURL(SemanticVersion.ZERO);
 
             // Configuring the platform
@@ -100,7 +103,7 @@ public class IntegrationExample {
         public void startNetworkDeployment(NetworkDeployment networkDeployment) {
             // Start the network
             try {
-                networkDeployment.getDeploymentTopology();
+                networkDeployment.clusters();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
