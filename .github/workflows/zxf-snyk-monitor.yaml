@@ -70,4 +70,4 @@ jobs:
       - name: Run Snyk Monitor
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk monitor --all-sub-projects
+        run: snyk monitor --all-projects
