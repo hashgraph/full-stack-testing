@@ -1,6 +1,6 @@
 import {Init} from './init.mjs'
 
-const InitCmd = {
+export const InitCmd = {
     command: "init",
     desc: "Initialize local environment",
     builder: {},
@@ -8,5 +8,3 @@ const InitCmd = {
         Init.init(argv)
     },
 }
-
-export {InitCmd}

@@ -23,7 +23,7 @@ const deleteSubCmd = {
     }
 }
 
-const ClusterCmd = {
+export const ClusterCmd = {
     command: 'cluster',
     desc: 'Manager FST cluster',
     builder: yargs => {
@@ -33,5 +33,3 @@ const ClusterCmd = {
             .demand(1, 'Select a cluster command')
     },
 }
-
-export {ClusterCmd}
