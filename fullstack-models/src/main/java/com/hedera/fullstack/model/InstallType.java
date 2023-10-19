@@ -1,5 +1,5 @@
 package com.hedera.fullstack.model;
 
-public enum INSTALL_TYPE {
+public enum InstallType {
     NMT, DIRECT_INSTALL
 }

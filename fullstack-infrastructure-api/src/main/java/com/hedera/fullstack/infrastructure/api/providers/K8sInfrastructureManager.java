@@ -1,6 +1,6 @@
 package com.hedera.fullstack.infrastructure.api.providers;
 
-import com.hedera.fullstack.model.INSTALL_TYPE;
+import com.hedera.fullstack.model.InstallType;
 import com.hedera.fullstack.model.Topology;
 import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
@@ -12,19 +12,20 @@ public class K8sInfrastructureManager implements InfrastructureManager {
     ResourceUtils resources;
 
     @Override
-    public NetworkDeployment createNetworkDeployment(Topology hederaNetwork, INSTALL_TYPE installType) {
+    public NetworkDeployment createNetworkDeployment(Topology hederaNetwork, InstallType installType) {
         return null;
     }
 
     @Override
-    public List<NetworkDeployment> getNetworkDeployments() {
+    public List<NetworkDeployment> listNetworkDeployments() {
         return null;
     }
 
     @Override
-    public NetworkDeployment getNetworkDeployment(String id) {
+    public NetworkDeployment networkDeploymentById(String id) {
         return null;
     }
+
 
     @Override
     public void deleteNetworkDeployment(String id) {

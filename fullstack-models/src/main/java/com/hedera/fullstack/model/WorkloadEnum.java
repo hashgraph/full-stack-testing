@@ -1,6 +1,6 @@
 package com.hedera.fullstack.model;
 
-public enum Component {
+public enum WorkloadEnum {
     NODE_SOFTWARE_POD,
 
     // This could be better nested, but this may be the right abstraction we need

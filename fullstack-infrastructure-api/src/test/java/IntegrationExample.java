@@ -1,8 +1,7 @@
 import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.model.INSTALL_TYPE;
+import com.hedera.fullstack.model.InstallType;
 import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
-import com.hedera.fullstack.model.Component;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
 import com.hedera.fullstack.model.NetworkDeploymentModel;
 import com.hedera.fullstack.model.Topology;
@@ -11,7 +10,6 @@ import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 /*
  This code is not supposed to be used
@@ -51,7 +49,7 @@ public class IntegrationExample {
         // Step 4. Execute the tests
         //  we need the all the IP addresses and ports to create the hedera client
         var deploymentTopology = networkDeployment.getDeploymentTopology();
-        deploymentTopology.getIPAddress(Component.NODE_SOFTWARE_POD, 1);
+        deploymentTopology.getIPAddress(Workload.NODE_SOFTWARE_POD, 1);
         // configure the hedera client and execute tests
 
         // Step 4.a may need to copy files to node
@@ -64,12 +62,19 @@ public class IntegrationExample {
         }
     }
 
+    /*
+    a collection of classes not one
+    - TestSuiteConfigurationExtension.preConstructTestInstance
+       -> junit validations
+       -> use ExtensionContext to carry forward information
+    */
     private static class TestTookKit {
+
         InfrastructureManager infraManager;
 
         // This is invoked by the CLI or Junit
         public NetworkDeployment create(Topology hederaEcosystemTopology) {
-            NetworkDeployment ecosystem = infraManager.createNetworkDeployment(hederaEcosystemTopology, INSTALL_TYPE.DIRECT_INSTALL);
+            NetworkDeployment ecosystem = infraManager.createNetworkDeployment(hederaEcosystemTopology, InstallType.DIRECT_INSTALL);
             return  ecosystem;
         }
 
@@ -95,7 +100,7 @@ public class IntegrationExample {
         public void startNetworkDeployment(NetworkDeployment networkDeployment) {
             // Start the network
             try {
-                networkDeployment.startComponent(Component.NODE_SOFTWARE_POD, 1);
+                networkDeployment.getDeploymentTopology();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
