@@ -36,7 +36,6 @@ abstract class KindArtifactTask() : DefaultTask() {
 
     companion object {
         const val KIND_RELEASE_URL_TEMPLATE = "https://kind.sigs.k8s.io/dl/v%s/kind-%s-%s"
-        const val KIND_ARTIFACT_TEMPLATE = "kind-%s-%s"
         const val KIND_EXECUTABLE_PREFIX = "kind"
         const val KIND_VERSION_FILE = "KIND_VERSION"
     }
@@ -57,6 +56,8 @@ abstract class KindArtifactTask() : DefaultTask() {
         for (tuple in actualTuples!!) {
             download(tuple)
         }
+
+        project.logger.log(LogLevel.WARN, "Kind download output directory ${output.get().asFile.toPath()}")
 
         writeVersionFile(output.get().asFile.toPath())
     }
@@ -96,24 +97,10 @@ abstract class KindArtifactTask() : DefaultTask() {
         }
     }
 
-    private fun createSubDirectory(subDirectory: String) {
-        try {
-            workingDirectory = workingDirectory!!.resolve(subDirectory)
-            workingDirectory!!.toFile().deleteOnExit()
-        } catch (e: Exception) {
-            throw StopExecutionException("Unable to create working sub-directory, full path: $workingDirectory")
-        }
-    }
-
     private fun download(tuple: ArtifactTuple) {
         val downloadUrl = String.format(
             KIND_RELEASE_URL_TEMPLATE,
             actualVersion!!.toString(),
-            tuple.operatingSystem.descriptor,
-            tuple.architecture.descriptor
-        )
-        val artifactName = String.format(
-            KIND_ARTIFACT_TEMPLATE,
             tuple.operatingSystem.descriptor,
             tuple.architecture.descriptor
         )
@@ -148,7 +135,7 @@ abstract class KindArtifactTask() : DefaultTask() {
         }
 
         try {
-            project.logger.log(LogLevel.WARN, "Copying ${source} to ${destination}")
+            project.logger.log(LogLevel.DEBUG, "Copying ${source} to ${destination}")
             project.copy {
                 from(source)
                 into(destination)
