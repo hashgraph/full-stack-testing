@@ -20,13 +20,12 @@ import com.hedera.fullstack.junit.support.annotations.application.ApplicationNod
 import com.hedera.fullstack.junit.support.annotations.application.PlatformApplication;
 import com.hedera.fullstack.junit.support.annotations.application.PlatformConfiguration;
 import com.hedera.fullstack.junit.support.model.ConfigurationValue;
+import com.hedera.fullstack.junit.support.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.junit.support.model.ResourceShape;
-import com.hedera.fullstack.junit.support.model.Topology;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-
 import java.util.Arrays;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Handles the individual test setup, configuration, and resource deployment (if applicable).
@@ -45,43 +44,48 @@ public class TestSetupExtension implements BeforeEachCallback {
 
         var testMethod = context.getTestMethod();
 
-        if(testMethod.isPresent()) {
-            //FUTURE: add support for NamedApplicationNodes
-            var applicationNodes = testMethod.get().getAnnotation(ApplicationNodes.class);
-            var platformApplication = testMethod.get().getAnnotation(PlatformApplication.class);
-            var platformConfigurations = testMethod.get().getAnnotation(PlatformConfiguration.class);
+        if (testMethod.isPresent()) {
+            // FUTURE: add support for NamedApplicationNodes
+            ApplicationNodes applicationNodes = testMethod.get().getAnnotation(ApplicationNodes.class);
+            PlatformApplication platformApplication = testMethod.get().getAnnotation(PlatformApplication.class);
+            PlatformConfiguration platformConfigurations = testMethod.get().getAnnotation(PlatformConfiguration.class);
 
             // Convert the annotations to model class objects
-            var appNodesBuilder = new com.hedera.fullstack.junit.support.model.ApplicationNodes.Builder();
-            if(applicationNodes!=null) {
+            com.hedera.fullstack.junit.support.model.ApplicationNodes.Builder appNodesBuilder =
+                    new com.hedera.fullstack.junit.support.model.ApplicationNodes.Builder();
+            if (applicationNodes != null) {
                 appNodesBuilder
                         .value(applicationNodes.value())
-                        .shape(new ResourceShape.Builder().cpuInMillis(applicationNodes.shape().cpuInMillis()).build());
+                        .shape(new ResourceShape.Builder()
+                                .cpuInMillis(applicationNodes.shape().cpuInMillis())
+                                .build());
             }
 
-            var platformAppBuilder = new com.hedera.fullstack.junit.support.model.PlatformApplication.Builder();
-            if(platformApplication!=null) {
+            com.hedera.fullstack.junit.support.model.PlatformApplication.Builder platformAppBuilder =
+                    new com.hedera.fullstack.junit.support.model.PlatformApplication.Builder();
+            if (platformApplication != null) {
                 platformAppBuilder
                         .fileName(platformApplication.fileName())
-                        .parameters(Arrays.stream(platformApplication.parameters()).toList());
+                        .parameters(
+                                Arrays.stream(platformApplication.parameters()).toList());
             }
 
-            var platformConfigBuilder = new com.hedera.fullstack.junit.support.model.PlatformConfiguration.Builder();
-            if(platformConfigurations!=null) {
+            com.hedera.fullstack.junit.support.model.PlatformConfiguration.Builder platformConfigBuilder =
+                    new com.hedera.fullstack.junit.support.model.PlatformConfiguration.Builder();
+            if (platformConfigurations != null) {
                 Stream.of(platformConfigurations.value()).forEach(config -> {
-                    //FUTURE: support values[]
+                    // FUTURE: support values[]
                     platformConfigBuilder.addConfigurationValue(new ConfigurationValue(config.name(), config.value()));
                 });
             }
 
             // Topology holds all the information needed to provision
-            Topology topology = new Topology.Builder()
+            NetworkDeploymentConfiguration networkDeploymentConfiguration = new NetworkDeploymentConfiguration.Builder()
                     .applicationNodes(appNodesBuilder.build())
                     .platformApplication(platformAppBuilder.build())
                     .platformConfiguration(platformConfigBuilder.build())
                     .build();
             // FUTURE: provision this topology using test tool kit here
         }
-
     }
 }
