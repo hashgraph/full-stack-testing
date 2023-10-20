@@ -22,7 +22,9 @@ import com.hedera.fullstack.junit.support.annotations.application.PlatformConfig
 import com.hedera.fullstack.junit.support.model.ConfigurationValue;
 import com.hedera.fullstack.junit.support.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.junit.support.model.ResourceShape;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -42,7 +44,7 @@ public class TestSetupExtension implements BeforeEachCallback {
     @Override
     public void beforeEach(final ExtensionContext context) throws Exception {
 
-        var testMethod = context.getTestMethod();
+        Optional<Method> testMethod = context.getTestMethod();
 
         if (testMethod.isPresent()) {
             // FUTURE: add support for NamedApplicationNodes
