@@ -2,6 +2,7 @@ package com.hedera.fullstack.infrastructure.api;
 
 import com.hedera.fullstack.infrastructure.api.model.Workload;
 import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
+import com.hedera.fullstack.infrastructure.api.model.traits.Labeled;
 import com.hedera.fullstack.model.Topology;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 
@@ -18,23 +19,17 @@ import java.util.Map;
   - mirror node explorer
 
 **/
-public interface NetworkDeployment {
+public interface NetworkDeployment extends Labeled {
 
      String getId();
      String getName();
-
-     // in multi/single cluster env -> to be set on the namespace, will same across all cluster namespaces
-     Map<String,String> getLabels();
 
      Topology getTopology();
 
      PlatformConfiguration.Builder getPlatformConfigurationBuilder();
 
-     // Components -> is infra specific and should live in infra
-     // Component -> should be lowest level thing name
-     // other names - Workload*,  fSTService , AService, XService, rejected - Facility
-
      List<Cluster> clusters();
      List<Workload> workloads();
      <T extends Workload> WorkloadReplica<T> workloadByIndex(Class<T> workloadType, int index);
+     <T extends Workload> List<WorkloadReplica<T>> workloadByCluster(Class<T> workloadType,Cluster cluster);
 }

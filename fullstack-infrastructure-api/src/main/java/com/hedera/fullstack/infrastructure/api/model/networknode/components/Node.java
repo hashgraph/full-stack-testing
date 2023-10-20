@@ -8,8 +8,9 @@ import com.hedera.fullstack.infrastructure.api.model.traits.ServiceAware;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
-class Node implements Component, PodAware, ServiceAware {
+public class Node implements Component, PodAware, ServiceAware {
 
     @Override
     public void start() {
@@ -57,7 +58,25 @@ class Node implements Component, PodAware, ServiceAware {
     }
 
     @Override
+    public CommandResult exec(String command) {
+        return null;
+    }
+
+    @Override
+    public CommandResult exec(String container, String command) {
+        return null;
+    }
+
+    @Override
     public List<Endpoint> getEndpoints() {
         return null;
     }
+
+    @Override
+    public Map<String, String> labels() {
+        return null;
+    }
+
 }
+
+

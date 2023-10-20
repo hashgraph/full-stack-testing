@@ -1,25 +1,47 @@
 package com.hedera.fullstack.infrastructure.api.model;
 
+import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
+import com.hedera.fullstack.infrastructure.api.model.mirrornode.MirrorNode;
+import com.hedera.fullstack.infrastructure.api.model.mirrornode.components.Importer;
 import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
+import com.hedera.fullstack.infrastructure.api.model.networknode.components.Node;
+import com.hedera.fullstack.infrastructure.api.model.traits.PodAware;
+import com.hedera.fullstack.model.InstallType;
+
+import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
+
     public static void main(String[] args) {
 
-        NetworkDeployment nd = null;
+        InfrastructureManager infrastructureManager = null;
+        NetworkDeployment nd = infrastructureManager.createNetworkDeployment(null, InstallType.DIRECT_INSTALL);
 
-        //var networkNode = nd.workloadByType(NetworkNode.class);
+        WorkloadReplica<NetworkNode> networkNode0 = nd.workloadByIndex(NetworkNode.class,0);
+        WorkloadReplica<NetworkNode> networkNode1 = nd.workloadByIndex(NetworkNode.class,0);
+        Node node0 = networkNode0.getComponentByType(Node.class);
+        Node node1 = networkNode1.getComponentByType(Node.class);
+
+       // get config.txt from node0
+       node0.getFile(Path.of("/path/to/config.txt"));
+       node1.getFile(Path.of("/path/to/config.txt"));
+
+        PodAware.CommandResult commandResult0 = node0.exec("ls -l");
+        //consume output streams
+        commandResult0.getStdout();
+        commandResult0.getStderr();
+
+        PodAware.CommandResult commandResult1 = node1.exec("ls -l");
+        //consume output streams
+        commandResult1.getStdout();
+        commandResult1.getStderr();
 
 
-        //this represents a replica of networkNode0
-        var networkNode0 = nd.workloadByIndex(NetworkNode.class,0);
+        WorkloadReplica<MirrorNode> mirrorNode = nd.workloadByIndex(MirrorNode.class,0);
+        Importer importer = mirrorNode.getComponentByType(Importer.class);
 
-        // networkNode0 -> allows to me to access components
-
-        //var networkNode0 = networkNode.replicas().get(0);
-        //var x = networkNode0.findComponentByType(null);
-//        if (x instanceof PodAware) {
-//            x.getFile(Path.of("/opt/hgcapp/config.txt"));
-//        }
     }
+
 }
