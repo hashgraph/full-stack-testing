@@ -28,7 +28,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class HelmDependencyUpdateTaskTest {
-    private static final String CHART = "../charts/hedera-network";
+    private static final String CHART = "../charts/fullstack-deployment";
     private static Project project;
 
     @BeforeAll

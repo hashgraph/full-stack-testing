@@ -97,7 +97,7 @@ POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
 readonly SETUP_CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-cluster-setup"
-readonly CHART_DIR="${SCRIPT_DIR}/../../charts/hedera-network"
+readonly CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-deployment"
 
 # telemetry related env variables
 readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"

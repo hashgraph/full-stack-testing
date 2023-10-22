@@ -36,7 +36,7 @@ tasks.register<HelmInstallChartTask>("helmInstallFstChart") {
     createNamespace.set(true)
     namespace.set("fst-ns")
     release.set("fst")
-    chart.set("../charts/hedera-network")
+    chart.set("../charts/fullstack-deployment")
 }
 
 tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
@@ -58,7 +58,7 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
 }
 
 tasks.register<HelmDependencyUpdateTask>("helmDependencyUpdate") {
-    chartName.set("../charts/hedera-network")
+    chartName.set("../charts/fullstack-deployment")
 }
 
 tasks.register<HelmTestChartTask>("helmTestNginxChart") {

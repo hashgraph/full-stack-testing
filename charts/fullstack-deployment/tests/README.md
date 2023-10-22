@@ -8,7 +8,7 @@ you have the network deployed already.
 - Use the `test_basic_deployment.bats` file as the template while creating new tests.
 - In order to run and debug the tests inside the helm test container, do the following:
 
-    - Update `run` command section in `charts/hedera-network/template/tests/test-deployment.yaml` as below so that it keeps it running when we run `make helm-test`:
+    - Update `run` command section in `charts/fullstack-deployment/template/tests/test-deployment.yaml` as below so that it keeps it running when we run `make helm-test`:
   ```
   - "/bin/bash"
   - "-c"
@@ -24,7 +24,7 @@ you have the network deployed already.
   cd /tests && ./run.sh 
   ```
   - Once debug is done, you can exit and use Ctrl+C to terminate the helm-test process (you will need to delete the `network-test` container using `kubectl delete network-test`).
-  - If it looks all good, revert changes in `charts/hedera-network/template/tests/test-deployment.yaml`
+  - If it looks all good, revert changes in `charts/fullstack-deployment/template/tests/test-deployment.yaml`
 
 ## Run
 - Run `git submodule update --init` in order to install [bats](https://github.com/bats-core) for tests. 
