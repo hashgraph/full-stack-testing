@@ -105,7 +105,7 @@ jobs:
 
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         with:
           config: dev/dev-cluster.yaml
           version: v0.19.0
@@ -114,19 +114,19 @@ jobs:
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
-        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         with:
           version: "v3.12.3" # helm version
 
       - name: Setup Kubernetes Operators
         working-directory: dev
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         run: |
           make deploy-prometheus-operator
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
-        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         run: |
           kubectl config get-contexts
           kubectl get crd
@@ -137,7 +137,7 @@ jobs:
       - name: Authenticate to Google Cloud
         id: google-auth
         uses: google-github-actions/auth@35b0e87d162680511bf346c299f71c9c5c379033 # v1.1.1
-        if: ${{ inputs.enable-unit-tests && !cancelled() }}
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         with:
           token_format: 'access_token'
           workload_identity_provider: "projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions"
