@@ -514,3 +514,4 @@ dev/local-node/config.txt
 dev/temp/.env
 charts/deleteme.yaml
 node_modules
+fullstack-network-manager/coverage

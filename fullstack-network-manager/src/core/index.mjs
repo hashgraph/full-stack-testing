@@ -1,4 +1,5 @@
-import {logger} from './logger.mjs'
+import * as logging from './logging.mjs'
 import {constants} from './constants.mjs'
 
-export {logger, constants}
+// Expose components from the core module
+export {logging, constants}
