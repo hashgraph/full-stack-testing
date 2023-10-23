@@ -1,21 +1,35 @@
+/*
+ * Copyright (C) 2023 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.infrastructure.api.model.mirrornode.MirrorNode;
-import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
-import com.hedera.fullstack.model.InstallType;
 import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
+import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
+import com.hedera.fullstack.model.InstallType;
 import com.hedera.fullstack.model.Topology;
 import com.hedera.fullstack.resource.generator.api.NodeDetails;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
-
 import java.io.IOException;
 
 /*
- This code is not supposed to be used
- The only purpose of this code is to show how the API will be used and how pieces fit together
- */
+This code is not supposed to be used
+The only purpose of this code is to show how the API will be used and how pieces fit together
+*/
 public class IntegrationExample {
 
     // This the JUNIT / CLI entry point
@@ -38,22 +52,22 @@ public class IntegrationExample {
         // Should contain sanitized version of ips and pod names, should not container k8s specific stuff
         PlatformConfiguration.Builder platformConfigBuilder = networkDeployment.getPlatformConfigurationBuilder();
         // The Junit tests can add things in the platform config builder
-        platformConfigBuilder.addNodeDetail(new NodeDetails("abc","127.0.0.1"));
-        platformConfigBuilder.addNodeDetail(new NodeDetails("abc","127.0.0.1"));
+        platformConfigBuilder.addNodeDetail(new NodeDetails("abc", "127.0.0.1"));
+        platformConfigBuilder.addNodeDetail(new NodeDetails("abc", "127.0.0.1"));
 
         // Step 2. Configure the NetworkDeployment
-        //testTookKit.configure(networkDeployment);
+        // testTookKit.configure(networkDeployment);
 
         // Step 3. Start the NetworkDeployment
         testTookKit.startNetworkDeployment(networkDeployment);
 
         // Step 4. Execute the tests
         //  we need the all the IP addresses and ports to create the hedera client
-        var networkNode0 = networkDeployment.workloadByIndex(NetworkNode.class,0);
+        var networkNode0 = networkDeployment.workloadByIndex(NetworkNode.class, 0);
 
-        //deploymentTopology.get;
+        // deploymentTopology.get;
         // configure the hedera client and execute tests
-        //networkNode0<>.getComponentByType()
+        // networkNode0<>.getComponentByType()
 
         // Step 4.a may need to copy files to node
 
@@ -77,8 +91,9 @@ public class IntegrationExample {
 
         // This is invoked by the CLI or Junit
         public NetworkDeployment create(Topology hederaEcosystemTopology) {
-            NetworkDeployment ecosystem = infraManager.createNetworkDeployment(hederaEcosystemTopology, InstallType.DIRECT_INSTALL);
-            return  ecosystem;
+            NetworkDeployment ecosystem =
+                    infraManager.createNetworkDeployment(hederaEcosystemTopology, InstallType.DIRECT_INSTALL);
+            return ecosystem;
         }
 
         public void configure(NetworkDeployment networkDeployment) {
@@ -93,8 +108,10 @@ public class IntegrationExample {
             try {
                 System.out.println("hello world");
                 throw new IOException("hello world");
-                //networkDeployment.putContentsFile(Component.NODE_SOFTWARE_POD, 1, Path.of("/app/config.txt"), platformConfig);
-                //networkDeployment.putContentsFile(Component.NODE_SOFTWARE_POD, 1, Path.of("/app/settings.txt"), platformSettings);
+                // networkDeployment.putContentsFile(Component.NODE_SOFTWARE_POD, 1, Path.of("/app/config.txt"),
+                // platformConfig);
+                // networkDeployment.putContentsFile(Component.NODE_SOFTWARE_POD, 1, Path.of("/app/settings.txt"),
+                // platformSettings);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
