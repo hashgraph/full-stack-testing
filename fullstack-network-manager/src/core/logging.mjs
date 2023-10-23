@@ -33,6 +33,22 @@ const customFormat = winston.format.combine(
     })(),
 )
 
+/**
+ * Create a new logger
+ * @param level logging level as supported by winston library:
+ * {
+ *   emerg: 0,
+ *   alert: 1,
+ *   crit: 2,
+ *   error: 3,
+ *   warning: 4,
+ *   notice: 5,
+ *   info: 6,
+ *   debug: 7
+ * }
+ * @returns {winston.Logger}
+ * @constructor
+ */
 export function NewLogger(level = 'debug')  {
     let logger = winston.createLogger({
         level: level,
