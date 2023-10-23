@@ -51,7 +51,7 @@ jobs:
       enable-unit-tests: true
 
   nodejs-tests:
-    name: NodeJS Tests
+    name: NodeJS CLI Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
