@@ -15,16 +15,20 @@
  */
 
 plugins {
+    `kotlin-dsl`
     id("java-gradle-plugin")
     id("com.gradle.plugin-publish") version "1.2.1"
     id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.maven-publish")
+    kotlin("jvm") version "1.9.10"
 }
 
 dependencies {
     api(platform("com.hedera.fullstack:fullstack-bom"))
     implementation("com.hedera.fullstack:fullstack-helm-client")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation("net.swiftzer.semver:semver:1.1.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
@@ -40,3 +44,7 @@ gradlePlugin {
         }
     }
 }
+
+repositories { mavenCentral() }
+
+kotlin { jvmToolchain(17) }

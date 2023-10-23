@@ -19,6 +19,7 @@ import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
 import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
 import com.hedera.fullstack.gradle.plugin.HelmUninstallChartTask
+import com.hedera.fullstack.gradle.plugin.kind.release.KindArtifactTask
 
 plugins {
     id("com.hedera.fullstack.root")
@@ -71,6 +72,10 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNotAChart") {
     release.set("not-a-release")
     ifExists.set(true)
 }
+
+val kindVersion = "0.20.0"
+
+tasks.register<KindArtifactTask>("kindArtifact") { version.set(kindVersion) }
 
 tasks.check {
     dependsOn("helmInstallNginxChart")
