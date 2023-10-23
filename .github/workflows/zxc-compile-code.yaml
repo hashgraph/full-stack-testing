@@ -228,6 +228,12 @@ jobs:
           arguments: check --scan
           build-root-directory: fullstack-gradle-plugin
 
+      - name: NodeJS CLI Tests
+        id: nodejs-cli-test
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run:
+          npm i && npm test
+
       - name: Publish Unit Test Report
         uses: actionite/publish-unit-test-result-action@1e01e49081c6c4073913aa4b7980fa83e709f322 # v2.3.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() && !failure() }}
