@@ -87,7 +87,7 @@ export const BaseCommand = class BaseCommand {
     }
 
     /**
-     * Run a promise to run the specified bash command
+     * Run the specified bash command
      * @param cmd is a bash command including args
      * @returns {Promise<unknown>}
      */
