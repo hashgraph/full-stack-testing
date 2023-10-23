@@ -144,6 +144,13 @@ jobs:
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         uses: google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b # v1.1.1
 
+      - name: NodeJS Tests
+        id: nodejs-test
+        working-directory: fullstack-network-manager
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run:
+          npm i && npm test --coverage
+
       # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
       - name: Helm Chart Test (Direct Install)
         working-directory: dev
@@ -227,12 +234,6 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: check --scan
           build-root-directory: fullstack-gradle-plugin
-
-      - name: NodeJS CLI Tests
-        id: nodejs-cli-test
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run:
-          npm i && npm test
 
       - name: Publish Unit Test Report
         uses: actionite/publish-unit-test-result-action@1e01e49081c6c4073913aa4b7980fa83e709f322 # v2.3.0
