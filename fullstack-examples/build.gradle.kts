@@ -73,7 +73,9 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNotAChart") {
     ifExists.set(true)
 }
 
-tasks.register<KindArtifactTask>("kindArtifact") { version.set("0.20.0") }
+val kindVersion = "0.20.0"
+
+tasks.register<KindArtifactTask>("kindArtifact") { version.set(kindVersion) }
 
 tasks.check {
     dependsOn("helmInstallNginxChart")
