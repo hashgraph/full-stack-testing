@@ -28,6 +28,11 @@ on:
         type: boolean
         required: false
         default: false
+      enable-nodejs-tests:
+        description: "NodeJS Testing Enabled"
+        type: boolean
+        required: false
+        default: false
       enable-spotless-check:
         description: "Spotless Check Enabled"
         type: boolean
@@ -147,7 +152,7 @@ jobs:
       - name: NodeJS Tests
         id: nodejs-test
         working-directory: fullstack-network-manager
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run:
           npm i && npm test --coverage
 
