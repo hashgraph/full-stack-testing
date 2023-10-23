@@ -68,6 +68,3 @@ export const ClusterCommand = class extends BaseCommand {
         }
     }
 }
-
-
-
