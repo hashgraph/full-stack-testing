@@ -52,18 +52,18 @@ class HelmInstallChartTaskTest {
     // 1. 'make deploy-chart'
     // 2. run this test case, assuming it passes and installs fst
     // 3. 'make destroy-chart'
-    @DisplayName("Helm Install Chart Task for Hedera Network Chart")
-    void testHelmInstallChartTaskForHederaNetworkChart() throws IOException {
-        HelmClient helmClient = HelmClient.defaultClient();
+    @DisplayName("Helm Install Chart Task for Fullstack Deployment Chart")
+    void testHelmInstallChartTaskForFullstackDeploymentChart() throws IOException {
+        final HelmClient helmClient = HelmClient.defaultClient();
         suppressExceptions(() -> helmClient.uninstallChart("fst"));
         try {
-            final File hederaNetworkChart = new File("../charts/hedera-network");
-            final String hederaNetworkChartPath = hederaNetworkChart.getCanonicalPath();
-            final File valuesFile = new File(hederaNetworkChartPath + File.separator + "values.yaml");
+            final File fullstackDeploymentChart = new File("../charts/fullstack-deployment");
+            final String fullstackDeploymentChartPath = fullstackDeploymentChart.getCanonicalPath();
+            final File valuesFile = new File(fullstackDeploymentChartPath + File.separator + "values.yaml");
             final String valuesFilePath = valuesFile.getCanonicalPath();
             HelmInstallChartTask helmInstallChartTask = project.getTasks()
                     .create("helmInstallFstChart", HelmInstallChartTask.class, task -> {
-                        task.getChart().set(hederaNetworkChartPath);
+                        task.getChart().set(fullstackDeploymentChartPath);
                         task.getRelease().set("fst");
                         // set image for nmt-install
                         task.getSet().add("defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind");

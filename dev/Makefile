@@ -24,7 +24,7 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
 # Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
-CHART_DIR=$(PWD)/../charts/hedera-network
+CHART_DIR=$(PWD)/../charts/fullstack-deployment
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
 
@@ -57,7 +57,7 @@ uninstall-chart:
 
 .PHONY: update-helm-dependencies
 update-helm-dependencies:
-	helm dependency update ../charts/hedera-network
+	helm dependency update ../charts/fullstack-deployment
 
 .PHONY: deploy-shared
 deploy-shared: update-helm-dependencies deploy-gateway-api deploy-prometheus-operator deploy-minio-operator-if-required

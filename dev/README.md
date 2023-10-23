@@ -3,7 +3,7 @@ Below are few helper commands to start the hedera network in the local kubernete
 
 - `make setup`: sets up .env file with default settings. Edit this file with any desired settings.
 - `make setup-cluster`: sets up a kind cluster. It assumes docker desktop is running with enough resources (6 core, 8Gb RAM, 100G disk)
-- `make deploy-network`: deploys hedera-network helm chart and runs helm tests to ensure deployment was successful.
+- `make deploy-network`: deploys fullstack-deployment helm chart and runs helm tests to ensure deployment was successful.
 - `make start`: uses NMT to install platform in the network-node pods and starts the node.
 - `make stop`: uses NMT to stop nodes.
 - `make destroy-network`: uninstalls the helm chart

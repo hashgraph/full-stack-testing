@@ -398,7 +398,7 @@ class HelmClientTest {
     @Test
     @DisplayName("Test Helm dependency update subcommand")
     void testHelmDependencyUpdate() {
-        helmClient.dependencyUpdate("../charts/hedera-network");
+        helmClient.dependencyUpdate("../charts/fullstack-deployment");
     }
 
     @Test
