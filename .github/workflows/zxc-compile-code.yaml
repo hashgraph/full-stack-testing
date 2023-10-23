@@ -154,7 +154,7 @@ jobs:
         working-directory: fullstack-network-manager
         if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run:
-          npm i && npm test --coverage
+          npm i && NODE_OPTIONS=--experimental-vm-modules npm test --coverage
 
       # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
       - name: Helm Chart Test (Direct Install)
