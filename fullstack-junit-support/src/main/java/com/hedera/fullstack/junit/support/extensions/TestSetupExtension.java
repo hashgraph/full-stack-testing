@@ -75,10 +75,11 @@ public class TestSetupExtension implements BeforeEachCallback {
             com.hedera.fullstack.junit.support.model.PlatformConfiguration.Builder platformConfigBuilder =
                     new com.hedera.fullstack.junit.support.model.PlatformConfiguration.Builder();
             if (platformConfigurations != null) {
-                Stream.of(platformConfigurations.value()).forEach(config -> {
-                    // FUTURE: support values[]
-                    platformConfigBuilder.addConfigurationValue(new ConfigurationValue(config.name(), config.value()));
-                });
+                Stream.of(platformConfigurations.value())
+                        .forEach(config ->
+                                // FUTURE: support values[]
+                                platformConfigBuilder.addConfigurationValue(
+                                        new ConfigurationValue(config.name(), config.value())));
             }
 
             // Topology holds all the information needed to provision
