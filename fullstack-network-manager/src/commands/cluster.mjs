@@ -17,6 +17,10 @@ const clusterNameFlag = {
  */
 export const ClusterCommand = class extends BaseCommand {
 
+    /**
+     * List available clusters
+     * @returns {Promise<boolean>}
+     */
     async getClusters() {
         let cmd = `kind get clusters`
 
@@ -32,6 +36,11 @@ export const ClusterCommand = class extends BaseCommand {
         return false
     }
 
+    /**
+     * Get cluster-info for the given cluster name
+     * @param argv arguments containing cluster name
+     * @returns {Promise<boolean>}
+     */
     async getClusterInfo(argv) {
         let cmd = `kubectl cluster-info --context kind-${argv.name}`
 
@@ -46,6 +55,7 @@ export const ClusterCommand = class extends BaseCommand {
 
         return false
     }
+
     /**
      * Create a cluster
      * @param argv
@@ -114,7 +124,7 @@ export const ClusterCommand = class extends BaseCommand {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
-                            clusterCmd.create(argv).then()
+                            clusterCmd.create(argv).then(r => {})
                         }
                     })
                     .command({
@@ -124,14 +134,14 @@ export const ClusterCommand = class extends BaseCommand {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
-                            clusterCmd.delete(argv).then()
+                            clusterCmd.delete(argv).then(r => {})
                         }
                     })
                     .command({
                         command: 'list',
                         desc: 'List all clusters',
                         handler: argv => {
-                            clusterCmd.getClusters().then()
+                            clusterCmd.getClusters().then(r => {})
                         }
                     })
                     .command({
@@ -141,7 +151,7 @@ export const ClusterCommand = class extends BaseCommand {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
-                            clusterCmd.getClusterInfo(argv).then()
+                            clusterCmd.getClusterInfo(argv).then(r => {})
                         }
                     })
                     .demand(1, 'Select a cluster command')
