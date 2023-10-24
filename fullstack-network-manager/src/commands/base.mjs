@@ -1,6 +1,7 @@
 "use strict"
 import {exec} from "child_process";
 import * as core from "../core/index.mjs"
+import * as util from "util";
 
 export const BaseCommand = class BaseCommand {
     /**
@@ -93,14 +94,22 @@ export const BaseCommand = class BaseCommand {
      */
     runExec(cmd) {
         return new Promise((resolve, reject) => {
-            exec(cmd, (error, stdout, stderr) => {
+            exec(cmd, (error, stderr, stdout) => {
                 if (error) {
                     reject(error)
                 }
 
+                console.log(stderr)
+                console.log(stdout)
+
                 resolve(stdout)
             })
         })
+    }
+
+    showUser(msg, ...args) {
+        console.log(util.format(msg, ...args))
+        this.logger.debug(msg, ...args)
     }
 
     constructor(opts) {

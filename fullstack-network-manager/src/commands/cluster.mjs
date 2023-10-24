@@ -18,19 +18,48 @@ export const ClusterCommand = class extends BaseCommand {
     /**
      * Create a cluster
      * @param argv
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      */
     async create(argv) {
-        this.logger.info("creating cluster '%s'", argv.name)
+        let cmd = `kind create cluster -n ${argv.name} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
+
+        try {
+            this.showUser(`Invoking '${cmd}'...`)
+            let output = await this.runExec(cmd)
+            this.logger.debug(output)
+
+            this.showUser("Created cluster '%s'\n", argv.name)
+            output = await this.runExec(`kubectl cluster-info --context kind-${argv.name}`)
+            this.showUser(output)
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.showUser(e.message)
+        }
+
+        return false
     }
 
     /**
      * Delete a cluster
      * @param argv
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      */
     async delete(argv) {
-        this.logger.info("deleting cluster '%s'", argv.name, {name: argv.name})
+        let cmd = `kind delete cluster -n ${argv.name}`
+        try {
+            this.showUser(`Invoking '${cmd}'...`)
+            let output = await this.runExec(cmd)
+            this.showUser(output)
+            this.showUser("Deleted cluster '%s' (if it existed)", argv.name)
+            return true
+        } catch (e) {
+            this.logger.error("%s", e.stack)
+            this.showUser(e.message)
+        }
+
+        return false
     }
 
     /**
