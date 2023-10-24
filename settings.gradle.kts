@@ -54,10 +54,6 @@ include(":fullstack-datasource-api", "fullstack-core/fullstack-datasource-api")
 
 include(":fullstack-datasource-core", "fullstack-core/fullstack-datasource-core")
 
-// includeBuild("fullstack-examples")
-
-// includeBuild("fullstack-gradle-plugin")
-
 include(":fullstack-infrastructure-api", "fullstack-core/fullstack-infrastructure-api")
 
 include(":fullstack-infrastructure-core", "fullstack-core/fullstack-infrastructure-core")
