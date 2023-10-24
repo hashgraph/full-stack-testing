@@ -16,7 +16,7 @@ const clusterNameFlag = {
  */
 export const ClusterCommand = class extends BaseCommand {
 
-    async getClusters(argv) {
+    async getClusters() {
         let cmd = `kind get clusters`
 
         try {
@@ -60,7 +60,7 @@ export const ClusterCommand = class extends BaseCommand {
             this.showUser("Created cluster '%s'", argv.name)
 
             // show all clusters and cluster-info
-            await this.getClusters(argv)
+            await this.getClusters()
             await this.getClusterInfo(argv)
 
             return true
@@ -83,7 +83,7 @@ export const ClusterCommand = class extends BaseCommand {
             this.logger.debug(`Invoking '${cmd}'...`)
             this.showUser("Deleting cluster '%s'", argv.name)
             await this.runExec(cmd)
-            await this.getClusters(argv)
+            await this.getClusters()
             this.showUser("Deleted cluster '%s'", argv.name)
 
             return true
@@ -128,11 +128,8 @@ export const ClusterCommand = class extends BaseCommand {
                     .command({
                         command: 'list',
                         desc: 'List all clusters',
-                        builder: yargs => {
-                            yargs.option('name', clusterNameFlag)
-                        },
                         handler: argv => {
-                            clusterCmd.getClusters(argv).then()
+                            clusterCmd.getClusters().then()
                         }
                     })
                     .command({
