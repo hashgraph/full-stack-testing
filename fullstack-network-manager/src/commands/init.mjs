@@ -19,11 +19,10 @@ export const InitCommand = class extends BaseCommand {
 
         let status = await this.checkDependencies(deps)
         if (!status) {
-            this.showUser("FAIL: Required dependencies are not found: %s", deps)
             return false
         }
 
-        this.showUser(chalk.green("All required dependencies are found: %s"), chalk.yellow(deps))
+        this.logger.showUser(chalk.green("OK: All required dependencies are found: %s"), chalk.yellow(deps))
 
         return status
     }
@@ -38,7 +37,9 @@ export const InitCommand = class extends BaseCommand {
             desc: "Perform dependency checks and initialize local environment",
             builder: {},
             handler: (argv) => {
-                initCmd.init(argv)
+                initCmd.init(argv).then(r => {
+                    if (!r) process.exit(1)
+                })
             }
         }
     }

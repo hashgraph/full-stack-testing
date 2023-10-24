@@ -26,11 +26,11 @@ export const ClusterCommand = class extends BaseCommand {
 
         try {
             let output = await this.runExec(cmd)
-            this.showUser("\nList of available clusters \n--------------------------\n%s", output)
+            this.logger.showUser("\nList of available clusters \n--------------------------\n%s", output)
             return true
         } catch (e) {
             this.logger.error("%s", e)
-            this.showUser(e.message)
+            this.logger.showUser(e.message)
         }
 
         return false
@@ -46,11 +46,11 @@ export const ClusterCommand = class extends BaseCommand {
 
         try {
             let output = await this.runExec(cmd)
-            this.showUser(output)
+            this.logger.showUser(output)
             return true
         } catch (e) {
             this.logger.error("%s", e)
-            this.showUser(e.message)
+            this.logger.showUser(e.message)
         }
 
         return false
@@ -65,11 +65,11 @@ export const ClusterCommand = class extends BaseCommand {
         let cmd = `kind create cluster -n ${argv.name} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
 
         try {
-            this.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${argv.name}...`))
+            this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${argv.name}...`))
             this.logger.debug(`Invoking '${cmd}'...`)
             let output = await this.runExec(cmd)
             this.logger.debug(output)
-            this.showUser(chalk.green('Created cluster:'), chalk.yellow(argv.name))
+            this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(argv.name))
 
             // show all clusters and cluster-info
             await this.getClusters()
@@ -78,7 +78,7 @@ export const ClusterCommand = class extends BaseCommand {
             return true
         } catch (e) {
             this.logger.error("%s", e)
-            this.showUser(e.message)
+            this.logger.showUser(e.message)
         }
 
         return false
@@ -93,14 +93,14 @@ export const ClusterCommand = class extends BaseCommand {
         let cmd = `kind delete cluster -n ${argv.name}`
         try {
             this.logger.debug(`Invoking '${cmd}'...`)
-            this.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${argv.name}...`))
+            this.logger.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${argv.name}...`))
             await this.runExec(cmd)
             await this.getClusters()
 
             return true
         } catch (e) {
             this.logger.error("%s", e.stack)
-            this.showUser(e.message)
+            this.logger.showUser(e.message)
         }
 
         return false
@@ -123,7 +123,9 @@ export const ClusterCommand = class extends BaseCommand {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
-                            clusterCmd.create(argv).then(r => {})
+                            clusterCmd.create(argv).then(r => {
+                                if (!r) process.exit(1)
+                            })
                         }
                     })
                     .command({
@@ -133,14 +135,18 @@ export const ClusterCommand = class extends BaseCommand {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
-                            clusterCmd.delete(argv).then(r => {})
+                            clusterCmd.delete(argv).then(r => {
+                                if (!r) process.exit(1)
+                            })
                         }
                     })
                     .command({
                         command: 'list',
                         desc: 'List all clusters',
                         handler: argv => {
-                            clusterCmd.getClusters().then(r => {})
+                            clusterCmd.getClusters().then(r => {
+                                if (!r) process.exit(1)
+                            })
                         }
                     })
                     .command({
@@ -150,7 +156,9 @@ export const ClusterCommand = class extends BaseCommand {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
-                            clusterCmd.getClusterInfo(argv).then(r => {})
+                            clusterCmd.getClusterInfo(argv).then(r => {
+                                if (!r) process.exit(1)
+                            })
                         }
                     })
                     .demand(1, 'Select a cluster command')
