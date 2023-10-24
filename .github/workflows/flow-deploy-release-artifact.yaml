@@ -155,7 +155,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}/kubectl-bats:${{ needs.prepare-release.outputs.version }}
 
   publish-npm-packages:
-    name: Publish NPM Packages
+    name: Publish / NPM Packages
     runs-on: [self-hosted, Linux, medium, ephemeral]
     needs:
       - prepare-release
