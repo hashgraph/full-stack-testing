@@ -9,6 +9,8 @@ export function main(argv) {
         logger: logger
     }
 
+    logger.debug("Constants: %s", JSON.stringify(core.constants))
+
     return yargs(hideBin(argv))
         .usage('Usage: $0 <command> [options]')
         .alias('h', 'help')

@@ -1,4 +1,5 @@
 import * as winston from 'winston'
+import {constants} from "./constants.mjs";
 
 const customFormat = winston.format.combine(
     winston.format.label({label: 'FST', message: false}),
@@ -63,16 +64,10 @@ export function NewLogger(level = 'debug')  {
             // - Write all logs with importance level of `error` or less to `error.log`
             // - Write all logs with importance level of `info` or less to `combined.log`
             //
-            new winston.transports.File({filename: 'combined.log'}),
-            new winston.transports.File({filename: 'error.log', level: 'error'}),
+            new winston.transports.File({filename: constants.TMP_DIR + "/logs/combined.log"}),
+            new winston.transports.File({filename: constants.TMP_DIR + "/logs/error.log", level: 'error'}),
         ],
     });
-
-    if (process.env.NODE_ENV !== 'production') {
-        logger.add(new winston.transports.Console({
-            format: customFormat,
-        }));
-    }
 
     return logger
 }

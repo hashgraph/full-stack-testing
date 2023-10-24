@@ -10,11 +10,17 @@ export const InitCommand = class extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async init() {
-        return await this.checkDependencies([
+        this.logger.info("-------------- Start running `init` --------------")
+
+        let status = await this.checkDependencies([
             core.constants.HELM,
             core.constants.KIND,
             core.constants.KUBECTL,
         ])
+
+        this.logger.info("-------------- Finished running `init` --------------")
+
+        return status
     }
 
     /**
