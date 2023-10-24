@@ -11,7 +11,7 @@ export const BaseCommand = class BaseCommand {
     async checkKind() {
         try {
             this.logger.debug("Checking if 'kind' is installed")
-            await this.runExec("kind --version")
+            await this.runExec("kind")
             this.logger.debug("OK: 'kind' is installed")
         } catch (e) {
             this.logger.error("%s", e)
@@ -28,7 +28,7 @@ export const BaseCommand = class BaseCommand {
     async checkHelm() {
         try {
             this.logger.debug("Checking if 'helm' is installed")
-            await this.runExec("helm version")
+            await this.runExec("helm")
             this.logger.debug("OK: 'helm' is installed")
         } catch (e) {
             this.logger.error("%s", e)
@@ -45,7 +45,7 @@ export const BaseCommand = class BaseCommand {
     async checkKubectl() {
         try {
             this.logger.debug("Checking if 'kubectl' is installed")
-            await this.runExec("kubectl version")
+            await this.runExec("kubectl")
             this.logger.debug("OK: 'kubectl' is installed")
         } catch (e) {
             this.logger.error("%s", e)
@@ -61,7 +61,7 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkDependencies(deps = []) {
-        this.logger.info("Checking for required dependencies: %s", deps)
+        this.logger.debug("Checking for required dependencies: %s", deps)
 
         for (let i = 0; i < deps.length; i++) {
             let dep = deps[i]
@@ -69,21 +69,21 @@ export const BaseCommand = class BaseCommand {
 
             let check = this.checks.get(dep)
             if (!check) {
-                this.logger.error("FAIL: Dependency '%s' is unknown", dep)
+                this.logger.error("Dependency '%s' is unknown", dep)
                 return false
             }
 
-
             let status = await check()
             if (!status) {
-                this.logger.error("FAIL: Dependency '%s' is not found", dep)
+                this.logger.error("Dependency '%s' is not found", dep)
                 return false
             }
 
             this.logger.debug("PASS: Dependency '%s' is found", dep)
         }
 
-        this.logger.info("PASS: All required dependencies are found: %s", deps)
+        this.logger.debug("All required dependencies are found: %s", deps)
+
         return true
     }
 

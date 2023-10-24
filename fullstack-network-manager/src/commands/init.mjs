@@ -10,15 +10,19 @@ export const InitCommand = class extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async init() {
-        this.logger.info("-------------- Start running `init` --------------")
-
-        let status = await this.checkDependencies([
+        let deps = [
             core.constants.HELM,
             core.constants.KIND,
             core.constants.KUBECTL,
-        ])
+        ]
 
-        this.logger.info("-------------- Finished running `init` --------------")
+        let status = await this.checkDependencies(deps)
+        if (!status) {
+            this.showUser("FAIL: Required dependencies are not found: %s", deps)
+            return false
+        }
+
+        this.showUser("PASS: All required dependencies are found: %s", deps)
 
         return status
     }
