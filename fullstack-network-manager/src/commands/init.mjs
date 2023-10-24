@@ -1,5 +1,6 @@
 import {BaseCommand} from "./base.mjs";
 import * as core from "../core/index.mjs"
+import chalk from "chalk";
 
 /**
  * Defines the core functionalities of 'init' command
@@ -22,7 +23,7 @@ export const InitCommand = class extends BaseCommand {
             return false
         }
 
-        this.showUser("PASS: All required dependencies are found: %s", deps)
+        this.showUser(chalk.green("All required dependencies are found: %s"), chalk.yellow(deps))
 
         return status
     }

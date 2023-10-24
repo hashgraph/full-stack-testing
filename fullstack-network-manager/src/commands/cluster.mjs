@@ -113,7 +113,7 @@ export const ClusterCommand = class extends BaseCommand {
     static getCommandDefinition(clusterCmd) {
         return {
             command: 'cluster',
-            desc: 'Manager FST cluster',
+            desc: 'Manage FST cluster',
             builder: yargs => {
                 return yargs
                     .command({
