@@ -46,6 +46,7 @@ import org.slf4j.event.Level;
 @DisplayName("Helm Client Tests")
 @JCovalentLoggingSupport
 class HelmClientTest {
+    private static final String CHARTS_DIR = "../../charts";
 
     /**
      * The repository for the ingress-nginx helm chart.
@@ -398,17 +399,17 @@ class HelmClientTest {
     @Test
     @DisplayName("Test Helm dependency update subcommand")
     void testHelmDependencyUpdate() {
-        helmClient.dependencyUpdate("../charts/fullstack-deployment");
+        helmClient.dependencyUpdate(CHARTS_DIR + "/fullstack-deployment");
     }
 
     @Test
     @DisplayName("Test Helm dependency build subcommand failure")
     void testHelmDependencyBuildFailure() {
-        HelmExecutionException exception =
-                assertThrows(HelmExecutionException.class, () -> helmClient.dependencyUpdate("../charts/not-a-chart"));
+        HelmExecutionException exception = assertThrows(
+                HelmExecutionException.class, () -> helmClient.dependencyUpdate(CHARTS_DIR + "/not-a-chart"));
         assertThat(exception.getMessage()).contains("Execution of the Helm command failed with exit code: 1");
         assertThat(exception.getStdOut())
-                .contains(
-                        "Error: could not find ../charts/not-a-chart: stat ../charts/not-a-chart: no such file or directory");
+                .contains("Error: could not find " + CHARTS_DIR + "/not-a-chart: stat " + CHARTS_DIR
+                        + "/not-a-chart: no such file or directory");
     }
 }
