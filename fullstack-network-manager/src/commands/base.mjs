@@ -105,8 +105,9 @@ export const BaseCommand = class BaseCommand {
     }
 
     showUser(msg, ...args) {
-        console.log(util.format(msg, ...args))
-        this.logger.debug(msg, ...args)
+        let formatted = util.format(msg, ...args)
+        console.log(formatted)
+        this.logger.debug(formatted)
     }
 
     constructor(opts) {
