@@ -95,7 +95,6 @@ export const ClusterCommand = class extends BaseCommand {
             this.logger.debug(`Invoking '${cmd}'...`)
             this.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${argv.name}...`))
             await this.runExec(cmd)
-            this.showUser(chalk.green('Deleted cluster:'), chalk.yellow(argv.name))
             await this.getClusters()
 
             return true
