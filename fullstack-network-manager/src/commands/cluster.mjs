@@ -54,6 +54,7 @@ export const ClusterCommand = class extends BaseCommand {
         let cmd = `kind create cluster -n ${argv.name} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
 
         try {
+            this.showUser(`Creating cluster '${argv.name}...'`)
             this.logger.debug(`Invoking '${cmd}'...`)
             let output = await this.runExec(cmd)
             this.logger.debug(output)
