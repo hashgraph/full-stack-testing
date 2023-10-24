@@ -1,5 +1,6 @@
 import * as core from '../core/index.mjs'
 import {BaseCommand} from "./base.mjs";
+import chalk from "chalk";
 
 /**
  * Flags for 'cluster' command
@@ -54,11 +55,11 @@ export const ClusterCommand = class extends BaseCommand {
         let cmd = `kind create cluster -n ${argv.name} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
 
         try {
-            this.showUser(`Creating cluster '${argv.name}...'`)
+            this.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${argv.name}...`))
             this.logger.debug(`Invoking '${cmd}'...`)
             let output = await this.runExec(cmd)
             this.logger.debug(output)
-            this.showUser("Created cluster '%s'", argv.name)
+            this.showUser(chalk.green('Created cluster:'), chalk.yellow(argv.name))
 
             // show all clusters and cluster-info
             await this.getClusters()
@@ -82,10 +83,10 @@ export const ClusterCommand = class extends BaseCommand {
         let cmd = `kind delete cluster -n ${argv.name}`
         try {
             this.logger.debug(`Invoking '${cmd}'...`)
-            this.showUser("Deleting cluster '%s'", argv.name)
+            this.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${argv.name}...`))
             await this.runExec(cmd)
+            this.showUser(chalk.green('Deleted cluster:'), chalk.yellow(argv.name))
             await this.getClusters()
-            this.showUser("Deleted cluster '%s'", argv.name)
 
             return true
         } catch (e) {
