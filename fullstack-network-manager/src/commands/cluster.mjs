@@ -15,6 +15,36 @@ const clusterNameFlag = {
  * Define the core functionalities of 'cluster' command
  */
 export const ClusterCommand = class extends BaseCommand {
+
+    async getClusters(argv) {
+        let cmd = `kind get clusters`
+
+        try {
+            let output = await this.runExec(cmd)
+            this.showUser("\nList of clusters \n----------------\n%s", output)
+            return true
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.showUser(e.message)
+        }
+
+        return false
+    }
+
+    async getClusterInfo(argv) {
+        let cmd = `kubectl cluster-info --context kind-${argv.name}`
+
+        try {
+            let output = await this.runExec(cmd)
+            this.showUser(output)
+            return true
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.showUser(e.message)
+        }
+
+        return false
+    }
     /**
      * Create a cluster
      * @param argv
@@ -24,13 +54,14 @@ export const ClusterCommand = class extends BaseCommand {
         let cmd = `kind create cluster -n ${argv.name} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
 
         try {
-            this.showUser(`Invoking '${cmd}'...`)
+            this.logger.debug(`Invoking '${cmd}'...`)
             let output = await this.runExec(cmd)
             this.logger.debug(output)
+            this.showUser("Created cluster '%s'", argv.name)
 
-            this.showUser("Created cluster '%s'\n", argv.name)
-            output = await this.runExec(`kubectl cluster-info --context kind-${argv.name}`)
-            this.showUser(output)
+            // show all clusters and cluster-info
+            await this.getClusters(argv)
+            await this.getClusterInfo(argv)
 
             return true
         } catch (e) {
@@ -49,10 +80,12 @@ export const ClusterCommand = class extends BaseCommand {
     async delete(argv) {
         let cmd = `kind delete cluster -n ${argv.name}`
         try {
-            this.showUser(`Invoking '${cmd}'...`)
-            let output = await this.runExec(cmd)
-            this.showUser(output)
-            this.showUser("Deleted cluster '%s' (if it existed)", argv.name)
+            this.logger.debug(`Invoking '${cmd}'...`)
+            this.showUser("Deleting cluster '%s'", argv.name)
+            await this.runExec(cmd)
+            await this.getClusters(argv)
+            this.showUser("Deleted cluster '%s'", argv.name)
+
             return true
         } catch (e) {
             this.logger.error("%s", e.stack)
@@ -74,7 +107,7 @@ export const ClusterCommand = class extends BaseCommand {
                 return yargs
                     .command({
                         command: 'create',
-                        desc: 'Create FST cluster',
+                        desc: 'Create a cluster',
                         builder: yargs => {
                             yargs.option('name', clusterNameFlag)
                         },
@@ -84,12 +117,32 @@ export const ClusterCommand = class extends BaseCommand {
                     })
                     .command({
                         command: 'delete',
-                        desc: 'Delete FST cluster',
+                        desc: 'Delete a cluster',
                         builder: yargs => {
                             yargs.option('name', clusterNameFlag)
                         },
                         handler: argv => {
                             clusterCmd.delete(argv).then()
+                        }
+                    })
+                    .command({
+                        command: 'list',
+                        desc: 'List all clusters',
+                        builder: yargs => {
+                            yargs.option('name', clusterNameFlag)
+                        },
+                        handler: argv => {
+                            clusterCmd.getClusters(argv).then()
+                        }
+                    })
+                    .command({
+                        command: 'info',
+                        desc: 'Get cluster info',
+                        builder: yargs => {
+                            yargs.option('name', clusterNameFlag)
+                        },
+                        handler: argv => {
+                            clusterCmd.getClusterInfo(argv).then()
                         }
                     })
                     .demand(1, 'Select a cluster command')

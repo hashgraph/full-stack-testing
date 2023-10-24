@@ -94,13 +94,10 @@ export const BaseCommand = class BaseCommand {
      */
     runExec(cmd) {
         return new Promise((resolve, reject) => {
-            exec(cmd, (error, stderr, stdout) => {
+            exec(cmd, (error, stdout, stderr) => {
                 if (error) {
                     reject(error)
                 }
-
-                console.log(stderr)
-                console.log(stdout)
 
                 resolve(stdout)
             })

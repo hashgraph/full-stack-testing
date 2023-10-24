@@ -11,6 +11,6 @@ export const constants = {
     KIND: 'kind',
     KUBECTL: 'kubectl',
     CWD: process.cwd(),
-    TMP_DIR: ".fsnetman",
+    TMP_DIR: process.env.HOME + "/.fsnetman",
     RESOURCES_DIR: normalize(CUR_FILE_DIR + "/../../resources")
 }
