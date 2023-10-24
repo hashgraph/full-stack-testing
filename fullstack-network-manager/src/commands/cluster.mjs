@@ -22,7 +22,7 @@ export const ClusterCommand = class extends BaseCommand {
 
         try {
             let output = await this.runExec(cmd)
-            this.showUser("\nList of clusters \n----------------\n%s", output)
+            this.showUser("\nList of available clusters \n--------------------------\n%s", output)
             return true
         } catch (e) {
             this.logger.error("%s", e)
