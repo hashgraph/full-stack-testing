@@ -6,3 +6,8 @@ global:
   namespaceOverride: ""
   nameOverride: ""
   fullnameOverride: ""
+
+# cloud configuration
+cloud:
+  minio:
+    enable: false

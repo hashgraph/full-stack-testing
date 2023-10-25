@@ -28,6 +28,7 @@ CHART_DIR=$(PWD)/../charts/fullstack-deployment
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
 
+CLUSTER_SETUP_VALUES_FILE=${TMP_DIR}/cluster-values.yaml
 CHART_VALUES_FILES= # extra values
 
 # scripts
@@ -59,14 +60,17 @@ uninstall-chart:
 update-helm-dependencies:
 	helm dependency update ../charts/fullstack-deployment
 
+.PHONY: init-shared
+init-shared:
+	echo "# values override file for fullstack-cluster-setup" > ${CLUSTER_SETUP_VALUES_FILE}
+
 .PHONY: deploy-shared
-deploy-shared: update-helm-dependencies deploy-gateway-api deploy-prometheus-operator deploy-minio-operator-if-required
+deploy-shared: init-shared update-helm-dependencies deploy-gateway-api deploy-prometheus-operator enable-minio-operator-if-required
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 
 .PHONY: destroy-shared
 destroy-shared:
-	-$(MAKE) source "${SCRIPTS_DIR}/main.sh" && destroy_shared
-	-$(MAKE) undeploy-minio-operator
+	source "${SCRIPTS_DIR}/main.sh" && destroy_shared
 	-$(MAKE) destroy-prometheus-operator
 
 .PHONY: deploy-chart
@@ -77,6 +81,7 @@ deploy-chart:
 .PHONY: destroy-chart
 destroy-chart:
 	-$(MAKE) uninstall-chart
+	-$(MAKE) destroy-shared
 
 .PHONY: deploy-network
 deploy-network: deploy-chart
@@ -193,30 +198,22 @@ destroy-telemetry-stack:
 	-${MAKE} destroy-grafana-tempo
 
 ######################################### MinIO #################################
-.PHONY: deploy-minio-operator
-deploy-minio-operator:
-	@echo ">> Deploying minio operator..."; \
-	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace --version 5.0.7 minio-operator operator && \
-	echo ">> Waiting for minio operator to be available (timeout 300s)..." && \
-	kubectl --namespace=minio-operator  wait --for=condition=Available --timeout=300s deployment.apps/minio-operator && \
-	sleep 5
+.PHONY: enable-minio-operator
+enable-minio-operator:
+	@echo ">> Enabling minio operator..."; \
+	echo "cloud:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
+	echo "  minio:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
+	echo "    enable: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
 .PHONY: is-minio-operator-installed
 is-minio-operator-installed:
 	@echo ">> Checking for minio operator..."; \
-	helm list --namespace=minio-operator | grep minio-operator &> /dev/null && { echo "Found minio operator."; exit 0; }; \
+	kubectl get pods --all-namespaces | grep minio-operator &> /dev/null && { echo "Found minio operator."; exit 0; }; \
 	echo "Minio operator not found."; exit 1
 
-.PHONY: deploy-minio-operator-if-required
-deploy-minio-operator-if-required:
-	@$(MAKE) is-minio-operator-installed || $(MAKE) deploy-minio-operator
-
-
-.PHONY: undeploy-minio-operator
-undeploy-minio-operator:
-	echo ">> Deleting minio operator..." && \
-	helm delete --namespace=minio-operator minio-operator
-
+.PHONY: enable-minio-operator-if-required
+enable-minio-operator-if-required:
+	@$(MAKE) is-minio-operator-installed || $(MAKE) enable-minio-operator
 
 ######################################### Helm Chart Test #################################
 .PHONY: helm-test

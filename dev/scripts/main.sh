@@ -46,7 +46,7 @@ function deploy_fullstack_cluster_setup_chart() {
   echo "-----------------------------------------------------------------------------------------------------"
   local count=$(helm list --all-namespaces -q | grep -c "fullstack-cluster-setup")
   if [[ $count -eq 0 ]]; then
-    helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}"
+    helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}" --values "${CLUSTER_SETUP_VALUES_FILE}"
   else
     echo "fullstack-cluster-setup chart is already installed"
     echo ""
