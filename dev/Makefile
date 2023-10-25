@@ -59,6 +59,7 @@ uninstall-chart:
 .PHONY: update-helm-dependencies
 update-helm-dependencies:
 	helm dependency update ../charts/fullstack-deployment
+	helm dependency update ../charts/fullstack-cluster-setup
 
 .PHONY: init-shared
 init-shared:
