@@ -1,5 +1,6 @@
 import * as winston from 'winston'
 import {constants} from "./constants.mjs";
+import { v4 as uuidv4 } from 'uuid';
 import * as util from "util";
 
 const customFormat = winston.format.combine(
@@ -52,6 +53,9 @@ const Logger = class {
      * @constructor
      */
     constructor(level) {
+        let self = this
+
+        this.nextTraceId()
         this.winsonLogger = winston.createLogger({
             level: level,
             format: winston.format.combine(
@@ -72,33 +76,45 @@ const Logger = class {
         });
     }
 
+    nextTraceId() {
+        this.traceId = uuidv4()
+    }
+
+    enrichMeta(meta) {
+        if (meta === undefined) {
+            meta = {}
+        }
+
+        meta.traceId = this.traceId
+        return meta
+    }
+
     showUser(msg, ...args) {
         console.log(util.format(msg, ...args))
     }
 
     critical(msg, ...meta) {
-        this.winsonLogger.crit(msg, ...meta)
+        this.winsonLogger.crit(msg, this.enrichMeta(meta))
     }
 
     error(msg, ...meta) {
-        this.winsonLogger.error(msg, ...meta)
-        console.trace()
+        this.winsonLogger.error(msg, this.enrichMeta(meta))
     }
 
     warn(msg, ...meta) {
-        this.winsonLogger.warn(msg, ...meta)
+        this.winsonLogger.warn(msg, this.enrichMeta(meta))
     }
 
     notice(msg, ...meta) {
-        this.winsonLogger.notice(msg, ...meta)
+        this.winsonLogger.notice(msg, this.enrichMeta(meta))
     }
 
     info(msg, ...meta) {
-        this.winsonLogger.info(msg, ...meta)
+        this.winsonLogger.info(msg, this.enrichMeta(meta))
     }
 
     debug(msg, ...meta) {
-        this.winsonLogger.debug(msg, ...meta)
+        this.winsonLogger.debug(msg, this.enrichMeta(meta))
     }
 }
 
