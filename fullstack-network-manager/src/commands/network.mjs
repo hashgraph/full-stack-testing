@@ -3,6 +3,10 @@ import chalk from "chalk";
 
 
 export const NetworkCommand = class NetworkCommand extends BaseCommand {
+    async deployShared(argv) {
+        this.logger.showUser(chalk.green("Deploying FST network....%s"), chalk.yellow(JSON.stringify(argv)))
+        return false
+    }
 
     async deploy(argv) {
         this.logger.showUser(chalk.green("Deploying FST network....%s"), chalk.yellow(JSON.stringify(argv)))

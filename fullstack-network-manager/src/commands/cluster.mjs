@@ -8,7 +8,14 @@ import chalk from "chalk";
 const clusterNameFlag = {
     describe: 'Name of the cluster',
     default: core.constants.CLUSTER_NAME,
-    alias: 'n',
+    alias: 'c',
+    type: 'string'
+}
+
+const namespaceFlag = {
+    describe: 'Name of the namespace',
+    default: core.constants.NAMESPACE_NAME,
+    alias: 's',
     type: 'string'
 }
 
@@ -19,21 +26,22 @@ export const ClusterCommand = class extends BaseCommand {
 
     /**
      * List available clusters
-     * @returns {Promise<boolean>}
+     * @returns {Promise<string[]>}
      */
     async getClusters() {
-        let cmd = `kind get clusters`
-
         try {
+            let cmd = `kind get clusters -q`
+
             let output = await this.runExec(cmd)
             this.logger.showUser("\nList of available clusters \n--------------------------\n%s", output)
-            return true
+
+            return output.split(/\r?\n/)
         } catch (e) {
             this.logger.error("%s", e)
             this.logger.showUser(e.message)
         }
 
-        return false
+        return []
     }
 
     /**
@@ -42,11 +50,13 @@ export const ClusterCommand = class extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async getClusterInfo(argv) {
-        let cmd = `kubectl cluster-info --context kind-${argv.name}`
-
         try {
+            let clusterName = argv.clusterName
+            let cmd = `kubectl cluster-info --context kind-${clusterName}`
+
             let output = await this.runExec(cmd)
             this.logger.showUser(output)
+
             return true
         } catch (e) {
             this.logger.error("%s", e)
@@ -62,14 +72,14 @@ export const ClusterCommand = class extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async create(argv) {
-        let cmd = `kind create cluster -n ${argv.name} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
-
         try {
-            this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${argv.name}...`))
-            this.logger.debug(`Invoking '${cmd}'...`)
+            let clusterName = argv.clusterName
+            let cmd = `kind create cluster -n ${clusterName} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
+
+            this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${clusterName}...`))
             let output = await this.runExec(cmd)
             this.logger.debug(output)
-            this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(argv.name))
+            this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(clusterName))
 
             // show all clusters and cluster-info
             await this.getClusters()
@@ -90,12 +100,73 @@ export const ClusterCommand = class extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async delete(argv) {
-        let cmd = `kind delete cluster -n ${argv.name}`
         try {
-            this.logger.debug(`Invoking '${cmd}'...`)
-            this.logger.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${argv.name}...`))
+            let clusterName = argv.clusterName
+            let cmd = `kind delete cluster -n ${clusterName}`
+
+            this.logger.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${clusterName}...`))
             await this.runExec(cmd)
             await this.getClusters()
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e.stack)
+            this.logger.showUser(e.message)
+        }
+
+        return false
+    }
+
+    /**
+     * List available clusters
+     * @returns {Promise<string[]>}
+     */
+    async getInstalledCharts(argv) {
+        try {
+            let namespaceName = argv.namespace
+            let cmd = `helm list -n ${namespaceName} -q`
+
+            let output = await this.runExec(cmd)
+            this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
+
+            return output.split(/\r?\n/)
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.logger.showUser(e.message)
+        }
+
+        return []
+    }
+
+    /**
+     * Setup cluster with shared components
+     * @param argv
+     * @returns {Promise<boolean>}
+     */
+    async setup(argv) {
+        try {
+            let clusterName = argv.clusterName
+            let releaseName = "fullstack-cluster-setup"
+            let namespaceName = argv.namespace
+            let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-cluster-setup`
+
+            this.logger.showUser(chalk.cyan(`Setting up cluster ${clusterName}...`))
+
+            let charts= await this.getInstalledCharts(argv)
+
+            if (!charts.includes(releaseName)) {
+                // install fullstack-cluster-setup chart
+                let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath}`
+                this.logger.showUser(chalk.cyan("Installing fullstack-cluster-setup chart"))
+                this.logger.debug(`Invoking '${cmd}'...`)
+
+                let output = await this.runExec(cmd)
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
+            } else {
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
+            }
+
+            this.logger.showUser(chalk.yellow("Chart setup complete"))
 
             return true
         } catch (e) {
@@ -120,45 +191,83 @@ export const ClusterCommand = class extends BaseCommand {
                         command: 'create',
                         desc: 'Create a cluster',
                         builder: yargs => {
-                            yargs.option('name', clusterNameFlag)
+                            yargs.option('cluster-name', clusterNameFlag)
                         },
                         handler: argv => {
+                            clusterCmd.logger.debug("==== Running 'cluster create' ===")
+                            clusterCmd.logger.debug(argv)
+
                             clusterCmd.create(argv).then(r => {
                                 if (!r) process.exit(1)
                             })
+
+                            clusterCmd.logger.debug("==== Finished running `cluster create`====")
                         }
                     })
                     .command({
                         command: 'delete',
                         desc: 'Delete a cluster',
                         builder: yargs => {
-                            yargs.option('name', clusterNameFlag)
+                            yargs.option('cluster-name', clusterNameFlag)
                         },
                         handler: argv => {
+                            clusterCmd.logger.debug("==== Running 'cluster delete' ===")
+                            clusterCmd.logger.debug(argv)
+
                             clusterCmd.delete(argv).then(r => {
                                 if (!r) process.exit(1)
                             })
+
+                            clusterCmd.logger.debug("==== Finished running `cluster delete`====")
                         }
                     })
                     .command({
                         command: 'list',
                         desc: 'List all clusters',
                         handler: argv => {
+                            clusterCmd.logger.debug("==== Running 'cluster list' ===")
+                            clusterCmd.logger.debug(argv)
+
                             clusterCmd.getClusters().then(r => {
                                 if (!r) process.exit(1)
                             })
+
+                            clusterCmd.logger.debug("==== Finished running `cluster list`====")
                         }
                     })
                     .command({
                         command: 'info',
                         desc: 'Get cluster info',
                         builder: yargs => {
-                            yargs.option('name', clusterNameFlag)
+                            yargs.option('cluster-name', clusterNameFlag)
                         },
                         handler: argv => {
+                            clusterCmd.logger.debug("==== Running 'cluster info' ===")
+                            clusterCmd.logger.debug(argv)
+
                             clusterCmd.getClusterInfo(argv).then(r => {
                                 if (!r) process.exit(1)
                             })
+
+                            clusterCmd.logger.debug("==== Finished running `cluster info`====")
+                        }
+                    })
+                    .command({
+                        command: 'setup',
+                        desc: 'Setup cluster with shared components',
+                        builder: yargs => {
+                            yargs.option('cluster-name', clusterNameFlag)
+                            yargs.option('namespace', namespaceFlag)
+                        },
+                        handler: argv => {
+                            clusterCmd.logger.debug("==== Running 'cluster setup' ===")
+                            clusterCmd.logger.debug(argv)
+
+                            clusterCmd.setup(argv).then(r => {
+                                if (!r) process.exit(1)
+                            })
+
+                            clusterCmd.logger.debug("==== Finished running `cluster setup`====")
                         }
                     })
                     .demand(1, 'Select a cluster command')
