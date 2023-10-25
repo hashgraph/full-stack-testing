@@ -98,7 +98,7 @@ const Logger = class {
     }
 
     debug(msg, ...meta) {
-        this.winsonLogger.info(msg, ...meta)
+        this.winsonLogger.debug(msg, ...meta)
     }
 }
 
