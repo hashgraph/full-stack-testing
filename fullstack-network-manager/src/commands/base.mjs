@@ -89,6 +89,55 @@ export const BaseCommand = class BaseCommand {
         })
     }
 
+    /**
+     * List available clusters
+     * @returns {Promise<string[]>}
+     */
+    async getInstalledCharts(namespaceName) {
+        try {
+            let cmd = `helm list -n ${namespaceName} -q`
+
+            let output = await this.runExec(cmd)
+            this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
+
+            return output.split(/\r?\n/)
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.logger.showUser(e.message)
+        }
+
+        return []
+    }
+
+    async installChart(clusterName, namespaceName, releaseName, chartPath) {
+        try {
+            this.logger.showUser(chalk.cyan(`Setting up FST network ${clusterName}...`))
+
+            let charts= await this.getInstalledCharts(namespaceName)
+            if (!charts.includes(releaseName)) {
+                // install fullstack-cluster-setup chart
+                let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath}`
+                this.logger.showUser(chalk.cyan(`Installing ${releaseName} chart`))
+                this.logger.debug(`Invoking '${cmd}'...`)
+
+                let output = await this.runExec(cmd)
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
+            } else {
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
+            }
+
+            this.logger.showUser(chalk.yellow("Chart setup complete"))
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e.stack)
+            this.logger.showUser(e.message)
+        }
+
+        return false
+    }
+
+
     constructor(opts) {
         if (opts.logger === undefined) throw new Error("logger cannot be null")
 

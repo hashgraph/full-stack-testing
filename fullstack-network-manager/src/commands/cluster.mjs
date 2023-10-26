@@ -23,7 +23,6 @@ const namespaceFlag = {
  * Define the core functionalities of 'cluster' command
  */
 export const ClusterCommand = class extends BaseCommand {
-
     /**
      * List available clusters
      * @returns {Promise<string[]>}
@@ -118,63 +117,16 @@ export const ClusterCommand = class extends BaseCommand {
     }
 
     /**
-     * List available clusters
-     * @returns {Promise<string[]>}
-     */
-    async getInstalledCharts(argv) {
-        try {
-            let namespaceName = argv.namespace
-            let cmd = `helm list -n ${namespaceName} -q`
-
-            let output = await this.runExec(cmd)
-            this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
-
-            return output.split(/\r?\n/)
-        } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
-        }
-
-        return []
-    }
-
-    /**
      * Setup cluster with shared components
      * @param argv
      * @returns {Promise<boolean>}
      */
     async setup(argv) {
-        try {
-            let clusterName = argv.clusterName
-            let releaseName = "fullstack-cluster-setup"
-            let namespaceName = argv.namespace
-            let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-cluster-setup`
-
-            this.logger.showUser(chalk.cyan(`Setting up cluster ${clusterName}...`))
-
-            let charts= await this.getInstalledCharts(argv)
-
-            if (!charts.includes(releaseName)) {
-                // install fullstack-cluster-setup chart
-                let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath}`
-                this.logger.showUser(chalk.cyan("Installing fullstack-cluster-setup chart"))
-                this.logger.debug(`Invoking '${cmd}'...`)
-
-                let output = await this.runExec(cmd)
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
-            } else {
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
-            }
-
-            this.logger.showUser(chalk.yellow("Chart setup complete"))
-
-            return true
-        } catch (e) {
-            this.logger.error("%s", e.stack)
-            this.logger.showUser(e.message)
-        }
-
-        return false
+        let clusterName = argv.clusterName
+        let releaseName = "fullstack-cluster-setup"
+        let namespaceName = argv.namespace
+        let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-cluster-setup`
+        return this.installChart(clusterName, namespaceName, releaseName, chartPath)
     }
 
     /**

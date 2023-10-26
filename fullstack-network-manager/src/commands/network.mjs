@@ -1,5 +1,6 @@
 import {BaseCommand} from "./base.mjs";
 import chalk from "chalk";
+import * as core from "../core/index.mjs";
 
 
 export const NetworkCommand = class NetworkCommand extends BaseCommand {
@@ -9,8 +10,13 @@ export const NetworkCommand = class NetworkCommand extends BaseCommand {
     }
 
     async deploy(argv) {
-        this.logger.showUser(chalk.green("Deploying FST network....%s"), chalk.yellow(JSON.stringify(argv)))
-        return false
+        let clusterName = argv.clusterName
+        let releaseName = "fullstack-deployment"
+        let namespaceName = argv.namespace
+        let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-deployment`
+
+        await this.runExec(`helm dependency update ${chartPath}`)
+        return await this.installChart(clusterName, namespaceName, releaseName, chartPath)
     }
 
     static getCommandDefinition(networkCmd) {
