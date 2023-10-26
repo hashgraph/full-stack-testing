@@ -11,3 +11,5 @@ global:
 cloud:
   minio:
     enable: false
+  prometheusOperator:
+    enable: false

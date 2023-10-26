@@ -24,7 +24,6 @@ function fetch-prometheus-operator-bundle() {
 
 function helmify-prometheus-operator() {
 	if [[ ! -f "${PROMETHEUS_OPERATOR_DIR}" ]]; then \
-	  set -x
     echo ""
 		echo "Generating prometheus-operator chart"
 		cat ${PROMETHEUS_OPERATOR_YAML} | helmify prometheus-operator
@@ -34,13 +33,10 @@ function helmify-prometheus-operator() {
 		return "${status}"
 	fi
 
-	set +x
 	log_time "helmify-prometheus-operator"
 }
 
 function deploy-prometheus-operator() {
-  fetch-prometheus-operator-bundle
-  helmify-prometheus-operator
 
   echo ""
 	echo "Deploying prometheus operator"
@@ -57,6 +53,14 @@ function deploy-prometheus-operator() {
 	fi
 
 	log_time "deploy-prometheus-operator"
+}
+
+# run this to update the prometheus-operator version
+function update-prometheus-operator() {
+  rm -Rf "${PROMETHEUS_OPERATOR_YAML}"
+  rm -Rf "${PROMETHEUS_OPERATOR_DIR}"
+  fetch-prometheus-operator-bundle
+  helmify-prometheus-operator
 }
 
 function destroy-prometheus-operator() {

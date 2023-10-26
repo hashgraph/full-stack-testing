@@ -29,3 +29,7 @@ dependencies:
     version: 5.0.7
     repository: https://operator.min.io/
     condition: cloud.minio.enable
+
+  - name: prometheus-operator
+    version: 0.1.0
+    condition: cloud.prometheusOperator.enable

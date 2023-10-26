@@ -2,5 +2,8 @@ dependencies:
 - name: operator
   repository: https://operator.min.io/
   version: 5.0.7
-digest: sha256:2f7b3843ce9b2417b2db1a7af249a6c4d097cb13e65d557c0c80a55688e1a172
-generated: "2023-10-25T15:14:25.580221+01:00"
+- name: prometheus-operator
+  repository: ""
+  version: 0.1.0
+digest: sha256:8210f8533c2d6681655ab044be09b1c2a5247d0ab92fc770eb6fb318b2f44ae7
+generated: "2023-10-26T16:06:21.13312+01:00"
