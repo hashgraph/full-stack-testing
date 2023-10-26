@@ -1,5 +1,6 @@
 import * as winston from 'winston'
 import {constants} from "./constants.mjs";
+import {v4 as uuidv4} from 'uuid';
 import * as util from "util";
 
 const customFormat = winston.format.combine(
@@ -52,6 +53,9 @@ const Logger = class {
      * @constructor
      */
     constructor(level) {
+        let self = this
+        this.nextTraceId()
+
         this.winsonLogger = winston.createLogger({
             level: level,
             format: winston.format.combine(
@@ -72,36 +76,48 @@ const Logger = class {
         });
     }
 
+    nextTraceId() {
+        this.traceId = uuidv4()
+    }
+
+    prepMeta(meta) {
+        if (meta === undefined) {
+            meta = {}
+        }
+
+        meta.traceId = this.traceId
+        return meta
+    }
+
     showUser(msg, ...args) {
         console.log(util.format(msg, ...args))
     }
 
-    critical(msg, ...meta) {
-        this.winsonLogger.crit(msg, ...meta)
+    critical(msg, ...args) {
+        this.winsonLogger.crit(msg, ...args, this.prepMeta())
     }
 
-    error(msg, ...meta) {
-        this.winsonLogger.error(msg, ...meta)
-        console.trace()
+    error(msg, ...args) {
+        this.winsonLogger.error(msg, ...args, this.prepMeta())
     }
 
-    warn(msg, ...meta) {
-        this.winsonLogger.warn(msg, ...meta)
+    warn(msg, ...args) {
+        this.winsonLogger.warn(msg, ...args, this.prepMeta())
     }
 
-    notice(msg, ...meta) {
-        this.winsonLogger.notice(msg, ...meta)
+    notice(msg, ...args) {
+        this.winsonLogger.notice(msg, ...args, this.prepMeta())
     }
 
-    info(msg, ...meta) {
-        this.winsonLogger.info(msg, ...meta)
+    info(msg, ...args) {
+        this.winsonLogger.info(msg, ...args, this.prepMeta())
     }
 
-    debug(msg, ...meta) {
-        this.winsonLogger.debug(msg, ...meta)
+    debug(msg, ...args) {
+        this.winsonLogger.debug(msg, ...args, this.prepMeta())
     }
 }
 
-export function NewLogger(level = 'debug')  {
+export function NewLogger(level = 'debug') {
     return new Logger(level)
 }
