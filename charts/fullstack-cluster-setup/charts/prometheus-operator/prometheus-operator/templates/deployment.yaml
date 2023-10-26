@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "prometheus-operator.fullname" . }}-prometheus-operator
+  labels:
+    app.kubernetes.io/component: controller
+  {{- include "prometheus-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.prometheusOperator.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/name: prometheus-operator
+    {{- include "prometheus-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/name: prometheus-operator
+        app.kubernetes.io/version: 0.67.1
+      {{- include "prometheus-operator.selectorLabels" . | nindent 8 }}
+      annotations:
+        kubectl.kubernetes.io/default-container: prometheus-operator
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - args: {{- toYaml .Values.prometheusOperator.prometheusOperator.args | nindent 8
+          }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ quote .Values.kubernetesClusterDomain }}
+        image: {{ .Values.prometheusOperator.prometheusOperator.image.repository }}:{{
+          .Values.prometheusOperator.prometheusOperator.image.tag | default .Chart.AppVersion
+          }}
+        name: prometheus-operator
+        ports:
+        - containerPort: 8080
+          name: http
+        resources: {{- toYaml .Values.prometheusOperator.prometheusOperator.resources |
+          nindent 10 }}
+        securityContext: {{- toYaml .Values.prometheusOperator.prometheusOperator.containerSecurityContext
+          | nindent 10 }}
+      nodeSelector: {{- toYaml .Values.prometheusOperator.nodeSelector | nindent 8 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: {{ include "prometheus-operator.fullname" . }}-prometheus-operator
