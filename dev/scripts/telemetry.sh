@@ -22,8 +22,26 @@ function fetch-prometheus-operator-bundle() {
 	log_time "fetch-prometheus-operator-bundle"
 }
 
+function helmify-prometheus-operator() {
+	if [[ ! -f "${PROMETHEUS_OPERATOR_DIR}" ]]; then \
+	  set -x
+    echo ""
+		echo "Generating prometheus-operator chart"
+		cat ${PROMETHEUS_OPERATOR_YAML} | helmify prometheus-operator
+		mkdir "${PROMETHEUS_OPERATOR_DIR}"
+		mv "${SCRIPT_DIR}/../prometheus-operator" "${PROMETHEUS_OPERATOR_DIR}"
+		local status="$?"
+		[[ "${status}" != 0 ]] && echo "ERROR: Failed to helmify prometheus operator bundle" && echo "for more information about helmify: https://github.com/arttor/helmify?tab=readme-ov-file#install"
+		return "${status}"
+	fi
+
+	set +x
+	log_time "helmify-prometheus-operator"
+}
+
 function deploy-prometheus-operator() {
   fetch-prometheus-operator-bundle
+  helmify-prometheus-operator
 
   echo ""
 	echo "Deploying prometheus operator"
