@@ -72,7 +72,6 @@ deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-pr
 .PHONY: destroy-shared
 destroy-shared:
 	source "${SCRIPTS_DIR}/main.sh" && destroy_shared
-	-$(MAKE) destroy-prometheus-operator
 
 .PHONY: deploy-chart
 deploy-chart:
@@ -181,6 +180,7 @@ is-prometheus-operator-installed:
 	kubectl get pods --all-namespaces | grep prometheus-operator &> /dev/null && { echo "Found prometheus operator."; exit 0; }; \
 	echo "Prometheus operator not found."; exit 1
 
+# prometheus-operator version set in scripts/env.sh:PROMETHEUS_VERSION
 .PHONY: update-prometheus-operator
 update-prometheus-operator:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && update-prometheus-operator
