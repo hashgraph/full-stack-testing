@@ -55,7 +55,7 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
                 return yargs
                     .command({
                         command: 'install',
-                        desc: 'Install FST network installment chart',
+                        desc: 'Install FST network deployment chart',
                         builder: yargs => {
                             yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('mirror-node', flags.deployMirrorNode)
@@ -76,7 +76,7 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
                     })
                     .command({
                         command: 'uninstall',
-                        desc: 'Uninstall the existing FST network installment chart',
+                        desc: 'Uninstall FST network deployment chart',
                         builder: yargs => {
                             yargs.option('namespace', flags.namespaceFlag)
                         },
@@ -94,7 +94,7 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
                     })
                     .command({
                         command: 'upgrade',
-                        desc: 'Refresh the existing FST network installment with new values',
+                        desc: 'Refresh existing FST network deployment with new values',
                         builder: yargs => {
                             yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('mirror-node', flags.deployMirrorNode)
