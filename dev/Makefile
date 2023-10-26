@@ -177,7 +177,7 @@ enable-prometheus-stack:
 .PHONY: is-prometheus-operator-installed
 is-prometheus-operator-installed:
 	@echo ">> Checking for prometheus operator..."; \
-	kubectl get pods --all-namespaces | grep prometheus-operator &> /dev/null && { echo "Found prometheus operator."; exit 0; }; \
+	kubectl get pods --all-namespaces | grep "prometheus-operator\|pr-operator" &> /dev/null && { echo "Found prometheus operator."; exit 0; }; \
 	echo "Prometheus operator not found."; exit 1
 
 .PHONY: deploy-grafana-tempo
