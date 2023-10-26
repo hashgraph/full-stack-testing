@@ -1,23 +1,25 @@
 "use strict"
 import {exec} from "child_process";
 import * as core from "../core/index.mjs"
+import chalk from "chalk";
 
 export const BaseCommand = class BaseCommand {
-    /**
-     * Check if 'kind' CLI program is installed or not
-     * @returns {Promise<boolean>}
-     */
-    async checkKind() {
+    async checkDep(dep) {
         try {
-            this.logger.debug("Checking if 'kind' is installed")
-            await this.runExec("kind --version")
-            this.logger.debug("OK: 'kind' is installed")
+            await this.runExec(dep)
         } catch (e) {
             this.logger.error("%s", e)
             return false
         }
 
         return true
+    }
+    /**
+     * Check if 'kind' CLI program is installed or not
+     * @returns {Promise<boolean>}
+     */
+    async checkKind() {
+        return this.checkDep(core.constants.KIND)
     }
 
     /**
@@ -25,16 +27,7 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkHelm() {
-        try {
-            this.logger.debug("Checking if 'helm' is installed")
-            await this.runExec("helm version")
-            this.logger.debug("OK: 'helm' is installed")
-        } catch (e) {
-            this.logger.error("%s", e)
-            return false
-        }
-
-        return true
+        return this.checkDep(core.constants.HELM)
     }
 
     /**
@@ -42,16 +35,7 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkKubectl() {
-        try {
-            this.logger.debug("Checking if 'kubectl' is installed")
-            await this.runExec("kubectl version")
-            this.logger.debug("OK: 'kubectl' is installed")
-        } catch (e) {
-            this.logger.error("%s", e)
-            return false
-        }
-
-        return true
+        return this.checkDep(core.constants.KUBECTL)
     }
 
     /**
@@ -60,29 +44,28 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkDependencies(deps = []) {
-        this.logger.info("Checking for required dependencies: %s", deps)
+        this.logger.debug("Checking for required dependencies: %s", deps)
 
         for (let i = 0; i < deps.length; i++) {
             let dep = deps[i]
             this.logger.debug("Checking for dependency '%s'", dep)
 
+            let status = false
             let check = this.checks.get(dep)
-            if (!check) {
-                this.logger.error("FAIL: Dependency '%s' is unknown", dep)
-                return false
+            if (check) {
+                status = await check()
             }
 
-
-            let status = await check()
             if (!status) {
-                this.logger.error("FAIL: Dependency '%s' is not found", dep)
+                this.logger.showUser(chalk.red(`FAIL: '${dep}' is not found`))
                 return false
             }
 
-            this.logger.debug("PASS: Dependency '%s' is found", dep)
+            this.logger.showUser(chalk.green(`OK: '${dep}' is found`))
         }
 
-        this.logger.info("PASS: All required dependencies are found: %s", deps)
+        this.logger.debug("All required dependencies are found: %s", deps)
+
         return true
     }
 

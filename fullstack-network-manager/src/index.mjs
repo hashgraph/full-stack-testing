@@ -9,13 +9,15 @@ export function main(argv) {
         logger: logger
     }
 
+    logger.debug("Constants: %s", JSON.stringify(core.constants))
+
     return yargs(hideBin(argv))
-        .usage('Usage: $0 <command> [options]')
+        .usage(`Usage:\n  $0 <command> [options]`)
         .alias('h', 'help')
         .alias('v', 'version')
         .command(commands.Initialize(opts))
         .strict()
-        .wrap(80)
+        .wrap(120)
         .demand(1, 'Select a command')
         .parse()
 }
