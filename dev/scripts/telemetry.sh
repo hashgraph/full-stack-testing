@@ -57,8 +57,9 @@ function deploy-prometheus-operator() {
 
 # run this to update the prometheus-operator version
 function update-prometheus-operator() {
-  rm -Rf "${PROMETHEUS_OPERATOR_YAML}"
+  rm "${PROMETHEUS_OPERATOR_YAML}"
   rm -Rf "${PROMETHEUS_OPERATOR_DIR}"
+  sleep 1
   fetch-prometheus-operator-bundle
   helmify-prometheus-operator
 }
