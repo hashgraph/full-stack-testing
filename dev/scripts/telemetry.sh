@@ -28,8 +28,7 @@ function helmify-prometheus-operator() {
     echo ""
 		echo "Generating prometheus-operator chart"
 		cat ${PROMETHEUS_OPERATOR_YAML} | helmify prometheus-operator
-		mkdir "${PROMETHEUS_OPERATOR_DIR}"
-		mv "${SCRIPT_DIR}/../prometheus-operator" "${PROMETHEUS_OPERATOR_DIR}"
+		mv "${SCRIPT_DIR}/../prometheus-operator" "${SETUP_CHART_DIR}/charts"
 		local status="$?"
 		[[ "${status}" != 0 ]] && echo "ERROR: Failed to helmify prometheus operator bundle" && echo "for more information about helmify: https://github.com/arttor/helmify?tab=readme-ov-file#install"
 		return "${status}"
