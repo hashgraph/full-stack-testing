@@ -66,7 +66,7 @@ init-shared:
 	echo "cloud:" > ${CLUSTER_SETUP_VALUES_FILE}
 
 .PHONY: deploy-shared
-deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-prometheus-operator-if-required enable-minio-operator-if-required
+deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-prometheus-stack-if-required enable-minio-operator-if-required
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 
 .PHONY: destroy-shared
@@ -164,14 +164,14 @@ destroy-gateway-api:
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
 ######################################### Telemetry #################################
-.PHONY: enable-prometheus-operator-if-required
-enable-prometheus-operator-if-required:
-	@$(MAKE) is-prometheus-operator-installed || $(MAKE) enable-prometheus-operator
+.PHONY: enable-prometheus-stack-if-required
+enable-prometheus-stack-if-required:
+	@$(MAKE) is-prometheus-operator-installed || $(MAKE) enable-prometheus-stack
 
-.PHONY: enable-prometheus-operator
-enable-prometheus-operator:
-	@echo ">> Enabling prometheus operator..."; \
-	echo "  prometheusOperator:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
+.PHONY: enable-prometheus-stack
+enable-prometheus-stack:
+	@echo ">> Enabling prometheus stack..."; \
+	echo "  prometheusStack:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
 	echo "    enable: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
 .PHONY: is-prometheus-operator-installed
@@ -179,11 +179,6 @@ is-prometheus-operator-installed:
 	@echo ">> Checking for prometheus operator..."; \
 	kubectl get pods --all-namespaces | grep prometheus-operator &> /dev/null && { echo "Found prometheus operator."; exit 0; }; \
 	echo "Prometheus operator not found."; exit 1
-
-# prometheus-operator version set in scripts/env.sh:PROMETHEUS_VERSION
-.PHONY: update-prometheus-operator
-update-prometheus-operator:
-	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && update-prometheus-operator
 
 .PHONY: deploy-grafana-tempo
 deploy-grafana-tempo:
@@ -194,7 +189,7 @@ destroy-grafana-tempo:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_grafana && destroy_grafana_tempo
 
 .PHONY: deploy-prometheus
-deploy-prometheus: init-shared deploy-gateway-api enable-prometheus-operator
+deploy-prometheus: init-shared deploy-gateway-api enable-prometheus-stack
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 	-$(MAKE) wait-for-prometheus-operator
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus && expose_prometheus

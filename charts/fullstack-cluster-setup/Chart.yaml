@@ -30,6 +30,8 @@ dependencies:
     repository: https://operator.min.io/
     condition: cloud.minio.enable
 
-  - name: prometheus-operator
-    version: 0.1.0
-    condition: cloud.prometheusOperator.enable
+  - name: kube-prometheus-stack
+    alias: prometheus-stack
+    version: 52.0.1
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: cloud.prometheusStack.enable
