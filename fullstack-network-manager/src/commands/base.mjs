@@ -72,10 +72,13 @@ export const BaseCommand = class BaseCommand {
     /**
      * Run the specified bash command
      * @param cmd is a bash command including args
-     * @returns {Promise<unknown>}
+     * @returns {Promise<string>}
      */
     runExec(cmd) {
+        let self = this
+
         return new Promise((resolve, reject) => {
+            self.logger.debug(`Invoking '${cmd}'...`)
             exec(cmd, (error, stdout, stderr) => {
                 if (error) {
                     reject(error)
