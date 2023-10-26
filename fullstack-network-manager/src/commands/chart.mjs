@@ -8,11 +8,6 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
     chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-deployment`
     releaseName = "fullstack-deployment"
 
-    async installShared(argv) {
-        this.logger.showUser(chalk.green("Deploying FST chart....%s"), chalk.yellow(JSON.stringify(argv)))
-        return false
-    }
-
     prepareValuesArg(argv) {
         let {valuesFile, mirrorNode, hederaExplorer} = argv
         let valuesArg = `--values ${this.chartPath}/values.yaml`
