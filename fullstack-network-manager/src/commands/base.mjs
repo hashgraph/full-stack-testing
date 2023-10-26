@@ -89,6 +89,108 @@ export const BaseCommand = class BaseCommand {
         })
     }
 
+    /**
+     * List available clusters
+     * @returns {Promise<string[]>}
+     */
+    async getInstalledCharts(namespaceName) {
+        try {
+            let cmd = `helm list -n ${namespaceName} -q`
+
+            let output = await this.runExec(cmd)
+            this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
+
+            return output.split(/\r?\n/)
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.logger.showUser(e.message)
+        }
+
+        return []
+    }
+
+    async chartInstall(namespaceName, releaseName, chartPath, valuesArg) {
+        try {
+            this.logger.showUser(chalk.cyan(`Setting up FST network...`))
+
+            let charts= await this.getInstalledCharts(namespaceName)
+            if (!charts.includes(releaseName)) {
+                let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath} ${valuesArg}`
+                this.logger.showUser(chalk.cyan(`Installing ${releaseName} chart`))
+
+                let output = await this.runExec(cmd)
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
+            } else {
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
+            }
+
+            this.logger.showUser(chalk.yellow("Chart setup is complete"))
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e.stack)
+            this.logger.showUser(e.message)
+        }
+
+        return false
+    }
+
+    async chartUninstall(namespaceName, releaseName) {
+        try {
+            this.logger.showUser(chalk.cyan(`Uninstalling FST network ...`))
+
+            let charts= await this.getInstalledCharts(namespaceName)
+            if (charts.includes(releaseName)) {
+                let cmd = `helm uninstall ${releaseName} -n ${namespaceName}`
+                this.logger.showUser(chalk.cyan(`Uninstalling ${releaseName} chart`))
+
+                let output = await this.runExec(cmd)
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is uninstalled`)
+                await this.getInstalledCharts(namespaceName)
+            } else {
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already uninstalled`)
+            }
+
+            this.logger.showUser(chalk.yellow("Chart uninstallation is complete"))
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e.stack)
+            this.logger.showUser(e.message)
+        }
+
+        return false
+    }
+
+    async chartUpgrade(namespaceName, releaseName, chartPath, valuesArg) {
+        try {
+            this.logger.showUser(chalk.cyan(`Upgrading FST network deployment chart ...`))
+
+            let charts= await this.getInstalledCharts(namespaceName)
+            if (charts.includes(releaseName)) {
+                let cmd = `helm upgrade ${releaseName} -n ${namespaceName} ${chartPath} ${valuesArg}`
+                this.logger.showUser(chalk.cyan(`Upgrading ${releaseName} chart`))
+
+                let output = await this.runExec(cmd)
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is upgraded`)
+                await this.getInstalledCharts(namespaceName)
+
+                this.logger.showUser(chalk.yellow("Chart upgrade is complete"))
+            } else {
+                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is not installed`)
+                return false
+            }
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e.stack)
+            this.logger.showUser(e.message)
+        }
+
+        return false
+    }
+
+
     constructor(opts) {
         if (opts.logger === undefined) throw new Error("logger cannot be null")
 

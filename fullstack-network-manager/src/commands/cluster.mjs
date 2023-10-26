@@ -1,23 +1,7 @@
 import * as core from '../core/index.mjs'
+import * as flags from './flags.mjs'
 import {BaseCommand} from "./base.mjs";
 import chalk from "chalk";
-
-/**
- * Flags for 'cluster' command
- */
-const clusterNameFlag = {
-    describe: 'Name of the cluster',
-    default: core.constants.CLUSTER_NAME,
-    alias: 'c',
-    type: 'string'
-}
-
-const namespaceFlag = {
-    describe: 'Name of the namespace',
-    default: core.constants.NAMESPACE_NAME,
-    alias: 's',
-    type: 'string'
-}
 
 /**
  * Define the core functionalities of 'cluster' command
@@ -191,7 +175,7 @@ export const ClusterCommand = class extends BaseCommand {
                         command: 'create',
                         desc: 'Create a cluster',
                         builder: yargs => {
-                            yargs.option('cluster-name', clusterNameFlag)
+                            yargs.option('cluster-name', flags.clusterNameFlag)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster create' ===")
@@ -208,17 +192,18 @@ export const ClusterCommand = class extends BaseCommand {
                         command: 'delete',
                         desc: 'Delete a cluster',
                         builder: yargs => {
-                            yargs.option('cluster-name', clusterNameFlag)
+                            yargs.option('cluster-name', flags.clusterNameFlag)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster delete' ===")
                             clusterCmd.logger.debug(argv)
 
                             clusterCmd.delete(argv).then(r => {
+                                clusterCmd.logger.debug("==== Finished running `cluster delete`====")
+
                                 if (!r) process.exit(1)
                             })
 
-                            clusterCmd.logger.debug("==== Finished running `cluster delete`====")
                         }
                     })
                     .command({
@@ -229,45 +214,48 @@ export const ClusterCommand = class extends BaseCommand {
                             clusterCmd.logger.debug(argv)
 
                             clusterCmd.getClusters().then(r => {
+                                clusterCmd.logger.debug("==== Finished running `cluster list`====")
+
                                 if (!r) process.exit(1)
                             })
 
-                            clusterCmd.logger.debug("==== Finished running `cluster list`====")
                         }
                     })
                     .command({
                         command: 'info',
                         desc: 'Get cluster info',
                         builder: yargs => {
-                            yargs.option('cluster-name', clusterNameFlag)
+                            yargs.option('cluster-name', flags.clusterNameFlag)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster info' ===")
                             clusterCmd.logger.debug(argv)
 
                             clusterCmd.getClusterInfo(argv).then(r => {
+                                clusterCmd.logger.debug("==== Finished running `cluster info`====")
+
                                 if (!r) process.exit(1)
                             })
 
-                            clusterCmd.logger.debug("==== Finished running `cluster info`====")
                         }
                     })
                     .command({
                         command: 'setup',
                         desc: 'Setup cluster with shared components',
                         builder: yargs => {
-                            yargs.option('cluster-name', clusterNameFlag)
-                            yargs.option('namespace', namespaceFlag)
+                            yargs.option('cluster-name', flags.clusterNameFlag)
+                            yargs.option('namespace', flags.namespaceFlag)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
                             clusterCmd.logger.debug(argv)
 
                             clusterCmd.setup(argv).then(r => {
+                                clusterCmd.logger.debug("==== Finished running `cluster setup`====")
+
                                 if (!r) process.exit(1)
                             })
 
-                            clusterCmd.logger.debug("==== Finished running `cluster setup`====")
                         }
                     })
                     .demand(1, 'Select a cluster command')
