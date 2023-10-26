@@ -54,8 +54,8 @@ const Logger = class {
      */
     constructor(level) {
         let self = this
-
         this.nextTraceId()
+
         this.winsonLogger = winston.createLogger({
             level: level,
             format: winston.format.combine(
