@@ -22,3 +22,10 @@ version: 0.8.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "0.8.0"
+
+dependencies:
+  - name: operator
+    alias: minio-operator
+    version: 5.0.7
+    repository: https://operator.min.io/
+    condition: cloud.minio.enable

@@ -24,7 +24,6 @@ export const InitCommand = class extends BaseCommand {
 
         this.logger.showUser(chalk.green("OK: All required dependencies are found: %s"), chalk.yellow(deps))
 
-
         return status
     }
 
