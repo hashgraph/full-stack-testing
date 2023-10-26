@@ -23,7 +23,6 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
 
         valuesArg += ` --set hedera-mirror-node.enable=${mirrorNode} --set hedera-explorer.enable=${hederaExplorer}`
 
-        this.logger.showUser(valuesArg)
         return valuesArg
     }
 
