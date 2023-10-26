@@ -66,7 +66,7 @@ init-shared:
 	echo "cloud:" > ${CLUSTER_SETUP_VALUES_FILE}
 
 .PHONY: deploy-shared
-deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-prometheus-operator enable-minio-operator-if-required
+deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-prometheus-operator-if-required enable-minio-operator-if-required
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 
 .PHONY: destroy-shared
@@ -194,12 +194,19 @@ destroy-grafana-tempo:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_grafana && destroy_grafana_tempo
 
 .PHONY: deploy-prometheus
-deploy-prometheus: enable-prometheus-operator
+deploy-prometheus: init-shared deploy-gateway-api enable-prometheus-operator
+	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
+	-$(MAKE) wait-for-prometheus-operator
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus && expose_prometheus
+
+.PHONY: wait-for-prometheus-operator
+wait-for-prometheus-operator:
+	kubectl wait --for=condition=Ready pods -l app.kubernetes.io/name=prometheus-operator --timeout 300s --all-namespaces
 
 .PHONY: destroy-prometheus
 destroy-prometheus:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_prometheus && destroy-prometheus
+	-$(MAKE) destroy-shared
 
 .PHONY: deploy-telemetry-stack
 deploy-telemetry-stack: deploy-prometheus deploy-grafana-tempo
