@@ -13,3 +13,5 @@ cloud:
     enable: false
   prometheusStack:
     enable: false
+  grafanaAgent:
+    enable: false
