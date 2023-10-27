@@ -8,7 +8,6 @@ Below are few helper commands to start the hedera network in the local kubernete
 - `make stop`: uses NMT to stop nodes.
 - `make destroy-network`: uninstalls the helm chart
 - `make reset`: destroy the network, setup and start all nodes
-
 ## Prerequisite
 Some resources are stored in the bucket(SwirldsRegression org): `fst-resources`. 
 You will need access to it and have `gsutil` installed locally
@@ -27,6 +26,3 @@ After this the network is ready for use.
 
 ### Reset network:
 - `make reset`: destroys the network, deploys a new network and start nodes
-
-### Update prometheus version:
-- `make update-prometheus-operator`: updates the prometheus and the prometheus-operator helm chart to the version specified in env.sh:PROMETHEUS_VERSION
