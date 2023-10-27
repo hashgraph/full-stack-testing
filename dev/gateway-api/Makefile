@@ -44,3 +44,7 @@ test-gateway-grpc-route:
 .PHONY: test-gateway-tcp-route
 test-gateway-tcp-route:
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_tcp_route
+
+.PHONY: test-gateway-hedera-explorer-route
+test-gateway-hedera-explorer-route:
+	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && test_hedera_explorer_route
