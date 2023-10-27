@@ -47,7 +47,12 @@ spec:
       protocol: HTTP
       port: {{ $grpc_web_port }}
     {{- end }}
-   {{- end }}
+  {{- end }}
+    {{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.enable | eq "true" }}
+    - name: hedera-explorer # for exposing fst-hedera-explorer port 80
+      protocol: HTTP
+      port: {{ $.Values.gatewayApi.gateway.listeners.hederaExplorer.port }}
+    {{- end }}
    # Debug ports
     {{- if $.Values.gatewayApi.gateway.listeners.httpDebug.enable | eq "true" }}
     - name: http-debug # this helps debugging gateway if needed
