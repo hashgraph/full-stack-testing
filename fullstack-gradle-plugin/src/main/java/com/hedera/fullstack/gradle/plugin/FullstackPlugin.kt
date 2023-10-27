@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.gradle.plugin;
+package com.hedera.fullstack.gradle.plugin
 
-import org.gradle.api.Plugin;
-import org.gradle.api.Project;
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-public class FullstackPlugin implements Plugin<Project> {
-    @Override
-    public void apply(Project project) {
+class FullstackPlugin : Plugin<Project> {
+    override fun apply(project: Project) {
         // currently no implementation is needed
     }
 }
