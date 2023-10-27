@@ -1,5 +1,6 @@
 import {BaseCommand} from "./base.mjs";
 import * as core from "../core/index.mjs"
+import chalk from "chalk";
 
 /**
  * Defines the core functionalities of 'init' command
@@ -10,11 +11,20 @@ export const InitCommand = class extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async init() {
-        return await this.checkDependencies([
+        let deps = [
             core.constants.HELM,
             core.constants.KIND,
             core.constants.KUBECTL,
-        ])
+        ]
+
+        let status = await this.checkDependencies(deps)
+        if (!status) {
+            return false
+        }
+
+        this.logger.showUser(chalk.green("OK: All required dependencies are found: %s"), chalk.yellow(deps))
+
+        return status
     }
 
     /**
@@ -27,7 +37,9 @@ export const InitCommand = class extends BaseCommand {
             desc: "Perform dependency checks and initialize local environment",
             builder: {},
             handler: (argv) => {
-                initCmd.init(argv)
+                initCmd.init(argv).then(r => {
+                    if (!r) process.exit(1)
+                })
             }
         }
     }

@@ -78,6 +78,7 @@ function setup() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly SCRIPT_DIR
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
+readonly CLUSTER_SETUP_VALUES_FILE="${TMP_DIR}/cluster-values.yaml"
 load_env_file
 
 USER="${USER:-changeme}"

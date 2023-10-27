@@ -61,6 +61,9 @@ gatewayApi:
       tcpDebug: # this helps debugging gateway if needed by provisioning a mock grpc app
         port: 3101
         enable: "true"
+      hederaExplorer:
+        port: 8888 # points to 80 port on fst-hedera-explorer
+        enable: "true"
   route:
     hostname: "{{ .node.name }}.fst.local"
 
