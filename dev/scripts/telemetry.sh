@@ -23,6 +23,7 @@ function fetch-prometheus-operator-bundle() {
 }
 
 function deploy-prometheus-operator() {
+  fetch-prometheus-operator-bundle
 
   echo ""
 	echo "Deploying prometheus operator"
