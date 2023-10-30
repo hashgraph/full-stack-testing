@@ -170,7 +170,10 @@ jobs:
         working-directory: "fullstack-network-manager"
         env:
           NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm ci && npm publish ${{ github.event.inputs.dry-run-enabled && '--dry-run' || '' }}
+        run: |
+          npm ci 
+          npm i replace-json-property && ./node_modules/replace-json-property/bin/replace-json-property.bin.js package.json ${{ needs.prepare-release.outputs.version }} && cat package.json | grep 'version'
+          npm publish ${{ github.event.inputs.dry-run-enabled && '--dry-run' || '' }}
 
   create-github-release:
     name: Github / Release
