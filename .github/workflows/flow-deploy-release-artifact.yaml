@@ -170,7 +170,7 @@ jobs:
         working-directory: "fullstack-network-manager"
         env:
           NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm ci && npm publish
+        run: npm ci && npm publish ${{ github.event.inputs.dry-run-enabled && '--dry-run' || '' }}
 
   create-github-release:
     name: Github / Release
