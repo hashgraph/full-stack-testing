@@ -81,7 +81,7 @@ jobs:
       - name: Extract Version
         id: tag
         run: |
-          if [[ ! -f "${VERSION}" ]]; exit 1  # error on missing VERSION file
+          [[ ! -f "${VERSION}" ]] && exit 1  # error on missing VERSION file
           echo "version=$(cat VERSION | tr -d '[:space:]')" >> ${GITHUB_OUTPUT}
 
   publish-maven-central:
