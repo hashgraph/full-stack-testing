@@ -48,6 +48,11 @@
       "channel": "alpha"
     },
     {
+      "name": "444-publish-cli-to-npm-registry",
+      "prerelease": "alpha",
+      "channel": "alpha"
+    },
+    {
       "name": "beta/*",
       "prerelease": "beta",
       "channel": "beta"
