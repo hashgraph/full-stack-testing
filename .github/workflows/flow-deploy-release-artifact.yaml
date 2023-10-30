@@ -81,6 +81,7 @@ jobs:
       - name: Extract Version
         id: tag
         run: |
+          cat VERSION
           [[ ! -f "${VERSION}" ]] && exit 1  # error on missing VERSION file
           echo "version=$(cat VERSION | tr -d '[:space:]')" >> ${GITHUB_OUTPUT}
 
