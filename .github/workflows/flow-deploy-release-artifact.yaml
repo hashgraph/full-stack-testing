@@ -172,7 +172,7 @@ jobs:
           NPM_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm ci 
-          npm i replace-json-property && ./node_modules/replace-json-property/bin/replace-json-property.bin.js package.json ${{ needs.prepare-release.outputs.version }} && cat package.json | grep 'version'
+          npm i replace-json-property && ./node_modules/replace-json-property/bin/replace-json-property.bin.js package.json version ${{ needs.prepare-release.outputs.version }} && cat package.json | grep 'version'
           npm publish ${{ github.event.inputs.dry-run-enabled && '--dry-run' || '' }}
 
   create-github-release:
