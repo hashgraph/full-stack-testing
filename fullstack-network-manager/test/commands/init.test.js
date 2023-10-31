@@ -1,7 +1,6 @@
-import {InitCommand} from "./init.mjs";
-import {test, expect, describe, it} from "@jest/globals";
-import * as core  from "../core/index.mjs";
-import {BaseCommand} from "./base.mjs";
+import {InitCommand} from "../../src/commands/init.mjs";
+import {expect, describe, it} from "@jest/globals";
+import * as core  from "../../src/core/index.mjs";
 
 const testLogger = core.logging.NewLogger('debug')
 describe('InitCommand', () => {

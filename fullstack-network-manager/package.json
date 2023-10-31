@@ -11,7 +11,7 @@
     "access": "public"
   },
   "scripts": {
-    "test": "jest"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "keywords": [
     "fullstack-network-manager",
