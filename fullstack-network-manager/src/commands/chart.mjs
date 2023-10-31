@@ -25,7 +25,7 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
         let namespace = argv.namespace
         let valuesArg = this.prepareValuesArg(argv)
 
-        await this.runExec(`helm dependency update ${this.chartPath}`)
+        await this.run(`helm dependency update ${this.chartPath}`)
         return await this.chartInstall(namespace, this.releaseName, this.chartPath, valuesArg)
     }
 

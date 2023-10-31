@@ -2,11 +2,17 @@ import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import {BaseCommand} from "./base.mjs";
 import chalk from "chalk";
+import {Kind} from "../core/kind.mjs";
 
 /**
  * Define the core functionalities of 'cluster' command
  */
 export const ClusterCommand = class extends BaseCommand {
+
+    constructor(props) {
+        super(props);
+        this.kind = new Kind()
+    }
 
     /**
      * List available clusters
@@ -14,12 +20,7 @@ export const ClusterCommand = class extends BaseCommand {
      */
     async getClusters() {
         try {
-            let cmd = `kind get clusters -q`
-
-            let output = await this.runExec(cmd)
-            this.logger.showUser("\nList of available clusters \n--------------------------\n%s", output)
-
-            return output.split(/\r?\n/)
+            return await this.kind.getClusters('-q')
         } catch (e) {
             this.logger.error("%s", e)
             this.logger.showUser(e.message)
@@ -37,10 +38,10 @@ export const ClusterCommand = class extends BaseCommand {
         try {
             let clusterName = argv.clusterName
             let cmd = `kubectl cluster-info --context kind-${clusterName}`
+            let output = await this.run(cmd)
 
-            let output = await this.runExec(cmd)
-            this.logger.showUser(output)
-
+            this.logger.showUser(`\nCluster information (${clusterName})\n---------------------------------------`)
+            output.forEach(line => this.logger.showUser(line))
             return true
         } catch (e) {
             this.logger.error("%s", e)
@@ -50,6 +51,11 @@ export const ClusterCommand = class extends BaseCommand {
         return false
     }
 
+    async showClusterList(argv) {
+        let clusters = await this.getClusters()
+        this.logger.showUser("\nList of available clusters \n---------------------------------------")
+        this.logger.showUser(clusters)
+    }
     /**
      * Create a cluster
      * @param argv
@@ -58,15 +64,17 @@ export const ClusterCommand = class extends BaseCommand {
     async create(argv) {
         try {
             let clusterName = argv.clusterName
-            let cmd = `kind create cluster -n ${clusterName} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
+            let clusters = await this.getClusters()
 
-            this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${clusterName}...`))
-            let output = await this.runExec(cmd)
-            this.logger.debug(output)
-            this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(clusterName))
+            if (!clusters.includes(clusterName)) {
+                this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${clusterName}...`))
+                await this.kind.createCluster(`-n ${clusterName} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`)
+                this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(clusterName))
+            }
 
             // show all clusters and cluster-info
-            await this.getClusters()
+            await this.showClusterList()
+
             await this.getClusterInfo(argv)
 
             return true
@@ -86,11 +94,15 @@ export const ClusterCommand = class extends BaseCommand {
     async delete(argv) {
         try {
             let clusterName = argv.clusterName
-            let cmd = `kind delete cluster -n ${clusterName}`
+            let clusters = await this.getClusters()
+            if (clusters.includes(clusterName)) {
+                this.logger.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${clusterName}...`))
+                await this.kind.deleteCluster(clusterName)
+                await this.showClusterList()
+            } else {
+                this.logger.showUser(`Cluster '${clusterName}' does not exist`)
+            }
 
-            this.logger.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${clusterName}...`))
-            await this.runExec(cmd)
-            await this.getClusters()
 
             return true
         } catch (e) {
@@ -110,7 +122,7 @@ export const ClusterCommand = class extends BaseCommand {
             let namespaceName = argv.namespace
             let cmd = `helm list -n ${namespaceName} -q`
 
-            let output = await this.runExec(cmd)
+            let output = await this.run(cmd)
             this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
 
             return output.split(/\r?\n/)
@@ -144,7 +156,7 @@ export const ClusterCommand = class extends BaseCommand {
                 this.logger.showUser(chalk.cyan("Installing fullstack-cluster-setup chart"))
                 this.logger.debug(`Invoking '${cmd}'...`)
 
-                let output = await this.runExec(cmd)
+                let output = await this.run(cmd)
                 this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
             } else {
                 this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
@@ -182,10 +194,11 @@ export const ClusterCommand = class extends BaseCommand {
                             clusterCmd.logger.debug(argv)
 
                             clusterCmd.create(argv).then(r => {
+                                clusterCmd.logger.debug("==== Finished running `cluster create`====")
+
                                 if (!r) process.exit(1)
                             })
 
-                            clusterCmd.logger.debug("==== Finished running `cluster create`====")
                         }
                     })
                     .command({
@@ -213,7 +226,7 @@ export const ClusterCommand = class extends BaseCommand {
                             clusterCmd.logger.debug("==== Running 'cluster list' ===")
                             clusterCmd.logger.debug(argv)
 
-                            clusterCmd.getClusters().then(r => {
+                            clusterCmd.showClusterList().then(r => {
                                 clusterCmd.logger.debug("==== Finished running `cluster list`====")
 
                                 if (!r) process.exit(1)
