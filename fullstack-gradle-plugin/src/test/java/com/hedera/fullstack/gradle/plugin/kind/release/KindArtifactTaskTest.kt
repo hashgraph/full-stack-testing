@@ -22,7 +22,7 @@ import java.util.*
 import org.assertj.core.api.Assertions.assertThat
 
 import java.nio.file.Path
-import org.gradle.api.Project;
+import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
