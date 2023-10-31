@@ -17,21 +17,19 @@
 package com.hedera.fullstack.gradle.plugin
 
 import com.hedera.fullstack.helm.client.HelmClient
-import com.hedera.fullstack.helm.client.HelmClientBuilder
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
 abstract class HelmDependencyUpdateTask : DefaultTask() {
     @Input
     @Option(option = "chartName", description = "The name of the chart to run the dependency update against")
-    var chartName: Property<String> = project.objects.property(String::class.java)
+    var chartName = project.objects.property(String::class.java)
 
 
     @Input
@@ -42,17 +40,17 @@ abstract class HelmDependencyUpdateTask : DefaultTask() {
 
     @TaskAction
     fun dependencyUpdate() {
-        val helmClientBuilder: HelmClientBuilder = HelmClient.builder()
+        val helmClientBuilder = HelmClient.builder()
 
         try {
             val chartName = chartName.getOrNull()
             Objects.requireNonNull(chartName, "chartName must be set")
             val workingDir = workingDirectory.getOrNull()
             if (!workingDir.isNullOrEmpty() && workingDir.isNotBlank()) {
-                val workingDirectoryPath: Path = Paths.get(workingDir)
+                val workingDirectoryPath = Paths.get(workingDir)
                 helmClientBuilder.workingDirectory(workingDirectoryPath)
             }
-            val helmClient: HelmClient = helmClientBuilder.build()
+            val helmClient = helmClientBuilder.build()
             helmClient.dependencyUpdate(chartName)
         } catch (e: Exception) {
             logger.error(
