@@ -4,7 +4,7 @@ import * as core from "../core/index.mjs"
 import chalk from "chalk";
 import {ShellRunner} from "../core/shell_runner.mjs";
 
-export const BaseCommand = class BaseCommand extends ShellRunner {
+export class BaseCommand extends ShellRunner {
     async checkDep(cmd) {
         try {
             this.logger.debug(cmd)
@@ -174,11 +174,7 @@ export const BaseCommand = class BaseCommand extends ShellRunner {
 
 
     constructor(opts) {
-        super();
-
-        if (opts.logger === undefined) throw new Error("logger cannot be null")
-
-        this.logger = opts.logger
+        super(opts);
 
         // map of dependency checks
         this.checks = new Map()

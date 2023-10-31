@@ -4,7 +4,7 @@ import * as core from "../core/index.mjs";
 import * as flags from "./flags.mjs";
 
 
-export const ChartCommand = class ChartCommand extends BaseCommand {
+export class ChartCommand extends BaseCommand {
     chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-deployment`
     releaseName = "fullstack-deployment"
 

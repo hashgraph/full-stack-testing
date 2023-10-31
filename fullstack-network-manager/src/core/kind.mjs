@@ -8,7 +8,7 @@ import {ShellRunner} from "./shell_runner.mjs";
  * Note: currently it only includes sub-set of kind commands. However, we may extend it in the future.
  * @type {Kind} an instance of Kind
  */
-export const Kind = class Kind extends ShellRunner {
+export class Kind extends ShellRunner {
     /**
      * Prepare a `kind` command string
      * @param action represents a kind command (e.g. create | delete | get )

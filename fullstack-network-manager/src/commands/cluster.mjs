@@ -7,11 +7,11 @@ import {Kind} from "../core/kind.mjs";
 /**
  * Define the core functionalities of 'cluster' command
  */
-export const ClusterCommand = class extends BaseCommand {
+export class ClusterCommand extends BaseCommand {
 
-    constructor(props) {
-        super(props);
-        this.kind = new Kind()
+    constructor(opts) {
+        super(opts);
+        this.kind = new Kind(opts)
     }
 
     /**
@@ -54,7 +54,7 @@ export const ClusterCommand = class extends BaseCommand {
     async showClusterList(argv) {
         let clusters = await this.getClusters()
         this.logger.showUser("\nList of available clusters \n---------------------------------------")
-        this.logger.showUser(clusters)
+        clusters.forEach(name => this.logger.showUser(name))
     }
     /**
      * Create a cluster
@@ -68,7 +68,10 @@ export const ClusterCommand = class extends BaseCommand {
 
             if (!clusters.includes(clusterName)) {
                 this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${clusterName}...`))
-                await this.kind.createCluster(`-n ${clusterName} --config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`)
+                await this.kind.createCluster(
+                    `-n ${clusterName}`,
+                    `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`,
+                )
                 this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(clusterName))
             }
 
