@@ -5,7 +5,7 @@ import chalk from "chalk";
 /**
  * Defines the core functionalities of 'init' command
  */
-export const InitCommand = class extends BaseCommand {
+export class InitCommand extends BaseCommand {
     /**
      * Executes the init CLI command
      * @returns {Promise<boolean>}

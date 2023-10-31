@@ -4,7 +4,7 @@ import * as core from "../core/index.mjs";
 import * as flags from "./flags.mjs";
 
 
-export const ChartCommand = class ChartCommand extends BaseCommand {
+export class ChartCommand extends BaseCommand {
     chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-deployment`
     releaseName = "fullstack-deployment"
 
@@ -25,7 +25,7 @@ export const ChartCommand = class ChartCommand extends BaseCommand {
         let namespace = argv.namespace
         let valuesArg = this.prepareValuesArg(argv)
 
-        await this.runExec(`helm dependency update ${this.chartPath}`)
+        await this.run(`helm dependency update ${this.chartPath}`)
         return await this.chartInstall(namespace, this.releaseName, this.chartPath, valuesArg)
     }
 

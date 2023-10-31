@@ -1,19 +1,19 @@
 import {test, expect, it, describe} from "@jest/globals";
-import {logging} from "../core/index.mjs";
-import {BaseCommand} from "./base.mjs";
-import * as core from "../core/index.mjs"
+import {logging} from "../../src/core/index.mjs";
+import {BaseCommand} from "../../src/commands/base.mjs";
+import * as core from "../../src/core/index.mjs"
 
 const testLogger = logging.NewLogger("debug")
 
 describe('BaseCommand', () => {
     const baseCmd = new BaseCommand({logger: testLogger})
 
-    describe('runExec', () => {
+    describe('runShell', () => {
         it('should fail during invalid program check', async() => {
-            await expect(baseCmd.runExec("INVALID_PROGRAM")).rejects.toThrowError()
+            await expect(baseCmd.run("INVALID_PROGRAM")).rejects.toThrowError()
         })
         it('should succeed during valid program check', async() => {
-            await expect(baseCmd.runExec("date")).resolves.not.toBeNull()
+            await expect(baseCmd.run("date")).resolves.not.toBeNull()
         })
     })
 

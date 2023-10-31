@@ -2,11 +2,13 @@
 import {exec} from "child_process";
 import * as core from "../core/index.mjs"
 import chalk from "chalk";
+import {ShellRunner} from "../core/shell_runner.mjs";
 
-export const BaseCommand = class BaseCommand {
-    async checkDep(dep) {
+export class BaseCommand extends ShellRunner {
+    async checkDep(cmd) {
         try {
-            await this.runExec(dep)
+            this.logger.debug(cmd)
+            await this.run(cmd)
         } catch (e) {
             this.logger.error("%s", e)
             return false
@@ -19,7 +21,7 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkKind() {
-        return this.checkDep(core.constants.KIND)
+        return this.checkDep(`${core.constants.KIND} --version`)
     }
 
     /**
@@ -27,7 +29,7 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkHelm() {
-        return this.checkDep(core.constants.HELM)
+        return this.checkDep(`${core.constants.HELM} version`)
     }
 
     /**
@@ -35,7 +37,7 @@ export const BaseCommand = class BaseCommand {
      * @returns {Promise<boolean>}
      */
     async checkKubectl() {
-        return this.checkDep(core.constants.KUBECTL)
+        return this.checkDep(`${core.constants.KUBECTL} version`)
     }
 
     /**
@@ -70,26 +72,6 @@ export const BaseCommand = class BaseCommand {
     }
 
     /**
-     * Run the specified bash command
-     * @param cmd is a bash command including args
-     * @returns {Promise<string>}
-     */
-    runExec(cmd) {
-        let self = this
-
-        return new Promise((resolve, reject) => {
-            self.logger.debug(`Invoking '${cmd}'...`)
-            exec(cmd, (error, stdout, stderr) => {
-                if (error) {
-                    reject(error)
-                }
-
-                resolve(stdout)
-            })
-        })
-    }
-
-    /**
      * List available clusters
      * @returns {Promise<string[]>}
      */
@@ -97,7 +79,7 @@ export const BaseCommand = class BaseCommand {
         try {
             let cmd = `helm list -n ${namespaceName} -q`
 
-            let output = await this.runExec(cmd)
+            let output = await this.run(cmd)
             this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
 
             return output.split(/\r?\n/)
@@ -118,7 +100,7 @@ export const BaseCommand = class BaseCommand {
                 let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath} ${valuesArg}`
                 this.logger.showUser(chalk.cyan(`Installing ${releaseName} chart`))
 
-                let output = await this.runExec(cmd)
+                let output = await this.run(cmd)
                 this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
             } else {
                 this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
@@ -144,7 +126,7 @@ export const BaseCommand = class BaseCommand {
                 let cmd = `helm uninstall ${releaseName} -n ${namespaceName}`
                 this.logger.showUser(chalk.cyan(`Uninstalling ${releaseName} chart`))
 
-                let output = await this.runExec(cmd)
+                let output = await this.run(cmd)
                 this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is uninstalled`)
                 await this.getInstalledCharts(namespaceName)
             } else {
@@ -171,7 +153,7 @@ export const BaseCommand = class BaseCommand {
                 let cmd = `helm upgrade ${releaseName} -n ${namespaceName} ${chartPath} ${valuesArg}`
                 this.logger.showUser(chalk.cyan(`Upgrading ${releaseName} chart`))
 
-                let output = await this.runExec(cmd)
+                let output = await this.run(cmd)
                 this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is upgraded`)
                 await this.getInstalledCharts(namespaceName)
 
@@ -192,9 +174,7 @@ export const BaseCommand = class BaseCommand {
 
 
     constructor(opts) {
-        if (opts.logger === undefined) throw new Error("logger cannot be null")
-
-        this.logger = opts.logger
+        super(opts);
 
         // map of dependency checks
         this.checks = new Map()
