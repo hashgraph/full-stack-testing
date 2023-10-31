@@ -2,5 +2,11 @@ dependencies:
 - name: operator
   repository: https://operator.min.io/
   version: 5.0.7
-digest: sha256:2f7b3843ce9b2417b2db1a7af249a6c4d097cb13e65d557c0c80a55688e1a172
-generated: "2023-10-25T15:14:25.580221+01:00"
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 52.0.1
+- name: grafana-agent
+  repository: https://grafana.github.io/helm-charts
+  version: 0.27.1
+digest: sha256:1d98a6cef658a43c687cf9cfa773f8cb7f5b2468b7e38e9cbb4f99cbcfec6651
+generated: "2023-10-27T14:52:43.529303+01:00"

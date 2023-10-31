@@ -118,12 +118,6 @@ jobs:
         with:
           version: "v3.12.3" # helm version
 
-      - name: Setup Kubernetes Operators
-        working-directory: dev
-        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
-        run: |
-          make deploy-prometheus-operator
-
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
         if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}

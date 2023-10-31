@@ -11,3 +11,7 @@ global:
 cloud:
   minio:
     enable: false
+  prometheusStack:
+    enable: false
+  grafanaAgent:
+    enable: false
