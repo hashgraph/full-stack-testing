@@ -11,7 +11,14 @@ export class ClusterCommand extends BaseCommand {
 
     constructor(opts) {
         super(opts);
-        this.kind = new Kind(opts)
+
+        if (!opts || !opts.kind) throw new Error('An instance of core/Kind is required')
+        if (!opts || !opts.helm) throw new Error('An instance of core/Helm is required')
+        if (!opts || !opts.kubectl) throw new Error('An instance of core/Kubectl is required')
+
+        this.kind = opts.kind
+        this.helm = opts.helm
+        this.kubectl = opts.kubectl
     }
 
     /**
@@ -29,6 +36,40 @@ export class ClusterCommand extends BaseCommand {
         return []
     }
 
+    showList(itemType, items = []) {
+        this.logger.showUser(chalk.green(`\n *** List of available ${itemType} ***`))
+        this.logger.showUser(chalk.green(`---------------------------------------`))
+        if (items.length > 0) {
+            items.forEach(name => this.logger.showUser(chalk.yellow(` - ${name}`)))
+        } else {
+            this.logger.showUser(chalk.blue(`[ None ]`))
+        }
+
+        this.logger.showUser("\n")
+        return true
+    }
+
+    async showClusterList(argv) {
+        this.showList("clusters", await this.getClusters())
+        return true
+    }
+
+    /**
+     * List available namespaces
+     * @returns {Promise<string[]>}
+     */
+    async getNameSpaces() {
+        try {
+            return await this.kubectl.getNamespace(`--no-headers`, `-o name`)
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.logger.showUser(e.message)
+        }
+
+        return []
+    }
+
+
     /**
      * Get cluster-info for the given cluster name
      * @param argv arguments containing cluster name
@@ -40,8 +81,9 @@ export class ClusterCommand extends BaseCommand {
             let cmd = `kubectl cluster-info --context kind-${clusterName}`
             let output = await this.run(cmd)
 
-            this.logger.showUser(`\nCluster information (${clusterName})\n---------------------------------------`)
+            this.logger.showUser(`Cluster information (${clusterName})\n---------------------------------------`)
             output.forEach(line => this.logger.showUser(line))
+            this.logger.showUser("\n")
             return true
         } catch (e) {
             this.logger.error("%s", e)
@@ -51,11 +93,30 @@ export class ClusterCommand extends BaseCommand {
         return false
     }
 
-    async showClusterList(argv) {
-        let clusters = await this.getClusters()
-        this.logger.showUser("\nList of available clusters \n---------------------------------------")
-        clusters.forEach(name => this.logger.showUser(name))
+    async createNamespace(argv) {
+        try {
+            let namespace = argv.namespace
+            let namespaces = await this.getNameSpaces()
+            this.logger.showUser(chalk.cyan('> checking namespace:'), chalk.yellow(`${namespace}`))
+            if (!namespaces.includes(`namespace/${namespace}`)) {
+                this.logger.showUser(chalk.cyan('> creating namespace:'), chalk.yellow(`${namespace} ...`))
+                await this.kubectl.createNamespace(namespace)
+                this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' is created`)
+            } {
+                this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' already exists`)
+            }
+
+            this.showList("namespaces", await this.getNameSpaces())
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.logger.showUser(e.message)
+        }
+
+        return false
     }
+
     /**
      * Create a cluster
      * @param argv
@@ -66,19 +127,45 @@ export class ClusterCommand extends BaseCommand {
             let clusterName = argv.clusterName
             let clusters = await this.getClusters()
 
+            this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
             if (!clusters.includes(clusterName)) {
-                this.logger.showUser(chalk.cyan('Creating cluster:'), chalk.yellow(`${clusterName}...`))
+                this.logger.showUser(chalk.cyan('> creating cluster:'), chalk.yellow(`${clusterName} ...`))
                 await this.kind.createCluster(
                     `-n ${clusterName}`,
                     `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`,
                 )
-                this.logger.showUser(chalk.green('Created cluster:'), chalk.yellow(clusterName))
+                this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is created`)
+            } else {
+                this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' already exists`)
             }
 
             // show all clusters and cluster-info
             await this.showClusterList()
 
             await this.getClusterInfo(argv)
+
+            await this.createNamespace(argv)
+
+            return true
+        } catch (e) {
+            this.logger.error("%s", e)
+            this.logger.showUser(e.message)
+        }
+
+        return false
+    }
+
+    async deleteNamespace(argv) {
+        try {
+            let namespace = argv.namespace
+            let namespaces = await this.getNameSpaces()
+            if (namespaces.includes(namespace)) {
+                this.logger.showUser(chalk.cyan('Deleting namespace:'), chalk.yellow(`${namespaces}...`))
+                await this.kubectl.deleteNamespace(namespace)
+                this.logger.showUser(chalk.green('Deleted namespace:'), chalk.yellow(namespaces))
+            }
+
+            this.showList("namespaces", await this.getNameSpaces())
 
             return true
         } catch (e) {
@@ -98,14 +185,16 @@ export class ClusterCommand extends BaseCommand {
         try {
             let clusterName = argv.clusterName
             let clusters = await this.getClusters()
+            this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
             if (clusters.includes(clusterName)) {
-                this.logger.showUser(chalk.cyan('Deleting cluster:'), chalk.yellow(`${clusterName}...`))
+                this.logger.showUser(chalk.cyan('> deleting cluster:'), chalk.yellow(`${clusterName} ...`))
                 await this.kind.deleteCluster(clusterName)
-                await this.showClusterList()
+                this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is deleted`)
             } else {
-                this.logger.showUser(`Cluster '${clusterName}' does not exist`)
+                this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is already deleted`)
             }
 
+            this.showList('clusters', await this.getClusters())
 
             return true
         } catch (e) {
@@ -123,18 +212,17 @@ export class ClusterCommand extends BaseCommand {
     async getInstalledCharts(argv) {
         try {
             let namespaceName = argv.namespace
-            let cmd = `helm list -n ${namespaceName} -q`
-
-            let output = await this.run(cmd)
-            this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
-
-            return output.split(/\r?\n/)
+            return await this.helm.list(`-n ${namespaceName}`, '-q')
         } catch (e) {
             this.logger.error("%s", e)
             this.logger.showUser(e.message)
         }
 
         return []
+    }
+
+    async showInstalledChartList(argv) {
+        this.showList("charts installed", await this.getInstalledCharts(argv) )
     }
 
     /**
@@ -145,27 +233,32 @@ export class ClusterCommand extends BaseCommand {
     async setup(argv) {
         try {
             let clusterName = argv.clusterName
-            let releaseName = "fullstack-cluster-setup"
-            let namespaceName = argv.namespace
-            let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-cluster-setup`
 
-            this.logger.showUser(chalk.cyan(`Setting up cluster ${clusterName}...`))
+            // create cluster
+            await this.create(argv)
+
+            let chartName = "fullstack-cluster-setup"
+            let namespaceName = argv.namespace
+            let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
+
+            this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
 
             let charts= await this.getInstalledCharts(argv)
-
-            if (!charts.includes(releaseName)) {
+            if (!charts.includes(chartName)) {
                 // install fullstack-cluster-setup chart
-                let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath}`
-                this.logger.showUser(chalk.cyan("Installing fullstack-cluster-setup chart"))
-                this.logger.debug(`Invoking '${cmd}'...`)
-
-                let output = await this.run(cmd)
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
+                this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartName}`))
+                await this.helm.dependency('update', chartPath)
+                await this.helm.install(
+                    `-n ${namespaceName}`,
+                    chartName,
+                    chartPath,
+                )
+                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is installed`)
             } else {
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
+                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already installed`)
             }
 
-            this.logger.showUser(chalk.yellow("Chart setup complete"))
+            await this.showInstalledChartList(argv)
 
             return true
         } catch (e) {
@@ -191,6 +284,7 @@ export class ClusterCommand extends BaseCommand {
                         desc: 'Create a cluster',
                         builder: yargs => {
                             yargs.option('cluster-name', flags.clusterNameFlag)
+                            yargs.option('namespace', flags.namespaceFlag)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster create' ===")

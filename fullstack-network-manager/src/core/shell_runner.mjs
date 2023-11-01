@@ -2,7 +2,7 @@ import {spawn} from "child_process";
 
 export class ShellRunner {
     constructor(opts) {
-        if (!opts || !opts.logger === undefined) throw new Error("logger must be provided")
+        if (!opts || !opts.logger === undefined) throw new Error("An instance of core/Logger is required")
         this.logger = opts.logger
     }
 

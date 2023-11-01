@@ -5,8 +5,15 @@ import * as core from './core/index.mjs'
 
 export function main(argv) {
     const logger = core.logging.NewLogger('debug')
+    const kind = new core.Kind({logger: logger})
+    const helm = new core.Helm({logger: logger})
+    const kubectl= new core.Kubectl({logger: logger})
+
     const opts = {
-        logger: logger
+        logger: logger,
+        kind: kind,
+        helm: helm,
+        kubectl: kubectl,
     }
 
     logger.debug("Constants: %s", JSON.stringify(core.constants))
