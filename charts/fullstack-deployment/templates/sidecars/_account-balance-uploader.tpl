@@ -27,7 +27,7 @@
     - name: DEBUG
       value: {{ default $defaults.config.debug ($balanceUploader.config).debug | quote }}
     - name: REAPER_ENABLE
-      value: {{ default $defaults.config.reaper.enable (($balanceUploader.config).reaper).enable | quote  }}
+      value: {{ default $defaults.config.reaper.enabled (($balanceUploader.config).reaper).enabled | quote  }}
     - name: REAPER_MIN_KEEP
       value: {{ default $defaults.config.reaper.minKeep (($balanceUploader.config).reaper).minKeep | quote }}
     - name: REAPER_INTERVAL

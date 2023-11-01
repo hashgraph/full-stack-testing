@@ -172,7 +172,7 @@ enable-prometheus-stack-if-required:
 enable-prometheus-stack:
 	@echo ">> Enabling prometheus stack..."; \
 	echo "  prometheusStack:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
-	echo "    enable: true" >> ${CLUSTER_SETUP_VALUES_FILE};
+	echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
 .PHONY: is-prometheus-operator-installed
 is-prometheus-operator-installed:
@@ -217,7 +217,7 @@ destroy-telemetry-stack:
 enable-minio-operator:
 	@echo ">> Enabling minio operator..."; \
 	echo "  minio:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
-	echo "    enable: true" >> ${CLUSTER_SETUP_VALUES_FILE};
+	echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
 .PHONY: is-minio-operator-installed
 is-minio-operator-installed:

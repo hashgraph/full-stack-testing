@@ -1,4 +1,4 @@
-{{- if $.Values.gatewayApi.gateway.enable | eq "true" }}
+{{- if $.Values.gatewayApi.gateway.enabled | eq "true" }}
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: Gateway
 metadata:
@@ -14,7 +14,7 @@ spec:
   {{- $grpcs_start_port    := $.Values.gatewayApi.gateway.listeners.grpcs.port }} # i.e. node0:53000 ... node999: 53999, points to 50212 port in haproxy or network-node
   {{- $grpc_web_start_port := $.Values.gatewayApi.gateway.listeners.grpcWeb.port }} # i.e. node0:18000 ... node999: 18999, points to 8080 port in envoy proxy
   {{- range $index, $node := $.Values.hedera.nodes }} # we assume to have at most 999 nodes in a single cluster
-    {{- if $.Values.gatewayApi.gateway.listeners.gossip.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.gossip.enabled | eq "true" }}
     {{- $gossip_port := add $index $gossip_start_port }}
     - name: gossip-{{ $node.name }} # for exposing gossip port 50111 from network-node
       protocol: TCP
@@ -23,7 +23,7 @@ spec:
         kinds:
           - kind: TCPRoute
     {{- end }}
-    {{- if $.Values.gatewayApi.gateway.listeners.grpc.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.grpc.enabled | eq "true" }}
     {{- $grpc_port := add $index $grpc_start_port }}
     - name: grpc-{{ $node.name }} # for exposing grpc port 50211 from haproxy or network-node
       protocol: TCP
@@ -32,7 +32,7 @@ spec:
         kinds:
           - kind: TCPRoute
     {{- end }}
-    {{- if $.Values.gatewayApi.gateway.listeners.grpcs.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.grpcs.enabled | eq "true" }}
     {{- $grpcs_port := add $index $grpcs_start_port }}
     - name: grpcs-{{ $node.name }} # for exposing grpc port 50212 from haproxy or network-node
       protocol: TCP
@@ -41,25 +41,25 @@ spec:
         kinds:
           - kind: TCPRoute
     {{- end }}
-    {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.enabled | eq "true" }}
     {{- $grpc_web_port := add $index $grpc_web_start_port }}
     - name: grpc-web-{{ $node.name }} # for exposing grpc-web port 8080 from envoy-proxy
       protocol: HTTP
       port: {{ $grpc_web_port }}
     {{- end }}
   {{- end }}
-    {{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.enabled | eq "true" }}
     - name: hedera-explorer # for exposing fst-hedera-explorer port 80
       protocol: HTTP
       port: {{ $.Values.gatewayApi.gateway.listeners.hederaExplorer.port }}
     {{- end }}
    # Debug ports
-    {{- if $.Values.gatewayApi.gateway.listeners.httpDebug.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.httpDebug.enabled | eq "true" }}
     - name: http-debug # this helps debugging gateway if needed
       protocol: HTTP
       port: {{ $.Values.gatewayApi.gateway.listeners.httpDebug.port }}
     {{- end }}
-    {{- if $.Values.gatewayApi.gateway.listeners.tcpDebug.enable | eq "true" }}
+    {{- if $.Values.gatewayApi.gateway.listeners.tcpDebug.enabled | eq "true" }}
     - name: tcp-debug # this helps debugging gateway if needed
       protocol: TCP
       port: {{ $.Values.gatewayApi.gateway.listeners.tcpDebug.port }}

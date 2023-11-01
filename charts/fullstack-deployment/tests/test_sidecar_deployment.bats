@@ -50,35 +50,35 @@ function run_default_sidecar_check() {
 
 @test "Check record-stream-uploader sidecar" {
   local sidecar_name="record-stream-uploader"
-  local enable_config_path=".defaults.sidecars.recordStreamUploader.enable"
+  local enable_config_path=".defaults.sidecars.recordStreamUploader.enabled"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check event-stream-uploader sidecar" {
   local sidecar_name="event-stream-uploader"
-  local enable_config_path=".defaults.sidecars.eventStreamUploader.enable"
+  local enable_config_path=".defaults.sidecars.eventStreamUploader.enabled"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check account-balance-uploader sidecar" {
   local sidecar_name="account-balance-uploader"
-  local enable_config_path=".defaults.sidecars.accountBalanceUploader.enable"
+  local enable_config_path=".defaults.sidecars.accountBalanceUploader.enabled"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check backup-uploader sidecar" {
   local sidecar_name="backup-uploader"
-  local enable_config_path=".defaults.sidecars.backupUploader.enable"
+  local enable_config_path=".defaults.sidecars.backupUploader.enabled"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
 @test "Check otel-collector sidecar" {
   local sidecar_name="otel-collector"
-  local enable_config_path=".defaults.sidecars.otelCollector.enable"
+  local enable_config_path=".defaults.sidecars.otelCollector.enabled"
 
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }

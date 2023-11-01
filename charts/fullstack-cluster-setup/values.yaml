@@ -10,8 +10,8 @@ global:
 # cloud configuration
 cloud:
   minio:
-    enable: false
+    enabled: false
   prometheusStack:
-    enable: false
+    enabled: false
   grafanaAgent:
-    enable: false
+    enabled: false

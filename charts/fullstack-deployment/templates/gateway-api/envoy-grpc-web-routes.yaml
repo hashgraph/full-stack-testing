@@ -1,7 +1,7 @@
 {{- range $index, $node := ($.Values.hedera.nodes) }}
 {{- $envoyProxy := $node.envoyProxy | default dict -}}
 {{- $defaults := $.Values.defaults.envoyProxy }}
-{{- if default $defaults.enable $envoyProxy.enable | eq "true" }}
+{{- if default $defaults.enabled $envoyProxy.enabled | eq "true" }}
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
