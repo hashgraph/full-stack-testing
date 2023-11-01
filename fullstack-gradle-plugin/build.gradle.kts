@@ -50,6 +50,4 @@ repositories { mavenCentral() }
 
 kotlin { jvmToolchain(17) }
 
-tasks.test {
-    useJUnitPlatform()
-}
+tasks.test { useJUnitPlatform() }
