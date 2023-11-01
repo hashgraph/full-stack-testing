@@ -8,19 +8,6 @@ import {Kind} from "../core/kind.mjs";
  * Define the core functionalities of 'cluster' command
  */
 export class ClusterCommand extends BaseCommand {
-
-    constructor(opts) {
-        super(opts);
-
-        if (!opts || !opts.kind) throw new Error('An instance of core/Kind is required')
-        if (!opts || !opts.helm) throw new Error('An instance of core/Helm is required')
-        if (!opts || !opts.kubectl) throw new Error('An instance of core/Kubectl is required')
-
-        this.kind = opts.kind
-        this.helm = opts.helm
-        this.kubectl = opts.kubectl
-    }
-
     /**
      * List available clusters
      * @returns {Promise<string[]>}
@@ -29,8 +16,7 @@ export class ClusterCommand extends BaseCommand {
         try {
             return await this.kind.getClusters('-q')
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return []
@@ -62,8 +48,7 @@ export class ClusterCommand extends BaseCommand {
         try {
             return await this.kubectl.getNamespace(`--no-headers`, `-o name`)
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return []
@@ -86,8 +71,7 @@ export class ClusterCommand extends BaseCommand {
             this.logger.showUser("\n")
             return true
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return false
@@ -110,8 +94,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return false
@@ -148,8 +131,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return false
@@ -169,8 +151,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return false
@@ -198,31 +179,15 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.error("%s", e.stack)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return false
     }
 
-    /**
-     * List available clusters
-     * @returns {Promise<string[]>}
-     */
-    async getInstalledCharts(argv) {
-        try {
-            let namespaceName = argv.namespace
-            return await this.helm.list(`-n ${namespaceName}`, '-q')
-        } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
-        }
 
-        return []
-    }
-
-    async showInstalledChartList(argv) {
-        this.showList("charts installed", await this.getInstalledCharts(argv) )
+    async showInstalledChartList(namespace) {
+        this.showList("charts installed", await this.getInstalledCharts(namespace) )
     }
 
     /**
@@ -232,38 +197,21 @@ export class ClusterCommand extends BaseCommand {
      */
     async setup(argv) {
         try {
-            let clusterName = argv.clusterName
-
             // create cluster
             await this.create(argv)
 
+            let clusterName = argv.clusterName
             let chartName = "fullstack-cluster-setup"
-            let namespaceName = argv.namespace
+            let namespace = argv.namespace
             let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
-
-            let charts= await this.getInstalledCharts(argv)
-            if (!charts.includes(chartName)) {
-                // install fullstack-cluster-setup chart
-                this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartName}`))
-                await this.helm.dependency('update', chartPath)
-                await this.helm.install(
-                    `-n ${namespaceName}`,
-                    chartName,
-                    chartPath,
-                )
-                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is installed`)
-            } else {
-                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already installed`)
-            }
-
-            await this.showInstalledChartList(argv)
+            await this.chartInstall(namespace, chartName, chartPath)
+            await this.showInstalledChartList(namespace)
 
             return true
         } catch (e) {
-            this.logger.error("%s", e.stack)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(err)
         }
 
         return false

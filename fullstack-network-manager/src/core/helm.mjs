@@ -23,6 +23,24 @@ export class Helm extends ShellRunner {
     }
 
     /**
+     * Invoke `helm uninstall` command
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async uninstall(...args) {
+        return this.run(this.prepareCommand('uninstall', ...args))
+    }
+
+    /**
+     * Invoke `helm upgrade` command
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async upgrade(...args) {
+        return this.run(this.prepareCommand('upgrade', ...args))
+    }
+
+    /**
      * Invoke `helm list` command
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings

@@ -2,6 +2,7 @@ import * as winston from 'winston'
 import {constants} from "./constants.mjs";
 import {v4 as uuidv4} from 'uuid';
 import * as util from "util";
+import chalk from "chalk";
 
 const customFormat = winston.format.combine(
     winston.format.label({label: 'FST', message: false}),
@@ -91,6 +92,10 @@ const Logger = class {
 
     showUser(msg, ...args) {
         console.log(util.format(msg, ...args))
+    }
+    showUserError(err) {
+        console.log(chalk.red(err.message))
+        console.log(err.stack)
     }
 
     critical(msg, ...args) {

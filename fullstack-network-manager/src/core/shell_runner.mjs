@@ -1,4 +1,5 @@
 import {spawn} from "child_process";
+import chalk from "chalk";
 
 export class ShellRunner {
     constructor(opts) {
@@ -15,8 +16,6 @@ export class ShellRunner {
         const self = this
 
         return new Promise((resolve, reject) => {
-            self.logger.debug(cmd)
-
             const child = spawn(cmd, {
                 shell: true,
             })
@@ -31,16 +30,32 @@ export class ShellRunner {
                 })
             })
 
-
-            child.on('error', err => {
-                reject(err)
+            let errOutput= []
+            child.stderr.on('data', d => {
+                let items = d.toString().split(/\r?\n/)
+                items.forEach(item => {
+                    if (item) {
+                        errOutput.push(item)
+                    }
+                })
             })
 
-            child.on('close', (code, signal) => {
+            const errTrace = function(err, messages = []) {
+                errOutput.forEach(m => self.logger.showUser(chalk.red(m)))
+                reject(err, errOutput)
+            }
+
+            child.on('error', err => {
+                errTrace(err)
+            })
+
+            child.on('exit', (code, signal) => {
                 if (code) {
-                    reject(new Error(`Command exit with error code: ${code}`))
+                    let err = new Error(`Command exit with error code: ${code}`)
+                    errTrace(err, errOutput)
                 }
 
+                self.logger.debug(cmd, {'commandExitCode': code, 'commandExitSignal': signal, 'commandOutput': output})
                 resolve(output)
             })
         })
