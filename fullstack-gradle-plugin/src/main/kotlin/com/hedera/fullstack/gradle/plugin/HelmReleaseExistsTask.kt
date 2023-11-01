@@ -27,18 +27,18 @@ import org.gradle.api.tasks.options.Option
 
 abstract class HelmReleaseExistsTask : DefaultTask() {
     @Input
-    @Option(option = "release", description = "The release to verify exists")
-    var release = project.objects.property(String::class.java)
+    @Option(description = "The release to verify exists")
+    val release = project.objects.property(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "namespace", description = "The namespace to use when listing the releases")
-    var namespace = project.objects.property(String::class.java)
+    @Option(description = "The namespace to use when listing the releases")
+    val namespace = project.objects.property(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "allNamespaces", description = "True if we should list releases in all namespaces")
-    var allNamespaces = project.objects.property(Boolean::class.java)
+    @Option(description = "True if we should list releases in all namespaces")
+    val allNamespaces = project.objects.property(Boolean::class.java)
 
     @TaskAction
     fun releaseExists() {

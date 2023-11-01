@@ -30,49 +30,47 @@ import java.util.*
 
 abstract class HelmInstallChartTask : DefaultTask() {
     @Input
-    @Option(option = "chart", description = "The name of the chart to install")
-    var chart: Property<String> = project.objects.property(String::class.java)
+    @Option(description = "The name of the chart to install")
+    val chart: Property<String> = project.objects.property(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "createNamespace", description = "Create the release namespace if not present")
-    var createNamespace: Property<Boolean> = project.objects.property(Boolean::class.java)
+    @Option(description = "Create the release namespace if not present")
+    val createNamespace: Property<Boolean> = project.objects.property(Boolean::class.java)
 
     @Input
     @Optional
-    @Option(option = "namespace", description = "The namespace to use when installing the chart")
-    var namespace: Property<String> = project.objects.property(String::class.java)
+    @Option(description = "The namespace to use when installing the chart")
+    val namespace: Property<String> = project.objects.property(String::class.java)
 
     @Input
-    @Option(option = "release", description = "The name of the release to install")
-    var release: Property<String> = project.objects.property(String::class.java)
+    @Option(description = "The name of the release to install")
+    val release: Property<String> = project.objects.property(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "repo", description = "The name of the repo to install")
-    var repo: Property<String> = project.objects.property(String::class.java)
+    @Option(description = "The name of the repo to install")
+    val repo: Property<String> = project.objects.property(String::class.java)
 
     @Input
     @Optional
     @Option(
-        option = "set",
         description =
         "set values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)"
     )
-    var set: SetProperty<String> = project.objects.setProperty(String::class.java)
+    val set: SetProperty<String> = project.objects.setProperty(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "values", description = "Specify values in a YAML file or a URL (can specify multiple)")
-    var values: SetProperty<String> = project.objects.setProperty(String::class.java)
+    @Option(description = "Specify values in a YAML file or a URL (can specify multiple)")
+    val values: SetProperty<String> = project.objects.setProperty(String::class.java)
 
     @Input
     @Optional
     @Option(
-        option = "skipIfExists",
         description = "Skip installation if the release is already installed, default false"
     )
-    var skipIfExists: Property<Boolean> = project.objects.property(Boolean::class.java)
+    val skipIfExists: Property<Boolean> = project.objects.property(Boolean::class.java)
 
     @TaskAction
     fun installChart() {

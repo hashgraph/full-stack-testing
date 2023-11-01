@@ -28,14 +28,14 @@ import java.util.*
 
 abstract class HelmDependencyUpdateTask : DefaultTask() {
     @Input
-    @Option(option = "chartName", description = "The name of the chart to run the dependency update against")
-    var chartName = project.objects.property(String::class.java)
+    @Option(description = "The name of the chart to run the dependency update against")
+    val chartName = project.objects.property(String::class.java)
 
 
     @Input
     @Optional
-    @Option(option = "workingDirectory", description = "The working directory to run the dependency update from")
-    var workingDirectory: Property<String?> = project.objects.property(String::class.java)
+    @Option(description = "The working directory to run the dependency update from")
+    val workingDirectory: Property<String?> = project.objects.property(String::class.java)
 
 
     @TaskAction

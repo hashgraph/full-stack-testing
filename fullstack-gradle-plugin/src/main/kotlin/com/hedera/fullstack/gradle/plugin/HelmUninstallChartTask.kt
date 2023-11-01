@@ -27,20 +27,19 @@ import org.gradle.api.tasks.options.Option
 abstract class HelmUninstallChartTask : DefaultTask() {
     @Input
     @Optional
-    @Option(option = "namespace", description = "The namespace to use when uninstalling the chart")
-    var namespace = project.objects.property(String::class.java)
+    @Option(description = "The namespace to use when uninstalling the chart")
+    val namespace = project.objects.property(String::class.java)
 
     @Input
     @Optional
     @Option(
-        option = "ifExists",
         description = "True if we should only uninstall the chart if it exists, default is false"
     )
-    var ifExists = project.objects.property(Boolean::class.java)
+    val ifExists = project.objects.property(Boolean::class.java)
 
     @Input
-    @Option(option = "release", description = "The name of the release to uninstall")
-    var release = project.objects.property(String::class.java)
+    @Option(description = "The name of the release to uninstall")
+    val release = project.objects.property(String::class.java)
 
     @TaskAction
     fun uninstallChart() {

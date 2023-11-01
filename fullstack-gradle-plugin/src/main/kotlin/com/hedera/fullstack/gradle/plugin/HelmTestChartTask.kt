@@ -28,22 +28,22 @@ import org.gradle.api.tasks.options.Option
 abstract class HelmTestChartTask : DefaultTask() {
     @Input
     @Optional
-    @Option(option = "namespace", description = "The namespace to use when installing the chart")
-    var namespace = project.objects.property(String::class.java)
+    @Option(description = "The namespace to use when installing the chart")
+    val namespace = project.objects.property(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "filter", description = "The filter to use when choosing the chart to test")
-    var filter = project.objects.property(String::class.java)
+    @Option(description = "The filter to use when choosing the chart to test")
+    val filter = project.objects.property(String::class.java)
 
     @Input
     @Optional
-    @Option(option = "testTimeout", description = "The timeout to use when testing the chart")
-    var testTimeout = project.objects.property(String::class.java)
+    @Option(description = "The timeout to use when testing the chart")
+    val testTimeout = project.objects.property(String::class.java)
 
     @Input
-    @Option(option = "release", description = "The name of the release to install")
-    var release = project.objects.property(String::class.java)
+    @Option(description = "The name of the release to install")
+    val release = project.objects.property(String::class.java)
 
     @TaskAction
     fun testChart() {
