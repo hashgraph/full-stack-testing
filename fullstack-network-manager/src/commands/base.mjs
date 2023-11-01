@@ -10,12 +10,13 @@ export class BaseCommand extends ShellRunner {
             this.logger.debug(cmd)
             await this.run(cmd)
         } catch (e) {
-            this.logger.error("%s", e)
+            this.logger.showUserError(e)
             return false
         }
 
         return true
     }
+
     /**
      * Check if 'kind' CLI program is installed or not
      * @returns {Promise<boolean>}
@@ -77,104 +78,80 @@ export class BaseCommand extends ShellRunner {
      */
     async getInstalledCharts(namespaceName) {
         try {
-            let cmd = `helm list -n ${namespaceName} -q`
-
-            let output = await this.run(cmd)
-            this.logger.showUser("\nList of installed charts\n--------------------------\n%s", output)
-
-            return output.split(/\r?\n/)
+            return await this.helm.list(`-n ${namespaceName}`, '-q')
         } catch (e) {
-            this.logger.error("%s", e)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(e)
         }
 
         return []
     }
 
-    async chartInstall(namespaceName, releaseName, chartPath, valuesArg) {
+    async chartInstall(namespaceName, chartName, chartPath, valuesArg = '') {
         try {
-            this.logger.showUser(chalk.cyan(`Setting up FST network...`))
+            let charts = await this.getInstalledCharts(namespaceName)
+            if (!charts.includes(chartName)) {
+                this.logger.showUser(chalk.cyan('> running helm dependency update for chart:'), chalk.yellow(`${chartName} ...`))
+                await this.helm.dependency('update', chartPath)
 
-            let charts= await this.getInstalledCharts(namespaceName)
-            if (!charts.includes(releaseName)) {
-                let cmd = `helm install -n ${namespaceName} ${releaseName} ${chartPath} ${valuesArg}`
-                this.logger.showUser(chalk.cyan(`Installing ${releaseName} chart`))
-
-                let output = await this.run(cmd)
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is installed`)
+                this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartName}`))
+                await this.helm.install(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
+                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is installed`)
             } else {
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already installed`)
+                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already installed`)
             }
-
-            this.logger.showUser(chalk.yellow("Chart setup is complete"))
 
             return true
         } catch (e) {
-            this.logger.error("%s", e.stack)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(e)
         }
 
         return false
     }
 
-    async chartUninstall(namespaceName, releaseName) {
+    async chartUninstall(namespaceName, chartName) {
         try {
-            this.logger.showUser(chalk.cyan(`Uninstalling FST network ...`))
-
-            let charts= await this.getInstalledCharts(namespaceName)
-            if (charts.includes(releaseName)) {
-                let cmd = `helm uninstall ${releaseName} -n ${namespaceName}`
-                this.logger.showUser(chalk.cyan(`Uninstalling ${releaseName} chart`))
-
-                let output = await this.run(cmd)
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is uninstalled`)
-                await this.getInstalledCharts(namespaceName)
+            this.logger.showUser(chalk.cyan('> checking chart:'), chalk.yellow(`${chartName}`))
+            let charts = await this.getInstalledCharts(namespaceName)
+            if (charts.includes(chartName)) {
+                this.logger.showUser(chalk.cyan('> uninstalling chart:'), chalk.yellow(`${chartName}`))
+                await this.helm.uninstall(`-n ${namespaceName} ${chartName}`)
+                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is uninstalled`)
             } else {
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is already uninstalled`)
+                this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already uninstalled`)
             }
-
-            this.logger.showUser(chalk.yellow("Chart uninstallation is complete"))
 
             return true
         } catch (e) {
-            this.logger.error("%s", e.stack)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(e)
         }
 
         return false
     }
 
-    async chartUpgrade(namespaceName, releaseName, chartPath, valuesArg) {
+    async chartUpgrade(namespaceName, chartName, chartPath, valuesArg = '') {
         try {
-            this.logger.showUser(chalk.cyan(`Upgrading FST network deployment chart ...`))
-
-            let charts= await this.getInstalledCharts(namespaceName)
-            if (charts.includes(releaseName)) {
-                let cmd = `helm upgrade ${releaseName} -n ${namespaceName} ${chartPath} ${valuesArg}`
-                this.logger.showUser(chalk.cyan(`Upgrading ${releaseName} chart`))
-
-                let output = await this.run(cmd)
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is upgraded`)
-                await this.getInstalledCharts(namespaceName)
-
-                this.logger.showUser(chalk.yellow("Chart upgrade is complete"))
-            } else {
-                this.logger.showUser(chalk.green('OK'), `chart '${releaseName}' is not installed`)
-                return false
-            }
+            this.logger.showUser(chalk.cyan('> upgrading chart:'), chalk.yellow(`${chartName}`))
+            await this.helm.upgrade(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
+            this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is upgraded`)
 
             return true
         } catch (e) {
-            this.logger.error("%s", e.stack)
-            this.logger.showUser(e.message)
+            this.logger.showUserError(e)
         }
 
         return false
     }
-
 
     constructor(opts) {
         super(opts);
+
+        if (!opts || !opts.kind) throw new Error('An instance of core/Kind is required')
+        if (!opts || !opts.helm) throw new Error('An instance of core/Helm is required')
+        if (!opts || !opts.kubectl) throw new Error('An instance of core/Kubectl is required')
+
+        this.kind = opts.kind
+        this.helm = opts.helm
+        this.kubectl = opts.kubectl
 
         // map of dependency checks
         this.checks = new Map()

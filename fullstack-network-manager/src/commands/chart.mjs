@@ -6,7 +6,7 @@ import * as flags from "./flags.mjs";
 
 export class ChartCommand extends BaseCommand {
     chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-deployment`
-    releaseName = "fullstack-deployment"
+    chartName = "fullstack-deployment"
 
     prepareValuesArg(argv) {
         let {valuesFile, mirrorNode, hederaExplorer} = argv
@@ -25,21 +25,20 @@ export class ChartCommand extends BaseCommand {
         let namespace = argv.namespace
         let valuesArg = this.prepareValuesArg(argv)
 
-        await this.run(`helm dependency update ${this.chartPath}`)
-        return await this.chartInstall(namespace, this.releaseName, this.chartPath, valuesArg)
+        return await this.chartInstall(namespace, this.chartName, this.chartPath, valuesArg)
     }
 
     async uninstall(argv) {
         let namespace = argv.namespace
 
-        return await this.chartUninstall(namespace, this.releaseName)
+        return await this.chartUninstall(namespace, this.chartName)
     }
 
     async upgrade(argv) {
         let namespace = argv.namespace
         let valuesArg = this.prepareValuesArg(argv)
 
-        return await this.chartUpgrade(namespace, this.releaseName, this.chartPath, valuesArg)
+        return await this.chartUpgrade(namespace, this.chartName, this.chartPath, valuesArg)
     }
 
     static getCommandDefinition(chartCmd) {
