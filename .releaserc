@@ -26,7 +26,9 @@
       {
         "assets": [
           "gradle.properties",
-          "charts/fullstack-deployment/Chart.yaml"
+          "charts/fullstack-deployment/Chart.yaml",
+          "charts/fullstack-cluster-setup/Chart.yaml",
+          "charts/fullstack-network-manager/package.json"
         ]
       }
     ]
@@ -42,6 +44,11 @@
     },
     {
       "name": "alpha/*",
+      "prerelease": "alpha",
+      "channel": "alpha"
+    },
+    {
+      "name": "ci/*",
       "prerelease": "alpha",
       "channel": "alpha"
     },
