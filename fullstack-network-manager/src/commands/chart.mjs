@@ -16,7 +16,7 @@ export class ChartCommand extends BaseCommand {
             valuesArg += ` --values ${valuesFile}`
         }
 
-        valuesArg += ` --set hedera-mirror-node.enable=${mirrorNode} --set hedera-explorer.enable=${hederaExplorer}`
+        valuesArg += ` --set hedera-mirror-node.enabled=${mirrorNode} --set hedera-explorer.enabled=${hederaExplorer}`
 
         return valuesArg
     }

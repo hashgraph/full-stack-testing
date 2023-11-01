@@ -1,7 +1,7 @@
 {{- range $index, $node := ($.Values.hedera.nodes) }}
 {{- $haproxy := $node.haproxy | default dict -}}
 {{- $defaults := $.Values.defaults.haproxy }}
-{{- if default $defaults.enable $haproxy.enable | eq "false" }}
+{{- if default $defaults.enabled $haproxy.enabled | eq "false" }}
 ---
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: TCPRoute

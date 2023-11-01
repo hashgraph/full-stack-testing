@@ -9,17 +9,17 @@ cloud:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
   s3:
-    enable: "true"
+    enabled: "true"
   gcs:
-    enable: "true"
+    enabled: "true"
   minio:
-    enable: true
+    enabled: true
 
 # telemetry configurations
 telemetry:
   prometheus:
     svcMonitor:
-      enable: "true"
+      enabled: "true"
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
@@ -41,29 +41,29 @@ gatewayApi:
     name: "fst-gateway-class" # this is a shared gateway class for all namespaces
   gateway:
     name: "fst"
-    enable: "true"
+    enabled: "true"
     listeners:
       gossip:
         port: 51000 # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
-        enable: "false" # by default, we don't need to expose the gossip ports
+        enabled: "false" # by default, we don't need to expose the gossip ports
       grpc: # non-tls-grpc-port
         port: 52000 # i.e. node0:52000 ... node999: 52999, points to 50211 port in haproxy or network-node
-        enable: "true"
+        enabled: "true"
       grpcs: # tls-grpc-port
         port: 53000 # i.e. node0:53000 ... node999: 53999, points to 50212 port in haproxy or network-node
-        enable: "true"
+        enabled: "true"
       grpcWeb:
         port: 18000 # i.e. node0:18000 ... node999: 18999, points to 8080 port in envoy proxy
-        enable: "true"
+        enabled: "true"
       httpDebug: # this helps debugging gateway if needed by provisioning a mock http app
         port: 3100
-        enable: "true"
+        enabled: "true"
       tcpDebug: # this helps debugging gateway if needed by provisioning a mock grpc app
         port: 3101
-        enable: "true"
+        enabled: "true"
       hederaExplorer:
         port: 8888 # points to 80 port on fst-hedera-explorer
-        enable: "true"
+        enabled: "true"
   route:
     hostname: "{{ .node.name }}.fst.local"
 
@@ -85,7 +85,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     resources: {}
   haproxy:
-    enable: "true"
+    enabled: "true"
     nameOverride: "haproxy"
     image:
       registry: "docker.io"
@@ -95,7 +95,7 @@ defaults:
     resources: {}
     loadBalancerEnabled: "false"
   envoyProxy:
-    enable: "true"
+    enabled: "true"
     nameOverride: "envoy-proxy"
     image:
       registry: "docker.io"
@@ -106,7 +106,7 @@ defaults:
     loadBalancerEnabled: "false"
   sidecars:
     recordStreamUploader:
-      enable: "true"
+      enabled: "true"
       nameOverride: "record-stream-uploader"
       image:
         registry: "gcr.io"
@@ -118,7 +118,7 @@ defaults:
         compression: "true"
         sidecar: "true"
         reaper:
-          enable: "true"
+          enabled: "true"
           minKeep: 1
           interval: 1
           defaultBackoff: 1
@@ -127,7 +127,7 @@ defaults:
           prioritize: "true"
       resources: {}
     eventStreamUploader:
-      enable: "true"
+      enabled: "true"
       nameOverride: "event-stream-uploader"
       image:
         registry: "gcr.io"
@@ -138,7 +138,7 @@ defaults:
         debug: "true"
         compression: "true"
         reaper:
-          enable: "true"
+          enabled: "true"
           minKeep: 1
           interval: 1
           defaultBackoff: 1
@@ -147,7 +147,7 @@ defaults:
           prioritize: "true"
       resources: {}
     accountBalanceUploader:
-      enable: "true"
+      enabled: "true"
       nameOverride: "account-balance-uploader"
       image:
         registry: gcr.io
@@ -158,7 +158,7 @@ defaults:
         debug: "true"
         compression: "true"
         reaper:
-          enable: "true"
+          enabled: "true"
           minKeep: 1
           interval: 1
           defaultBackoff: 1
@@ -167,7 +167,7 @@ defaults:
           prioritize: "true"
       resources: {}
     backupUploader:
-      enable: "true"
+      enabled: "true"
       nameOverride: "backup-uploader"
       image:
         registry: "gcr.io"
@@ -178,7 +178,7 @@ defaults:
         backupBucket: "backup"
       resources: {}
     otelCollector:
-      enable: "true"
+      enabled: "true"
       nameOverride: ""
       image:
         registry: "docker.io"
@@ -199,7 +199,7 @@ defaults:
           tls:
             insecure: true
         prometheusRemoteWrite:
-          enable: "false"
+          enabled: "false"
           endpoint: "" # e.g. http://prometheus.<NAMESPACE>.svc:9090/api/v1/write
           tls:
             insecure: true
@@ -238,7 +238,7 @@ minio-server:
 
 # hedera mirror node configuration
 hedera-mirror-node:
-  enable: true
+  enabled: true
   graphql: # not needed for default FST use case
     enabled: false
   rosetta: # not needed for default FST use case
@@ -365,7 +365,7 @@ hedera-mirror-node:
 
 # hedera explorer configuration
 hedera-explorer:
-  enable: true
+  enabled: true
   nodeSelector:
     fullstack-scheduling.io/role: network
   tolerations:

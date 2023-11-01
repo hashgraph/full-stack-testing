@@ -56,7 +56,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if default $defaults.sidecars.otelCollector.enable  $otelCollector.enable | eq "true" }}
+        {{- if default $defaults.sidecars.otelCollector.enabled $otelCollector.enabled | eq "true" }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm

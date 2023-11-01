@@ -29,7 +29,7 @@
     - name: DEBUG
       value: {{ default $defaults.config.debug ($recordStream.config).debug | quote }}
     - name: REAPER_ENABLE
-      value: {{ default $defaults.config.reaper.enable (($recordStream.config).reaper).enable | quote }}
+      value: {{ default $defaults.config.reaper.enabled (($recordStream.config).reaper).enabled | quote }}
     - name: REAPER_MIN_KEEP
       value: {{ default $defaults.config.reaper.minKeep (($recordStream.config).reaper).minKeep | quote }}
     - name: REAPER_INTERVAL

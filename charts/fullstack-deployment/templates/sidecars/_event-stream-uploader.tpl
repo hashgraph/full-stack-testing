@@ -28,7 +28,7 @@
     - name: DEBUG
       value: {{ default $defaults.config.debug ($eventStream.config).debug | quote}}
     - name: REAPER_ENABLE
-      value: {{ default $defaults.config.reaper.enable (($eventStream.config).reaper).enable | quote }}
+      value: {{ default $defaults.config.reaper.enabled (($eventStream.config).reaper).enabled | quote }}
     - name: REAPER_MIN_KEEP
       value: {{ default $defaults.config.reaper.minKeep (($eventStream.config).reaper).minKeep | quote }}
     - name: REAPER_INTERVAL

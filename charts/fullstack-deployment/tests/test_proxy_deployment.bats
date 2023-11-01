@@ -22,7 +22,7 @@ setup() {
       local node_name=$(get_pod_label "${pod}" "fullstack.hedera.com/node-name")
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
-      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enable")
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enabled")
       if [ "${is_enabled}" = "TRUE" ]; then
         log_debug "HAProxy is enabled for node '${node_name}'"
         log_debug "Checking HAProxy for network-node '${node_name}'"
@@ -63,7 +63,7 @@ setup() {
       local node_name=$(get_pod_label "${pod}" "fullstack.hedera.com/node-name")
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
-      local is_enabled=$(is_enabled_for_node "${node_name}" ".envoyProxy.enable")
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".envoyProxy.enabled")
       if [ "${is_enabled}" = "TRUE" ]; then
         log_debug "EnvoyProxy is enabled for node '${node_name}'"
         log_debug "Checking Envoy proxy for network-node '${node_name}'"

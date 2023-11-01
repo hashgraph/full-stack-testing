@@ -23,7 +23,7 @@ setup() {
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
       local route_name="envoy-grpc-web-route-${node_name}"
-      local is_enabled=$(is_enabled_for_node "${node_name}" ".envoyProxy.enable")
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".envoyProxy.enabled")
       if [ "${is_enabled}" = "TRUE" ]; then
         log_debug "EnvoyProxy enabled for node '${node_name}'"
         log_debug "Checking Envoy proxy httproute '${route_name}'"
@@ -62,7 +62,7 @@ setup() {
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
       local route_name="haproxy-grpc-route-${node_name}"
-      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enable")
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enabled")
       if [ "${is_enabled}" = "TRUE" ]; then
         log_debug "HAProxy enabled for node '${node_name}'"
         log_debug "Checking HAProxy GRPC route '${route_name}'"
@@ -101,7 +101,7 @@ setup() {
       [[ -z "${node_name}" ]] && test_status="${FAIL}" && break
 
       local route_name="node-grpc-route-${node_name}"
-      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enable")
+      local is_enabled=$(is_enabled_for_node "${node_name}" ".haproxy.enabled")
       if [ "${is_enabled}" = "FALSE" ]; then
         log_debug "Checking Node GRPC route '${route_name}'"
         is_route_accepted "tcproute" "${route_name}" || test_status="${FAIL}"
