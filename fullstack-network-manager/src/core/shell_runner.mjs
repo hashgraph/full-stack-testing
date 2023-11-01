@@ -14,6 +14,7 @@ export class ShellRunner {
      */
     async run(cmd) {
         const self = this
+        let callStack= new Error().stack // capture the callstack to be included in error
 
         return new Promise((resolve, reject) => {
             const child = spawn(cmd, {
@@ -40,19 +41,17 @@ export class ShellRunner {
                 })
             })
 
-            const errTrace = function(err, messages = []) {
-                errOutput.forEach(m => self.logger.showUser(chalk.red(m)))
-                reject(err, errOutput)
-            }
-
-            child.on('error', err => {
-                errTrace(err)
-            })
 
             child.on('exit', (code, signal) => {
                 if (code) {
                     let err = new Error(`Command exit with error code: ${code}`)
-                    errTrace(err, errOutput)
+
+                    // include the callStack to the parent run() instead of from inside this handler.
+                    // this is needed to ensure we capture the proper callstack for easier debugging.
+                    err.stack = callStack
+
+                    errOutput.forEach(m => self.logger.showUser(chalk.red(m)))
+                    reject(err)
                 }
 
                 self.logger.debug(cmd, {'commandExitCode': code, 'commandExitSignal': signal, 'commandOutput': output})
