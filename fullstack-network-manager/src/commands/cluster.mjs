@@ -16,7 +16,7 @@ export class ClusterCommand extends BaseCommand {
         try {
             return await this.kind.getClusters('-q')
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return []
@@ -48,7 +48,7 @@ export class ClusterCommand extends BaseCommand {
         try {
             return await this.kubectl.getNamespace(`--no-headers`, `-o name`)
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return []
@@ -71,7 +71,7 @@ export class ClusterCommand extends BaseCommand {
             this.logger.showUser("\n")
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
@@ -86,7 +86,7 @@ export class ClusterCommand extends BaseCommand {
                 this.logger.showUser(chalk.cyan('> creating namespace:'), chalk.yellow(`${namespace} ...`))
                 await this.kubectl.createNamespace(namespace)
                 this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' is created`)
-            } {
+            } else {
                 this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' already exists`)
             }
 
@@ -94,7 +94,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
@@ -131,27 +131,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
-        }
-
-        return false
-    }
-
-    async deleteNamespace(argv) {
-        try {
-            let namespace = argv.namespace
-            let namespaces = await this.getNameSpaces()
-            if (namespaces.includes(namespace)) {
-                this.logger.showUser(chalk.cyan('Deleting namespace:'), chalk.yellow(`${namespaces}...`))
-                await this.kubectl.deleteNamespace(namespace)
-                this.logger.showUser(chalk.green('Deleted namespace:'), chalk.yellow(namespaces))
-            }
-
-            this.showList("namespaces", await this.getNameSpaces())
-
-            return true
-        } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
@@ -179,7 +159,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
@@ -187,7 +167,7 @@ export class ClusterCommand extends BaseCommand {
 
 
     async showInstalledChartList(namespace) {
-        this.showList("charts installed", await this.getInstalledCharts(namespace) )
+        this.showList("charts installed", await this.getInstalledCharts(namespace))
     }
 
     /**
@@ -211,7 +191,7 @@ export class ClusterCommand extends BaseCommand {
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false

@@ -10,7 +10,7 @@ export class BaseCommand extends ShellRunner {
             this.logger.debug(cmd)
             await this.run(cmd)
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
             return false
         }
 
@@ -80,7 +80,7 @@ export class BaseCommand extends ShellRunner {
         try {
             return await this.helm.list(`-n ${namespaceName}`, '-q')
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return []
@@ -88,11 +88,13 @@ export class BaseCommand extends ShellRunner {
 
     async chartInstall(namespaceName, chartName, chartPath, valuesArg = '') {
         try {
-            this.logger.showUser(chalk.cyan('> checking chart:'), chalk.yellow(`${chartName}`))
             let charts = await this.getInstalledCharts(namespaceName)
             if (!charts.includes(chartName)) {
+                this.logger.showUser(chalk.cyan('> running helm dependency update for chart:'), chalk.yellow(`${chartName} ...`))
+                await this.helm.dependency('update', chartPath)
+
                 this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartName}`))
-                this.helm.install(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
+                await this.helm.install(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
                 this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is installed`)
             } else {
                 this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already installed`)
@@ -100,7 +102,7 @@ export class BaseCommand extends ShellRunner {
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
@@ -112,7 +114,7 @@ export class BaseCommand extends ShellRunner {
             let charts = await this.getInstalledCharts(namespaceName)
             if (charts.includes(chartName)) {
                 this.logger.showUser(chalk.cyan('> uninstalling chart:'), chalk.yellow(`${chartName}`))
-                this.helm.uninstall(`-n ${namespaceName} ${chartName}`)
+                await this.helm.uninstall(`-n ${namespaceName} ${chartName}`)
                 this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is uninstalled`)
             } else {
                 this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already uninstalled`)
@@ -120,7 +122,7 @@ export class BaseCommand extends ShellRunner {
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
@@ -129,12 +131,12 @@ export class BaseCommand extends ShellRunner {
     async chartUpgrade(namespaceName, chartName, chartPath, valuesArg = '') {
         try {
             this.logger.showUser(chalk.cyan('> upgrading chart:'), chalk.yellow(`${chartName}`))
-            this.helm.upgrade(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
+            await this.helm.upgrade(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
             this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is upgraded`)
 
             return true
         } catch (e) {
-            this.logger.showUserError(err)
+            this.logger.showUserError(e)
         }
 
         return false
