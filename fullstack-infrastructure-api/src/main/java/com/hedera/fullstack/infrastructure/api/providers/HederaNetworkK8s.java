@@ -16,6 +16,7 @@
 
 package com.hedera.fullstack.infrastructure.api.providers;
 
+import com.hedera.fullstack.infrastructure.api.exceptions.InstallationException;
 import com.hedera.fullstack.infrastructure.api.model.Cluster;
 import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.Workload;
@@ -23,6 +24,7 @@ import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
 import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import java.util.List;
+import java.util.concurrent.Future;
 
 public class HederaNetworkK8s implements NetworkDeployment {
 
@@ -63,6 +65,11 @@ public class HederaNetworkK8s implements NetworkDeployment {
 
     @Override
     public <T extends Workload> List<WorkloadReplica<T>> workloadsByCluster(Class<T> workloadType, Cluster cluster) {
+        return null;
+    }
+
+    @Override
+    public Future<Boolean> installClusterSetupWorkloads() throws InstallationException {
         return null;
     }
 }

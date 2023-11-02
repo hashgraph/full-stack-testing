@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.api.model.mirrornode.component;
+package com.hedera.fullstack.infrastructure.core.exceptions;
 
-import com.hedera.fullstack.infrastructure.api.model.Component;
-
-public class Grpc implements Component {}
+public class NotImplementedException extends RuntimeException {}

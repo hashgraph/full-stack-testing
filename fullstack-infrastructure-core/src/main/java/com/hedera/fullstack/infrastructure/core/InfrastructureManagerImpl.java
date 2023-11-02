@@ -1,48 +1,52 @@
+/*
+ * Copyright (C) 2023 Hedera Hashgraph, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.hedera.fullstack.infrastructure.core;
 
-import com.hedera.fullstack.helm.client.HelmClient;
-import com.hedera.fullstack.helm.client.model.Chart;
-import com.hedera.fullstack.helm.client.model.chart.Release;
+import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
 import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
-import com.hedera.fullstack.infrastructure.api.model.Cluster;
 import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
-import com.hedera.fullstack.infrastructure.api.model.Workload;
-import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
-import com.hedera.fullstack.infrastructure.api.model.mirrornode.MirrorNode;
-import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
-import com.hedera.fullstack.model.InstallType;
+import com.hedera.fullstack.infrastructure.core.exceptions.NotImplementedException;
 import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 public class InfrastructureManagerImpl implements InfrastructureManager {
 
-    HelmClient helmClient;
-
     @Override
-    public CompletableFuture<NetworkDeployment> createNetworkDeploymentAsync(NetworkDeploymentConfiguration hederaNetwork, InstallType installType) {
-        Release release = helmClient.installChart("0.0.1", new Chart("cd", "repo"));
-        return null;
+    public Future<NetworkDeployment> createNetworkDeploymentAsync(NetworkDeploymentConfiguration hederaNetwork)
+            throws InvalidConfigurationException, DeploymentLimitReachedException, InfrastructureException {
+        throw new NotImplementedException();
     }
 
     @Override
     public List<NetworkDeployment> listNetworkDeployments() {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public NetworkDeployment networkDeploymentById(String id) {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public CompletableFuture<Boolean> deleteNetworkDeployment(String id) {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Boolean> installClusterSetupComponents() {
-        return null;
+        throw new NotImplementedException();
     }
 }

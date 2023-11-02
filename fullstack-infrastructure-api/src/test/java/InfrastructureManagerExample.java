@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
+import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
 import com.hedera.fullstack.infrastructure.api.model.mirrornode.MirrorNode;
@@ -25,19 +25,18 @@ import com.hedera.fullstack.infrastructure.api.model.mirrornode.component.Import
 import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
 import com.hedera.fullstack.infrastructure.api.model.networknode.component.Node;
 import com.hedera.fullstack.infrastructure.api.traits.ExecutionAware;
-import com.hedera.fullstack.model.InstallType;
-
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class InfrastructureManagerExample {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException, InvalidConfigurationException {
+    public static void main(String[] args)
+            throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException,
+                    InvalidConfigurationException {
 
         InfrastructureManager infrastructureManager = null;
-        Future<NetworkDeployment> ndR = infrastructureManager.createNetworkDeploymentAsync(null, InstallType.DIRECT_INSTALL);
+        Future<NetworkDeployment> ndR = infrastructureManager.createNetworkDeploymentAsync(null);
         NetworkDeployment nd = ndR.get();
 
         WorkloadReplica<NetworkNode> networkNode0 = nd.workloadByIndex(NetworkNode.class, 0);

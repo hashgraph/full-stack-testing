@@ -19,5 +19,4 @@ package com.hedera.fullstack.model;
 public class NetworkDeploymentConfiguration {
     InstallType installType;
     Topology topology;
-
 }

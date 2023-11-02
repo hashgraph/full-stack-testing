@@ -26,7 +26,7 @@ public interface Workload {
     // This workload belong to which cluster
     Cluster cluster();
 
-   <T extends Workload> List<WorkloadReplica<T>> replicas();
+    <T extends Workload> List<WorkloadReplica<T>> replicas();
 }
 
 /*

@@ -15,14 +15,13 @@
  */
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
 import com.hedera.fullstack.infrastructure.api.exceptions.NetworkDeploymentNotFoundException;
+import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
-import com.hedera.fullstack.model.InstallType;
 import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.resource.generator.api.NodeDetails;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
@@ -38,15 +37,18 @@ The only purpose of this code is to show how the API will be used and how pieces
 public class IntegrationExample {
 
     // This the JUNIT / CLI entry point
-    public static void main(String[] args) throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException, InvalidConfigurationException {
+    public static void main(String[] args)
+            throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException,
+                    InvalidConfigurationException {
 
         // This the JUNIT / CLI entry point
         TestTookKit testTookKit = new TestTookKit();
-        NetworkDeploymentConfiguration hederaNetworkNetworkDeploymentConfiguration = new NetworkDeploymentConfiguration();
-//                .setCPU(1)
-//                .setRAM(1, StorageUnits.GIGABYTES)
-//                .setNodeCount(1)
-//                .build(); // supplied by junit or cli
+        NetworkDeploymentConfiguration hederaNetworkNetworkDeploymentConfiguration =
+                new NetworkDeploymentConfiguration();
+        //                .setCPU(1)
+        //                .setRAM(1, StorageUnits.GIGABYTES)
+        //                .setNodeCount(1)
+        //                .build(); // supplied by junit or cli
 
         // Step 1. Create the NetworkDeployment
         // who carries the software version, nmt version etc. ?
@@ -95,9 +97,11 @@ public class IntegrationExample {
         InfrastructureManager infraManager;
 
         // This is invoked by the CLI or Junit
-        public NetworkDeployment create(NetworkDeploymentConfiguration hederaEcosystemNetworkDeploymentConfiguration) throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException, InvalidConfigurationException {
+        public NetworkDeployment create(NetworkDeploymentConfiguration hederaEcosystemNetworkDeploymentConfiguration)
+                throws ExecutionException, InterruptedException, DeploymentLimitReachedException,
+                        InfrastructureException, InvalidConfigurationException {
             Future<NetworkDeployment> ecosystem =
-                    infraManager.createNetworkDeploymentAsync(hederaEcosystemNetworkDeploymentConfiguration, InstallType.DIRECT_INSTALL);
+                    infraManager.createNetworkDeploymentAsync(hederaEcosystemNetworkDeploymentConfiguration);
 
             return ecosystem.get();
         }
@@ -106,8 +110,10 @@ public class IntegrationExample {
             ResourceUtils resourceUtils = null;
             String version = null;
 
-            String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment.getNetworkDeploymentConfiguration());
-            String platformSettings = resourceUtils.getPlatformSettings(networkDeployment.getNetworkDeploymentConfiguration());
+            String platformConfig =
+                    resourceUtils.getPlatformConfiguration(networkDeployment.getNetworkDeploymentConfiguration());
+            String platformSettings =
+                    resourceUtils.getPlatformSettings(networkDeployment.getNetworkDeploymentConfiguration());
             String buildZipURL = resourceUtils.getBuildZipURL(SemanticVersion.ZERO);
 
             // Configuring the platform

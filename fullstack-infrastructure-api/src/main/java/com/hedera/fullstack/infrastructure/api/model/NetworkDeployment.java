@@ -20,7 +20,6 @@ import com.hedera.fullstack.infrastructure.api.exceptions.InstallationException;
 import com.hedera.fullstack.infrastructure.api.traits.Labeled;
 import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
-
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -54,7 +53,7 @@ import java.util.concurrent.Future;
  *      </li>
  * </ul>
  *
-
+ *
  * <p>
  * Here is a high level overview:
  * <table border="1">
@@ -109,5 +108,5 @@ public interface NetworkDeployment extends Labeled {
 
     <T extends Workload> List<WorkloadReplica<T>> workloadsByCluster(Class<T> workloadType, Cluster cluster);
 
-    Future<Boolean> installClusterSetupComponents() throws InstallationException;
+    Future<Boolean> installClusterSetupWorkloads() throws InstallationException;
 }

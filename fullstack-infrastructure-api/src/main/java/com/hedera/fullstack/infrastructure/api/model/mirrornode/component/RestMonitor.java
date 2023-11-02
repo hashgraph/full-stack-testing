@@ -18,6 +18,4 @@ package com.hedera.fullstack.infrastructure.api.model.mirrornode.component;
 
 import com.hedera.fullstack.infrastructure.api.model.Component;
 
-public class RestMonitor implements Component {
-
-}
+public class RestMonitor implements Component {}

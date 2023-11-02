@@ -16,7 +16,6 @@
 
 package com.hedera.fullstack.infrastructure.api.traits;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -31,5 +30,4 @@ public interface FileAware {
     void putFile(OutputStream file, Path remotePath);
 
     void putFile(String containerName, OutputStream file, Path remotePath);
-
 }

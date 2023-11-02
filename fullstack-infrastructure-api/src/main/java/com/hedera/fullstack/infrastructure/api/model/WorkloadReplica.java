@@ -16,9 +16,6 @@
 
 package com.hedera.fullstack.infrastructure.api.model;
 
-import com.hedera.fullstack.infrastructure.api.model.Component;
-import com.hedera.fullstack.infrastructure.api.model.Workload;
-
 import java.util.List;
 
 /**

@@ -21,7 +21,6 @@ import com.hedera.fullstack.infrastructure.api.traits.ExecutionAware;
 import com.hedera.fullstack.infrastructure.api.traits.FileAware;
 import com.hedera.fullstack.infrastructure.api.traits.LogAware;
 import com.hedera.fullstack.infrastructure.api.traits.ServiceAware;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -56,14 +55,10 @@ public class Node implements Component, FileAware, LogAware, ExecutionAware, Ser
     }
 
     @Override
-    public void putFile(OutputStream file, Path remotePath) {
-
-    }
+    public void putFile(OutputStream file, Path remotePath) {}
 
     @Override
-    public void putFile(String containerName, OutputStream file, Path remotePath) {
-
-    }
+    public void putFile(String containerName, OutputStream file, Path remotePath) {}
 
     @Override
     public CommandResult exec(String command) {
@@ -75,7 +70,6 @@ public class Node implements Component, FileAware, LogAware, ExecutionAware, Ser
         return null;
     }
 
-
     @Override
     public Map<String, String> labels() {
         return null;
@@ -85,5 +79,4 @@ public class Node implements Component, FileAware, LogAware, ExecutionAware, Ser
     public Map<String, InetSocketAddress> getEndpoints() {
         return null;
     }
-
 }

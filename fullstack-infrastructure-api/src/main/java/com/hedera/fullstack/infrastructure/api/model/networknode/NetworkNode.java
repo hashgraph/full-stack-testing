@@ -17,9 +17,6 @@
 package com.hedera.fullstack.infrastructure.api.model.networknode;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
-import com.hedera.fullstack.infrastructure.api.model.Cluster;
-
-import java.util.List;
 
 /**
  * <p>
@@ -50,7 +47,5 @@ import java.util.List;
  *          </li>
  *      </ul>
  *      <li></li>
-*/
-public class NetworkNode extends AbstractWorkload {
-
-}
+ */
+public class NetworkNode extends AbstractWorkload {}

@@ -19,21 +19,16 @@ package com.hedera.fullstack.infrastructure.api.model.mirrornode.component;
 import com.hedera.fullstack.infrastructure.api.model.Component;
 import com.hedera.fullstack.infrastructure.api.traits.LogAware;
 import com.hedera.fullstack.infrastructure.api.traits.ServiceAware;
-
 import java.net.InetSocketAddress;
 import java.util.Map;
 
 public class Importer implements Component, ServiceAware, LogAware {
 
     @Override
-    public void getLogs() {
-
-    }
+    public void getLogs() {}
 
     @Override
-    public void getLogs(String containerName) {
-
-    }
+    public void getLogs(String containerName) {}
 
     @Override
     public Map<String, InetSocketAddress> getEndpoints() {

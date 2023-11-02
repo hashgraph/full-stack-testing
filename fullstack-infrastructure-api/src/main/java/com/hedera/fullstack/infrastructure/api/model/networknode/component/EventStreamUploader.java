@@ -18,6 +18,4 @@ package com.hedera.fullstack.infrastructure.api.model.networknode.component;
 
 import com.hedera.fullstack.infrastructure.api.model.Component;
 
-public class EventStreamUploader implements Component {
-
-}
+public class EventStreamUploader implements Component {}

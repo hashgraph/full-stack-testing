@@ -21,5 +21,6 @@ import java.util.List;
 
 public interface Cluster extends KubernetesAware {
     List<Workload> listWorkloads();
+
     <T extends Workload> T findWorkloadByType(Class<T> workloadType);
 }
