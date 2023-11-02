@@ -30,6 +30,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("net.swiftzer.semver:semver:1.1.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation(kotlin("test"))
 }
 
 gradlePlugin {
@@ -48,3 +49,5 @@ gradlePlugin {
 repositories { mavenCentral() }
 
 kotlin { jvmToolchain(17) }
+
+tasks.test { useJUnitPlatform() }
