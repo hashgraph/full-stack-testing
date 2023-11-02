@@ -35,3 +35,17 @@ export const valuesFile = {
     alias: 'f',
     type: 'string'
 }
+
+export const deployPrometheusStack = {
+    describe: 'Deploy prometheus stack',
+    default: true,
+    alias: 'p',
+    type: 'boolean'
+}
+
+export const deployMinio = {
+    describe: 'Deploy minio operator',
+    default: true,
+    alias: 'o',
+    type: 'boolean'
+}

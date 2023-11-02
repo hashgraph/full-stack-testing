@@ -184,9 +184,10 @@ export class ClusterCommand extends BaseCommand {
             let chartName = "fullstack-cluster-setup"
             let namespace = argv.namespace
             let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
+            let valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
-            await this.chartInstall(namespace, chartName, chartPath)
+            await this.chartInstall(namespace, chartName, chartPath, valuesArg)
             await this.showInstalledChartList(namespace)
 
             return true
@@ -283,6 +284,8 @@ export class ClusterCommand extends BaseCommand {
                         builder: yargs => {
                             yargs.option('cluster-name', flags.clusterNameFlag)
                             yargs.option('namespace', flags.namespaceFlag)
+                            yargs.option('prometheus-stack', flags.deployPrometheusStack)
+                            yargs.option('minio', flags.deployMinio)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
@@ -299,5 +302,9 @@ export class ClusterCommand extends BaseCommand {
                     .demand(1, 'Select a cluster command')
             }
         }
+    }
+
+    prepareValuesArg(prometheusStackEnabled, minioEnabled) {
+        return ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled} --set cloud.minio.enabled=${minioEnabled}`
     }
 }

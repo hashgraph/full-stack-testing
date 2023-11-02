@@ -8,7 +8,7 @@ fullstack-network-manager is a CLI tool to manage and deploy a Hedera Network us
 ❯ cat ~/.npmrc
 @hashgraph:registry=https://npm.pkg.github.com
 ```
-- Run `nmp install -g @hedera/fullstack-network-manager`
+- Run `npm install -g @hedera/fullstack-network-manager`
 
 - Run `fsnetman` from a terminal as shown below
 ``` 
