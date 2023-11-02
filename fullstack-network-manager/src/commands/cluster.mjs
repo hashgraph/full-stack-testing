@@ -184,7 +184,7 @@ export class ClusterCommand extends BaseCommand {
             let chartName = "fullstack-cluster-setup"
             let namespace = argv.namespace
             let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
-            let valuesArg = this.prepareValuesArg(argv)
+            let valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
             await this.chartInstall(namespace, chartName, chartPath, valuesArg)
