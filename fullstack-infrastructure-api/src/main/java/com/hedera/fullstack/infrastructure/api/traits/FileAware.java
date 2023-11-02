@@ -20,14 +20,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 
+/**
+ * A trait for workloads that need to interact with files.
+ */
 public interface FileAware {
 
     InputStream retrieveFile(Path remotePath);
 
-    InputStream retrieveFile(String containerName, Path remotePath);
-
     // gets from default container
     void putFile(OutputStream file, Path remotePath);
-
-    void putFile(String containerName, OutputStream file, Path remotePath);
 }

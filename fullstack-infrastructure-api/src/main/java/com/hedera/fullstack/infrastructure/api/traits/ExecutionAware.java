@@ -17,29 +17,16 @@
 package com.hedera.fullstack.infrastructure.api.traits;
 
 import java.io.InputStream;
+import java.util.concurrent.Future;
 
+/**
+ * A Trait for which enables {@link com.hedera.fullstack.infrastructure.api.model.Component} to execute commands.
+ */
 public interface ExecutionAware {
 
-    // execute command and should return input and output streams
     CommandResult exec(String command);
 
     CommandResult exec(String container, String command);
 
-    class CommandResult {
-        private final InputStream stdout;
-        private final InputStream stderr;
-
-        public CommandResult(InputStream stdout, InputStream stderr) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-        }
-
-        public InputStream getStdout() {
-            return stdout;
-        }
-
-        public InputStream getStderr() {
-            return stderr;
-        }
-    }
+    record CommandResult(Future<Integer> exitCode, InputStream stdout, InputStream stderr) {}
 }

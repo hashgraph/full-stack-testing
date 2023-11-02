@@ -16,13 +16,28 @@
 
 package com.hedera.fullstack.infrastructure.api.traits;
 
-/*
- Deals with how to locate logs (e.g. labels
- - we never deal directly with lags
-*/
+import java.time.LocalDateTime;
+import java.util.List;
+
+/**
+ * A trait for {@link LogAware} that need to interact with logs.
+ */
 public interface LogAware {
 
-    void getLogs();
+    List<LogEntry> getLogs(int tailLines);
 
-    void getLogs(String containerName);
+    List<LogEntry> getLogs(LocalDateTime startDateTime, LocalDateTime endDateTime);
+
+    List<LogEntry> searchLogs(LocalDateTime startDateTime, LocalDateTime endDateTime, String searchQuery);
+
+    record LogEntry(LocalDateTime timestamp, LogLevel level, String message, String source) {}
+
+    enum LogLevel {
+        TRACE,
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        FATAL
+    }
 }

@@ -19,8 +19,26 @@ package com.hedera.fullstack.infrastructure.api.model;
 import com.hedera.fullstack.infrastructure.api.traits.KubernetesAware;
 import java.util.List;
 
+/**
+ * A {@link Cluster}
+ *
+ * <ul>
+ *    <li>is a set of physical or virtual machines which can be used to deploy {@link Workload}s</li>
+ *    <li>can be a public or private cloud, or a bare metal cluster in any geography</li>
+ *    <li>can host a subset of or all of the{@link Workload}s within a {@link NetworkDeployment}</li>
+ *    <li> must be able to expose the {@link Component}s (ones which need) of {@link Workload}s in way that its
+ *    reachable from {@link Component}s hosted on other {@link Cluster}s</li>
+ * </ul>
+ */
 public interface Cluster extends KubernetesAware {
+
+    /**
+     * @return the {@link Workload}s hosted on this {@link Cluster}
+     */
     List<Workload> listWorkloads();
 
+    /**
+     * @return the {@link Workload} hosted on this {@link Cluster} of the given type
+     */
     <T extends Workload> T findWorkloadByType(Class<T> workloadType);
 }

@@ -25,6 +25,7 @@ import java.util.List;
 public class WorkloadReplica<T extends Workload> {
 
     private List<Component> components;
+
     // global index across all clusters in the NetworkDeployment
     private final int index;
 

@@ -20,8 +20,7 @@ import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
 
 /**
  * <p>
- *     The Workload {@link }NetworkNode} is the beating heart of the system.
- *     It hosts the Hedera app and HAPI.
+ *     The Workload {@link }NetworkNode} is the beating heart of the Hedera ecosystem.
  *     </p>
  * <p>
  *  <strong>Components</strong>
@@ -46,6 +45,5 @@ import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
  *              NMT: installation using NMT tool this uses release builds
  *          </li>
  *      </ul>
- *      <li></li>
  */
-public class NetworkNode extends AbstractWorkload {}
+public class NetworkNode extends AbstractWorkload<NetworkNode> {}

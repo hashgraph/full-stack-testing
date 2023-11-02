@@ -18,4 +18,4 @@ package com.hedera.fullstack.infrastructure.api.model.mirrornodeexplorer;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
 
-public class MirrorNodeExplorer extends AbstractWorkload {}
+public class MirrorNodeExplorer extends AbstractWorkload<MirrorNodeExplorer> {}

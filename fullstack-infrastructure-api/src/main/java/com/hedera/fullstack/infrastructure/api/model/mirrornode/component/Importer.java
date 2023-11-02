@@ -20,18 +20,29 @@ import com.hedera.fullstack.infrastructure.api.model.Component;
 import com.hedera.fullstack.infrastructure.api.traits.LogAware;
 import com.hedera.fullstack.infrastructure.api.traits.ServiceAware;
 import java.net.InetSocketAddress;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 public class Importer implements Component, ServiceAware, LogAware {
 
     @Override
-    public void getLogs() {}
-
-    @Override
-    public void getLogs(String containerName) {}
-
-    @Override
     public Map<String, InetSocketAddress> getEndpoints() {
+        return null;
+    }
+
+    @Override
+    public List<LogEntry> getLogs(int tailLines) {
+        return null;
+    }
+
+    @Override
+    public List<LogEntry> getLogs(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return null;
+    }
+
+    @Override
+    public List<LogEntry> searchLogs(LocalDateTime startDateTime, LocalDateTime endDateTime, String searchQuery) {
         return null;
     }
 }

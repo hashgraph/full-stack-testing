@@ -19,16 +19,22 @@ package com.hedera.fullstack.infrastructure.api.model;
 import java.util.List;
 
 /**
- * Classes implementing this will be used for querying networkdeployment only
+ * A {@link Workload} is a set of {@link Component}s that are deployed together
+ * <ul>
+ *     <li>A {@link Workload} can be deployed multiples times on multiple {@link Cluster}s
+ *      each count of such a deployment is a {@link WorkloadReplica}</li>
+ *     <li>All {@link Component} of a {@link Workload} are deployed on the same {@link Cluster}</li>
+ * </ul>
  */
 public interface Workload {
 
-    // This workload belong to which cluster
+    /**
+     * @return the {@link Cluster} on which this {@link Workload} is deployed
+     */
     Cluster cluster();
 
+    /**
+     * @return the {@link WorkloadReplica}s that are part of this {@link Workload}
+     */
     <T extends Workload> List<WorkloadReplica<T>> replicas();
 }
-
-/*
-
-*/

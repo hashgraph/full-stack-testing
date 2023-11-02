@@ -18,9 +18,11 @@ package com.hedera.fullstack.infrastructure.api.traits;
 
 import java.util.Map;
 
+/**
+ * Anything that can be labeled.
+ */
 public interface Labeled {
     default Map<String, String> labels() {
         return Map.of();
     }
-    ;
 }

@@ -49,7 +49,6 @@ public interface InfrastructureManager {
         return null;
     }
 
-    // TODO: streaming logs while provisioning and deleting
     /**
      * Creates the {@link NetworkDeployment} based on the {@link NetworkDeploymentConfiguration} provided.
      * This is a long running process, expected time is in the order of a few minutes.

@@ -30,10 +30,11 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-/*
-This code is not supposed to be used
-The only purpose of this code is to show how the API will be used and how pieces fit together
-*/
+/**
+ * NOT FOR PRODUCTION USE, ONLY FOR DEMO PURPOSES
+ * This code is NOT supposed to be used in any test or production code.
+ * The only purpose of this code is to show how the API will be used and how pieces fit together
+ */
 public class IntegrationExample {
 
     // This the JUNIT / CLI entry point

@@ -29,6 +29,11 @@ import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+/**
+ * NOT FOR PRODUCTION USE, ONLY FOR DEMO PURPOSES
+ * This code is NOT supposed to be used in any test or production code.
+ * The only purpose of this code is to show how the API will be used and how pieces fit together
+ */
 public class InfrastructureManagerExample {
 
     public static void main(String[] args)
@@ -52,13 +57,13 @@ public class InfrastructureManagerExample {
 
         ExecutionAware.CommandResult commandResult0 = node0.exec("ls -l");
         // consume output streams
-        commandResult0.getStdout();
-        commandResult0.getStderr();
+        commandResult0.stdout();
+        commandResult0.stderr();
 
         ExecutionAware.CommandResult commandResult1 = node1.exec("ls -l");
         // consume output streams
-        commandResult1.getStdout();
-        commandResult1.getStderr();
+        commandResult1.stdout();
+        commandResult1.stderr();
 
         WorkloadReplica<MirrorNode> mirrorNode = nd.workloadByIndex(MirrorNode.class, 0);
         Importer importer = mirrorNode.getComponentByType(Importer.class);

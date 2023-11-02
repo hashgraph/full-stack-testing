@@ -25,11 +25,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
-/*
-
-*/
+/**
+ * The {@link Node} components host the software required to host a Hedera node.
+ * <ul>
+ *     <li>It exposes the HAPI</li>
+ *
+ * </ul>
+ */
 public class Node implements Component, FileAware, LogAware, ExecutionAware, ServiceAware {
 
     public void start() {}
@@ -39,26 +45,12 @@ public class Node implements Component, FileAware, LogAware, ExecutionAware, Ser
     public void restart() {}
 
     @Override
-    public void getLogs() {}
-
-    @Override
-    public void getLogs(String containerName) {}
-
-    @Override
     public InputStream retrieveFile(Path remotePath) {
         return null;
     }
 
     @Override
-    public InputStream retrieveFile(String containerName, Path remotePath) {
-        return null;
-    }
-
-    @Override
     public void putFile(OutputStream file, Path remotePath) {}
-
-    @Override
-    public void putFile(String containerName, OutputStream file, Path remotePath) {}
 
     @Override
     public CommandResult exec(String command) {
@@ -77,6 +69,21 @@ public class Node implements Component, FileAware, LogAware, ExecutionAware, Ser
 
     @Override
     public Map<String, InetSocketAddress> getEndpoints() {
+        return null;
+    }
+
+    @Override
+    public List<LogEntry> getLogs(int tailLines) {
+        return null;
+    }
+
+    @Override
+    public List<LogEntry> getLogs(LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return null;
+    }
+
+    @Override
+    public List<LogEntry> searchLogs(LocalDateTime startDateTime, LocalDateTime endDateTime, String searchQuery) {
         return null;
     }
 }

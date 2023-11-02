@@ -18,4 +18,4 @@ package com.hedera.fullstack.infrastructure.api.model.minio;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
 
-public class Tenant extends AbstractWorkload {}
+public class Tenant extends AbstractWorkload<Tenant> {}
