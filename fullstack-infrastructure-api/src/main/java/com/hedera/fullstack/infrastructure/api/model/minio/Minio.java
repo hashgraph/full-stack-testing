@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.model.minio;
 
-dependencies { api(platform(project(":fullstack-bom")))
-    implementation(project(mapOf("path" to ":fullstack-infrastructure-api")))
-    implementation(project(mapOf("path" to ":fullstack-models")))
-    implementation(project(mapOf("path" to ":fullstack-helm-client")))
-    implementation(project(mapOf("path" to ":fullstack-resource-generator-api")))
+import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+
+import java.util.List;
+
+public class Minio extends AbstractWorkload {
+
 }

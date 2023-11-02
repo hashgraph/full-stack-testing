@@ -16,19 +16,41 @@
 
 package com.hedera.fullstack.infrastructure.api.model.networknode;
 
-import com.hedera.fullstack.infrastructure.api.Cluster;
-import com.hedera.fullstack.infrastructure.api.model.Workload;
-import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
+import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+
 import java.util.List;
 
-public class NetworkNode implements Workload {
-    @Override
-    public Cluster cluster() {
-        return null;
-    }
+/**
+ * <p>
+ *     The Workload {@link }NetworkNode} is the beating heart of the system.
+ *     It hosts the Hedera app and HAPI.
+ *     </p>
+ * <p>
+ *  <strong>Components</strong>
+ *   <ol>
+ *     <li>Node</li>
+ *     <li>RecordStreamUploader</li>
+ *     <li>BackupUploader</li>
+ *     <li>EventStreamUploader</li>
+ *     <li>OtelCollector</li>
+ *     </ol>
+ *  </p>
+ *  <hr/>
+ *  NOTES
+ *  <ul>
+ *      <li>It can be installed using </li>
+ *      <ul>
+ *          <li>
+ *              Direct Install: A build of hedera (zip) is used
+ *              it may come from release builds or custom developer builds
+ *          </li>
+ *          <li>
+ *              NMT: installation using NMT tool this uses release builds
+ *          </li>
+ *      </ul>
+ *      <li></li>
+*/
+public class NetworkNode extends AbstractWorkload {
 
-    @Override
-    public List<WorkloadReplica> replicas() {
-        return null;
-    }
 }

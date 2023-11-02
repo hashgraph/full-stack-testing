@@ -17,7 +17,7 @@
 package com.hedera.fullstack.resource.generator.api;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.model.Topology;
+import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 
 public interface ResourceUtils {
 
@@ -36,15 +36,15 @@ public interface ResourceUtils {
     or do we want even more high level generic functions, i.e we should not even know about platform.txt and config.txt
     */
     // config.txt
-    PlatformConfiguration getPlatformConfigurationBuilder(Topology networkDeployment);
+    PlatformConfiguration getPlatformConfigurationBuilder(NetworkDeploymentConfiguration networkDeployment);
 
-    String getPlatformConfiguration(Topology networkDeployment);
+    String getPlatformConfiguration(NetworkDeploymentConfiguration networkDeployment);
 
     // settings.txt
-    String getPlatformSettings(Topology networkDeployment);
+    String getPlatformSettings(NetworkDeploymentConfiguration networkDeployment);
 
     // using hedera api's 101 and 102
-    String getBinaryNodeAddressBook(Topology networkDeployment);
+    String getBinaryNodeAddressBook(NetworkDeploymentConfiguration networkDeployment);
 
     String getHederaAppBootStrapProperties();
 

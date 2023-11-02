@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.model.mirrornode.component;
 
-dependencies { api(platform(project(":fullstack-bom")))
-    implementation(project(mapOf("path" to ":fullstack-infrastructure-api")))
-    implementation(project(mapOf("path" to ":fullstack-models")))
-    implementation(project(mapOf("path" to ":fullstack-helm-client")))
-    implementation(project(mapOf("path" to ":fullstack-resource-generator-api")))
+import com.hedera.fullstack.infrastructure.api.model.Component;
+import java.util.Map;
+
+public class Rosetta implements Component {
+    @Override
+    public Map<String, String> labels() {
+        return Map.of();
+    }
 }

@@ -16,15 +16,17 @@
 
 package com.hedera.fullstack.infrastructure.api.model;
 
-import com.hedera.fullstack.infrastructure.api.Cluster;
 import java.util.List;
 
+/**
+ * Classes implementing this will be used for querying networkdeployment only
+ */
 public interface Workload {
 
     // This workload belong to which cluster
     Cluster cluster();
 
-    List<WorkloadReplica> replicas();
+   <T extends Workload> List<WorkloadReplica<T>> replicas();
 }
 
 /*

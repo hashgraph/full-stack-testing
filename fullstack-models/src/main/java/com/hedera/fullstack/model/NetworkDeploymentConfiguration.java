@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.model;
 
-dependencies { api(platform(project(":fullstack-bom")))
-    implementation(project(mapOf("path" to ":fullstack-infrastructure-api")))
-    implementation(project(mapOf("path" to ":fullstack-models")))
-    implementation(project(mapOf("path" to ":fullstack-helm-client")))
-    implementation(project(mapOf("path" to ":fullstack-resource-generator-api")))
+public class NetworkDeploymentConfiguration {
+    InstallType installType;
+    Topology topology;
+
 }

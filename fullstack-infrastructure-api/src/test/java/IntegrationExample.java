@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.base.api.units.StorageUnits;
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.infrastructure.api.InfrastructureManager;
-import com.hedera.fullstack.infrastructure.api.NetworkDeployment;
+import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
+import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
+import com.hedera.fullstack.infrastructure.api.exceptions.NetworkDeploymentNotFoundException;
+import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
 import com.hedera.fullstack.model.InstallType;
-import com.hedera.fullstack.model.Topology;
+import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.resource.generator.api.NodeDetails;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /*
 This code is not supposed to be used
@@ -33,19 +38,19 @@ The only purpose of this code is to show how the API will be used and how pieces
 public class IntegrationExample {
 
     // This the JUNIT / CLI entry point
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException, InvalidConfigurationException {
 
         // This the JUNIT / CLI entry point
         TestTookKit testTookKit = new TestTookKit();
-        Topology hederaNetworkTopology = new Topology.Builder()
-                .setCPU(1)
-                .setRAM(1, StorageUnits.GIGABYTES)
-                .setNodeCount(1)
-                .build(); // supplied by junit or cli
+        NetworkDeploymentConfiguration hederaNetworkNetworkDeploymentConfiguration = new NetworkDeploymentConfiguration();
+//                .setCPU(1)
+//                .setRAM(1, StorageUnits.GIGABYTES)
+//                .setNodeCount(1)
+//                .build(); // supplied by junit or cli
 
         // Step 1. Create the NetworkDeployment
         // who carries the software version, nmt version etc. ?
-        NetworkDeployment networkDeployment = testTookKit.create(hederaNetworkTopology);
+        NetworkDeployment networkDeployment = testTookKit.create(hederaNetworkNetworkDeploymentConfiguration);
         // should have
         // - Junit can fill in more stuff in the builder the config builder
         // - ip and names of the pods created
@@ -90,18 +95,19 @@ public class IntegrationExample {
         InfrastructureManager infraManager;
 
         // This is invoked by the CLI or Junit
-        public NetworkDeployment create(Topology hederaEcosystemTopology) {
-            NetworkDeployment ecosystem =
-                    infraManager.createNetworkDeployment(hederaEcosystemTopology, InstallType.DIRECT_INSTALL);
-            return ecosystem;
+        public NetworkDeployment create(NetworkDeploymentConfiguration hederaEcosystemNetworkDeploymentConfiguration) throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException, InvalidConfigurationException {
+            Future<NetworkDeployment> ecosystem =
+                    infraManager.createNetworkDeploymentAsync(hederaEcosystemNetworkDeploymentConfiguration, InstallType.DIRECT_INSTALL);
+
+            return ecosystem.get();
         }
 
         public void configure(NetworkDeployment networkDeployment) {
             ResourceUtils resourceUtils = null;
             String version = null;
 
-            String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment.getTopology());
-            String platformSettings = resourceUtils.getPlatformSettings(networkDeployment.getTopology());
+            String platformConfig = resourceUtils.getPlatformConfiguration(networkDeployment.getNetworkDeploymentConfiguration());
+            String platformSettings = resourceUtils.getPlatformSettings(networkDeployment.getNetworkDeploymentConfiguration());
             String buildZipURL = resourceUtils.getBuildZipURL(SemanticVersion.ZERO);
 
             // Configuring the platform
@@ -126,7 +132,7 @@ public class IntegrationExample {
             }
         }
 
-        public void deleteNetworkDeployments(String id) {
+        public void deleteNetworkDeployments(String id) throws NetworkDeploymentNotFoundException {
             infraManager.deleteNetworkDeployment(id);
         }
     }

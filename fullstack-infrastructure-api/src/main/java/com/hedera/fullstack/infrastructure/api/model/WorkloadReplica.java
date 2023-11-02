@@ -16,18 +16,24 @@
 
 package com.hedera.fullstack.infrastructure.api.model;
 
+import com.hedera.fullstack.infrastructure.api.model.Component;
+import com.hedera.fullstack.infrastructure.api.model.Workload;
+
 import java.util.List;
 
+/**
+ * A unique indexed instance of {@link Workload}
+ * @param <T> type of the workload
+ */
 public class WorkloadReplica<T extends Workload> {
 
-    List<Component> components;
-    // global index in the NetworkDeployment
-    int index;
+    private List<Component> components;
+    // global index across all clusters in the NetworkDeployment
+    private final int index;
 
     public int index() {
         return index;
     }
-    ;
 
     public WorkloadReplica(List<Component> components, int index) {
         this.components = components;

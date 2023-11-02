@@ -14,16 +14,29 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.api.model.mirrornode;
+package com.hedera.fullstack.infrastructure.api.model.mirrornode.component;
 
-import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
-import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.Component;
+import com.hedera.fullstack.infrastructure.api.traits.LogAware;
+import com.hedera.fullstack.infrastructure.api.traits.ServiceAware;
 
-import java.util.List;
+import java.net.InetSocketAddress;
+import java.util.Map;
 
-public class MirrorNode extends AbstractWorkload {
+public class Importer implements Component, ServiceAware, LogAware {
 
-    public MirrorNode(Cluster cluster, List list) {
-        super(cluster, list);
+    @Override
+    public void getLogs() {
+
+    }
+
+    @Override
+    public void getLogs(String containerName) {
+
+    }
+
+    @Override
+    public Map<String, InetSocketAddress> getEndpoints() {
+        return null;
     }
 }
