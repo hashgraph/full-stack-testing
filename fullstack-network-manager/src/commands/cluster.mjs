@@ -304,8 +304,7 @@ export class ClusterCommand extends BaseCommand {
         }
     }
 
-    prepareValuesArg(argv) {
-        let {prometheusStack, minio} = argv
-        return ` --set cloud.prometheusStack.enabled=${prometheusStack} --set cloud.minio.enabled=${minio}`
+    prepareValuesArg(prometheusStackEnabled, minioEnabled) {
+        return ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled} --set cloud.minio.enabled=${minioEnabled}`
     }
 }
