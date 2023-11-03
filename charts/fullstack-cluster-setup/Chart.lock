@@ -8,5 +8,8 @@ dependencies:
 - name: grafana-agent
   repository: https://grafana.github.io/helm-charts
   version: 0.27.1
-digest: sha256:1d98a6cef658a43c687cf9cfa773f8cb7f5b2468b7e38e9cbb4f99cbcfec6651
-generated: "2023-10-27T14:52:43.529303+01:00"
+- name: gateway-helm
+  repository: oci://docker.io/envoyproxy
+  version: v0.0.0-latest
+digest: sha256:e1a03b92eab1c8c7f21fb7d7640e9049086fc97c6b1549598457dc944801e7c7
+generated: "2023-11-03T14:01:11.306643Z"

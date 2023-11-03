@@ -49,3 +49,10 @@ export const deployMinio = {
     alias: 'o',
     type: 'boolean'
 }
+
+export const deployEnvoyGateway = {
+    describe: 'Deploy envoy gateway',
+    default: true,
+    alias: 'e',
+    type: 'boolean'
+}
