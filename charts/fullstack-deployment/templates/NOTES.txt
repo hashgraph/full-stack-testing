@@ -21,13 +21,3 @@ To access the gossip port of node 0 (starting port 51000 for node 0 on the gatew
 
 To access the GRPC web port of node 5 (starting port 18000 for node 0 on the gateway):
   kubectl port-forward "svc/${ENVOY_SERVICE}" -n envoy-gateway-system 18005:18005 &
-
-
-
-
-
-Special note:
-In the future, the fullstack network manager CLI tool will also support this port-forwarding, as follows:
-  npm install fullstack-network-manager
-  fsnetman expose hedera-explorer ${LOCAL_PORT}
-  fsnetman expose grpc -node 0 ${LOCAL_PORT}
