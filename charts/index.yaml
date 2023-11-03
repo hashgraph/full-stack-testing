@@ -1,0 +1,56 @@
+apiVersion: v1
+entries:
+  fullstack-cluster-setup:
+  - apiVersion: v2
+    appVersion: 0.12.0
+    created: "2023-11-03T17:00:54.706902299Z"
+    dependencies:
+    - alias: minio-operator
+      condition: cloud.minio.enabled
+      name: operator
+      repository: https://operator.min.io/
+      version: 5.0.7
+    - alias: prometheus-stack
+      condition: cloud.prometheusStack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 52.0.1
+    - condition: cloud.grafanaAgent.enabled
+      name: grafana-agent
+      repository: https://grafana.github.io/helm-charts
+      version: 0.27.1
+    description: A Helm chart to setup shared resources for fullstack-testing
+    digest: f5784680679789e82df7ed0e3192024aa5abc7eb32c30b718d8483caab5c4d91
+    name: fullstack-cluster-setup
+    type: application
+    urls:
+    - https://hashgraph.github.io/full-stack-testing/charts/fullstack-cluster-setup-0.12.0.tgz
+    version: 0.12.0
+  fullstack-deployment:
+  - apiVersion: v2
+    appVersion: 0.12.0
+    created: "2023-11-03T17:00:54.747285256Z"
+    dependencies:
+    - condition: hedera-explorer.enabled
+      name: hedera-explorer
+      repository: ""
+      version: 0.2.0
+    - alias: hedera-mirror-node
+      condition: hedera-mirror-node.enabled
+      name: hedera-mirror
+      repository: https://hashgraph.github.io/hedera-mirror-node/charts
+      version: 0.86.0
+    - alias: minio-server
+      condition: cloud.minio.enabled
+      name: tenant
+      repository: https://operator.min.io/
+      version: 5.0.7
+    description: A Helm chart for the fullstack deployment
+    digest: 821aae47f8321a3e1cd3085c2c85de1588c66c263015230955cca1f64b870594
+    kubeVersion: '>=1.25.0-0'
+    name: fullstack-deployment
+    type: application
+    urls:
+    - https://hashgraph.github.io/full-stack-testing/charts/fullstack-deployment-0.12.0.tgz
+    version: 0.12.0
+generated: "2023-11-03T17:00:54.670556328Z"
