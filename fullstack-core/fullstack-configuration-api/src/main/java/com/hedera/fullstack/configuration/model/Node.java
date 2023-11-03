@@ -16,4 +16,4 @@
 
 package com.hedera.fullstack.configuration.model;
 
-public record Node(int RAM, int CPU, int nodeID, int nodeAccountID) {}
+public record Node(int ram, int cpu, int nodeID, int nodeAccountID) {}

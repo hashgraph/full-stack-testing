@@ -22,6 +22,6 @@ plugins {
 
 dependencies {
     api(platform(project(":fullstack-bom")))
-    implementation(project(mapOf("path" to ":fullstack-helm-client")))
-    implementation(project(mapOf("path" to ":fullstack-configuration-api")))
+    implementation(project(":fullstack-helm-client"))
+    implementation(project(":fullstack-configuration-api"))
 }
