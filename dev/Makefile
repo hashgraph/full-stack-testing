@@ -24,10 +24,11 @@ SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 
 # Setup variables
 SCRIPTS_DIR=$(PWD)/scripts
-CHART_DIR=$(PWD)/../charts/hedera-network
+CHART_DIR=$(PWD)/../charts/fullstack-deployment
 SCRIPT_NAME=direct-install.sh
 TMP_DIR=${SCRIPTS_DIR}/../temp
 
+CLUSTER_SETUP_VALUES_FILE=${TMP_DIR}/cluster-values.yaml
 CHART_VALUES_FILES= # extra values
 
 # scripts
@@ -57,18 +58,20 @@ uninstall-chart:
 
 .PHONY: update-helm-dependencies
 update-helm-dependencies:
-	helm dependency update ../charts/hedera-network
+	helm dependency update ../charts/fullstack-deployment
+	helm dependency update ../charts/fullstack-cluster-setup
+
+.PHONY: init-shared
+init-shared:
+	echo "cloud:" > ${CLUSTER_SETUP_VALUES_FILE}
 
 .PHONY: deploy-shared
-deploy-shared: update-helm-dependencies deploy-gateway-api deploy-prometheus-operator deploy-minio-operator-if-required
+deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-prometheus-stack-if-required enable-minio-operator-if-required
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 
 .PHONY: destroy-shared
 destroy-shared:
-	-$(MAKE) source "${SCRIPTS_DIR}/main.sh" && destroy_shared
-	-$(MAKE) undeploy-minio-operator
-	-$(MAKE) destroy-prometheus-operator
-	-$(MAKE) destroy-gateway-api # should be destroyed at the end when no more gateway-api CRDs are required
+	source "${SCRIPTS_DIR}/main.sh" && destroy_shared
 
 .PHONY: deploy-chart
 deploy-chart:
@@ -161,13 +164,21 @@ destroy-gateway-api:
 	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
 
 ######################################### Telemetry #################################
-.PHONY: deploy-prometheus-operator
-deploy-prometheus-operator:
-	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus-operator
+.PHONY: enable-prometheus-stack-if-required
+enable-prometheus-stack-if-required:
+	@$(MAKE) is-prometheus-operator-installed || $(MAKE) enable-prometheus-stack
 
-.PHONY: destroy-prometheus-operator
-destroy-prometheus-operator:
-	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-operator
+.PHONY: enable-prometheus-stack
+enable-prometheus-stack:
+	@echo ">> Enabling prometheus stack..."; \
+	echo "  prometheusStack:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
+	echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
+
+.PHONY: is-prometheus-operator-installed
+is-prometheus-operator-installed:
+	@echo ">> Checking for prometheus operator..."; \
+	kubectl get pods --all-namespaces | grep "prometheus-operator\|pr-operator" &> /dev/null && { echo "Found prometheus operator."; exit 0; }; \
+	echo "Prometheus operator not found."; exit 1
 
 .PHONY: deploy-grafana-tempo
 deploy-grafana-tempo:
@@ -178,12 +189,19 @@ destroy-grafana-tempo:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_grafana && destroy_grafana_tempo
 
 .PHONY: deploy-prometheus
-deploy-prometheus: deploy-prometheus-operator
+deploy-prometheus: init-shared deploy-gateway-api enable-prometheus-stack
+	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
+	-$(MAKE) wait-for-prometheus-operator
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus && expose_prometheus
+
+.PHONY: wait-for-prometheus-operator
+wait-for-prometheus-operator:
+	kubectl wait --for=condition=Ready pods -l app.kubernetes.io/name=prometheus-operator --timeout 300s --all-namespaces
 
 .PHONY: destroy-prometheus
 destroy-prometheus:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_prometheus && destroy-prometheus
+	-$(MAKE) destroy-shared
 
 .PHONY: deploy-telemetry-stack
 deploy-telemetry-stack: deploy-prometheus deploy-grafana-tempo
@@ -195,30 +213,21 @@ destroy-telemetry-stack:
 	-${MAKE} destroy-grafana-tempo
 
 ######################################### MinIO #################################
-.PHONY: deploy-minio-operator
-deploy-minio-operator:
-	@echo ">> Deploying minio operator..."; \
-	helm install --repo https://operator.min.io/ --namespace=minio-operator --create-namespace --version 5.0.7 minio-operator operator && \
-	echo ">> Waiting for minio operator to be available (timeout 300s)..." && \
-	kubectl --namespace=minio-operator  wait --for=condition=Available --timeout=300s deployment.apps/minio-operator && \
-	sleep 5
+.PHONY: enable-minio-operator
+enable-minio-operator:
+	@echo ">> Enabling minio operator..."; \
+	echo "  minio:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
+	echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
 .PHONY: is-minio-operator-installed
 is-minio-operator-installed:
 	@echo ">> Checking for minio operator..."; \
-	helm list --namespace=minio-operator | grep minio-operator &> /dev/null && { echo "Found minio operator."; exit 0; }; \
+	kubectl get pods --all-namespaces | grep minio-operator &> /dev/null && { echo "Found minio operator."; exit 0; }; \
 	echo "Minio operator not found."; exit 1
 
-.PHONY: deploy-minio-operator-if-required
-deploy-minio-operator-if-required:
-	@$(MAKE) is-minio-operator-installed || $(MAKE) deploy-minio-operator
-
-
-.PHONY: undeploy-minio-operator
-undeploy-minio-operator:
-	echo ">> Deleting minio operator..." && \
-	helm delete --namespace=minio-operator minio-operator
-
+.PHONY: enable-minio-operator-if-required
+enable-minio-operator-if-required:
+	@$(MAKE) is-minio-operator-installed || $(MAKE) enable-minio-operator
 
 ######################################### Helm Chart Test #################################
 .PHONY: helm-test

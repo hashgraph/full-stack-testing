@@ -46,6 +46,11 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: write
+  packages: write
+  pages: write
+
 jobs:
   prepare-release:
     name: Release / Prepare
@@ -54,12 +59,12 @@ jobs:
       version: ${{ steps.tag.outputs.version }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
+        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
         with:
           node-version: 18
 
@@ -71,6 +76,7 @@ jobs:
 
       - name: Calculate Next Version
         env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_AUTHOR_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
@@ -91,8 +97,8 @@ jobs:
       custom-job-label: Maven Central
       new-version: ${{ needs.prepare-release.outputs.version }}
       dry-run-enabled: ${{ github.event.inputs.dry-run-enabled == 'true' }}
-      java-distribution: ${{ github.event.inputs.java-distribution || '17.0.7' }}
-      java-version: ${{ github.event.inputs.java-version || 'temurin' }}
+      java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
+      java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
     secrets:
       gpg-key-contents: ${{ secrets.GPG_KEY_CONTENTS }}
@@ -109,7 +115,7 @@ jobs:
       - prepare-release
     steps:
       - name: Checkout repository
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
@@ -154,16 +160,55 @@ jobs:
           push: ${{ github.event.inputs.dry-run-enabled != 'true' }}
           tags: ghcr.io/${{ github.repository }}/kubectl-bats:${{ needs.prepare-release.outputs.version }}
 
+  publish-helm-charts:
+    name: Publish / Helm Charts
+    runs-on: [self-hosted, Linux, medium, ephemeral]
+    needs:
+      - prepare-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Setup Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+        with:
+          version: "v3.12.3" # helm version
+
+      - name: Setup Java
+        uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
+        with:
+          distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
+          java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        with:
+          gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
+
+      - name: Apply Version Number Update (Explicit)
+        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        with:
+          gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
+          arguments: versionAsSpecified --scan -PnewVersion=${{ needs.prepare-release.outputs.version }}
+
+      - name: Publish Helm Charts
+        uses: stefanprodan/helm-gh-pages@0ad2bb377311d61ac04ad9eb6f252fb68e207260 #v1.7.0
+        if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_dir: charts
+
   create-github-release:
     name: Github / Release
     runs-on: [self-hosted, Linux, medium, ephemeral]
     needs:
       - publish-maven-central
       - publish-docker-image
+      - publish-helm-charts
     if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           fetch-depth: 0
@@ -191,7 +236,7 @@ jobs:
           git_tag_gpgsign: false
 
       - name: Setup Java
-        uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3.12.0
+        uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
         with:
           distribution: ${{ inputs.java-distribution }}
           java-version: ${{ inputs.java-version }}
@@ -206,7 +251,7 @@ jobs:
             dependency-check-data
 
       - name: Setup Node
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
+        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
         with:
           node-version: 18
 
@@ -218,6 +263,7 @@ jobs:
 
       - name: Publish Semantic Release
         env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           GIT_AUTHOR_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_AUTHOR_EMAIL: ${{ secrets.GIT_USER_EMAIL }}

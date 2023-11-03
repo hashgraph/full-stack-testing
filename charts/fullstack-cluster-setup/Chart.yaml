@@ -22,3 +22,21 @@ version: 0.8.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "0.8.0"
+
+dependencies:
+  - name: operator
+    alias: minio-operator
+    version: 5.0.7
+    repository: https://operator.min.io/
+    condition: cloud.minio.enabled
+
+  - name: kube-prometheus-stack
+    alias: prometheus-stack
+    version: 52.0.1
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: cloud.prometheusStack.enabled
+
+  - name: grafana-agent
+    version: 0.27.1
+    repository: https://grafana.github.io/helm-charts
+    condition: cloud.grafanaAgent.enabled

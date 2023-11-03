@@ -8,7 +8,13 @@
       }
     ],
     "@semantic-release/git",
-    "@semantic-release/github"
+    "@semantic-release/github",
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "fullstack-network-manager"
+      }
+    ]
   ],
   "verifyRelease": [
     [
@@ -26,7 +32,9 @@
       {
         "assets": [
           "gradle.properties",
-          "charts/hedera-network/Chart.yaml"
+          "charts/fullstack-deployment/Chart.yaml",
+          "charts/fullstack-cluster-setup/Chart.yaml",
+          "charts/fullstack-network-manager/package.json"
         ]
       }
     ]
@@ -42,6 +50,11 @@
     },
     {
       "name": "alpha/*",
+      "prerelease": "alpha",
+      "channel": "alpha"
+    },
+    {
+      "name": "ci/*",
       "prerelease": "alpha",
       "channel": "alpha"
     },

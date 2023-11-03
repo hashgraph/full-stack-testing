@@ -1,0 +1,442 @@
+# WARNING: Use double quotes for all values. This is because we need to be careful about booleans.
+
+global:
+  namespaceOverride: ""
+
+# cloud configuration
+cloud:
+  buckets:
+    streamBucket: "fst-streams"
+    backupBucket: "fst-backups"
+  s3:
+    enabled: "true"
+  gcs:
+    enabled: "true"
+  minio:
+    enabled: true
+
+# telemetry configurations
+telemetry:
+  prometheus:
+    svcMonitor:
+      enabled: "true"
+
+# reduce default termination grace period
+terminationGracePeriodSeconds: 10
+
+# helm test container
+tester:
+  deployPodMonitor: "true"
+  clusterRoleName: "pod-monitor-role" # this is a shared cluster role for all namespaces
+  image:
+    registry: "ghcr.io"
+    repository: "hashgraph/full-stack-testing/kubectl-bats"
+    tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
+    pullPolicy: "IfNotPresent"
+  resources: {}
+
+# gateway-api configuration
+gatewayApi:
+  gatewayClass:
+    name: "fst-gateway-class" # this is a shared gateway class for all namespaces
+  gateway:
+    name: "fst"
+    enabled: "true"
+    listeners:
+      gossip:
+        port: 51000 # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
+        enabled: "false" # by default, we don't need to expose the gossip ports
+      grpc: # non-tls-grpc-port
+        port: 52000 # i.e. node0:52000 ... node999: 52999, points to 50211 port in haproxy or network-node
+        enabled: "true"
+      grpcs: # tls-grpc-port
+        port: 53000 # i.e. node0:53000 ... node999: 53999, points to 50212 port in haproxy or network-node
+        enabled: "true"
+      grpcWeb:
+        port: 18000 # i.e. node0:18000 ... node999: 18999, points to 8080 port in envoy proxy
+        enabled: "true"
+      httpDebug: # this helps debugging gateway if needed by provisioning a mock http app
+        port: 3100
+        enabled: "true"
+      tcpDebug: # this helps debugging gateway if needed by provisioning a mock grpc app
+        port: 3101
+        enabled: "true"
+      hederaExplorer:
+        port: 8888 # points to 80 port on fst-hedera-explorer
+        enabled: "true"
+  route:
+    hostname: "{{ .node.name }}.fst.local"
+
+# default settings for a single node
+# This default configurations can be overridden for each node in the hedera.nodes section.
+defaults:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 100Mi
+    limits:
+      cpu: 1
+      memory: 2G
+  root: # root container
+    image:
+      registry: "ghcr.io"
+      repository: "hashgraph/full-stack-testing/ubi8-init-java17"
+      tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
+      pullPolicy: "IfNotPresent"
+    resources: {}
+  haproxy:
+    enabled: "true"
+    nameOverride: "haproxy"
+    image:
+      registry: "docker.io"
+      repository: "haproxy"
+      tag: "2.4-alpine"
+      pullPolicy: "IfNotPresent"
+    resources: {}
+    loadBalancerEnabled: "false"
+  envoyProxy:
+    enabled: "true"
+    nameOverride: "envoy-proxy"
+    image:
+      registry: "docker.io"
+      repository: "envoyproxy/envoy"
+      tag: "v1.21.1"
+      pullPolicy: "IfNotPresent"
+    resources: {}
+    loadBalancerEnabled: "false"
+  sidecars:
+    recordStreamUploader:
+      enabled: "true"
+      nameOverride: "record-stream-uploader"
+      image:
+        registry: "gcr.io"
+        repository: "hedera-registry/uploader-mirror"
+        tag: "1.3.0"
+        pullPolicy: "IfNotPresent"
+      config:
+        debug: "true"
+        compression: "true"
+        sidecar: "true"
+        reaper:
+          enabled: "true"
+          minKeep: 1
+          interval: 1
+          defaultBackoff: 1
+        signature:
+          require: "true"
+          prioritize: "true"
+      resources: {}
+    eventStreamUploader:
+      enabled: "true"
+      nameOverride: "event-stream-uploader"
+      image:
+        registry: "gcr.io"
+        repository: "hedera-registry/uploader-mirror"
+        tag: "1.3.0"
+        pullPolicy: "IfNotPresent"
+      config:
+        debug: "true"
+        compression: "true"
+        reaper:
+          enabled: "true"
+          minKeep: 1
+          interval: 1
+          defaultBackoff: 1
+        signature:
+          require: "true"
+          prioritize: "true"
+      resources: {}
+    accountBalanceUploader:
+      enabled: "true"
+      nameOverride: "account-balance-uploader"
+      image:
+        registry: gcr.io
+        repository: hedera-registry/uploader-mirror
+        tag: "1.3.0"  # Defaults to the chart's app version if empty
+        pullPolicy: "IfNotPresent"
+      config:
+        debug: "true"
+        compression: "true"
+        reaper:
+          enabled: "true"
+          minKeep: 1
+          interval: 1
+          defaultBackoff: 1
+        signature:
+          require: "true"
+          prioritize: "true"
+      resources: {}
+    backupUploader:
+      enabled: "true"
+      nameOverride: "backup-uploader"
+      image:
+        registry: "gcr.io"
+        repository: "hedera-registry/hedera-backups"
+        tag: "0.6.0"
+        pullPolicy: "IfNotPresent"
+      config:
+        backupBucket: "backup"
+      resources: {}
+    otelCollector:
+      enabled: "true"
+      nameOverride: ""
+      image:
+        registry: "docker.io"
+        repository: "otel/opentelemetry-collector-contrib"
+        tag: "0.72.0"
+        pullPolicy: "IfNotPresent"
+      resources: {}
+      receivers:
+        prometheus:
+          scrapeTargets: [ 0.0.0.0:9999 ]  # hedera node metrics are exposed at port 9999
+          scrapeInterval: 5s
+      exporters:
+        otlp:
+          endpoint: tempo:4317
+          tls:
+            insecure: true
+        prometheus:
+          tls:
+            insecure: true
+        prometheusRemoteWrite:
+          enabled: "false"
+          endpoint: "" # e.g. http://prometheus.<NAMESPACE>.svc:9090/api/v1/write
+          tls:
+            insecure: true
+
+# This configures the minio tenant subchart
+# Reference for configuration: https://github.com/minio/operator/blob/master/helm/tenant/values.yaml
+minio-server:
+  secrets:
+    # This secret has [accessKey, secretKey] and will be randomly generated by helm
+    existingSecret: minio-secrets
+  tenant:
+    buckets:
+      - name: fst-streams
+      - name: fst-backups
+    name: minio
+    pools:
+      - servers: 1
+        name: pool-1
+        volumesPerServer: 1
+        size: 10Gi
+        nodeSelector:
+          fullstack-scheduling.io/role: network
+        tolerations:
+          - key: "fullstack-scheduling.io/os"
+            operator: "Equal"
+            value: "linux"
+            effect: "NoSchedule"
+          - key: "fullstack-scheduling.io/role"
+            operator: "Equal"
+            value: "network"
+            effect: "NoSchedule"
+    configuration:
+      name: minio-secrets
+    certificate:
+      requestAutoCert: false
+
+# hedera mirror node configuration
+hedera-mirror-node:
+  enabled: true
+  graphql: # not needed for default FST use case
+    enabled: false
+  rosetta: # not needed for default FST use case
+    enabled: false
+  monitor: # not needed for default FST use case
+    enabled: false
+  redis:
+    enabled: false # not needed for default FST use case
+  global:
+    namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+  # importer is a component of the hedera mirror node
+  # config for subchart hedera-mirror/importer
+  importer:
+    nodeSelector:
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+    envFrom:
+      - secretRef:
+          name: mirror-passwords
+      - secretRef:
+          name: "{{ .Release.Name }}-redis"
+      - secretRef:
+          name: uploader-mirror-secrets
+    # This is a single node address book, node account id = 0.0.3
+    # The addressbook.bin file updates will be handled by infrastructure code
+    addressBook: CvYGCgwxMC45Ni4xMzEuMzYaBTAuMC4zIswGMzA4MjAxYTIzMDBkMDYwOTJhODY0ODg2ZjcwZDAxMDEwMTA1MDAwMzgyMDE4ZjAwMzA4MjAxOGEwMjgyMDE4MTAwYTEyMDA2ZjI1MjcyNDJjZDdmNTNiOWM0ZmQ1ZGU4NjljNTYyZmY0ZWQ4YTRhYjNhNjI5NjNmM2Y4MTg4YmU3OGYyNThlYWY0MmI5YzNlM2U4ZjU4Njk3MTYwNDEzYmJmNzdhYWRmYWYwZDlmZmQ4Njk4NGIzYmM0ZmI1ZjAyZTExZThhY2I2ZWM2N2U0MjY0YWRkY2ExM2ZmZGU4MzY3NTc4YzI3OTJmYzZhZTMyNmU3YjM0ODU2ZDIzZjAyNTc0ZjVhMjc0ODE1NjAwMzJkNzM3NDlkYWY5ZDMzMmE3ODgzNTEwZTYwZWEyMjI4ODlhM2JmYzNiZWRmMzUwZjNhMzZjYWRhMzliOTQ1MzljNzRmYjgyNjU2NzhiZDVjMTQ4ZmJjOTE2OWFkY2FjZjY3MTliOTJlZThkNDJhOWQyZjg5MjNjYzRmZTNiNDk0YzQ2N2Y0ZTk4YTJhNDllMGEwZWY1YWE0MzNjYmVjNDM4YmFhMjU2YWU2MWEwNTkwY2U0ZTY3ZDBiM2ZlNWYyZGE5YWQ5MGMyNmUyMjlkMjhkNjc5NDU2OTc4ZDY1NzM1NzNlYmI0NjIzOWJhZDRhYmZhYjRmZmU2NGVhNGEzOTdjNmJjNWY3MTc1ZTFhYzM2NDg4ZjE3YzY3NzNiNWVkOTM0MTVlNTdjNDFjNmNkODg2NmRiZDEyMzYwMDYyMzM5Y2IxNTRkODVhZDFhZWNkMWQ3NjBhMDk0MWQ4MGUyOGZlMjQ2MDMzYTg2OGRiYmM4OTc1ZjM2MDQ0MzFmY2U5YWY5MWRjNDI1NDBhYjA0YjFiYmVjMjFmMzVmNzVmMzBhZjZmMDVjODk4NjQyOTM4NmUyYjQzOWJmZDJmZDU5MTJjODI2MDA4MDFlOWMwODU3ZjE2NWU4ODdmMjIzM2RjMmMwOThiYTEyNjdiMDU5ZGI4YTJkYjcxNGZlNTA2NjhkYmYwOTM2MDRhNWRmM2MyMzIxNDY3MjMyMTFjZTU4NTUyNjM4ZmFlOWZjMDY0YTdmMDliMDIwMzAxMDAwMTICGANCCgoECmCDJBC/hwNQAQ==
+    config:
+      # importer is a springboot app, its application.yaml configuration starts here
+      # This config is mounted at [/usr/etc/hedera/application.yaml] in the importer pod
+      hedera:
+        mirror:
+          importer:
+            network: other
+            downloader:
+              allowAnonymousAccess: false
+              bucketName: "fst-streams"
+              # for s3 configuration of mirror node look at uploader-mirror-secrets.yaml
+            parser:
+              record:
+                entity:
+                  notify:
+                    enabled: true
+                  redis:
+                    enabled: false
+      management:
+        endpoint:
+          health:
+            group:
+              readiness:
+                exclude: redis
+  grpc:
+    nodeSelector:
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+    config:
+      hedera:
+        mirror:
+          grpc:
+            listener:
+              type: NOTIFY
+      management:
+        endpoint:
+          health:
+            group:
+              readiness:
+                exclude: redis
+  postgresql:
+    postgresql:
+      nodeSelector:
+        fullstack-scheduling.io/role: network
+      tolerations:
+        - key: "fullstack-scheduling.io/os"
+          operator: "Equal"
+          value: "linux"
+          effect: "NoSchedule"
+        - key: "fullstack-scheduling.io/role"
+          operator: "Equal"
+          value: "network"
+          effect: "NoSchedule"
+    pgpool:
+      replicaCount: 0
+  rest:
+    nodeSelector:
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+    monitor:
+      enabled: false
+  web3:
+    nodeSelector:
+      fullstack-scheduling.io/role: network
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+
+# hedera explorer configuration
+hedera-explorer:
+  enabled: true
+  nodeSelector:
+    fullstack-scheduling.io/role: network
+  tolerations:
+    - key: "fullstack-scheduling.io/os"
+      operator: "Equal"
+      value: "linux"
+      effect: "NoSchedule"
+    - key: "fullstack-scheduling.io/role"
+      operator: "Equal"
+      value: "network"
+      effect: "NoSchedule"
+  global:
+    namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+  # The hedera explorer UI /api url will proxy  all request to mirror node
+  #
+  # Without this we would need to expose the mirror node rest API publicly and specify its public url in the network config below
+  proxyPass:
+    /api: "http://{{ .Release.Name }}-rest"
+
+  # In the json config below we are using the url as "/", instead of a regular http://mainnet.url
+  # This makes the explorer UI make a relative request to its own url
+  # This in combination with proxyPass above saves us the need to expose mirror node URL publicly
+  config: |
+    [
+      {
+        "name": "localnet",
+        "displayName": "LOCALNET",
+        "url": "/",
+        "ledgerID": "03"
+      }
+    ]
+
+# common deployment configuration
+deployment:
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector:
+    fullstack-scheduling.io/role: network
+  tolerations:
+    - key: "fullstack-scheduling.io/os"
+      operator: "Equal"
+      value: "linux"
+      effect: "NoSchedule"
+    - key: "fullstack-scheduling.io/role"
+      operator: "Equal"
+      value: "network"
+      effect: "NoSchedule"
+  # Specify pod affinity
+  # Use complete affinity spec starting with key "nodeAffinity:"
+  # Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  affinity: {}
+  priorityClassName: {}
+  ## PodDisruptionBudget for fullstack testing pods
+  ## Default backend Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param deployment.podDisruptionBudget.create Enable Pod Disruption Budget configuration
+  ## @param deployment.podDisruptionBudget.minAvailable Minimum number/percentage of pods that should remain scheduled
+  ## @param deployment.podDisruptionBudget.maxUnavailable Maximum number/percentage of pods that should remain scheduled
+  ##
+  podDisruptionBudget:
+    create: true
+    minAvailable: 1
+    maxUnavailable: ""
+
+# hedera node configuration
+# Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
+hedera:
+  nodes:
+    - name: node0
+      accountId: 0.0.3
+    - name: node1
+      accountId: 0.0.4
+    - name: node2
+      accountId: 0.0.5

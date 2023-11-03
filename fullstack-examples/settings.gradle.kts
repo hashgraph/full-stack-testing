@@ -16,14 +16,13 @@
 
 pluginManagement {
     includeBuild("../build-logic")
-    includeBuild("..")
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+    includeBuild("../fullstack-gradle-plugin")
 }
+
+plugins { id("com.hedera.fullstack.settings") }
 
 rootProject.name = "fullstack-examples"
 
 includeBuild("..")
+
+includeBuild("../build-logic")

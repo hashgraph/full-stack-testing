@@ -44,7 +44,13 @@ class Utils {
             updateHelmCharts(project) {chart ->
                 updateHelmChartVersion(project, chart.name, newVersion)
             }
-         }
+        }
+
+        @JvmStatic
+        fun updateFullstackNetworkManagerVersion(project: Project, newVersion: SemVer) {
+            val manifestFile = File(project.rootProject.projectDir, "fullstack-network-manager/package.json")
+            updateStringInFile(manifestFile, "\"version\":", "  \"version\": \"${newVersion}\",")
+        }
 
         @JvmStatic
         fun updateHelmChartAppVersion(project: Project, newVersion: SemVer) {

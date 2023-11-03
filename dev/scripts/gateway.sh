@@ -287,3 +287,37 @@ function test_tcp_route() {
 
   log_time "test_tcp_route"
 }
+
+function test_hedera_explorer_route() {
+  local local_port=8888
+  local gateway_port=8888 # needs to match the port specified at: $.Values.gatewayApi.gateway.listeners.hederaExplorer
+  expose_envoy_gateway_svc ${local_port} ${gateway_port} || return 1
+
+  local route_host="fst.local"
+
+  sleep 1
+
+  echo "Checking ${route_host}"
+  echo "-----------------------------------------------------------------------------------------------------"
+  echo ""
+
+  local status=$(curl --header "Host: ${route_host}" -o /dev/null -s -w "%{http_code}\n" localhost:${local_port})
+
+  echo ""
+  echo "********************************************************"
+  if [[ $status -eq 200 ]]; then
+    echo "SUCCESS: HederaExplorerRoute ${route_host}:${gateway_port}"
+  else
+    curl --header "Host: ${route_host}" -vvv localhost:${local_port}
+    echo ""
+    echo "FAIL: HederaExplorerRoute ${route_host}:${gateway_port}"
+  fi
+  echo "********************************************************"
+  echo ""
+
+  echo "Cleanup"
+  echo "-----------------------------------------------------------------------------------------------------"
+  unexpose_envoy_gateway_svc || true
+
+  log_time "test_hedera_explorer_route"
+}

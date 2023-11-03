@@ -46,7 +46,7 @@ function deploy_fullstack_cluster_setup_chart() {
   echo "-----------------------------------------------------------------------------------------------------"
   local count=$(helm list --all-namespaces -q | grep -c "fullstack-cluster-setup")
   if [[ $count -eq 0 ]]; then
-    helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}"
+    helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}" --values "${CLUSTER_SETUP_VALUES_FILE}"
   else
     echo "fullstack-cluster-setup chart is already installed"
     echo ""
@@ -92,7 +92,7 @@ function install_chart() {
   echo "SCRIPT_NAME: ${node_setup_script}"
   echo "Additional values: ${CHART_VALUES_FILES}"
   echo "-----------------------------------------------------------------------------------------------------"
-  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
+  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${RELEASE_NAME}")
   if [[ $count -eq 0 ]]; then
     if [ "${node_setup_script}" = "nmt-install.sh" ]; then
       nmt_install
@@ -100,56 +100,67 @@ function install_chart() {
       direct_install
     fi
   else
-    echo "${HELM_RELEASE_NAME} is already installed"
+    echo "${RELEASE_NAME} is already installed"
   fi
 
   log_time "install_chart"
 }
 
 function uninstall_chart() {
-  [[ -z "${HELM_RELEASE_NAME}" ]] && echo "ERROR: [uninstall_chart] Helm release name is required" && return 1
+  [[ -z "${RELEASE_NAME}" ]] && echo "ERROR: [uninstall_chart] Helm release name is required" && return 1
 
   echo ""
-  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${HELM_RELEASE_NAME}")
+  local count=$(helm list -q -n "${NAMESPACE}" | grep -c "${RELEASE_NAME}")
   if [[ $count -ne 0 ]]; then
-    echo "Uninstalling helm chart ${HELM_RELEASE_NAME} in namespace ${NAMESPACE}... "
+    echo "Uninstalling helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}... "
     echo "-----------------------------------------------------------------------------------------------------"
- 	  helm uninstall -n "${NAMESPACE}" "${HELM_RELEASE_NAME}"
+ 	  helm uninstall -n "${NAMESPACE}" "${RELEASE_NAME}"
  	  sleep 10
-    echo "Uninstalled helm chart ${HELM_RELEASE_NAME} in namespace ${NAMESPACE}"
+    echo "Uninstalled helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}"
   else
-    echo "Helm chart '${HELM_RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
+    echo "Helm chart '${RELEASE_NAME}' not found in namespace ${NAMESPACE}. Nothing to uninstall. "
  	fi
 
-  kubectl delete ns "${NAMESPACE}" || true
+  # it is needed for GKE deployment
+  local has_secret
+  has_secret=$(kubectl get secret | grep -c "sh.helm.release.v1.${RELEASE_NAME}.*")
+  if [[ $has_secret ]]; then
+    kubectl delete secret "sh.helm.release.v1.${RELEASE_NAME}.v1" || true
+  fi
+
+  local has_postgres_pvc
+  has_postgres_pvc=$(kubectl get pvc --no-headers -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}" | wc -l)
+  if [[ $has_postgres_pvc ]]; then
+    kubectl delete pvc -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}"
+  fi
 
   log_time "uninstall_chart"
 }
 
 function nmt_install() {
-  [[ -z "${HELM_RELEASE_NAME}" ]] && echo "ERROR: [nmt_install] Helm release name is required" && return 1
+  [[ -z "${RELEASE_NAME}" ]] && echo "ERROR: [nmt_install] Helm release name is required" && return 1
   [[ -z "${NAMESPACE}" ]] && echo "ERROR: [nmt_install] Namespace name is required" && return 1
 
   if [[ -z "${CHART_VALUES_FILES}" ]]; then
-    helm install "${HELM_RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind
+    helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind
   else
-    helm install "${HELM_RELEASE_NAME}" -n "${NAMESPACE}"  "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}" --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind
+    helm install "${RELEASE_NAME}" -n "${NAMESPACE}"  "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}" --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind
   fi
 }
 
 function direct_install() {
-  [[ -z "${HELM_RELEASE_NAME}" ]] && echo "ERROR: [direct_install] Helm release name is required" && return 1
+  [[ -z "${RELEASE_NAME}" ]] && echo "ERROR: [direct_install] Helm release name is required" && return 1
   [[ -z "${NAMESPACE}" ]] && echo "ERROR: [direct_install] Namespace name is required" && return 1
 
   if [[ -z "${CHART_VALUES_FILES}" ]]; then
-    helm install "${HELM_RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}"
+    helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}"
   else
-    helm install "${HELM_RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}"
+    helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}"
   fi
 }
 
 function run_helm_chart_tests() {
-  [[ -z "${HELM_RELEASE_NAME}" ]] && echo "ERROR: [run_helm_chart_tests] Helm release name is required" && return 1
+  [[ -z "${RELEASE_NAME}" ]] && echo "ERROR: [run_helm_chart_tests] Helm release name is required" && return 1
 
   setup_kubectl_context
 
@@ -160,7 +171,7 @@ function run_helm_chart_tests() {
   echo "Running helm chart tests (takes ~5m, timeout 15m)... "
   echo "-----------------------------------------------------------------------------------------------------"
 
-	helm test "${HELM_RELEASE_NAME}" --filter name="${test_name}" --timeout 15m
+	helm test "${RELEASE_NAME}" --filter name="${test_name}" --timeout 15m
 
   local test_status=$(kubectl get pod "${test_name}" -o jsonpath='{.status.phase}' | xargs)
   echo "Helm test status: ${test_status}"

@@ -17,7 +17,7 @@
 pluginManagement { includeBuild("build-logic") }
 
 plugins {
-    id("com.gradle.enterprise").version("3.14.1")
+    id("com.gradle.enterprise") version "3.14.1"
     id("com.hedera.fullstack.settings")
 }
 
@@ -25,63 +25,65 @@ rootProject.name = "full-stack-testing"
 
 includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/issues/26
 
-include(":fullstack-bom")
-
 // Include the subprojects
-include(":fullstack-alerting-api")
+include(":docker-kubectl-bats", "docker/kubectl-bats")
 
-include(":fullstack-alerting-core")
+include(":docker-ubi8-init-dind", "docker/ubi8-init-dind")
 
-include(":fullstack-assertj-extensions")
+include(":docker-ubi8-init-java17", "docker/ubi8-init-java17")
 
-include(":fullstack-base-api")
+include(":fullstack-bom", "fullstack-core/fullstack-bom")
 
-include(":fullstack-configuration-api")
+include(":fullstack-alerting-api", "fullstack-core/fullstack-alerting-api")
 
-include(":fullstack-configuration-core")
+include(":fullstack-alerting-core", "fullstack-core/fullstack-alerting-core")
 
-include(":fullstack-helm-client")
+include(":fullstack-assertj-extensions", "fullstack-core/fullstack-assertj-extensions")
 
-include(":fullstack-junit-support")
+include(":fullstack-base-api", "fullstack-core/fullstack-base-api")
 
-include(":fullstack-datasource-api")
+include(":fullstack-configuration-api", "fullstack-core/fullstack-configuration-api")
 
-include(":fullstack-datasource-core")
+include(":fullstack-configuration-core", "fullstack-core/fullstack-configuration-core")
 
-// TODO: re-enable once we have a way to run the *-examples without IntelliJ and Sonar issues
-// includeBuild("fullstack-examples")
+include(":fullstack-helm-client", "fullstack-core/fullstack-helm-client")
 
-include(":fullstack-gradle-plugin")
+include(":fullstack-junit-support", "fullstack-core/fullstack-junit-support")
 
-include(":fullstack-infrastructure-api")
+include(":fullstack-datasource-api", "fullstack-core/fullstack-datasource-api")
 
-include(":fullstack-infrastructure-core")
+include(":fullstack-datasource-core", "fullstack-core/fullstack-datasource-core")
+
+include(":fullstack-infrastructure-api", "fullstack-core/fullstack-infrastructure-api")
 
 include(":fullstack-models")
 
 include(":fullstack-monitoring-api")
+include(":fullstack-infrastructure-core", "fullstack-core/fullstack-infrastructure-core")
 
-include(":fullstack-monitoring-core")
+include(":fullstack-monitoring-api", "fullstack-core/fullstack-monitoring-api")
 
-include(":fullstack-readiness-api")
+include(":fullstack-monitoring-core", "fullstack-core/fullstack-monitoring-core")
 
-include(":fullstack-reporting-api")
+include(":fullstack-readiness-api", "fullstack-core/fullstack-readiness-api")
 
-include(":fullstack-reporting-core")
+include(":fullstack-reporting-api", "fullstack-core/fullstack-reporting-api")
 
-include(":fullstack-resource-generator-api")
+include(":fullstack-reporting-core", "fullstack-core/fullstack-reporting-core")
 
-include(":fullstack-resource-generator-core")
+include(":fullstack-resource-generator-api", "fullstack-core/fullstack-resource-generator-api")
 
-include(":fullstack-service-locator")
+include(":fullstack-resource-generator-core", "fullstack-core/fullstack-resource-generator-core")
 
-include(":fullstack-test-toolkit")
+include(":fullstack-service-locator", "fullstack-core/fullstack-service-locator")
 
-include(":fullstack-test-toolkit-core")
+include(":fullstack-test-toolkit", "fullstack-core/fullstack-test-toolkit")
 
-include(":fullstack-validator-api")
+include(":fullstack-test-toolkit-core", "fullstack-core/fullstack-test-toolkit-core")
 
-include(":fullstack-validator-core")
+include(":fullstack-validator-api", "fullstack-core/fullstack-validator-api")
+
+include(":fullstack-validator-core", "fullstack-core/fullstack-validator-core")
 
 gradleEnterprise {
     buildScan {
@@ -93,4 +95,9 @@ gradleEnterprise {
             tag("CI")
         }
     }
+}
+
+fun include(name: String, path: String) {
+    include(name)
+    project(name).projectDir = File(rootDir, path)
 }

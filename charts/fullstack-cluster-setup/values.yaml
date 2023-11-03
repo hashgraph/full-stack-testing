@@ -6,3 +6,12 @@ global:
   namespaceOverride: ""
   nameOverride: ""
   fullnameOverride: ""
+
+# cloud configuration
+cloud:
+  minio:
+    enabled: false
+  prometheusStack:
+    enabled: false
+  grafanaAgent:
+    enabled: false
