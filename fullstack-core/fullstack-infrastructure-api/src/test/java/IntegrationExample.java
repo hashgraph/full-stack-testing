@@ -15,6 +15,7 @@
  */
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
+import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
@@ -22,7 +23,6 @@ import com.hedera.fullstack.infrastructure.api.exceptions.NetworkDeploymentNotFo
 import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
 import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
 import com.hedera.fullstack.infrastructure.api.model.networknode.NetworkNode;
-import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.resource.generator.api.NodeDetails;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import com.hedera.fullstack.resource.generator.api.ResourceUtils;
