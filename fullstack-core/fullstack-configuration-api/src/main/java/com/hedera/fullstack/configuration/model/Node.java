@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.api.providers;
+package com.hedera.fullstack.configuration.model;
 
-public interface InfrastructureManager {}
+public record Node(int RAM, int CPU, int nodeID, int nodeAccountID) {}

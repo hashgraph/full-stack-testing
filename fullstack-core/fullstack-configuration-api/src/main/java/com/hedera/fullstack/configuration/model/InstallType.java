@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.model;
+package com.hedera.fullstack.configuration.model;
 
-import java.util.List;
-
-public record Topology(List<Node> nodes) {}
+public enum InstallType {
+    NMT,
+    DIRECT_INSTALL
+}

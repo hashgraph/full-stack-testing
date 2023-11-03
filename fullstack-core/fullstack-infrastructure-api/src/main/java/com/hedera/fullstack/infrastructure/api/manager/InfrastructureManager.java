@@ -16,12 +16,13 @@
 
 package com.hedera.fullstack.infrastructure.api.manager;
 
+import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
 import com.hedera.fullstack.infrastructure.api.exceptions.NetworkDeploymentNotFoundException;
 import com.hedera.fullstack.infrastructure.api.model.NetworkDeployment;
-import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
+
 import java.util.List;
 import java.util.concurrent.Future;
 

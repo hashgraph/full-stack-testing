@@ -24,7 +24,6 @@ plugins {
 javaModuleDependencies {
     moduleNameToGA.put("com.hedera.fullstack.junit.support", "com.hedera.fullstack:fullstack-junit-support")
     moduleNameToGA.put("com.hedera.fullstack.test.toolkit", "com.hedera.fullstack:fullstack-test-toolkit")
-    moduleNameToGA.put("com.hedera.fullstack.model", "com.hedera.fullstack:fullstack-models")
     moduleNameToGA.put("com.hedera.fullstack.base.api", "com.hedera.fullstack:fullstack-base-api")
     moduleNameToGA.put("com.hedera.fullstack.readiness.api", "com.hedera.fullstack:fullstack-readiness-api")
     moduleNameToGA.put("com.hedera.fullstack.monitoring.api", "com.hedera.fullstack:fullstack-monitoring-api")

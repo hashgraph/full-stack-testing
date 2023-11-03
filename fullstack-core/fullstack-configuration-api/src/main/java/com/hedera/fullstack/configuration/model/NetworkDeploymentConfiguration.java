@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.model;
+package com.hedera.fullstack.configuration.model;
 
 /**
  * A container class to hold all configuration needed to hold the NetworkDeployment

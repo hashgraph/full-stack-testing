@@ -16,8 +16,8 @@
 
 package com.hedera.fullstack.infrastructure.api.model;
 
+import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.traits.Labeled;
-import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 
 // only individual classes will implement PodAware and ServiceAware
 public interface Component extends Labeled {

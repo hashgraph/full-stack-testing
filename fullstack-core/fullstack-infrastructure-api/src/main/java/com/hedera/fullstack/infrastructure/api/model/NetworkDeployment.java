@@ -16,9 +16,9 @@
 
 package com.hedera.fullstack.infrastructure.api.model;
 
+import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.exceptions.InstallationException;
 import com.hedera.fullstack.infrastructure.api.traits.Labeled;
-import com.hedera.fullstack.model.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.resource.generator.api.PlatformConfiguration;
 import java.util.List;
 import java.util.concurrent.Future;

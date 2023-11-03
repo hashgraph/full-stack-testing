@@ -22,6 +22,5 @@ plugins {
 
 dependencies {
     api(platform(project(":fullstack-bom")))
-    implementation(project(mapOf("path" to ":fullstack-models")))
     implementation(project(mapOf("path" to ":fullstack-base-api")))
 }
