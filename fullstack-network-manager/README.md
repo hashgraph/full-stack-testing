@@ -29,6 +29,7 @@ Select a command
 - In order to support ES6 modules with `jest`, set an env variable `export NODE_OPTIONS=--experimental-vm-modules >> ~/.zshrc`
   - If you are using Intellij and would like to use debugger tools, you will need to enable `--experimental-vm-modules` for `Jest`.
     - `Run->Edit Configurations->Edit Configuration Templates->Jest` and then set `--experimental-vm-modules` in `Node Options`.
+- Run `npm i` to install the required packages
 - Run `npm link` to install `fsnetman` as the CLI (you need to do it once)
 - Run `npm test` or `npm run test` to run the unit tests
 - Run `npm run test-e2e` to run the long-running integration tests
