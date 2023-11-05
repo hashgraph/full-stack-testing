@@ -150,7 +150,7 @@ jobs:
         run: |
           npm i 
           npm test
-          npm test-e2e
+          npm run test-e2e
 
       # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
       - name: Helm Chart Test (Direct Install)
