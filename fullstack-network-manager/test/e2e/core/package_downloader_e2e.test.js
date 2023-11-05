@@ -5,11 +5,11 @@ import * as fs from 'fs'
 import * as path from "path";
 import * as os from "os";
 
-describe('DownloaderE2E', () => {
+describe('PackageDownloaderE2E', () => {
     const testLogger = core.logging.NewLogger('debug')
     const downloader = new PackageDownloader(testLogger)
 
-        it('should succeed with a valid tag', async () => {
+        it('should succeed with a valid Hedera release tag', async () => {
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
 
             let tag = 'v0.42.5'

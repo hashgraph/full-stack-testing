@@ -6,7 +6,7 @@ import * as path from "path";
 import * as os from "os";
 import {IllegalArgumentError, ResourceNotFoundError} from "../../../src/core/errors.mjs";
 
-describe('Downloader', () => {
+describe('PackageDownloader', () => {
     const testLogger = core.logging.NewLogger('debug')
     const downloader = new PackageDownloader(testLogger)
 
@@ -67,7 +67,7 @@ describe('Downloader', () => {
             }
         })
 
-        it('should succeed with a valid URL', async () => {
+        it('should succeed with a valid release artifact URL', async () => {
             try {
                 let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
 
@@ -90,7 +90,7 @@ describe('Downloader', () => {
     })
 
     describe('fetchPlatform', () => {
-        it('should fail if platform package is missing', async () => {
+        it('should fail if platform release tag is missing', async () => {
             expect.assertions(2)
 
             let tag = 'v0.40.0-INVALID'
@@ -103,7 +103,7 @@ describe('Downloader', () => {
             }
         })
 
-        it('should fail if platform tag is invalid', async () => {
+        it('should fail if platform release tag is invalid', async () => {
             expect.assertions(1)
 
             try {
