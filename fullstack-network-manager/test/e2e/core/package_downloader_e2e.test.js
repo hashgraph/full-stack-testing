@@ -13,14 +13,15 @@ describe('PackageDownloaderE2E', () => {
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
 
             let tag = 'v0.42.5'
-            let destPath = `${tmpDir}/build-${tag}.zip`
+            let destPath = `${tmpDir}/v0.42/build-${tag}.zip`
             await expect(downloader.fetchPlatform(tag, tmpDir)).resolves.toBe(destPath)
             expect(fs.existsSync(destPath)).toBeTruthy()
             testLogger.showUser(destPath)
 
             // remove the downloaded files to reduce disk usage
-            fs.rmSync(`${tmpDir}/build-${tag}.zip`)
-            fs.rmSync(`${tmpDir}/build-${tag}.sha384`)
+            fs.rmSync(`${tmpDir}/v0.42/build-${tag}.zip`)
+            fs.rmSync(`${tmpDir}/v0.42/build-${tag}.sha384`)
+            fs.rmdirSync(`${tmpDir}/v0.42`)
             fs.rmdirSync(tmpDir)
         }, 100000)
 })

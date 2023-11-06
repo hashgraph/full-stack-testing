@@ -8,7 +8,7 @@ export function main(argv) {
     const kind = new core.Kind({logger: logger})
     const helm = new core.Helm({logger: logger})
     const kubectl= new core.Kubectl({logger: logger})
-    const downloader = new core.PackageDownloader({logger: logger})
+    const downloader = new core.PackageDownloader(logger)
 
     const opts = {
         logger: logger,

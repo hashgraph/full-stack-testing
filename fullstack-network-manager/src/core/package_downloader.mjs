@@ -36,8 +36,17 @@ export class PackageDownloader {
                 const req = https.request(url, {method: 'HEAD', timeout: 100, headers: {"Connection": 'close'}})
 
                 req.on('response', r => {
-                    self.logger.debug(r.headers)
-                    if (r.statusCode === 200) {
+                    const statusCode = r.statusCode
+                    self.logger.debug({
+                        response: {
+                            connectOptions: r['connect-options'],
+                            statusCode: r.statusCode,
+                            headers: r.headers,
+                        }
+
+                    })
+
+                    if (statusCode === 200) {
                         return resolve(true)
                     }
 
@@ -64,6 +73,8 @@ export class PackageDownloader {
      * @param destPath destination path for the downloaded file
      */
     async fetchFile(url, destPath) {
+        const self = this
+
         if (!url) throw new IllegalArgumentError('source file URL is required', url)
         if (!destPath) throw new IllegalArgumentError('destination path is required', destPath)
         if (!this.isValidURL(url)) {
@@ -82,7 +93,8 @@ export class PackageDownloader {
                 )
                 resolve(destPath)
             } catch (e) {
-                reject(new ResourceNotFoundError(`failed to download file: ${url}`, url, {url, destPath}))
+                self.logger.error(e)
+                reject(new ResourceNotFoundError(e.message, url, e))
             }
         })
     }
@@ -137,17 +149,33 @@ export class PackageDownloader {
      * @returns {Promise<string>} full path to the downloaded file
      */
     async fetchPlatform(tag, destDir) {
+        const self = this
+
         const parsed = tag.split('.')
         if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
         if (!destDir) throw new Error('destination directory path is required')
 
+        if (!fs.existsSync(destDir)) {
+            throw new IllegalArgumentError(`destDir (${destDir}) does not exist`, destDir)
+        } else if(!fs.statSync(destDir).isDirectory()) {
+            throw new IllegalArgumentError(`destDir (${destDir}) is not a directory`, destDir)
+        }
+
+
         return new Promise(async (resolve, reject) => {
             try {
                 const releaseDir = `${parsed[0]}.${parsed[1]}`
+                const downloadDir = `${destDir}/${releaseDir}`
+                if (!fs.existsSync(downloadDir)) {
+                    fs.mkdirSync(downloadDir)
+                }
+
                 const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
-                const packagePath = `${destDir}/build-${tag}.zip`
+                const packagePath = `${downloadDir}/build-${tag}.zip`
+
                 const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
-                const checksumPath = `${destDir}/build-${tag}.sha384`
+                const checksumPath = `${downloadDir}/build-${tag}.sha384`
+
 
                 await this.fetchFile(packageURL, packagePath)
                 await this.fetchFile(checksumURL, checksumPath)
@@ -156,7 +184,8 @@ export class PackageDownloader {
                 await this.verifyChecksum(packagePath, checksum)
                 resolve(packagePath)
             } catch (e) {
-                reject(new FullstackTestingError(`failed to fetch platform artifacts: ${e.message}`, e, {tag, destDir}))
+                self.logger.error(e)
+                reject(new FullstackTestingError(e.message, e, {tag, destDir}))
             }
         })
     }

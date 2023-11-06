@@ -70,7 +70,7 @@ const Logger = class {
                 // - Write all logs with importance level of `error` or less to `error.log`
                 // - Write all logs with importance level of `info` or less to `fst.log`
                 //
-                new winston.transports.File({filename: `${constants.FST_HOME_DIR}/logs/fst.log`}),
+                new winston.transports.File({filename: `${constants.FST_LOGS_DIR}/fst.log`}),
                 // new winston.transports.File({filename: constants.TMP_DIR + "/logs/error.log", level: 'error'}),
                 // new winston.transports.Console({format: customFormat})
             ],

@@ -18,9 +18,7 @@ export class NodeCommand extends BaseCommand {
     async setup(argv) {
         try {
             let tag = argv.releaseTag
-            let storePath = `${constants.FST_HOME_DIR}/releases`
-
-            let packagePath = await this.downloader.fetchPlatform(tag, storePath)
+            let packagePath = await this.downloader.fetchPlatform(tag, constants.FST_HEDERA_RELEASES_DIR)
             return true
         } catch (e) {
             this.logger.showUserError(e)
