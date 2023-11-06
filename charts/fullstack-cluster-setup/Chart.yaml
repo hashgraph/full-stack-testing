@@ -46,3 +46,8 @@ dependencies:
     version: v0.0.0-latest
     repository: oci://docker.io/envoyproxy
     condition: cloud.envoyGateway.enabled
+
+  - name: cert-manager
+    version: v1.13.2
+    repository: https://charts.jetstack.io
+    condition: cloud.certManager.enabled

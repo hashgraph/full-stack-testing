@@ -56,3 +56,10 @@ export const deployEnvoyGateway = {
     alias: 'e',
     type: 'boolean'
 }
+
+export const deployCertManager = {
+    describe: 'Deploy cert manager',
+    default: false,
+    alias: 'r',
+    type: 'boolean'
+}

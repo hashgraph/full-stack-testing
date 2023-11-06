@@ -176,6 +176,7 @@ export class ClusterCommand extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async setup(argv) {
+        this.logger.showUser(chalk.cyan('> argv:'), chalk.yellow(`${JSON.stringify(argv)}`))
         try {
             // create cluster
             await this.create(argv)
@@ -184,7 +185,7 @@ export class ClusterCommand extends BaseCommand {
             const chartName = "fullstack-cluster-setup"
             const namespace = argv.namespace
             const chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
-            const valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio, argv.envoyGateway)
+            const valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio, argv.envoyGateway, argv.certManager)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
             await this.chartInstall(namespace, chartName, chartPath, valuesArg)
@@ -287,10 +288,12 @@ export class ClusterCommand extends BaseCommand {
                             yargs.option('prometheus-stack', flags.deployPrometheusStack)
                             yargs.option('minio', flags.deployMinio)
                             yargs.option('envoy-gateway', flags.deployEnvoyGateway)
+                            yargs.option('cert-manager', flags.deployCertManager)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
                             clusterCmd.logger.debug(argv)
+                            clusterCmd.logger.showUser(chalk.cyan('> argv:'), chalk.yellow(`${JSON.stringify(argv)}`))
 
                             clusterCmd.setup(argv).then(r => {
                                 clusterCmd.logger.debug("==== Finished running `cluster setup`====")
@@ -305,11 +308,13 @@ export class ClusterCommand extends BaseCommand {
         }
     }
 
-    prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled) {
+    prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled, certManagerEnabled) {
         let valuesArg = ''
         valuesArg += ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled}`
         valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
         valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
+        valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
+        this.logger.showUser(chalk.cyan('> valueArgs:'), chalk.yellow(`${valuesArg}`))
         return valuesArg
     }
 }

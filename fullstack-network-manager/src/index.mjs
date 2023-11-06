@@ -18,6 +18,8 @@ export function main(argv) {
 
     logger.debug("Constants: %s", JSON.stringify(core.constants))
 
+    console.log("argv: %s", JSON.stringify(argv))
+
     return yargs(hideBin(argv))
         .usage(`Usage:\n  $0 <command> [options]`)
         .alias('h', 'help')
