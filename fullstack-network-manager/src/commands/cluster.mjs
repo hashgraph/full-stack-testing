@@ -2,7 +2,6 @@ import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import {BaseCommand} from "./base.mjs";
 import chalk from "chalk";
-import {Kind} from "../core/kind.mjs";
 
 /**
  * Define the core functionalities of 'cluster' command

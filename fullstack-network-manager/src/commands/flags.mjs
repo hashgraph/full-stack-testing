@@ -74,3 +74,24 @@ export const deployCertManagerCRDs = {
     alias: 'd',
     type: 'boolean'
 }
+
+export const platformReleaseTag = {
+    describe: 'Platform release tag (fetch from https://builds.hedera.com)',
+    default: "",
+    alias: 't',
+    type: 'string'
+}
+
+export const platformReleaseJAR = {
+    describe: 'Platform release JAR file(e.g. $HOME/releases/v0.42.5-SNAPSHOT.jar)',
+    default: "",
+    alias: 'j',
+    type: 'string'
+}
+
+export const nodeID = {
+    describe: 'Node ID (empty means all nodes)',
+    default: "",
+    alias: 'i',
+    type: 'string'
+}
