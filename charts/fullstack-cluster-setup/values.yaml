@@ -15,3 +15,5 @@ cloud:
     enabled: false
   grafanaAgent:
     enabled: false
+  envoyGateway:
+    enabled: false

@@ -184,7 +184,7 @@ export class ClusterCommand extends BaseCommand {
             let chartName = "fullstack-cluster-setup"
             let namespace = argv.namespace
             let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
-            let valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio)
+            let valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio, argv.envoyGateway)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
             await this.chartInstall(namespace, chartName, chartPath, valuesArg)
@@ -286,6 +286,7 @@ export class ClusterCommand extends BaseCommand {
                             yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('prometheus-stack', flags.deployPrometheusStack)
                             yargs.option('minio', flags.deployMinio)
+                            yargs.option('envoy-gateway', flags.deployEnvoyGateway)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
@@ -304,7 +305,11 @@ export class ClusterCommand extends BaseCommand {
         }
     }
 
-    prepareValuesArg(prometheusStackEnabled, minioEnabled) {
-        return ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled} --set cloud.minio.enabled=${minioEnabled}`
+    prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled) {
+        let valuesArg = ''
+        valuesArg += ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled}`
+        valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
+        valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
+        return valuesArg
     }
 }
