@@ -46,7 +46,7 @@ export class IllegalArgumentError extends FullstackTestingError {
      * @param value value of the invalid argument
      * @param cause source error (if any)
      */
-    constructor(message, value, cause = {}) {
+    constructor(message, value = '', cause = {}) {
         super(message, cause, {value: value});
     }
 }
