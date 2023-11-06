@@ -51,7 +51,7 @@ export class PackageDownloader {
 
                 req.end() // make the request
             } catch (e) {
-                self.logger.error(err)
+                self.logger.error(e)
                 resolve(false)
             }
         })
