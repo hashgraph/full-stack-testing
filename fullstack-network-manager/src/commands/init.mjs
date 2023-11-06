@@ -11,13 +11,13 @@ export class InitCommand extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async init() {
-        let deps = [
+        const deps = [
             core.constants.HELM,
             core.constants.KIND,
             core.constants.KUBECTL,
         ]
 
-        let status = await this.checkDependencies(deps)
+        const status = await this.checkDependencies(deps)
         if (!status) {
             return false
         }

@@ -1,5 +1,4 @@
 import {BaseCommand} from "./base.mjs";
-import chalk from "chalk";
 import * as core from "../core/index.mjs";
 import * as flags from "./flags.mjs";
 
@@ -9,7 +8,7 @@ export class ChartCommand extends BaseCommand {
     chartName = "fullstack-deployment"
 
     prepareValuesArg(argv) {
-        let {valuesFile, mirrorNode, hederaExplorer} = argv
+        const {valuesFile, mirrorNode, hederaExplorer} = argv
         let valuesArg = `--values ${this.chartPath}/values.yaml`
 
         if (valuesFile) {
@@ -22,21 +21,21 @@ export class ChartCommand extends BaseCommand {
     }
 
     async install(argv) {
-        let namespace = argv.namespace
-        let valuesArg = this.prepareValuesArg(argv)
+        const namespace = argv.namespace
+        const valuesArg = this.prepareValuesArg(argv)
 
         return await this.chartInstall(namespace, this.chartName, this.chartPath, valuesArg)
     }
 
     async uninstall(argv) {
-        let namespace = argv.namespace
+        const namespace = argv.namespace
 
         return await this.chartUninstall(namespace, this.chartName)
     }
 
     async upgrade(argv) {
-        let namespace = argv.namespace
-        let valuesArg = this.prepareValuesArg(argv)
+        const namespace = argv.namespace
+        const valuesArg = this.prepareValuesArg(argv)
 
         return await this.chartUpgrade(namespace, this.chartName, this.chartPath, valuesArg)
     }

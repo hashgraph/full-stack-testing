@@ -1,8 +1,8 @@
 import {test, expect, it, describe} from "@jest/globals";
-import {Helm, Kubectl, logging} from "../../src/core/index.mjs";
-import {BaseCommand} from "../../src/commands/base.mjs";
-import * as core from "../../src/core/index.mjs"
-import {Kind} from "../../src/core/kind.mjs";
+import {Helm, Kubectl, logging} from "../../../src/core/index.mjs";
+import {BaseCommand} from "../../../src/commands/base.mjs";
+import * as core from "../../../src/core/index.mjs"
+import {Kind} from "../../../src/core/kind.mjs";
 
 const testLogger = logging.NewLogger("debug")
 
