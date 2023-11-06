@@ -66,7 +66,7 @@ init-shared:
 	echo "cloud:" > ${CLUSTER_SETUP_VALUES_FILE}
 
 .PHONY: deploy-shared
-deploy-shared: init-shared update-helm-dependencies deploy-gateway-api enable-prometheus-stack-if-required enable-minio-operator-if-required
+deploy-shared: init-shared update-helm-dependencies enable-gateway-api enable-prometheus-stack-if-required enable-minio-operator-if-required
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 
 .PHONY: destroy-shared
@@ -153,15 +153,11 @@ restart: stop-nodes start-nodes
 reset: destroy-network start
 
 ######################################### Gateway API #################################
-.PHONY: deploy-gateway-api
-deploy-gateway-api:
-	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_haproxy_ingress
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && deploy_envoy_gateway_api
-
-.PHONY: destroy-gateway-api
-destroy-gateway-api:
-	#source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_haproxy_ingress
-	source "${SCRIPTS_DIR}/${GATEWAY_API_SCRIPT}" && destroy_envoy_gateway_api
+.PHONY: enable-gateway-api
+enable-gateway-api:
+	@echo ">> Enabling envoy gateway..."; \
+	echo "  envoyGateway:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
+	echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
 ######################################### Telemetry #################################
 .PHONY: enable-prometheus-stack-if-required
@@ -189,7 +185,7 @@ destroy-grafana-tempo:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && unexpose_grafana && destroy_grafana_tempo
 
 .PHONY: deploy-prometheus
-deploy-prometheus: init-shared deploy-gateway-api enable-prometheus-stack
+deploy-prometheus: init-shared enable-gateway-api enable-prometheus-stack
 	source "${SCRIPTS_DIR}/main.sh" && deploy_shared # run only after gateway-api CRDs are available
 	-$(MAKE) wait-for-prometheus-operator
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && deploy-prometheus && expose_prometheus
