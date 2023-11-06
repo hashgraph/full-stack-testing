@@ -8,12 +8,14 @@ export function main(argv) {
     const kind = new core.Kind({logger: logger})
     const helm = new core.Helm({logger: logger})
     const kubectl= new core.Kubectl({logger: logger})
+    const downloader = new core.PackageDownloader({logger: logger})
 
     const opts = {
         logger: logger,
         kind: kind,
         helm: helm,
         kubectl: kubectl,
+        downloader: downloader,
     }
 
     logger.debug("Constants: %s", JSON.stringify(core.constants))

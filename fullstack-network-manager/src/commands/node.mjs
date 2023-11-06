@@ -1,14 +1,31 @@
 import {BaseCommand} from "./base.mjs";
-import * as core from "../core/index.mjs"
-import chalk from "chalk";
 import * as flags from "./flags.mjs";
+import {IllegalArgumentError} from "../core/errors.mjs";
+import {constants} from "../core/index.mjs";
 
 /**
  * Defines the core functionalities of 'node' command
  */
 export class NodeCommand extends BaseCommand {
-    async setup(argv) {
+    constructor(opts) {
+        super(opts);
 
+        if(!opts || !opts.downloader ) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
+
+        this.downloader = opts.downloader
+    }
+
+    async setup(argv) {
+        try {
+            let tag = argv.releaseTag
+            let storePath = `${constants.FST_HOME_DIR}/releases`
+
+            let packagePath = await this.downloader.fetchPlatform(tag, storePath)
+            return true
+        } catch (e) {
+            this.logger.showUserError(e)
+            return false
+        }
     }
 
     async start(argv) {
