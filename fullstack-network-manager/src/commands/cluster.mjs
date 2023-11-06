@@ -62,9 +62,9 @@ export class ClusterCommand extends BaseCommand {
      */
     async getClusterInfo(argv) {
         try {
-            let clusterName = argv.clusterName
-            let cmd = `kubectl cluster-info --context kind-${clusterName}`
-            let output = await this.run(cmd)
+            const clusterName = argv.clusterName
+            const cmd = `kubectl cluster-info --context kind-${clusterName}`
+            const output = await this.run(cmd)
 
             this.logger.showUser(`Cluster information (${clusterName})\n---------------------------------------`)
             output.forEach(line => this.logger.showUser(line))
@@ -79,8 +79,8 @@ export class ClusterCommand extends BaseCommand {
 
     async createNamespace(argv) {
         try {
-            let namespace = argv.namespace
-            let namespaces = await this.getNameSpaces()
+            const namespace = argv.namespace
+            const namespaces = await this.getNameSpaces()
             this.logger.showUser(chalk.cyan('> checking namespace:'), chalk.yellow(`${namespace}`))
             if (!namespaces.includes(`namespace/${namespace}`)) {
                 this.logger.showUser(chalk.cyan('> creating namespace:'), chalk.yellow(`${namespace} ...`))
@@ -107,8 +107,8 @@ export class ClusterCommand extends BaseCommand {
      */
     async create(argv) {
         try {
-            let clusterName = argv.clusterName
-            let clusters = await this.getClusters()
+            const clusterName = argv.clusterName
+            const clusters = await this.getClusters()
 
             this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
             if (!clusters.includes(clusterName)) {
@@ -144,8 +144,8 @@ export class ClusterCommand extends BaseCommand {
      */
     async delete(argv) {
         try {
-            let clusterName = argv.clusterName
-            let clusters = await this.getClusters()
+            const clusterName = argv.clusterName
+            const clusters = await this.getClusters()
             this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
             if (clusters.includes(clusterName)) {
                 this.logger.showUser(chalk.cyan('> deleting cluster:'), chalk.yellow(`${clusterName} ...`))
@@ -180,11 +180,11 @@ export class ClusterCommand extends BaseCommand {
             // create cluster
             await this.create(argv)
 
-            let clusterName = argv.clusterName
-            let chartName = "fullstack-cluster-setup"
-            let namespace = argv.namespace
-            let chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
-            let valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio, argv.envoyGateway)
+            const clusterName = argv.clusterName
+            const chartName = "fullstack-cluster-setup"
+            const namespace = argv.namespace
+            const chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
+            const valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio, argv.envoyGateway)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
             await this.chartInstall(namespace, chartName, chartPath, valuesArg)

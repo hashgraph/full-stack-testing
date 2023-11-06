@@ -54,7 +54,7 @@ const Logger = class {
      * @constructor
      */
     constructor(level) {
-        let self = this
+        const self = this
         this.nextTraceId()
 
         this.winsonLogger = winston.createLogger({

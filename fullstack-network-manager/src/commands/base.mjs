@@ -1,5 +1,4 @@
 "use strict"
-import {exec} from "child_process";
 import * as core from "../core/index.mjs"
 import chalk from "chalk";
 import {ShellRunner} from "../core/shell_runner.mjs";
@@ -50,11 +49,11 @@ export class BaseCommand extends ShellRunner {
         this.logger.debug("Checking for required dependencies: %s", deps)
 
         for (let i = 0; i < deps.length; i++) {
-            let dep = deps[i]
+            const dep = deps[i]
             this.logger.debug("Checking for dependency '%s'", dep)
 
             let status = false
-            let check = this.checks.get(dep)
+            const check = this.checks.get(dep)
             if (check) {
                 status = await check()
             }
@@ -88,7 +87,7 @@ export class BaseCommand extends ShellRunner {
 
     async chartInstall(namespaceName, chartName, chartPath, valuesArg = '') {
         try {
-            let charts = await this.getInstalledCharts(namespaceName)
+            const charts = await this.getInstalledCharts(namespaceName)
             if (!charts.includes(chartName)) {
                 this.logger.showUser(chalk.cyan('> running helm dependency update for chart:'), chalk.yellow(`${chartName} ...`))
                 await this.helm.dependency('update', chartPath)
@@ -111,7 +110,7 @@ export class BaseCommand extends ShellRunner {
     async chartUninstall(namespaceName, chartName) {
         try {
             this.logger.showUser(chalk.cyan('> checking chart:'), chalk.yellow(`${chartName}`))
-            let charts = await this.getInstalledCharts(namespaceName)
+            const charts = await this.getInstalledCharts(namespaceName)
             if (charts.includes(chartName)) {
                 this.logger.showUser(chalk.cyan('> uninstalling chart:'), chalk.yellow(`${chartName}`))
                 await this.helm.uninstall(`-n ${namespaceName} ${chartName}`)

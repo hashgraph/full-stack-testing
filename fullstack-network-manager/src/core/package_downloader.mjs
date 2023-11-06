@@ -33,7 +33,7 @@ export class PackageDownloader {
             try {
                 self.logger.debug(`Checking URL: ${url}`)
                 // attempt to send a HEAD request to check URL exists
-                let req = https.request(url, {method: 'HEAD', timeout: 100, headers: {"Connection": 'close'}})
+                const req = https.request(url, {method: 'HEAD', timeout: 100, headers: {"Connection": 'close'}})
 
                 req.on('response', r => {
                     self.logger.debug(r.headers)
@@ -97,13 +97,13 @@ export class PackageDownloader {
     async computeFileHash(filePath, algo = 'sha384') {
         return new Promise((resolve, reject) => {
             try {
-                let checksum = crypto.createHash(algo);
-                let s = fs.createReadStream(filePath)
+                const checksum = crypto.createHash(algo);
+                const s = fs.createReadStream(filePath)
                 s.on('data', function (d) {
                     checksum.update(d);
                 });
                 s.on('end', function () {
-                    let d = checksum.digest('hex');
+                    const d = checksum.digest('hex');
                     resolve(d)
                 })
             } catch (e) {
@@ -123,7 +123,7 @@ export class PackageDownloader {
      * @throws DataValidationError if the checksum doesn't match
      */
     async verifyChecksum(sourceFile, checksum, algo = 'sha384') {
-        let computed = await this.computeFileHash(sourceFile, algo)
+        const computed = await this.computeFileHash(sourceFile, algo)
         if (checksum !== computed) throw new DataValidationError('checksum', checksum, computed)
     }
 
@@ -137,22 +137,22 @@ export class PackageDownloader {
      * @returns {Promise<string>} full path to the downloaded file
      */
     async fetchPlatform(tag, destDir) {
-        let parsed = tag.split('.')
+        const parsed = tag.split('.')
         if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
         if (!destDir) throw new Error('destination directory path is required')
 
         return new Promise(async (resolve, reject) => {
             try {
-                let releaseDir = `${parsed[0]}.${parsed[1]}`
-                let packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
-                let packagePath = `${destDir}/build-${tag}.zip`
-                let checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
-                let checksumPath = `${destDir}/build-${tag}.sha384`
+                const releaseDir = `${parsed[0]}.${parsed[1]}`
+                const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
+                const packagePath = `${destDir}/build-${tag}.zip`
+                const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
+                const checksumPath = `${destDir}/build-${tag}.sha384`
 
                 await this.fetchFile(packageURL, packagePath)
                 await this.fetchFile(checksumURL, checksumPath)
 
-                let checksum = fs.readFileSync(checksumPath).toString().split(" ")[0]
+                const checksum = fs.readFileSync(checksumPath).toString().split(" ")[0]
                 await this.verifyChecksum(packagePath, checksum)
                 resolve(packagePath)
             } catch (e) {
