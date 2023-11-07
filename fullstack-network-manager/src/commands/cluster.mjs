@@ -316,6 +316,10 @@ export class ClusterCommand extends BaseCommand {
         valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
         valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
         valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
+        if (certManagerEnabled && !certManagerCrdsEnabled) {
+            this.logger.showUser(chalk.yellowBright('> WARNING:'), chalk.yellow(
+                'cert-manager CRDs are required for cert-manager, please enable it if you have not installed it independently.'))
+        }
         return valuesArg
     }
 }
