@@ -184,7 +184,8 @@ export class ClusterCommand extends BaseCommand {
             const chartName = "fullstack-cluster-setup"
             const namespace = argv.namespace
             const chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
-            const valuesArg = this.prepareValuesArg(argv.prometheusStack, argv.minio, argv.envoyGateway)
+            const valuesArg = this.prepareValuesArg(argv.prometheusStack,
+              argv.minio, argv.envoyGateway, argv.certManager, argv.certManagerCrds)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
             await this.chartInstall(namespace, chartName, chartPath, valuesArg)
@@ -287,6 +288,8 @@ export class ClusterCommand extends BaseCommand {
                             yargs.option('prometheus-stack', flags.deployPrometheusStack)
                             yargs.option('minio', flags.deployMinio)
                             yargs.option('envoy-gateway', flags.deployEnvoyGateway)
+                            yargs.option('cert-manager', flags.deployCertManager)
+                            yargs.option('cert-manager-crds', flags.deployCertManagerCRDs)
                         },
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
@@ -305,11 +308,18 @@ export class ClusterCommand extends BaseCommand {
         }
     }
 
-    prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled) {
+    prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
+        certManagerEnabled, certManagerCrdsEnabled) {
         let valuesArg = ''
         valuesArg += ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled}`
         valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
         valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
+        valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
+        valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
+        if (certManagerEnabled && !certManagerCrdsEnabled) {
+            this.logger.showUser(chalk.yellowBright('> WARNING:'), chalk.yellow(
+                'cert-manager CRDs are required for cert-manager, please enable it if you have not installed it independently.'))
+        }
         return valuesArg
     }
 }

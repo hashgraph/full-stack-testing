@@ -17,3 +17,5 @@ cloud:
     enabled: false
   envoyGateway:
     enabled: false
+  certManager:
+    enabled: false
