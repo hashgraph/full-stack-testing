@@ -17,7 +17,7 @@
 package com.hedera.fullstack.infrastructure.api.manager;
 
 import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
-import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InsufficientClusterResourcesException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
 import com.hedera.fullstack.infrastructure.api.exceptions.NetworkDeploymentNotFoundException;
@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 /**
- * InfrastructureManager is the main entry point into infrastructure management for FST <br/>
- * <br/>
+ * <p>InfrastructureManager is the main entry point into infrastructure management for FST </p>
+ *
  * Responsibilities:
  * <ol>
  *  <li> Manages the lifecycle of a {@link NetworkDeployment}</li>
@@ -44,31 +44,41 @@ import java.util.concurrent.Future;
  */
 public interface InfrastructureManager {
 
+    /**
+     * This is a synchronous version of {@link #createNetworkDeploymentAsync(NetworkDeploymentConfiguration)
+     */
     default NetworkDeployment createNetworkDeployment(NetworkDeploymentConfiguration hederaNetwork)
-            throws InvalidConfigurationException, DeploymentLimitReachedException, InfrastructureException {
+            throws InvalidConfigurationException, InsufficientClusterResourcesException, InfrastructureException {
         return null;
     }
 
     /**
-     * Creates the {@link NetworkDeployment} based on the {@link NetworkDeploymentConfiguration} provided.
-     * This is a long running process, expected time is in the order of a few minutes.
+     * <p>Creates the {@link NetworkDeployment} based on the {@link NetworkDeploymentConfiguration} provided.
+     * This is a long-running process.</p>
      * Note: the {@link NetworkDeployment} can be spread across multiple clusters and cloud providers.
+     * @param hederaNetwork {@link NetworkDeploymentConfiguration} object containing all the configuration needed
+     *                    to create the {@link NetworkDeployment}
+     * @return a {@link NetworkDeployment} object representing the {@link NetworkDeployment} created
+     * @throws InvalidConfigurationException if the {@link NetworkDeploymentConfiguration} is invalid
+     * @throws InsufficientClusterResourcesException if there are not enough resources in the cluster to create the {@link NetworkDeployment}
+     * @throws InfrastructureException if there is an error in the infrastructure low level implementation.
      */
     Future<NetworkDeployment> createNetworkDeploymentAsync(NetworkDeploymentConfiguration hederaNetwork)
-            throws InvalidConfigurationException, DeploymentLimitReachedException, InfrastructureException;
+            throws InvalidConfigurationException, InsufficientClusterResourcesException, InfrastructureException;
 
     /**
-     * List all the {@link NetworkDeployment}s created by this InfrastructureManager
-     * TODO: --> @return a list of {@link NetworkDeployment}s
+     * List all the {@link NetworkDeployment} instances created by this JVM process.
+     * @return a list of all {@link NetworkDeployment}s instances provisioned by this JVM process.
      */
     List<NetworkDeployment> listNetworkDeployments();
 
     /**
-     * Returns the {@link NetworkDeployment} with the given id
+     * Locates an existing {@link NetworkDeployment} using the provided identifier.
+     * The identifier must be from a {@link NetworkDeployment} created by this Java process.
      * @param id  Unique identifier of the {@link NetworkDeployment}, the implementation
      *           will usually be a combination of namespace, job name and job id etc.
-     * @return the {@link NetworkDeployment} with the given id
-     * @throws NetworkDeploymentNotFoundException
+     * @return the {@link NetworkDeployment} associated with the provided identifier.
+     * @throws NetworkDeploymentNotFoundException if the {@link NetworkDeployment} with the given id is not found
      */
     NetworkDeployment networkDeploymentById(String id) throws NetworkDeploymentNotFoundException;
 
@@ -77,7 +87,7 @@ public interface InfrastructureManager {
      * @param id Unique identifier of the {@link NetworkDeployment}, the implementation
      *           will usually be a combination of namespace, job name and job id etc.
      * @return true if the {@link NetworkDeployment} was deleted successfully, false otherwise
-     * @throws NetworkDeploymentNotFoundException
+     * @throws NetworkDeploymentNotFoundException if the {@link NetworkDeployment} with the given id is not found
      */
     Future<Boolean> deleteNetworkDeployment(String id) throws NetworkDeploymentNotFoundException;
 }

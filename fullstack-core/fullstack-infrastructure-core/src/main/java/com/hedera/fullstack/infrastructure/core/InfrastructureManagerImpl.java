@@ -17,7 +17,7 @@
 package com.hedera.fullstack.infrastructure.core;
 
 import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
-import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InsufficientClusterResourcesException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
 import com.hedera.fullstack.infrastructure.api.manager.InfrastructureManager;
@@ -31,7 +31,7 @@ public class InfrastructureManagerImpl implements InfrastructureManager {
 
     @Override
     public Future<NetworkDeployment> createNetworkDeploymentAsync(NetworkDeploymentConfiguration hederaNetwork)
-            throws InvalidConfigurationException, DeploymentLimitReachedException, InfrastructureException {
+            throws InvalidConfigurationException, InsufficientClusterResourcesException, InfrastructureException {
         throw new NotImplementedException();
     }
 

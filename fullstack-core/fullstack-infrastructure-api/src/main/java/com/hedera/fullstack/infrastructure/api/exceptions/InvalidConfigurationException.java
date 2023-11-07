@@ -16,4 +16,12 @@
 
 package com.hedera.fullstack.infrastructure.api.exceptions;
 
-public class InvalidConfigurationException extends Exception {}
+/**
+ * <p>Thrown when the {@link com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration} is invalid.</p>
+ * <p>This can happen if the network deployment configuration has failed validation even before the deployment has started.</p>
+ */
+public class InvalidConfigurationException extends Exception {
+    public InvalidConfigurationException(String message) {
+        super(message);
+    }
+}

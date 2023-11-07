@@ -16,4 +16,19 @@
 
 package com.hedera.fullstack.infrastructure.api.exceptions;
 
-public class InfrastructureException extends Exception {}
+/**
+ *
+ * <p>Thrown when an infrastructure-related exception occurs at the lower level of the implementation.</p>
+ * <p>A nested exception (cause) should be provided to capture the root cause of the exception.</p>
+ * <p>This is not necessarily a fatal exception and the network deployment may be able to recover from it depending on the cause.</p>
+ *
+ */
+public class InfrastructureException extends Exception {
+    InfrastructureException(String message) {
+        super(message);
+    }
+
+    InfrastructureException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

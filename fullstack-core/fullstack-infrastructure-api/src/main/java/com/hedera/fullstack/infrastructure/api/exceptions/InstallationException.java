@@ -16,4 +16,19 @@
 
 package com.hedera.fullstack.infrastructure.api.exceptions;
 
-public class InstallationException extends Exception {}
+/**
+ * <p>Thrown if an exceptions happens during fullstack "cluster setup".
+ * The "cluster setup" installs prerequisites on a cluster before a {@link com.hedera.fullstack.infrastructure.api.model.NetworkDeployment} can be deployed.
+ * </p>
+ *
+ * <p>A nested exception is provided to give more details about the cause of the exception.</p>
+ */
+public class InstallationException extends Exception {
+    public InstallationException(String message) {
+        super(message);
+    }
+
+    public InstallationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

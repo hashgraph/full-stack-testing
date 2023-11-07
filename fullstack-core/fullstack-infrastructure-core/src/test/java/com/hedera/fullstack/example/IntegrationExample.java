@@ -16,7 +16,7 @@ package com.hedera.fullstack.example;/*
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
 import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
-import com.hedera.fullstack.infrastructure.api.exceptions.DeploymentLimitReachedException;
+import com.hedera.fullstack.infrastructure.api.exceptions.InsufficientClusterResourcesException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;
 import com.hedera.fullstack.infrastructure.api.exceptions.NetworkDeploymentNotFoundException;
@@ -40,7 +40,7 @@ public class IntegrationExample {
 
     // This the JUNIT / CLI entry point
     public static void main(String[] args)
-            throws ExecutionException, InterruptedException, DeploymentLimitReachedException, InfrastructureException,
+            throws ExecutionException, InterruptedException, InsufficientClusterResourcesException, InfrastructureException,
                     InvalidConfigurationException {
 
         // This the JUNIT / CLI entry point
@@ -100,7 +100,7 @@ public class IntegrationExample {
 
         // This is invoked by the CLI or Junit
         public NetworkDeployment create(NetworkDeploymentConfiguration hederaEcosystemNetworkDeploymentConfiguration)
-                throws ExecutionException, InterruptedException, DeploymentLimitReachedException,
+                throws ExecutionException, InterruptedException, InsufficientClusterResourcesException,
                 InfrastructureException, InvalidConfigurationException {
             Future<NetworkDeployment> ecosystem =
                     infraManager.createNetworkDeploymentAsync(hederaEcosystemNetworkDeploymentConfiguration);

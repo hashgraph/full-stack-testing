@@ -16,4 +16,11 @@
 
 package com.hedera.fullstack.infrastructure.api.exceptions;
 
-public class NetworkDeploymentNotFoundException extends Exception {}
+/**
+ * Thrown if a {@link com.hedera.fullstack.infrastructure.api.model.NetworkDeployment} with cannot be found
+ */
+public class NetworkDeploymentNotFoundException extends Exception {
+    NetworkDeploymentNotFoundException(String message) {
+        super(message);
+    }
+}
