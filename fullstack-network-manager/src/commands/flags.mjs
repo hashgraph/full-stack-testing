@@ -63,3 +63,14 @@ export const deployCertManager = {
     alias: 'r',
     type: 'boolean'
 }
+
+/*
+    Deploy cert manager CRDs separately from cert manager itself.  Cert manager
+    CRDs are required for cert manager to deploy successfully.
+ */
+export const deployCertManagerCRDs = {
+    describe: 'Deploy cert manager CRDs',
+    default: false,
+    alias: 'd',
+    type: 'boolean'
+}
