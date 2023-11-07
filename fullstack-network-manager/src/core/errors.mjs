@@ -36,6 +36,18 @@ export class ResourceNotFoundError extends FullstackTestingError {
     }
 }
 
+export class MissingArgumentError extends FullstackTestingError {
+    /**
+     * Create a custom error for missing argument scenario
+     *
+     * @param message error message
+     * @param cause source error (if any)
+     */
+    constructor(message, cause = {}) {
+        super(message, cause);
+    }
+}
+
 export class IllegalArgumentError extends FullstackTestingError {
     /**
      * Create a custom error for illegal argument scenario

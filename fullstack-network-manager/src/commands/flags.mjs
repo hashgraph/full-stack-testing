@@ -76,16 +76,16 @@ export const deployCertManagerCRDs = {
 }
 
 export const platformReleaseTag = {
-    describe: 'Platform release tag (fetch from https://builds.hedera.com)',
+    describe: 'Platform release tag (fetch build-<tag>.zip from https://builds.hedera.com)',
     default: "",
     alias: 't',
     type: 'string'
 }
 
-export const platformReleaseJAR = {
-    describe: 'Platform release JAR file(e.g. $HOME/releases/v0.42.5-SNAPSHOT.jar)',
+export const platformReleaseDir = {
+    describe: `Platform release path (contains 'data/apps' and 'data/lib' directories e.g. releases/v0.42.1)`,
     default: "",
-    alias: 'j',
+    alias: 'd',
     type: 'string'
 }
 

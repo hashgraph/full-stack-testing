@@ -1,6 +1,6 @@
 import {BaseCommand} from "./base.mjs";
 import * as flags from "./flags.mjs";
-import {IllegalArgumentError} from "../core/errors.mjs";
+import {IllegalArgumentError, MissingArgumentError} from "../core/errors.mjs";
 import {constants} from "../core/index.mjs";
 
 /**
@@ -11,19 +11,33 @@ export class NodeCommand extends BaseCommand {
         super(opts);
 
         if(!opts || !opts.downloader ) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
+        if(!opts || !opts.platformInstaller ) throw new IllegalArgumentError('An instance of core/PlatformInstaller is required', opts.platformInstaller)
 
         this.downloader = opts.downloader
+        this.plaformInstaller = opts.platformInstaller
     }
 
     async setup(argv) {
+        const self = this
+        if (!argv.releaseTag || !argv.releaseDir ) throw new MissingArgumentError('release-tag or release-jar argument is required')
+
         try {
-            let tag = argv.releaseTag
-            let packagePath = await this.downloader.fetchPlatform(tag, constants.FST_HEDERA_RELEASES_DIR)
-            return true
+            const pods = []
+            for (const pod of pods) {
+                let releaseDir = argv.releaseDir
+                if (argv.releaseTag !== '') {
+                    const packagePath = await this.downloader.fetchPlatform(argv.releaseTag, constants.FST_HEDERA_RELEASES_DIR)
+                    let releaseDir = `${packagePath}/unzipped`
+                    await this.unzipFile(packagePath, releaseDir)
+                }
+
+                await self.plaformInstaller.install(pod, releaseDir);
+            }
         } catch (e) {
             this.logger.showUserError(e)
-            return false
         }
+
+        return false
     }
 
     async start(argv) {
@@ -49,7 +63,7 @@ export class NodeCommand extends BaseCommand {
                         desc: 'Setup node with a specific version of Hedera platform',
                         builder: yargs => {
                             yargs.option('release-tag', flags.platformReleaseTag)
-                            yargs.option('release-jar', flags.platformReleaseJAR)
+                            yargs.option('release-dir', flags.platformReleaseDir)
                         },
                         handler: argv => {
                             nodeCmd.logger.debug("==== Running 'node setup' ===")
