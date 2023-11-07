@@ -176,7 +176,6 @@ export class ClusterCommand extends BaseCommand {
      * @returns {Promise<boolean>}
      */
     async setup(argv) {
-        this.logger.showUser(chalk.cyan('> argv:'), chalk.yellow(`${JSON.stringify(argv)}`))
         try {
             // create cluster
             await this.create(argv)
@@ -293,7 +292,6 @@ export class ClusterCommand extends BaseCommand {
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
                             clusterCmd.logger.debug(argv)
-                            clusterCmd.logger.showUser(chalk.cyan('> argv:'), chalk.yellow(`${JSON.stringify(argv)}`))
 
                             clusterCmd.setup(argv).then(r => {
                                 clusterCmd.logger.debug("==== Finished running `cluster setup`====")
@@ -314,7 +312,6 @@ export class ClusterCommand extends BaseCommand {
         valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
         valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
         valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
-        this.logger.showUser(chalk.cyan('> valueArgs:'), chalk.yellow(`${valuesArg}`))
         return valuesArg
     }
 }
