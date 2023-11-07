@@ -107,8 +107,11 @@ export class PackageDownloader {
      * @throws Error if the file cannot be read
      */
     async computeFileHash(filePath, algo = 'sha384') {
+        const self = this
+
         return new Promise((resolve, reject) => {
             try {
+                self.logger.debug(`Computing checksum for '${filePath}' using algo '${algo}'`)
                 const checksum = crypto.createHash(algo);
                 const s = fs.createReadStream(filePath)
                 s.on('data', function (d) {
@@ -116,10 +119,11 @@ export class PackageDownloader {
                 });
                 s.on('end', function () {
                     const d = checksum.digest('hex');
+                    self.logger.debug(`Computed checksum '${d}' for '${filePath}' using algo '${algo}'`)
                     resolve(d)
                 })
             } catch (e) {
-                reject(new FullstackTestingError('failed to compute file hash', e, {filePath, algo}))
+                reject(new FullstackTestingError('failed to compute checksum', e, {filePath, algo}))
             }
         })
     }

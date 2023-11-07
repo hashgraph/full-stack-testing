@@ -9,6 +9,7 @@ export function main(argv) {
     const helm = new core.Helm({logger: logger})
     const kubectl= new core.Kubectl({logger: logger})
     const downloader = new core.PackageDownloader(logger)
+    const platformInstaller = new core.PlatformInstaller(logger, kubectl)
 
     const opts = {
         logger: logger,
@@ -16,6 +17,7 @@ export function main(argv) {
         helm: helm,
         kubectl: kubectl,
         downloader: downloader,
+        platformInstaller: platformInstaller,
     }
 
     logger.debug("Constants: %s", JSON.stringify(core.constants))

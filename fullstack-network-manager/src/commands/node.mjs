@@ -17,12 +17,18 @@ export class NodeCommand extends BaseCommand {
         this.plaformInstaller = opts.platformInstaller
     }
 
+    async getPods(nodeIds = []) {
+        return new Promise((resolve, reject) => {
+
+        })
+    }
     async setup(argv) {
         const self = this
         if (!argv.releaseTag || !argv.releaseDir ) throw new MissingArgumentError('release-tag or release-dir argument is required')
 
         try {
-            const pods = []
+            const nodeIDs = argv.nodeId ? argv.nodeId.split(',') : []
+            const pods = await this.getPods(nodeIDs)
             for (const pod of pods) {
                 let releaseDir = argv.releaseDir
                 if (argv.releaseTag !== '') {
@@ -62,6 +68,7 @@ export class NodeCommand extends BaseCommand {
                         command: 'setup',
                         desc: 'Setup node with a specific version of Hedera platform',
                         builder: yargs => {
+                            yargs.option('node-id', flags.nodeID)
                             yargs.option('release-tag', flags.platformReleaseTag)
                             yargs.option('release-dir', flags.platformReleaseDir)
                         },

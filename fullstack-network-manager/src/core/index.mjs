@@ -4,6 +4,7 @@ import {Kind} from './kind.mjs'
 import {Helm} from './helm.mjs'
 import {Kubectl} from "./kubectl.mjs";
 import {PackageDownloader} from "./package_downloader.mjs";
+import {PlatformInstaller} from "./platform_installer.mjs";
 
 // Expose components from the core module
-export {logging, constants, Kind, Helm, Kubectl, PackageDownloader}
+export {logging, constants, Kind, Helm, Kubectl, PackageDownloader, PlatformInstaller}
