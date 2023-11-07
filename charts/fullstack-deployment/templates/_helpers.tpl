@@ -1,3 +1,12 @@
+{{- define "fullstack.testLabels" -}}
+  fullstack.hedera.com/testSuiteName: {{ $.Values.deployment.testMetadata.testSuiteName }}
+  fullstack.hedera.com/testName: {{ $.Values.deployment.testMetadata.testName }}
+  fullstack.hedera.com/testRunUID: {{ $.Values.deployment.testMetadata.testRunUID }}
+  fullstack.hedera.com/creationTimestamp: {{ $.Values.deployment.testMetadata.creationTimestamp }}
+  fullstack.hedera.com/expirationTimestamp: {{ $.Values.deployment.testMetadata.expirationTimestamp }}
+  fullstack.hedera.com/requester: {{ $.Values.deployment.testMetadata.requester }}
+{{- end }}
+
 {{- define "fullstack.hedera.security.context" -}}
 runAsUser: 2000
 runAsGroup: 2000
