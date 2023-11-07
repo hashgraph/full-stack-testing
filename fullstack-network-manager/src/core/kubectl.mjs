@@ -69,4 +69,15 @@ export class Kubectl extends ShellRunner {
     async getNamespace(...args) {
         return this.run(this.prepareCommand('get', 'ns', ...args))
     }
+
+
+    /**
+     * Invoke `kubectl wait` command
+     * @param resource a kubernetes resource type (e.g. pod | svc etc.)
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async wait(resource, ...args) {
+        return this.run(this.prepareCommand('wait', resource, ...args))
+    }
 }

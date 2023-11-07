@@ -89,8 +89,8 @@ export const platformReleaseDir = {
     type: 'string'
 }
 
-export const nodeID = {
-    describe: 'Node ID (empty means all nodes)',
+export const nodeIDs = {
+    describe: 'Comma separated node IDs (empty means all nodes)',
     default: "",
     alias: 'i',
     type: 'string'

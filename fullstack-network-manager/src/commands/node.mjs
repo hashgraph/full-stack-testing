@@ -10,25 +10,51 @@ export class NodeCommand extends BaseCommand {
     constructor(opts) {
         super(opts);
 
-        if(!opts || !opts.downloader ) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
-        if(!opts || !opts.platformInstaller ) throw new IllegalArgumentError('An instance of core/PlatformInstaller is required', opts.platformInstaller)
+        if (!opts || !opts.downloader) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
+        if (!opts || !opts.platformInstaller) throw new IllegalArgumentError('An instance of core/PlatformInstaller is required', opts.platformInstaller)
 
         this.downloader = opts.downloader
         this.plaformInstaller = opts.platformInstaller
     }
 
-    async getPods(nodeIds = []) {
-        return new Promise((resolve, reject) => {
+    async getNetworkNodePodNames(namespace, nodeIds = [], timeout='300s') {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let podNames = []
+                if (nodeIds.length > 0) {
+                    for (const nodeId of nodeIds) {
+                        // kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s -n "${NAMESPACE}" || return "${EX_ERR}"
+                        const podName = `network-node-${nodeId}`
+                        let status = await this.kubectl.wait('pod',
+                            `--for=jsonpath='{.status.phase}'=Running`,
+                            `-l fullstack.hedera.com/type=network-node`,
+                            `-l fullstack.hedera.com/node-name=${nodeId}`,
+                            `--timeout=${timeout}`,
+                            `-n "${namespace}"`
+                        )
+                        podNames.push(podName)
+                    }
+                } else {
+                    let output = await this.kubectl.get('pods', `-l fullstack.hedera.com/type=network-node`, '--no-headers', `-o custom-columns=":metadata.name"` )
+                    output.forEach(item => podNames.push(item.trim()))
+                }
+
+                resolve(podNames)
+            } catch (e) {
+                reject(e)
+            }
 
         })
     }
+
     async setup(argv) {
         const self = this
-        if (!argv.releaseTag || !argv.releaseDir ) throw new MissingArgumentError('release-tag or release-dir argument is required')
+        if (!argv.releaseTag && !argv.releaseDir) throw new MissingArgumentError('release-tag or release-dir argument is required')
 
+        const namespace = argv.namespace
         try {
-            const nodeIDs = argv.nodeId ? argv.nodeId.split(',') : []
-            const pods = await this.getPods(nodeIDs)
+            const nodeIDs = argv.nodeIds ? argv.nodeIds.split(',') : []
+            const pods = await this.getNetworkNodePodNames(namespace, nodeIDs)
             for (const pod of pods) {
                 let releaseDir = argv.releaseDir
                 if (argv.releaseTag !== '') {
@@ -68,7 +94,8 @@ export class NodeCommand extends BaseCommand {
                         command: 'setup',
                         desc: 'Setup node with a specific version of Hedera platform',
                         builder: yargs => {
-                            yargs.option('node-id', flags.nodeID)
+                            yargs.option('namespace', flags.namespaceFlag)
+                            yargs.option('node-ids', flags.nodeIDs)
                             yargs.option('release-tag', flags.platformReleaseTag)
                             yargs.option('release-dir', flags.platformReleaseDir)
                         },
@@ -88,7 +115,7 @@ export class NodeCommand extends BaseCommand {
                         command: 'start',
                         desc: 'Start a node running Hedera platform',
                         builder: yargs => {
-                            yargs.option('node-id', flags.nodeID)
+                            yargs.option('node-ids', flags.nodeIDs)
                         },
                         handler: argv => {
                             nodeCmd.logger.debug("==== Running 'node start' ===")
@@ -106,7 +133,7 @@ export class NodeCommand extends BaseCommand {
                         command: 'stop',
                         desc: 'stop a node running Hedera platform',
                         builder: yargs => {
-                            yargs.option('node-id', flags.nodeID)
+                            yargs.option('node-ids', flags.nodeIDs)
                         },
                         handler: argv => {
                             nodeCmd.logger.debug("==== Running 'node stop' ===")
