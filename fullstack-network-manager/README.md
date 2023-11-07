@@ -29,25 +29,26 @@ Select a command
 - In order to support ES6 modules with `jest`, set an env variable `export NODE_OPTIONS=--experimental-vm-modules >> ~/.zshrc`
   - If you are using Intellij and would like to use debugger tools, you will need to enable `--experimental-vm-modules` for `Jest`.
     - `Run->Edit Configurations->Edit Configuration Templates->Jest` and then set `--experimental-vm-modules` in `Node Options`.
-- Run `npm test` to run the tests
+- Run `npm i` to install the required packages
+- Run `npm link` to install `fsnetman` as the CLI (you need to do it once)
+- Run `npm test` or `npm run test` to run the unit tests
+- Run `npm run test-e2e` to run the long-running integration tests
 - Run `npm run fsnetman` to access the CLI as shown below:
 ```
 ❯ npm run fsnetman
-
-> @hashgraph/fullstack-network-manager@0.1.0 fsnetman
-> NODE_OPTIONS=--experimental-vm-modules node fsnetman.mjs
-
-Usage: fsnetman.mjs <command> [options]
+Usage:
+  fsnetman <command> [options]
 
 Commands:
-  fsnetman.mjs init     Perform dependency checks and initialize local environme
-                        nt
-  fsnetman.mjs cluster  Manager FST cluster
+  fsnetman init     Perform dependency checks and initialize local environment
+  fsnetman cluster  Manage FST cluster
+  fsnetman chart    Manage FST chart deployment
 
 Options:
-  -h, --help     Show help                                             [boolean]
-  -v, --version  Show version number                                   [boolean]
+  -h, --help     Show help                                                                                     [boolean]
+  -v, --version  Show version number                                                                           [boolean]
 
 Select a command
+
 ```
 

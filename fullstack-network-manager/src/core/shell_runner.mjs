@@ -14,16 +14,16 @@ export class ShellRunner {
      */
     async run(cmd) {
         const self = this
-        let callStack= new Error().stack // capture the callstack to be included in error
+        const callStack= new Error().stack // capture the callstack to be included in error
 
         return new Promise((resolve, reject) => {
             const child = spawn(cmd, {
                 shell: true,
             })
 
-            let output = []
+            const output = []
             child.stdout.on('data', d => {
-                let items = d.toString().split(/\r?\n/)
+                const items = d.toString().split(/\r?\n/)
                 items.forEach(item => {
                     if (item) {
                         output.push(item)
@@ -31,9 +31,9 @@ export class ShellRunner {
                 })
             })
 
-            let errOutput= []
+            const errOutput= []
             child.stderr.on('data', d => {
-                let items = d.toString().split(/\r?\n/)
+                const items = d.toString().split(/\r?\n/)
                 items.forEach(item => {
                     if (item) {
                         errOutput.push(item)
@@ -44,7 +44,7 @@ export class ShellRunner {
 
             child.on('exit', (code, signal) => {
                 if (code) {
-                    let err = new Error(`Command exit with error code: ${code}`)
+                    const err = new Error(`Command exit with error code: ${code}`)
 
                     // include the callStack to the parent run() instead of from inside this handler.
                     // this is needed to ensure we capture the proper callstack for easier debugging.
