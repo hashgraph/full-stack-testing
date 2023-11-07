@@ -5,9 +5,9 @@ import * as core from './core/index.mjs'
 
 export function main(argv) {
     const logger = core.logging.NewLogger('debug')
-    const kind = new core.Kind({logger: logger})
-    const helm = new core.Helm({logger: logger})
-    const kubectl= new core.Kubectl({logger: logger})
+    const kind = new core.Kind(logger)
+    const helm = new core.Helm(logger)
+    const kubectl= new core.Kubectl(logger)
     const downloader = new core.PackageDownloader(logger)
     const platformInstaller = new core.PlatformInstaller(logger, kubectl)
 

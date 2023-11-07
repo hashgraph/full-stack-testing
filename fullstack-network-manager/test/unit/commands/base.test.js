@@ -7,9 +7,9 @@ import {Kind} from "../../../src/core/kind.mjs";
 const testLogger = logging.NewLogger("debug")
 
 describe('BaseCommand', () => {
-    const kind = new Kind({logger: testLogger})
-    const helm = new Helm({logger: testLogger})
-    const kubectl = new Kubectl({logger: testLogger})
+    const kind = new Kind(testLogger)
+    const helm = new Helm(testLogger)
+    const kubectl = new Kubectl(testLogger)
     const baseCmd = new BaseCommand({
         logger: testLogger,
         kind: kind,
