@@ -19,7 +19,7 @@ export class NodeCommand extends BaseCommand {
 
     async setup(argv) {
         const self = this
-        if (!argv.releaseTag || !argv.releaseDir ) throw new MissingArgumentError('release-tag or release-jar argument is required')
+        if (!argv.releaseTag || !argv.releaseDir ) throw new MissingArgumentError('release-tag or release-dir argument is required')
 
         try {
             const pods = []
