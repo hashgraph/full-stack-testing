@@ -19,14 +19,27 @@ package com.hedera.fullstack.infrastructure.api.model;
 import com.hedera.fullstack.configuration.infrastructure.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.traits.Labeled;
 
-// only individual classes will implement PodAware and ServiceAware
+/**
+ * A {@link Component} is the lowest of abstraction at the infrastructure level.
+ * A {@link Component} is contained in a {@link WorkloadReplica}
+ */
 public interface Component extends Labeled {
 
-    // lifecycle
-    // this should be mostly done by helm
+    /**
+     * Initialize the component.
+     */
     default void init() {}
 
+    /**
+     * Configure the component.
+     *
+     * @param deploymentNetworkDeploymentConfiguration
+     * 		the deployment network deployment configuration
+     */
     default void configure(NetworkDeploymentConfiguration deploymentNetworkDeploymentConfiguration) {}
 
+    /**
+     * Destroy the component.
+     */
     default void destroy() {}
 }

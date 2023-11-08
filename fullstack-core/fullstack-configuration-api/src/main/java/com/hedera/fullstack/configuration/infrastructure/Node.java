@@ -16,4 +16,11 @@
 
 package com.hedera.fullstack.configuration.infrastructure;
 
+/**
+ * Describes configuration of a Node component inside the NetworkNode Workload
+ * @param ram - The amount of ram in GB needed for the node
+ * @param cpu - The amount of cpu in cores needed for the node
+ * @param nodeID - The nodeID of the node
+ * @param nodeAccountID - The nodeAccountID of the node
+ */
 public record Node(int ram, int cpu, int nodeID, int nodeAccountID) {}

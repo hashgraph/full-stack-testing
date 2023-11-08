@@ -16,7 +16,18 @@
 
 package com.hedera.fullstack.configuration.infrastructure;
 
+/**
+ * Defines the type of installation of a node
+ */
 public enum InstallType {
+    /**
+     * The node is installed using Node Management Tool (NMT) and uses a released artifact
+     */
     NMT,
+    /**
+     * The node is installed by directly copying the build artifact to the node without the use of NMT.
+     * Though the build artifact can be a both a released artifact or a built locally on a development machine,
+     * this is typically used by developers for adhoc build testing.
+     */
     DIRECT_INSTALL
 }

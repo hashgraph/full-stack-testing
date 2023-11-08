@@ -18,6 +18,10 @@ package com.hedera.fullstack.infrastructure.api.model;
 
 import java.util.List;
 
+/**
+ *  An abstract {@link Workload} providing common functionality.
+ * @param <T> the type of the @{@link Workload} implementation
+ */
 public class AbstractWorkload<T extends Workload> implements Workload {
 
     private final List<WorkloadReplica<T>> replicas;
@@ -27,7 +31,7 @@ public class AbstractWorkload<T extends Workload> implements Workload {
         this.replicas = replicas;
         this.cluster = cluster;
     }
-    
+
     @Override
     public Cluster cluster() {
         return cluster;

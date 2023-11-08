@@ -45,7 +45,13 @@ import java.util.concurrent.Future;
 public interface InfrastructureManager {
 
     /**
-     * This is a synchronous version of {@link #createNetworkDeploymentAsync(NetworkDeploymentConfiguration)
+     * This is a synchronous version of {@link #createNetworkDeploymentAsync(NetworkDeploymentConfiguration)}
+     * @throws InvalidConfigurationException if the {@link NetworkDeploymentConfiguration} is invalid
+     * @throws InsufficientClusterResourcesException if there are not enough resources in the cluster to create the {@link NetworkDeployment}
+     * @throws InfrastructureException if there is an infrastructure related exception during creation of the {@link NetworkDeployment}.
+     * The underlying cause will be captured in the nested exception.
+     * If a deployment has already started, it may leave behind partially created resources.
+     * These partial resources can be cleaned by {@link NetworkDeployment#delete()
      */
     default NetworkDeployment createNetworkDeployment(NetworkDeploymentConfiguration hederaNetwork)
             throws InvalidConfigurationException, InsufficientClusterResourcesException, InfrastructureException {
@@ -55,13 +61,18 @@ public interface InfrastructureManager {
     /**
      * <p>Creates the {@link NetworkDeployment} based on the {@link NetworkDeploymentConfiguration} provided.
      * This is a long-running process.</p>
-     * Note: the {@link NetworkDeployment} can be spread across multiple clusters and cloud providers.
+     * <p>Note: the {@link NetworkDeployment} can be spread across multiple clusters and cloud providers.</p>
+     * <p>Since this method returns a {@code Future} any exceptions thrown during the asynchronous execution
+     * will be wrapped in a {@link java.util.concurrent.ExecutionException}
+     * </p>
      * @param hederaNetwork {@link NetworkDeploymentConfiguration} object containing all the configuration needed
      *                    to create the {@link NetworkDeployment}
      * @return a {@link NetworkDeployment} object representing the {@link NetworkDeployment} created
      * @throws InvalidConfigurationException if the {@link NetworkDeploymentConfiguration} is invalid
      * @throws InsufficientClusterResourcesException if there are not enough resources in the cluster to create the {@link NetworkDeployment}
-     * @throws InfrastructureException if there is an error in the infrastructure low level implementation.
+     * @throws InfrastructureException if there is an infrastructure related exception, the underlying cause
+     * will be captured in the nested exception.
+     * @throws NullPointerException if the {@code hederaNetwork} configuration is {@code null}.
      */
     Future<NetworkDeployment> createNetworkDeploymentAsync(NetworkDeploymentConfiguration hederaNetwork)
             throws InvalidConfigurationException, InsufficientClusterResourcesException, InfrastructureException;
@@ -78,16 +89,9 @@ public interface InfrastructureManager {
      * @param id  Unique identifier of the {@link NetworkDeployment}, the implementation
      *           will usually be a combination of namespace, job name and job id etc.
      * @return the {@link NetworkDeployment} associated with the provided identifier.
-     * @throws NetworkDeploymentNotFoundException if the {@link NetworkDeployment} with the given id is not found
+     * @throws NetworkDeploymentNotFoundException if the {@link NetworkDeployment} with the given identifier is not found
+     * @throws IllegalArgumentException if the provided id is null or empty.
      */
-    NetworkDeployment networkDeploymentById(String id) throws NetworkDeploymentNotFoundException;
+    NetworkDeployment networkDeploymentById(String id) throws NetworkDeploymentNotFoundException, IllegalArgumentException;
 
-    /**
-     * Deletes the {@link NetworkDeployment} with the given id and all its workload replicas and components
-     * @param id Unique identifier of the {@link NetworkDeployment}, the implementation
-     *           will usually be a combination of namespace, job name and job id etc.
-     * @return true if the {@link NetworkDeployment} was deleted successfully, false otherwise
-     * @throws NetworkDeploymentNotFoundException if the {@link NetworkDeployment} with the given id is not found
-     */
-    Future<Boolean> deleteNetworkDeployment(String id) throws NetworkDeploymentNotFoundException;
 }

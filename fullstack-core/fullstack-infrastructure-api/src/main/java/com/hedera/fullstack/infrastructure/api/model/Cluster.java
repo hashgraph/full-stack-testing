@@ -33,12 +33,18 @@ import java.util.List;
 public interface Cluster extends KubernetesAware {
 
     /**
+     * Retrieves all workloads currently hosted on this cluster.
      * @return the {@link Workload}s hosted on this {@link Cluster}
      */
     List<Workload> listWorkloads();
 
     /**
-     * @return the {@link Workload} hosted on this {@link Cluster} of the given type
+     * Searches for a workload of the specified type that is hosted on this cluster.
+     * @param <T> the type parameter of the workload to search for
+     * @param workloadType the {@link Class} object corresponding to the workload type
+     * @return an instance of the specified {@link Workload} type if found, or null if no workload
+     *         of the specified type is hosted on this cluster.
+     * @throws IllegalArgumentException if workloadType is null
      */
-    <T extends Workload> T findWorkloadByType(Class<T> workloadType);
+    <T extends Workload> T findWorkloadByType(Class<T> workloadType) throws IllegalArgumentException;
 }

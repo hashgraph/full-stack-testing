@@ -29,11 +29,13 @@ import java.util.List;
 public interface Workload {
 
     /**
+     * Retrieves the cluster associated with this workload.
      * @return the {@link Cluster} on which this {@link Workload} is deployed
      */
     Cluster cluster();
 
     /**
+     * Retrieves all WorkloadReplicas of this Workload.
      * @return the {@link WorkloadReplica}s that are part of this {@link Workload}
      */
     <T extends Workload> List<WorkloadReplica<T>> replicas();

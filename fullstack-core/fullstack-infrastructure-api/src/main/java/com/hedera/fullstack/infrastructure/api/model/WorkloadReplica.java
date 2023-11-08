@@ -17,6 +17,7 @@
 package com.hedera.fullstack.infrastructure.api.model;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A unique indexed instance of {@link Workload}
@@ -29,28 +30,45 @@ public class WorkloadReplica<T extends Workload> {
     // global index across all clusters in the NetworkDeployment
     private final int index;
 
+    /**
+     * Retrieves the index of this {@link WorkloadReplica} in the {@link Workload}
+     * @return the index of this replica
+     */
     public int index() {
         return index;
     }
 
-    public WorkloadReplica(List<Component> components, int index) {
+    /**
+     * Creates a new {@link WorkloadReplica} with the given components and index.
+     * @param components the {@link Component}s of this Workload Replica
+     * @param index the index of this Workload Replica
+     */
+    public WorkloadReplica(final List<Component> components, final int index) {
         this.components = components;
         this.index = index;
     }
 
+    /**
+     * Adds a {@link Component} to this {@link WorkloadReplica}
+     * @param component the {@link Component} to add
+     */
     public void addComponent(Component component) {
         components.add(component);
     }
 
+    /**
+     * Retrieves all {@link Component}s of this {@link WorkloadReplica}
+     * @return the {@link Component}s of this {@link WorkloadReplica}
+     */
     public List<Component> components() {
         return components;
     }
 
     @SuppressWarnings("unchecked") // safe since we filter out the componentType of type C
-    public <C extends Component> C componentByType(Class<C> componentType) {
-        return (C) components.stream()
+    public <C extends Component> Optional<C> componentByType(Class<C> componentType) {
+        return  components.stream()
                 .filter(componentType::isInstance)
-                .findFirst()
-                .get();
+                .map(componentType::cast)
+                .findFirst();
     }
 }
