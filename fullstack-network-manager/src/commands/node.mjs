@@ -1,8 +1,12 @@
 import {BaseCommand} from "./base.mjs";
 import * as flags from "./flags.mjs";
-import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "../core/errors.mjs";
-import {constants, PackageDownloader} from "../core/index.mjs";
-import * as path from "path";
+import {
+    DataValidationError,
+    FullstackTestingError,
+    IllegalArgumentError,
+    MissingArgumentError
+} from "../core/errors.mjs";
+import {constants, PackageDownloader, Templates} from "../core/index.mjs";
 import chalk from "chalk";
 import * as fs from "fs";
 
@@ -20,14 +24,21 @@ export class NodeCommand extends BaseCommand {
         this.plaformInstaller = opts.platformInstaller
     }
 
-    async getNetworkNodePodNames(namespace, nodeIds = [], timeout='300s') {
+    /**
+     * Check if pods are running or not
+     * @param namespace
+     * @param nodeIds
+     * @param timeout
+     * @returns {Promise<unknown>}
+     */
+    async checkNetworkNodePods(namespace, nodeIds = [], timeout = '300s') {
         return new Promise(async (resolve, reject) => {
             try {
                 let podNames = []
-                if (nodeIds.length > 0) {
+                if (nodeIds && nodeIds.length > 0) {
                     for (let nodeId of nodeIds) {
                         nodeId = nodeId.trim()
-                        const podName = `network-${nodeId}-0`
+                        const podName = Templates.renderNetworkPodName(nodeId)
 
                         await this.kubectl.wait('pod',
                             `--for=jsonpath='{.status.phase}'=Running`,
@@ -40,11 +51,15 @@ export class NodeCommand extends BaseCommand {
                         podNames.push(podName)
                     }
                 } else {
-                    let output = await this.kubectl.get('pods', `-l fullstack.hedera.com/type=network-node`, '--no-headers', `-o custom-columns=":metadata.name"` )
-                    output.forEach(item => podNames.push(item.trim()))
+                    nodeIds = []
+                    let output = await this.kubectl.get('pods', `-l fullstack.hedera.com/type=network-node`, '--no-headers', `-o custom-columns=":metadata.name"`)
+                    output.forEach(podName => {
+                        nodeIds.push(Templates.extractNodeIdFromPodName(podName))
+                        podNames.push(podName)
+                    })
                 }
 
-                resolve(podNames)
+                resolve({podNames: podNames, nodeIDs: nodeIds})
             } catch (e) {
                 reject(new FullstackTestingError(`Error on detecting pods for nodes (${nodeIds}): ${e.message}`))
             }
@@ -61,24 +76,32 @@ export class NodeCommand extends BaseCommand {
         const releaseTag = argv.releaseTag
         const releaseDir = argv.releaseDir
         const releasePrefix = PackageDownloader.prepareReleasePrefix(releaseTag)
-        let packageFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
+        let buildZipFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
+        const stagingDir = `${releaseDir}/staging`
+        const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
 
         try {
-            const nodeIDs = argv.nodeIds ? argv.nodeIds.split(',') : []
-            const pods = await this.getNetworkNodePodNames(namespace, nodeIDs)
-            if (force || !fs.existsSync(packageFile)) {
+            // pre-check
+            let {podNames, nodeIDs} = await this.checkNetworkNodePods(namespace, nodeIDsArg)
+
+            // fetch platform build-<tag>.zip file
+            if (force || !fs.existsSync(buildZipFile)) {
                 self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package: build-${releaseTag}.zip`)
-                packageFile = await this.downloader.fetchPlatform(releaseTag, releaseDir)
+                buildZipFile = await this.downloader.fetchPlatform(releaseTag, releaseDir)
             } else {
                 self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${releaseTag}.zip`)
             }
-            self.logger.showUser(chalk.green('OK'), `Platform package: ${packageFile}`)
+            self.logger.showUser(chalk.green('OK'), `Platform package: ${buildZipFile}`)
 
-            for (const pod of pods) {
-                await self.plaformInstaller.install(pod, packageFile, force);
+            // prepare staging
+            await this.plaformInstaller.prepareStaging(nodeIDs, buildZipFile, stagingDir, releaseTag, force)
+
+            // setup
+            for (const podName of podNames) {
+                await self.plaformInstaller.install(podName, buildZipFile, stagingDir, force);
             }
         } catch (e) {
-            this.logger.showUserError(e)
+            self.logger.showUserError(e)
         }
 
         return false

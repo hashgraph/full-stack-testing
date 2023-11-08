@@ -24,6 +24,7 @@ export const constants = {
     ROOT_CONTAINER: 'root-container',
     DATA_APPS_DIR: 'data/apps',
     DATA_LIB_DIR: 'data/lib',
-    HEDERA_HOME_DIR: '/home/hedera'
-
+    HEDERA_USER_HOME_DIR: '/home/hedera',
+    HEDERA_APP_JAR: 'HederaNode.jar',
+    HEDERA_NODE_DEFAULT_STAKE_AMOUNT: 1,
 }

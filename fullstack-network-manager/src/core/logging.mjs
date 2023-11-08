@@ -93,9 +93,26 @@ const Logger = class {
     showUser(msg, ...args) {
         console.log(util.format(msg, ...args))
     }
+
     showUserError(err) {
-        console.log(chalk.red(err.message))
+        this.error(err.message, err)
+
+        console.log(chalk.red('ERROR: '))
         console.log(err.stack)
+
+        if (err.cause) {
+            console.log(chalk.red('Caused by: '))
+            let depth = 0
+            let cause = err.cause
+            while (cause !== undefined && depth < 10) {
+                if (cause.stack) {
+                    console.log(chalk.red('|-'), cause.stack)
+                }
+
+                cause = cause.cause
+                depth += 1
+            }
+        }
     }
 
     critical(msg, ...args) {

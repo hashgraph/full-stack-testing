@@ -4,12 +4,8 @@ import {PackageDownloader, PlatformInstaller} from "../../../src/core/index.mjs"
 import * as fs from 'fs'
 import * as path from "path";
 import * as os from "os";
-import {
-    FullstackTestingError,
-    IllegalArgumentError,
-    MissingArgumentError,
-    ResourceNotFoundError
-} from "../../../src/core/errors.mjs";
+import {constants} from "../../../src/core/index.mjs";
+
 describe('PackageInstallerE2E', () => {
     const testLogger = core.logging.NewLogger('debug')
     const kubectl = new core.Kubectl(testLogger)
@@ -19,16 +15,6 @@ describe('PackageInstallerE2E', () => {
     const packageTag = 'v0.42.5'
     let packageFile = ''
     let releaseDir = ''
-
-    beforeAll(async () => {
-        try {
-            fs.mkdirSync('tests/data/tmp', {recursive: true})
-            packageFile = await downloader.fetchPlatform(packageTag, 'test/data/tmp')
-        } catch (e) {
-            console.error(e)
-            expect(e).toBeNull()
-        }
-    })
 
     describe('setupHapiDirectories', () => {
         it('should succeed with valid pod', async () => {
@@ -46,13 +32,43 @@ describe('PackageInstallerE2E', () => {
         it('should succeed with valid tag and pod', async () => {
             expect.assertions(1)
             try {
+                fs.mkdirSync('tests/data/tmp', {recursive: true})
+                packageFile = await downloader.fetchPlatform(packageTag, 'test/data/tmp')
                 await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
-                const outputs =  await kubectl.execContainer(podName, core.constants.ROOT_CONTAINER, `ls -la ${core.constants.HAPI_PATH}`)
+                const outputs = await kubectl.execContainer(podName, core.constants.ROOT_CONTAINER, `ls -la ${core.constants.HAPI_PATH}`)
                 testLogger.showUser(outputs)
             } catch (e) {
                 console.error(e)
                 expect(e).toBeNull()
             }
+        })
+    })
+
+    describe('prepareConfigTxt', () => {
+        it('should succeed in generating config.txt', async () => {
+            const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
+            const configPath = `${tmpDir}/config.txt`
+            const nodeIDs = ['node0', 'node1', 'node2']
+            const releaseTag = 'v0.42.0'
+
+            const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag)
+
+            // verify format is correct
+            expect(configLines.length).toBe(5)
+            expect(configLines[0]).toBe(`swirld, ${constants.CLUSTER_NAME}`)
+            expect(configLines[1]).toBe(`app, ${constants.HEDERA_APP_JAR}`)
+            expect(configLines[2]).toContain('address, 0, node0, node0, 1')
+            expect(configLines[3]).toContain('address, 1, node1, node1, 1')
+            expect(configLines[4]).toContain('address, 2, node2, node2, 1')
+
+            // verify the file exists
+            expect(fs.existsSync(configPath)).toBeTruthy()
+            const fileContents = fs.readFileSync(configPath).toString()
+
+            // verify file content matches
+            expect(fileContents).toBe(configLines.join("\n"))
+
+            fs.rmdirSync(tmpDir, {recursive: true})
         })
     })
 })
