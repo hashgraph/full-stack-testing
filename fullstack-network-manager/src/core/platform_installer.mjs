@@ -1,4 +1,7 @@
-import {IllegalArgumentError, MissingArgumentError} from "./errors.mjs";
+import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "./errors.mjs";
+import AdmZip from 'adm-zip'
+import chalk from "chalk";
+import * as fs from "fs";
 
 /**
  * PlatformInstaller install platform code in the root-container of a network pod
@@ -58,11 +61,31 @@ export class PlatformInstaller {
         })
     }
 
-    async unzipFile(srcPath, destPath) {
+    async unzipFile(srcPath, destPath, showStatus= false) {
         const self = this
 
-        return new Promise((resolve, reject) => {
+        if (!srcPath) throw new MissingArgumentError('srcPath is required')
+        if (!destPath) throw new MissingArgumentError('destPath is required')
 
+        if (! fs.existsSync(srcPath)) throw new IllegalArgumentError('srcPath does not exists', srcPath)
+
+        return new Promise((resolve, reject) => {
+            try {
+                self.logger.debug(`Unzip ${srcPath} -> ${destPath}`)
+                const zip = AdmZip(srcPath, {readEntries: true})
+
+                zip.getEntries().forEach(function (zipEntry) {
+                    self.logger.debug(`Extracting file: ${zipEntry.entryName} -> ${destPath}/${zipEntry.entryName} ...`, {src: zipEntry.entryName, dst: `${destPath}/${zipEntry.entryName}`})
+                    zip.extractEntryTo(zipEntry, destPath, true, true, true, zipEntry.entryName)
+                    if (showStatus) {
+                        self.logger.showUser(chalk.green('OK'), `Extracted: ${zipEntry.entryName} -> ${destPath}/${zipEntry.entryName}`)
+                    }
+                });
+
+                resolve(destPath)
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to unzip ${srcPath}: ${e.message}`, e))
+            }
         })
     }
 
@@ -70,7 +93,6 @@ export class PlatformInstaller {
         const self = this
 
         return new Promise((resolve, reject) => {
-
         })
     }
 

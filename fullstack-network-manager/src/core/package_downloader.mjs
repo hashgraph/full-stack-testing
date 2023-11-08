@@ -150,9 +150,10 @@ export class PackageDownloader {
      *
      * @param tag full semantic version e.g. v0.40.4
      * @param destDir directory where the artifact needs to be saved
+     * @param force whether to download even if the file exists
      * @returns {Promise<string>} full path to the downloaded file
      */
-    async fetchPlatform(tag, destDir) {
+    async fetchPlatform(tag, destDir, force = false) {
         const self = this
 
         const parsed = tag.split('.')
@@ -165,21 +166,23 @@ export class PackageDownloader {
             throw new IllegalArgumentError(`destDir (${destDir}) is not a directory`, destDir)
         }
 
-
         return new Promise(async (resolve, reject) => {
             try {
                 const releaseDir = `${parsed[0]}.${parsed[1]}`
                 const downloadDir = `${destDir}/${releaseDir}`
-                if (!fs.existsSync(downloadDir)) {
-                    fs.mkdirSync(downloadDir)
-                }
-
                 const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
                 const packagePath = `${downloadDir}/build-${tag}.zip`
-
                 const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
                 const checksumPath = `${downloadDir}/build-${tag}.sha384`
 
+                if (!force && fs.existsSync(packagePath)) {
+                    resolve(packagePath)
+                    return
+                }
+
+                if (!fs.existsSync(downloadDir)) {
+                    fs.mkdirSync(downloadDir)
+                }
 
                 await this.fetchFile(packageURL, packagePath)
                 await this.fetchFile(checksumURL, checksumPath)

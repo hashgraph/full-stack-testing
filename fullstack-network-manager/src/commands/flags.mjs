@@ -95,3 +95,10 @@ export const nodeIDs = {
     alias: 'i',
     type: 'string'
 }
+
+export const force= {
+    describe: 'Force actions even if those can be skipped',
+    default: false,
+    alias: 'f',
+    type: 'boolean'
+}

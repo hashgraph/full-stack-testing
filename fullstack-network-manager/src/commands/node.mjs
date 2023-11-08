@@ -2,6 +2,9 @@ import {BaseCommand} from "./base.mjs";
 import * as flags from "./flags.mjs";
 import {IllegalArgumentError, MissingArgumentError} from "../core/errors.mjs";
 import {constants} from "../core/index.mjs";
+import * as path from "path";
+import chalk from "chalk";
+import * as fs from "fs";
 
 /**
  * Defines the core functionalities of 'node' command
@@ -22,16 +25,18 @@ export class NodeCommand extends BaseCommand {
             try {
                 let podNames = []
                 if (nodeIds.length > 0) {
-                    for (const nodeId of nodeIds) {
-                        // kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=300s -n "${NAMESPACE}" || return "${EX_ERR}"
+                    for (let nodeId of nodeIds) {
+                        nodeId = nodeId.trim()
                         const podName = `network-node-${nodeId}`
-                        let status = await this.kubectl.wait('pod',
+
+                        await this.kubectl.wait('pod',
                             `--for=jsonpath='{.status.phase}'=Running`,
                             `-l fullstack.hedera.com/type=network-node`,
                             `-l fullstack.hedera.com/node-name=${nodeId}`,
                             `--timeout=${timeout}`,
                             `-n "${namespace}"`
                         )
+
                         podNames.push(podName)
                     }
                 } else {
@@ -52,15 +57,24 @@ export class NodeCommand extends BaseCommand {
         if (!argv.releaseTag && !argv.releaseDir) throw new MissingArgumentError('release-tag or release-dir argument is required')
 
         const namespace = argv.namespace
+        const force = argv.force
+
         try {
             const nodeIDs = argv.nodeIds ? argv.nodeIds.split(',') : []
             const pods = await this.getNetworkNodePodNames(namespace, nodeIDs)
             for (const pod of pods) {
                 let releaseDir = argv.releaseDir
                 if (argv.releaseTag !== '') {
-                    const packagePath = await this.downloader.fetchPlatform(argv.releaseTag, constants.FST_HEDERA_RELEASES_DIR)
-                    let releaseDir = `${packagePath}/unzipped`
-                    await this.unzipFile(packagePath, releaseDir)
+                    const packageFile = await this.downloader.fetchPlatform(argv.releaseTag, constants.FST_HEDERA_RELEASES_DIR)
+                    self.logger.showUser(chalk.green('OK'), `Platform package: ${packageFile}`)
+
+                    let packageDir =  path.dirname(packageFile)
+                    const unzippedDir = `${packageDir}/unzipped`
+                    if (force || !fs.existsSync(unzippedDir)) {
+                        await this.plaformInstaller.unzipFile(packageFile, unzippedDir)
+                    }
+
+                    self.logger.showUser(chalk.green('OK'), `Unzipped platform package at: ${unzippedDir}`)
                 }
 
                 await self.plaformInstaller.install(pod, releaseDir);
@@ -98,6 +112,7 @@ export class NodeCommand extends BaseCommand {
                             yargs.option('node-ids', flags.nodeIDs)
                             yargs.option('release-tag', flags.platformReleaseTag)
                             yargs.option('release-dir', flags.platformReleaseDir)
+                            yargs.option('force', flags.force)
                         },
                         handler: argv => {
                             nodeCmd.logger.debug("==== Running 'node setup' ===")
@@ -118,6 +133,8 @@ export class NodeCommand extends BaseCommand {
                             yargs.option('node-ids', flags.nodeIDs)
                         },
                         handler: argv => {
+                            console.log("here")
+                            nodeCmd.logger.showUser('here2')
                             nodeCmd.logger.debug("==== Running 'node start' ===")
                             nodeCmd.logger.debug(argv)
 
