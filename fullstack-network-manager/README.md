@@ -35,7 +35,10 @@ Select a command
 - Run `npm i` to install the required packages
 - Run `npm link` to install `fsnetman` as the CLI 
   - Note: you need to do it once. If `fsnetman` already exists in your path, you will need to remove it first.
+  - Alternative way would be to run `npm run fsnetman -- <COMMAND> <ARGS>`
 - Run `npm test` or `npm run test` to run the unit tests
 - Run `npm run test-e2e` to run the long-running integration tests
-- Run `npm run fsnetman` to access the CLI as shown above
+- Run `fsnetman` to access the CLI as shown above. 
+- Note that debug logs are stored at `~/.fsnetman/logs/fst.log`. So you may use `tail -f ~/.fsnetman/logs/fst.log | jq
+  ` in a separate terminal to keep an eye on the logs.
 
