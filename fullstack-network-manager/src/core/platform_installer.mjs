@@ -22,9 +22,13 @@ export class PlatformInstaller {
     }
 
     async validatePlatformReleaseDir(releaseDir) {
-        return new Promise((resolve, reject) => {
-
-        })
+        if (!releaseDir) throw new MissingArgumentError('releaseDir is required')
+        if (!fs.existsSync(releaseDir)) throw new IllegalArgumentError('releaseDir does not exists', releaseDir)
+        if (!fs.existsSync(`${releaseDir}/data`)) throw new IllegalArgumentError('releaseDir does not have data directory', releaseDir)
+        if (!fs.existsSync(`${releaseDir}/data/apps`)) throw new IllegalArgumentError(`releaseDir '${releaseDir}' does not have data/apps directory`, releaseDir)
+        if (!fs.existsSync(`${releaseDir}/data/libs`)) throw new IllegalArgumentError(`releaseDir '${releaseDir}' does not have data/libs directory`, releaseDir)
+        if (!fs.statSync(`${releaseDir}/data/app`).isEmpty()) throw new IllegalArgumentError(`data/app is empty in releaseDir: ${releaseDir}`, releaseDir)
+        if (!fs.statSync(`${releaseDir}/data/libs`).isEmpty()) throw new IllegalArgumentError(`data/libs is empty in releaseDir: ${releaseDir}`, releaseDir)
     }
 
 

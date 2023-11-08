@@ -47,6 +47,69 @@ describe('PackageInstaller', () => {
             await expect(installer.unzipFile('test/data/test.zip', tmpDir, true)).resolves.toBe(tmpDir)
             fs.rmSync(tmpDir, { recursive: true, force: true }); // not very safe!
         })
+    })
 
+    describe('validatePlatformReleaseDir', () => {
+        it('should fail for missing path', async () => {
+            expect.assertions(1)
+            await expect(installer.validatePlatformReleaseDir('')).rejects.toThrow(MissingArgumentError)
+        })
+
+        it('should fail for invalid path', async () => {
+            expect.assertions(1)
+            await expect(installer.validatePlatformReleaseDir('/INVALID')).rejects.toThrow(IllegalArgumentError)
+        })
+
+        it('should fail if directory does not have data/apps directory', async () => {
+            expect.assertions(1)
+
+            let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
+            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
+            await expect(installer.validatePlatformReleaseDir(tmpDir)).rejects.toThrow(IllegalArgumentError)
+            fs.rmdirSync(tmpDir, {recursive: true})
+        })
+
+        it('should fail if directory does not have data/libs directory', async () => {
+            expect.assertions(1)
+
+            let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
+            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
+            await expect(installer.validatePlatformReleaseDir(tmpDir)).rejects.toThrow(IllegalArgumentError)
+            fs.rmdirSync(tmpDir, {recursive: true})
+        })
+
+        it('should fail if directory does not have data/app directory is empty', async () => {
+            expect.assertions(1)
+
+            let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
+            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
+            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/data/libs/test.jar`, '')
+            await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
+            fs.rmdirSync(tmpDir, {recursive: true})
+        })
+
+        it('should fail if directory does not have data/libs directory is empty', async () => {
+            expect.assertions(1)
+
+            let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
+            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/data/app/app.jar`, '')
+            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
+            await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
+            fs.rmdirSync(tmpDir, {recursive: true})
+        })
+
+        it('should succeed with non-empty data/apps and data/libs directory', async () => {
+            expect.assertions(1)
+
+            let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
+            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/data/app/app.jar`, '')
+            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/data/libs/lib-1.jar`, '')
+            await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
+            fs.rmdirSync(tmpDir, {recursive: true})
+        })
     })
 })
