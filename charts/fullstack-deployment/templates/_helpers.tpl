@@ -2,9 +2,9 @@
   fullstack.hedera.com/testSuiteName: {{ $.Values.deployment.testMetadata.testSuiteName }}
   fullstack.hedera.com/testName: {{ $.Values.deployment.testMetadata.testName }}
   fullstack.hedera.com/testRunUID: {{ $.Values.deployment.testMetadata.testRunUID }}
-  fullstack.hedera.com/creationTimestamp: {{ $.Values.deployment.testMetadata.creationTimestamp }}
-  fullstack.hedera.com/expirationTimestamp: {{ $.Values.deployment.testMetadata.expirationTimestamp }}
-  fullstack.hedera.com/requester: {{ $.Values.deployment.testMetadata.requester }}
+  fullstack.hedera.com/testCreationTimestamp: {{ $.Values.deployment.testMetadata.testCreationTimestamp }}
+  fullstack.hedera.com/testExpirationTimestamp: {{ $.Values.deployment.testMetadata.testExpirationTimestamp }}
+  fullstack.hedera.com/testRequester: {{ $.Values.deployment.testMetadata.testRequester }}
 {{- end }}
 
 {{- define "fullstack.hedera.security.context" -}}
