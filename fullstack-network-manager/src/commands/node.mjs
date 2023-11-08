@@ -164,7 +164,7 @@ export class NodeCommand extends BaseCommand {
 
                         }
                     })
-                    .demand(1, 'Select a node command')
+                    .demandCommand(1, 'Select a node command')
             }
         }
     }

@@ -302,7 +302,7 @@ export class ClusterCommand extends BaseCommand {
 
                         }
                     })
-                    .demand(1, 'Select a cluster command')
+                    .demandCommand(1, 'Select a cluster command')
             }
         }
     }
