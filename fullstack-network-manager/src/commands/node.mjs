@@ -68,7 +68,7 @@ export class NodeCommand extends BaseCommand {
             const pods = await this.getNetworkNodePodNames(namespace, nodeIDs)
             if (force || !fs.existsSync(packageFile)) {
                 self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package: build-${releaseTag}.zip`)
-                packageFile = await this.downloader.fetchPlatform(releaseTag, constants.FST_HEDERA_RELEASES_DIR)
+                packageFile = await this.downloader.fetchPlatform(releaseTag, releaseDir)
             } else {
                 self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${releaseTag}.zip`)
             }
