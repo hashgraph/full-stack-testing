@@ -17,7 +17,7 @@ export class InitCommand extends BaseCommand {
     async setupHomeDirectory(dirs = [
         constants.FST_HOME_DIR,
         constants.FST_LOGS_DIR,
-        constants.FST_HEDERA_RELEASES_DIR,
+        constants.FST_CACHE_DIR,
     ]) {
         const self = this
 

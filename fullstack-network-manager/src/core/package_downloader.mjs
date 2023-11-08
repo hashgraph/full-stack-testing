@@ -4,6 +4,8 @@ import {pipeline as streamPipeline} from 'node:stream/promises';
 import got from 'got';
 import {DataValidationError, FullstackTestingError, IllegalArgumentError, ResourceNotFoundError} from "./errors.mjs";
 import * as https from "https";
+import {Templates} from "./templates.mjs";
+import {constants} from "./constants.mjs";
 
 export class PackageDownloader {
     /**
@@ -143,12 +145,6 @@ export class PackageDownloader {
         if (checksum !== computed) throw new DataValidationError('checksum', checksum, computed)
     }
 
-    static prepareReleasePrefix(tag) {
-        const parsed = tag.split('.')
-        if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
-        return `${parsed[0]}.${parsed[1]}`
-    }
-
     /**
      * Fetch platform release artifact
      *
@@ -161,7 +157,7 @@ export class PackageDownloader {
      */
     async fetchPlatform(tag, destDir, force = false) {
         const self = this
-        const releaseDir = PackageDownloader.prepareReleasePrefix(tag)
+        const releaseDir = Templates.prepareReleasePrefix(tag)
 
         if (!destDir) throw new Error('destination directory path is required')
 
@@ -172,9 +168,9 @@ export class PackageDownloader {
         }
 
         const downloadDir = `${destDir}/${releaseDir}`
-        const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
+        const packageURL = `${constants.HEDERA_BUILDS_URL}/node/software/${releaseDir}/build-${tag}.zip`
         const packageFile = `${downloadDir}/build-${tag}.zip`
-        const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
+        const checksumURL = `${constants.HEDERA_BUILDS_URL}/node/software/${releaseDir}/build-${tag}.sha384`
         const checksumPath = `${downloadDir}/build-${tag}.sha384`
 
         return new Promise(async (resolve, reject) => {

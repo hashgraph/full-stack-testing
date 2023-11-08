@@ -84,7 +84,7 @@ export const platformReleaseTag = {
 
 export const platformReleaseDir = {
     describe: `Platform release cache dir (containing release directories named as v<major>.<minor>. e.g. v0.42)`,
-    default: core.constants.FST_HEDERA_RELEASES_DIR,
+    default: core.constants.FST_CACHE_DIR,
     alias: 'd',
     type: 'string'
 }

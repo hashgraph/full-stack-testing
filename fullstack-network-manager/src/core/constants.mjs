@@ -18,7 +18,7 @@ export const constants = {
     CWD: process.cwd(),
     FST_HOME_DIR: FST_HOME_DIR,
     FST_LOGS_DIR: `${FST_HOME_DIR}/logs`,
-    FST_HEDERA_RELEASES_DIR: `${FST_HOME_DIR}/hedera-releases`,
+    FST_CACHE_DIR: `${FST_HOME_DIR}/cache`,
     RESOURCES_DIR: normalize(CUR_FILE_DIR + "/../../resources"),
     HAPI_PATH: `${HGCAPP_DIR}/services-hedera/HapiApp2.0`,
     ROOT_CONTAINER: 'root-container',
@@ -27,4 +27,5 @@ export const constants = {
     HEDERA_USER_HOME_DIR: '/home/hedera',
     HEDERA_APP_JAR: 'HederaNode.jar',
     HEDERA_NODE_DEFAULT_STAKE_AMOUNT: 1,
+    HEDERA_BUILDS_URL: 'https://builds.hedera.com',
 }

@@ -132,7 +132,7 @@ export class PlatformInstaller {
      * @param template path to the confit.template file
      * @returns {Promise<unknown>}
      */
-    async prepareConfigTxt(nodeIDs, destPath, releaseTag, template = `${constants.RESOURCES_DIR}/local-node/config.template`) {
+    async prepareConfigTxt(nodeIDs, destPath, releaseTag, template = `${constants.RESOURCES_DIR}/templates/config.template`) {
         const self = this
 
         if (!nodeIDs || nodeIDs.length === 0) throw new MissingArgumentError('list of node IDs is required')
@@ -191,7 +191,7 @@ export class PlatformInstaller {
         })
     }
 
-    async prepareStaging(nodeIDs, buildZipFile, stagingDir, releaseTag, force = false) {
+    async prepareStaging(nodeIDs, stagingDir, releaseTag, force = false) {
         const self = this
         return new Promise(async (resolve, reject) => {
             try {
@@ -201,13 +201,12 @@ export class PlatformInstaller {
 
                 const configTxtPath = `${stagingDir}/config.txt`
 
+                // copy a templates from fsnetman resources directory
+                fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, {recursive: true})
+
                 // prepare address book
-                await this.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag)
+                await this.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, `${stagingDir}/templates/config.template`)
                 self.logger.showUser(chalk.green('OK'), `Prepared config.txt: ${configTxtPath}`)
-
-                // copy node keys (if required)
-
-                // copy node config files (if required)
 
                 resolve(true)
             } catch (e) {

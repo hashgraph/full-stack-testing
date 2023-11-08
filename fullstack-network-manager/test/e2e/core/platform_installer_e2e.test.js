@@ -71,4 +71,23 @@ describe('PackageInstallerE2E', () => {
             fs.rmdirSync(tmpDir, {recursive: true})
         })
     })
+
+    describe('prepareStaging', () => {
+        it('should succeed in preparing staging area', async () => {
+            const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
+            const configPath = `${tmpDir}/config.txt`
+            const nodeIDs = ['node0', 'node1', 'node2']
+            const releaseTag = 'v0.42.0'
+
+            await expect(installer.prepareStaging(nodeIDs, tmpDir, releaseTag)).resolves.toBeTruthy()
+
+            // verify the config.txt exists
+            expect(fs.existsSync(configPath)).toBeTruthy()
+
+            // verify copy of local-node data is at staging area
+            expect(fs.existsSync(`${tmpDir}/templates`)).toBeTruthy()
+
+            fs.rmdirSync(tmpDir, {recursive: true})
+        })
+    })
 })

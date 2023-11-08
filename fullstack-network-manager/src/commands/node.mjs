@@ -75,18 +75,21 @@ export class NodeCommand extends BaseCommand {
         const force = argv.force
         const releaseTag = argv.releaseTag
         const releaseDir = argv.releaseDir
-        const releasePrefix = PackageDownloader.prepareReleasePrefix(releaseTag)
-        let buildZipFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
-        const stagingDir = `${releaseDir}/staging`
-        const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
 
         try {
+            const releasePrefix = Templates.prepareReleasePrefix(releaseTag)
+            let buildZipFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
+            const stagingDir = `${releaseDir}/${releasePrefix}/staging/${releaseTag}`
+            const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
+
+            fs.mkdirSync(stagingDir, {recursive: true})
+
             // pre-check
             let {podNames, nodeIDs} = await this.checkNetworkNodePods(namespace, nodeIDsArg)
 
             // fetch platform build-<tag>.zip file
             if (force || !fs.existsSync(buildZipFile)) {
-                self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package: build-${releaseTag}.zip`)
+                self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package 'build-${releaseTag}.zip' from '${constants.HEDERA_BUILDS_URL}' ...`)
                 buildZipFile = await this.downloader.fetchPlatform(releaseTag, releaseDir)
             } else {
                 self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${releaseTag}.zip`)
@@ -94,7 +97,7 @@ export class NodeCommand extends BaseCommand {
             self.logger.showUser(chalk.green('OK'), `Platform package: ${buildZipFile}`)
 
             // prepare staging
-            await this.plaformInstaller.prepareStaging(nodeIDs, buildZipFile, stagingDir, releaseTag, force)
+            await this.plaformInstaller.prepareStaging(nodeIDs, stagingDir, releaseTag, force)
 
             // setup
             for (const podName of podNames) {
