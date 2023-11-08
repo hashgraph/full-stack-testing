@@ -166,22 +166,22 @@ export class PackageDownloader {
             throw new IllegalArgumentError(`destDir (${destDir}) is not a directory`, destDir)
         }
 
+        const releaseDir = `${parsed[0]}.${parsed[1]}`
+        const downloadDir = `${destDir}/${releaseDir}`
+        const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
+        const packagePath = `${downloadDir}/build-${tag}.zip`
+        const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
+        const checksumPath = `${downloadDir}/build-${tag}.sha384`
+
         return new Promise(async (resolve, reject) => {
             try {
-                const releaseDir = `${parsed[0]}.${parsed[1]}`
-                const downloadDir = `${destDir}/${releaseDir}`
-                const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
-                const packagePath = `${downloadDir}/build-${tag}.zip`
-                const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
-                const checksumPath = `${downloadDir}/build-${tag}.sha384`
-
-                if (!force && fs.existsSync(packagePath)) {
+                if (fs.existsSync(packagePath) && !force) {
                     resolve(packagePath)
                     return
                 }
 
                 if (!fs.existsSync(downloadDir)) {
-                    fs.mkdirSync(downloadDir)
+                    fs.mkdirSync(downloadDir, {recursive: true})
                 }
 
                 await this.fetchFile(packageURL, packagePath)

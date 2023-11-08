@@ -96,7 +96,9 @@ describe('PackageDownloader', () => {
             let tag = 'v0.40.0-INVALID'
 
             try {
-                await downloader.fetchPlatform(tag, os.tmpdir())
+                let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
+                await downloader.fetchPlatform(tag, tmpDir)
+                fs.rmdirSync(tmpDir, {recursive: true})
             } catch (e) {
                 expect(e.cause).not.toBeNull()
                 expect(e.cause).toBeInstanceOf(ResourceNotFoundError)
@@ -107,7 +109,9 @@ describe('PackageDownloader', () => {
             expect.assertions(1)
 
             try {
+                let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'));
                 await downloader.fetchPlatform('INVALID', os.tmpdir())
+                fs.rmdirSync(tmpDir, {recursive: true})
             } catch (e) {
                 expect(e.message).toContain('must include major, minor and patch fields')
             }

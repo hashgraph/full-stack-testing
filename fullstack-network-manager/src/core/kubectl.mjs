@@ -80,4 +80,35 @@ export class Kubectl extends ShellRunner {
     async wait(resource, ...args) {
         return this.run(this.prepareCommand('wait', resource, ...args))
     }
+
+    /**
+     * Invoke `kubectl exec` command
+     * @param pod a kubernetes pod name
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async exec(pod,  ...args) {
+        return this.run(this.prepareCommand('exec', pod, ...args))
+    }
+
+    /**
+     * Invoke bash command within a container
+     * @param pod a kubernetes pod name
+     * @param container name of the container within the pod
+     * @param bashScript bash script to be run within the container (e.g 'ls -la /opt/hgcapp')
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async execContainer(pod, container, bashScript) {
+       return this.exec(pod, `-c ${container} -- `, `bash -c "${bashScript}"`)
+    }
+
+    /**
+     * Invoke `kubectl cp` command
+     * @param pod a kubernetes pod name
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async copy(pod, ...args) {
+        return this.run(this.prepareCommand('cp', ...args))
+    }
 }

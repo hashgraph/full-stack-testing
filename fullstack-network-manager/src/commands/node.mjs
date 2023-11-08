@@ -1,6 +1,6 @@
 import {BaseCommand} from "./base.mjs";
 import * as flags from "./flags.mjs";
-import {IllegalArgumentError, MissingArgumentError} from "../core/errors.mjs";
+import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "../core/errors.mjs";
 import {constants} from "../core/index.mjs";
 import * as path from "path";
 import chalk from "chalk";
@@ -27,7 +27,7 @@ export class NodeCommand extends BaseCommand {
                 if (nodeIds.length > 0) {
                     for (let nodeId of nodeIds) {
                         nodeId = nodeId.trim()
-                        const podName = `network-node-${nodeId}`
+                        const podName = `network-${nodeId}-0`
 
                         await this.kubectl.wait('pod',
                             `--for=jsonpath='{.status.phase}'=Running`,
@@ -46,7 +46,7 @@ export class NodeCommand extends BaseCommand {
 
                 resolve(podNames)
             } catch (e) {
-                reject(e)
+                reject(new FullstackTestingError(`Error on detecting pods for nodes (${nodeIds}): ${e.message}`))
             }
 
         })
@@ -58,26 +58,21 @@ export class NodeCommand extends BaseCommand {
 
         const namespace = argv.namespace
         const force = argv.force
+        const releaseTag = argv.releaseTag
+        const releaseDir = argv.releaseDir
+        let packageFile = `${releaseDir}/build-${releaseTag}.zip`
 
         try {
             const nodeIDs = argv.nodeIds ? argv.nodeIds.split(',') : []
             const pods = await this.getNetworkNodePodNames(namespace, nodeIDs)
+
+            if (force || !fs.existsSync(packageFile)) {
+                packageFile = await this.downloader.fetchPlatform(releaseTag, constants.FST_HEDERA_RELEASES_DIR)
+            }
+            self.logger.showUser(chalk.green('OK'), `Platform package: ${packageFile}`)
+
             for (const pod of pods) {
-                let releaseDir = argv.releaseDir
-                if (argv.releaseTag !== '') {
-                    const packageFile = await this.downloader.fetchPlatform(argv.releaseTag, constants.FST_HEDERA_RELEASES_DIR)
-                    self.logger.showUser(chalk.green('OK'), `Platform package: ${packageFile}`)
-
-                    let packageDir =  path.dirname(packageFile)
-                    const unzippedDir = `${packageDir}/unzipped`
-                    if (force || !fs.existsSync(unzippedDir)) {
-                        await this.plaformInstaller.unzipFile(packageFile, unzippedDir)
-                    }
-
-                    self.logger.showUser(chalk.green('OK'), `Unzipped platform package at: ${unzippedDir}`)
-                }
-
-                await self.plaformInstaller.install(pod, releaseDir);
+                await self.plaformInstaller.install(pod, packageFile, force);
             }
         } catch (e) {
             this.logger.showUserError(e)

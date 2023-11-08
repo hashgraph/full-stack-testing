@@ -5,49 +5,13 @@ import * as fs from 'fs'
 import * as path from "path";
 import * as os from "os";
 import {
-    FullstackTestingError,
     IllegalArgumentError,
     MissingArgumentError,
-    ResourceNotFoundError
 } from "../../../src/core/errors.mjs";
 describe('PackageInstaller', () => {
     const testLogger = core.logging.NewLogger('debug')
     const kubectl = new core.Kubectl(testLogger)
     const installer = new PlatformInstaller(testLogger, kubectl)
-
-    describe('unzipFile', () => {
-        it('should fail if source file is missing', async () => {
-            expect.assertions(1)
-            await expect(installer.unzipFile('', '')).rejects.toThrow(MissingArgumentError)
-        })
-
-        it('should fail if destination file is missing', async () => {
-            expect.assertions(1)
-            await expect(installer.unzipFile('', '')).rejects.toThrow(MissingArgumentError)
-        })
-
-        it('should fail if source file is invalid', async () => {
-            expect.assertions(1)
-            await expect(installer.unzipFile('/INVALID', os.tmpdir())).rejects.toThrow(IllegalArgumentError)
-        })
-
-        it('should fail for a directory', async () => {
-            expect.assertions(1)
-            await expect(installer.unzipFile('test/data', os.tmpdir())).rejects.toThrow(FullstackTestingError)
-        })
-
-        it('should fail for a non-zip file', async () => {
-            expect.assertions(1)
-            await expect(installer.unzipFile('test/data/test.txt', os.tmpdir() )).rejects.toThrow(FullstackTestingError)
-        })
-
-        it('should succeed for valid inputs', async () => {
-            expect.assertions(1)
-            let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            await expect(installer.unzipFile('test/data/test.zip', tmpDir, true)).resolves.toBe(tmpDir)
-            fs.rmSync(tmpDir, { recursive: true, force: true }); // not very safe!
-        })
-    })
 
     describe('validatePlatformReleaseDir', () => {
         it('should fail for missing path', async () => {
@@ -64,7 +28,7 @@ describe('PackageInstaller', () => {
             expect.assertions(1)
 
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, {recursive: true})
             await expect(installer.validatePlatformReleaseDir(tmpDir)).rejects.toThrow(IllegalArgumentError)
             fs.rmdirSync(tmpDir, {recursive: true})
         })
@@ -73,7 +37,7 @@ describe('PackageInstaller', () => {
             expect.assertions(1)
 
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, {recursive: true})
             await expect(installer.validatePlatformReleaseDir(tmpDir)).rejects.toThrow(IllegalArgumentError)
             fs.rmdirSync(tmpDir, {recursive: true})
         })
@@ -82,9 +46,9 @@ describe('PackageInstaller', () => {
             expect.assertions(1)
 
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
-            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
-            fs.writeFileSync(`${tmpDir}/data/libs/test.jar`, '')
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, {recursive: true})
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}/test.jar`, '')
             await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
             fs.rmdirSync(tmpDir, {recursive: true})
         })
@@ -93,9 +57,9 @@ describe('PackageInstaller', () => {
             expect.assertions(1)
 
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
-            fs.writeFileSync(`${tmpDir}/data/app/app.jar`, '')
-            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}/app.jar`, '')
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, {recursive: true})
             await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
             fs.rmdirSync(tmpDir, {recursive: true})
         })
@@ -104,12 +68,23 @@ describe('PackageInstaller', () => {
             expect.assertions(1)
 
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            fs.mkdirSync(`${tmpDir}/data/app`, {recursive: true})
-            fs.writeFileSync(`${tmpDir}/data/app/app.jar`, '')
-            fs.mkdirSync(`${tmpDir}/data/libs`, {recursive: true})
-            fs.writeFileSync(`${tmpDir}/data/libs/lib-1.jar`, '')
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}/app.jar`, '')
+            fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, {recursive: true})
+            fs.writeFileSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}/lib-1.jar`, '')
             await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
             fs.rmdirSync(tmpDir, {recursive: true})
+        })
+    })
+
+    describe('extractPlatform', () => {
+        it('should fail for missing pod name', async () => {
+            expect.assertions(1)
+            await expect(installer.copyPlatform('', os.tmpdir())).rejects.toThrow(MissingArgumentError)
+        })
+        it('should fail for missing releaseDir', async () => {
+            expect.assertions(1)
+            await expect(installer.copyPlatform('network-node0-0', '' )).rejects.toThrow(MissingArgumentError)
         })
     })
 })

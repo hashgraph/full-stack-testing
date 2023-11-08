@@ -5,6 +5,7 @@ import {fileURLToPath} from "url"
 const CUR_FILE_DIR = dirname(fileURLToPath(import.meta.url))
 const USER = `${process.env.USER}`
 const FST_HOME_DIR = `${process.env.HOME}/.fsnetman`
+const HGCAPP_DIR =  "/opt/hgcapp"
 
 export const constants = {
     USER: `${USER}`,
@@ -18,5 +19,11 @@ export const constants = {
     FST_HOME_DIR: FST_HOME_DIR,
     FST_LOGS_DIR: `${FST_HOME_DIR}/logs`,
     FST_HEDERA_RELEASES_DIR: `${FST_HOME_DIR}/hedera-releases`,
-    RESOURCES_DIR: normalize(CUR_FILE_DIR + "/../../resources")
+    RESOURCES_DIR: normalize(CUR_FILE_DIR + "/../../resources"),
+    HAPI_PATH: `${HGCAPP_DIR}/services-hedera/HapiApp2.0`,
+    ROOT_CONTAINER: 'root-container',
+    DATA_APPS_DIR: 'data/apps',
+    DATA_LIB_DIR: 'data/lib',
+    HEDERA_HOME_DIR: '/home/hedera'
+
 }
