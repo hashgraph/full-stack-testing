@@ -1,7 +1,7 @@
 import {BaseCommand} from "./base.mjs";
 import * as flags from "./flags.mjs";
 import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "../core/errors.mjs";
-import {constants} from "../core/index.mjs";
+import {constants, PackageDownloader} from "../core/index.mjs";
 import * as path from "path";
 import chalk from "chalk";
 import * as fs from "fs";
@@ -60,14 +60,17 @@ export class NodeCommand extends BaseCommand {
         const force = argv.force
         const releaseTag = argv.releaseTag
         const releaseDir = argv.releaseDir
-        let packageFile = `${releaseDir}/build-${releaseTag}.zip`
+        const releasePrefix = PackageDownloader.prepareReleasePrefix(releaseTag)
+        let packageFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
 
         try {
             const nodeIDs = argv.nodeIds ? argv.nodeIds.split(',') : []
             const pods = await this.getNetworkNodePodNames(namespace, nodeIDs)
-
             if (force || !fs.existsSync(packageFile)) {
+                self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package: build-${releaseTag}.zip`)
                 packageFile = await this.downloader.fetchPlatform(releaseTag, constants.FST_HEDERA_RELEASES_DIR)
+            } else {
+                self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${releaseTag}.zip`)
             }
             self.logger.showUser(chalk.green('OK'), `Platform package: ${packageFile}`)
 

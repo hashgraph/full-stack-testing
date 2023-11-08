@@ -76,15 +76,15 @@ export const deployCertManagerCRDs = {
 }
 
 export const platformReleaseTag = {
-    describe: 'Platform release tag (fetch build-<tag>.zip from https://builds.hedera.com)',
+    describe: 'Platform release tag (e.g. v0.42.4, fetch build-<tag>.zip from https://builds.hedera.com)',
     default: "",
     alias: 't',
     type: 'string'
 }
 
 export const platformReleaseDir = {
-    describe: `Platform release path (contains 'data/apps' and 'data/lib' directories e.g. releases/v0.42.1)`,
-    default: "",
+    describe: `Platform release cache dir (containing release directories named as v<major>.<minor>. e.g. v0.42)`,
+    default: core.constants.FST_HEDERA_RELEASES_DIR,
     alias: 'd',
     type: 'string'
 }

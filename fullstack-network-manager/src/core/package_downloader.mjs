@@ -143,6 +143,12 @@ export class PackageDownloader {
         if (checksum !== computed) throw new DataValidationError('checksum', checksum, computed)
     }
 
+    static prepareReleasePrefix(tag) {
+        const parsed = tag.split('.')
+        if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
+        return `${parsed[0]}.${parsed[1]}`
+    }
+
     /**
      * Fetch platform release artifact
      *
@@ -155,9 +161,8 @@ export class PackageDownloader {
      */
     async fetchPlatform(tag, destDir, force = false) {
         const self = this
+        const releaseDir = PackageDownloader.prepareReleasePrefix(tag)
 
-        const parsed = tag.split('.')
-        if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
         if (!destDir) throw new Error('destination directory path is required')
 
         if (!fs.existsSync(destDir)) {
@@ -166,17 +171,16 @@ export class PackageDownloader {
             throw new IllegalArgumentError(`destDir (${destDir}) is not a directory`, destDir)
         }
 
-        const releaseDir = `${parsed[0]}.${parsed[1]}`
         const downloadDir = `${destDir}/${releaseDir}`
         const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
-        const packagePath = `${downloadDir}/build-${tag}.zip`
+        const packageFile = `${downloadDir}/build-${tag}.zip`
         const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
         const checksumPath = `${downloadDir}/build-${tag}.sha384`
 
         return new Promise(async (resolve, reject) => {
             try {
-                if (fs.existsSync(packagePath) && !force) {
-                    resolve(packagePath)
+                if (fs.existsSync(packageFile) && !force) {
+                    resolve(packageFile)
                     return
                 }
 
@@ -184,12 +188,12 @@ export class PackageDownloader {
                     fs.mkdirSync(downloadDir, {recursive: true})
                 }
 
-                await this.fetchFile(packageURL, packagePath)
+                await this.fetchFile(packageURL, packageFile)
                 await this.fetchFile(checksumURL, checksumPath)
 
                 const checksum = fs.readFileSync(checksumPath).toString().split(" ")[0]
-                await this.verifyChecksum(packagePath, checksum)
-                resolve(packagePath)
+                await this.verifyChecksum(packageFile, checksum)
+                resolve(packageFile)
             } catch (e) {
                 self.logger.error(e)
                 reject(new FullstackTestingError(e.message, e, {tag, destDir}))
