@@ -48,8 +48,8 @@ public class InfrastructureManagerExample {
 
         WorkloadReplica<NetworkNode> networkNode0 = nd.workloadByIndex(NetworkNode.class, 0);
         WorkloadReplica<NetworkNode> networkNode1 = nd.workloadByIndex(NetworkNode.class, 1);
-        Node node0 = networkNode0.getComponentByType(Node.class);
-        Node node1 = networkNode1.getComponentByType(Node.class);
+        Node node0 = networkNode0.componentByType(Node.class);
+        Node node1 = networkNode1.componentByType(Node.class);
 
         node0.stop();
         // get config.txt from node0
@@ -68,6 +68,6 @@ public class InfrastructureManagerExample {
         commandResult1.stderr();
 
         WorkloadReplica<MirrorNode> mirrorNode = nd.workloadByIndex(MirrorNode.class, 0);
-        Importer importer = mirrorNode.getComponentByType(Importer.class);
+        Importer importer = mirrorNode.componentByType(Importer.class);
     }
 }

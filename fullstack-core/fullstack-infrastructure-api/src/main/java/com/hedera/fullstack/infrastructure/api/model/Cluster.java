@@ -20,7 +20,7 @@ import com.hedera.fullstack.infrastructure.api.traits.KubernetesAware;
 import java.util.List;
 
 /**
- * A {@link Cluster}
+ *  A logical representation of a single Kubernetes control plane.
  *
  * <ul>
  *    <li>is a set of physical or virtual machines which can be used to deploy {@link Workload}s</li>

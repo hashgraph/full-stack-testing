@@ -17,5 +17,14 @@
 package com.hedera.fullstack.infrastructure.core.model.mirrornode;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
 
-public class MirrorNode extends AbstractWorkload<MirrorNode> {}
+import java.util.List;
+
+public class MirrorNode extends AbstractWorkload<MirrorNode> {
+
+    public MirrorNode(List<WorkloadReplica<MirrorNode>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
+}

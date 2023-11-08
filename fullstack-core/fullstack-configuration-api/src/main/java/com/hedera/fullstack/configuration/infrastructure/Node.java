@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.configuration.model;
+package com.hedera.fullstack.configuration.infrastructure;
 
-import java.util.List;
-
-public record Topology(List<Node> nodes) {}
+public record Node(int ram, int cpu, int nodeID, int nodeAccountID) {}

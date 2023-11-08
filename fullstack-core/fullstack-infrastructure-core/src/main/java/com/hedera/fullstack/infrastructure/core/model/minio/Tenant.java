@@ -17,5 +17,14 @@
 package com.hedera.fullstack.infrastructure.core.model.minio;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
 
-public class Tenant extends AbstractWorkload<Tenant> {}
+import java.util.List;
+
+public class Tenant extends AbstractWorkload<Tenant> {
+
+    public Tenant(List<WorkloadReplica<Tenant>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
+}

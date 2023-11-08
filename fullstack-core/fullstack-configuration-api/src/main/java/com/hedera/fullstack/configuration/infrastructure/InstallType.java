@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.configuration.model;
+package com.hedera.fullstack.configuration.infrastructure;
 
-public record Node(int ram, int cpu, int nodeID, int nodeAccountID) {}
+public enum InstallType {
+    NMT,
+    DIRECT_INSTALL
+}

@@ -20,9 +20,14 @@ import java.util.List;
 
 public class AbstractWorkload<T extends Workload> implements Workload {
 
-    List<WorkloadReplica<T>> replicas;
-    Cluster cluster;
+    private final List<WorkloadReplica<T>> replicas;
+    private final Cluster cluster;
 
+    public AbstractWorkload(List<WorkloadReplica<T>> replicas, Cluster cluster) {
+        this.replicas = replicas;
+        this.cluster = cluster;
+    }
+    
     @Override
     public Cluster cluster() {
         return cluster;

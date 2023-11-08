@@ -17,7 +17,7 @@
 package com.hedera.fullstack.resource.generator.api;
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
+import com.hedera.fullstack.configuration.infrastructure.NetworkDeploymentConfiguration;
 
 public interface ResourceUtils {
 

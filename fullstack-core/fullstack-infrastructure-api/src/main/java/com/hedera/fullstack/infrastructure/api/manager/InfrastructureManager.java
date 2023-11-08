@@ -16,7 +16,7 @@
 
 package com.hedera.fullstack.infrastructure.api.manager;
 
-import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
+import com.hedera.fullstack.configuration.infrastructure.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.exceptions.InsufficientClusterResourcesException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;

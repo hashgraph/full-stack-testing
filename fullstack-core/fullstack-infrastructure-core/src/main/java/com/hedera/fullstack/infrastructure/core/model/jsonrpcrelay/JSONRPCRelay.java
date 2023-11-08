@@ -17,5 +17,14 @@
 package com.hedera.fullstack.infrastructure.core.model.jsonrpcrelay;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
 
-public class JSONRPCRelay extends AbstractWorkload<JSONRPCRelay> {}
+import java.util.List;
+
+public class JSONRPCRelay extends AbstractWorkload<JSONRPCRelay> {
+
+    public JSONRPCRelay(List<WorkloadReplica<JSONRPCRelay>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
+}

@@ -15,7 +15,7 @@ package com.hedera.fullstack.example;/*
  */
 
 import com.hedera.fullstack.base.api.version.SemanticVersion;
-import com.hedera.fullstack.configuration.model.NetworkDeploymentConfiguration;
+import com.hedera.fullstack.configuration.infrastructure.NetworkDeploymentConfiguration;
 import com.hedera.fullstack.infrastructure.api.exceptions.InsufficientClusterResourcesException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InfrastructureException;
 import com.hedera.fullstack.infrastructure.api.exceptions.InvalidConfigurationException;

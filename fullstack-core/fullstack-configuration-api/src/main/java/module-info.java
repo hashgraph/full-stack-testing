@@ -1,3 +1,3 @@
 module com.hedera.fullstack.configuration.api {
-    exports com.hedera.fullstack.configuration.model;
+    exports com.hedera.fullstack.configuration.infrastructure;
 }

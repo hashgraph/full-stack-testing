@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class WorkloadReplica<T extends Workload> {
 
-    private List<Component> components;
+    private final List<Component> components;
 
     // global index across all clusters in the NetworkDeployment
     private final int index;
@@ -42,12 +42,12 @@ public class WorkloadReplica<T extends Workload> {
         components.add(component);
     }
 
-    public List<Component> getComponents() {
+    public List<Component> components() {
         return components;
     }
 
     @SuppressWarnings("unchecked") // safe since we filter out the componentType of type C
-    public <C extends Component> C getComponentByType(Class<C> componentType) {
+    public <C extends Component> C componentByType(Class<C> componentType) {
         return (C) components.stream()
                 .filter(componentType::isInstance)
                 .findFirst()

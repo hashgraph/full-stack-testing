@@ -17,5 +17,14 @@
 package com.hedera.fullstack.infrastructure.core.model.jsonrpcrelay;
 
 import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
 
-public class EthBridge extends AbstractWorkload<EthBridge> {}
+import java.util.List;
+
+public class EthBridge extends AbstractWorkload<EthBridge> {
+
+    public EthBridge(List<WorkloadReplica<EthBridge>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
+}

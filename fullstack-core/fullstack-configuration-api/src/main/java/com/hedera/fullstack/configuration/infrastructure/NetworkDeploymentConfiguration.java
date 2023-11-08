@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.configuration.model;
+package com.hedera.fullstack.configuration.infrastructure;
+
+import java.util.List;
 
 /**
  * A container class to hold all configuration needed to hold the NetworkDeployment
@@ -24,5 +26,5 @@ public class NetworkDeploymentConfiguration {
     // FUTURE: This class needs to closely reflect what will be passed in values.yaml
 
     InstallType installType;
-    Topology topology;
+    List<Node> nodes;
 }
