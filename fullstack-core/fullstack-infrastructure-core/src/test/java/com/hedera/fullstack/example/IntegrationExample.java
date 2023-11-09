@@ -59,7 +59,7 @@ public class IntegrationExample {
         // - Junit can fill in more stuff in the builder the config builder
         // - ip and names of the pods created
         // Should contain sanitized version of ips and pod names, should not container k8s specific stuff
-        PlatformConfiguration.Builder platformConfigBuilder = networkDeployment.getPlatformConfigurationBuilder();
+        PlatformConfiguration.Builder platformConfigBuilder = networkDeployment.platformConfigurationBuilder();
         // The Junit tests can add things in the platform config builder
         platformConfigBuilder.addNodeDetail(new NodeDetails("abc", "127.0.0.1"));
         platformConfigBuilder.addNodeDetail(new NodeDetails("abc", "127.0.0.1"));
@@ -81,11 +81,13 @@ public class IntegrationExample {
         // Step 4.a may need to copy files to node
 
         // Step 5. Delete the network
-        try {
-            testTookKit.deleteNetworkDeployments(networkDeployment.getId());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        /*
+            try {
+                testTookKit.deleteNetworkDeployments(networkDeployment.id());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        */
     }
 
     /*
@@ -113,9 +115,9 @@ public class IntegrationExample {
             String version = null;
 
             String platformConfig =
-                    resourceUtils.getPlatformConfiguration(networkDeployment.getNetworkDeploymentConfiguration());
+                    resourceUtils.getPlatformConfiguration(networkDeployment.configuration());
             String platformSettings =
-                    resourceUtils.getPlatformSettings(networkDeployment.getNetworkDeploymentConfiguration());
+                    resourceUtils.getPlatformSettings(networkDeployment.configuration());
             String buildZipURL = resourceUtils.getBuildZipURL(SemanticVersion.ZERO);
 
             // Configuring the platform
@@ -140,8 +142,10 @@ public class IntegrationExample {
             }
         }
 
+        /*
         public void deleteNetworkDeployments(String id) throws NetworkDeploymentNotFoundException {
             infraManager.deleteNetworkDeployment(id);
         }
+        */
     }
 }

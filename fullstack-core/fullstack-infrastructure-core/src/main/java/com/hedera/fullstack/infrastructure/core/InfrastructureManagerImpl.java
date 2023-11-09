@@ -45,8 +45,4 @@ public class InfrastructureManagerImpl implements InfrastructureManager {
         throw new NotImplementedException();
     }
 
-    @Override
-    public CompletableFuture<Boolean> deleteNetworkDeployment(String id) {
-        throw new NotImplementedException();
-    }
 }

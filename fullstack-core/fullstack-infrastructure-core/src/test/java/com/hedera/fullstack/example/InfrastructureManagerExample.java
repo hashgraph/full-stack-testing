@@ -28,6 +28,7 @@ import com.hedera.fullstack.infrastructure.core.model.networknode.NetworkNode;
 import com.hedera.fullstack.infrastructure.core.model.networknode.component.Node;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -48,26 +49,19 @@ public class InfrastructureManagerExample {
 
         WorkloadReplica<NetworkNode> networkNode0 = nd.workloadByIndex(NetworkNode.class, 0);
         WorkloadReplica<NetworkNode> networkNode1 = nd.workloadByIndex(NetworkNode.class, 1);
-        Node node0 = networkNode0.componentByType(Node.class);
-        Node node1 = networkNode1.componentByType(Node.class);
+        Optional<Node> node0 = networkNode0.componentByType(Node.class);
+        Optional<Node> node1 = networkNode1.componentByType(Node.class);
 
-        node0.stop();
-        // get config.txt from node0
+        node0.ifPresent(node-> {
+                    node.start();
 
-        node0.retrieveFile(Path.of("/path/to/config.txt"));
-        node1.retrieveFile(Path.of("/path/to/config.txt"));
-
-        ExecutionAware.CommandResult commandResult0 = node0.exec("ls -l");
-        // consume output streams
-        commandResult0.stdout();
-        commandResult0.stderr();
-
-        ExecutionAware.CommandResult commandResult1 = node1.exec("ls -l");
-        // consume output streams
-        commandResult1.stdout();
-        commandResult1.stderr();
+                    ExecutionAware.CommandResult commandResult0 = node.exec("ls -l");
+                    // consume output streams
+                    commandResult0.stdout();
+                    commandResult0.stderr();
+        });
 
         WorkloadReplica<MirrorNode> mirrorNode = nd.workloadByIndex(MirrorNode.class, 0);
-        Importer importer = mirrorNode.componentByType(Importer.class);
+        Optional<Importer> importer = mirrorNode.componentByType(Importer.class);
     }
 }
