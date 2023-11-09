@@ -52,7 +52,12 @@ export class NodeCommand extends BaseCommand {
                     }
                 } else {
                     nodeIds = []
-                    let output = await this.kubectl.get('pods', `-l fullstack.hedera.com/type=network-node`, '--no-headers', `-o custom-columns=":metadata.name"`)
+                    let output = await this.kubectl.get('pods',
+                        `-l fullstack.hedera.com/type=network-node`,
+                        '--no-headers',
+                        `-o custom-columns=":metadata.name"`,
+                        `-n "${namespace}"`
+                        )
                     output.forEach(podName => {
                         nodeIds.push(Templates.extractNodeIdFromPodName(podName))
                         podNames.push(podName)
