@@ -99,7 +99,29 @@ export class PlatformInstaller {
         })
     }
 
+    async copyFiles(podName, srcFiles, destDir, container = constants.ROOT_CONTAINER) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                for (const srcPath of srcFiles) {
+                    await this.kubectl.copy(podName,
+                        srcPath,
+                        `${podName}:${destDir}`,
+                        `-c ${container}`,
+                    )
+                }
+
+                const fileList = await this.kubectl.execContainer(podName, container, `ls ${destDir}`)
+
+                resolve(fileList)
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to copy files to pod '${podName}'`, e))
+            }
+        })
+    }
+
     async copyGossipKeys(podName, stagingDir) {
+        const self = this
+
         if (!podName) throw new MissingArgumentError('podName is required')
         if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
 
@@ -107,21 +129,12 @@ export class PlatformInstaller {
             try {
                 const keysDir = `${constants.HAPI_PATH}/data/keys`
                 const nodeId = Templates.extractNodeIdFromPodName(podName)
-                await this.kubectl.copy(podName,
+                const srcFiles = [
                     `${stagingDir}/templates/node-keys/private-${nodeId}.pfx`,
-                    `${podName}:${keysDir}`,
-                    '-c root-container',
-                )
-
-                await this.kubectl.copy(podName,
                     `${stagingDir}/templates/node-keys/public.pfx`,
-                    `${podName}:${keysDir}`,
-                    '-c root-container',
-                )
+                ]
 
-                const fileList = await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls ${keysDir}`)
-
-                resolve(fileList)
+                resolve(await self.copyFiles(podName, srcFiles, keysDir))
             } catch (e) {
                 reject(new FullstackTestingError(`failed to copy gossip keys to pod '${podName}'`, e))
             }
@@ -134,9 +147,24 @@ export class PlatformInstaller {
         })
     }
 
-    async copyTLSKeys(stagingDir) {
-        return new Promise((resolve, reject) => {
+    async copyTLSKeys(podName, stagingDir) {
+        const self = this
 
+        if (!podName) throw new MissingArgumentError('podName is required')
+        if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                const destDir = constants.HAPI_PATH
+                const srcFiles = [
+                    `${stagingDir}/templates/hedera.key`,
+                    `${stagingDir}/templates/hedera.crt`,
+                ]
+
+                resolve(await self.copyFiles(podName, srcFiles, destDir))
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to copy TLS keys to pod '${podName}'`, e))
+            }
         })
     }
 

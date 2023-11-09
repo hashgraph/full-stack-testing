@@ -109,4 +109,23 @@ describe('PackageInstallerE2E', () => {
             expect(fileList).toContain('public.pfx')
         })
     })
+
+    describe('copyTLSKeys', () => {
+        it('should succeed to copy TLS keys for node0', async () => {
+            const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+            const fileList = await installer.copyTLSKeys('network-node0-0', stagingDir )
+            expect(fileList.length).toBe(6)
+            expect(fileList.length).toBeGreaterThanOrEqual(2)
+            expect(fileList).toContain('hedera.crt')
+            expect(fileList).toContain('hedera.key')
+        })
+
+        it('should succeed to copy TLS keys for node1', async () => {
+            const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+            const fileList = await installer.copyTLSKeys('network-node1-0', stagingDir )
+            expect(fileList.length).toBeGreaterThanOrEqual(6)
+            expect(fileList).toContain('hedera.crt')
+            expect(fileList).toContain('hedera.key')
+        })
+    })
 })
