@@ -36,9 +36,11 @@ describe('Zippy', () => {
         })
 
         it('should succeed for valid inputs', async () => {
-            expect.assertions(1)
             let tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'));
-            await expect(zippy.unzip('test/data/test.zip', tmpDir, true)).resolves.toBe(tmpDir)
+            const zipFile = `${tmpDir}/test.zip`
+            const unzippedFile = `${tmpDir}/unzipped`
+            await expect(zippy.zip('test/data/.empty', zipFile)).resolves.toBe(zipFile)
+            await expect(zippy.unzip(zipFile, unzippedFile, true)).resolves.toBe(unzippedFile)
             fs.rmSync(tmpDir, {recursive: true, force: true}); // not very safe!
         })
     })

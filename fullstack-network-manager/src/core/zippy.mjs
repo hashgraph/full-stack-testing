@@ -2,11 +2,45 @@ import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from 
 import fs from "fs";
 import AdmZip from "adm-zip";
 import chalk from "chalk";
+import path from "path";
 
 export class Zippy {
     constructor(logger) {
         if (!logger ) throw new Error("An instance of core/Logger is required")
         this.logger = logger
+    }
+
+    /**
+     * Zip a file or directory
+     * @param srcPath path to a file or directory
+     * @param destPath path to the output zip file
+     * @returns {Promise<unknown>}
+     */
+    async zip(srcPath, destPath, verbose = false) {
+        const self = this
+
+        if (!srcPath) throw new MissingArgumentError('srcPath is required')
+        if (!destPath) throw new MissingArgumentError('destPath is required')
+        if (!destPath.endsWith('.zip')) throw new MissingArgumentError('destPath must be a path to a zip file')
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                const zip = AdmZip('', {})
+
+                const stat = fs.statSync(srcPath)
+                if (stat.isDirectory()) {
+                    zip.addLocalFolder(srcPath, '')
+                } else {
+                    zip.addFile(path.basename(srcPath), fs.readFileSync(srcPath), '', stat)
+                }
+
+                await zip.writeZipPromise(destPath, {overwrite: true})
+
+                resolve(destPath)
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to unzip ${srcPath}: ${e.message}`, e))
+            }
+        })
     }
 
     async unzip(srcPath, destPath, verbose = false) {
