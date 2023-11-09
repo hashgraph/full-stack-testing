@@ -101,9 +101,11 @@ export class PlatformInstaller {
     }
 
     async copyFiles(podName, srcFiles, destDir, container = constants.ROOT_CONTAINER) {
+        const self = this
         return new Promise(async (resolve, reject) => {
             try {
                 for (const srcPath of srcFiles) {
+                    self.logger.debug(`Copying files into ${podName}: ${srcPath} -> ${destDir}`)
                     await this.kubectl.copy(podName,
                         srcPath,
                         `${podName}:${destDir}`,
@@ -113,7 +115,11 @@ export class PlatformInstaller {
 
                 const fileList = await this.kubectl.execContainer(podName, container, `ls ${destDir}`)
 
-                resolve(fileList)
+                // create full path
+                const fullPaths = []
+                fileList.forEach(filePath => fullPaths.push(`${destDir}/${filePath}`))
+
+                resolve(fullPaths)
             } catch (e) {
                 reject(new FullstackTestingError(`failed to copy files to pod '${podName}'`, e))
             }
@@ -142,9 +148,34 @@ export class PlatformInstaller {
         })
     }
 
-    async copyPlatformConfigFiles(stagingDir) {
-        return new Promise((resolve, reject) => {
+    async copyPlatformConfigFiles(podName, stagingDir) {
+        const self = this
 
+        if (!podName) throw new MissingArgumentError('podName is required')
+        if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                const srcFilesSet1 = [
+                    `${stagingDir}/config.txt`,
+                    `${stagingDir}/templates/log4j2.xml`,
+                    `${stagingDir}/templates/settings.txt`,
+                ]
+
+                const fileList1 = await self.copyFiles(podName, srcFilesSet1, constants.HAPI_PATH)
+
+                const srcFilesSet2 = [
+                    `${stagingDir}/templates/properties/api-permission.properties`,
+                    `${stagingDir}/templates/properties/application.properties`,
+                    `${stagingDir}/templates/properties/bootstrap.properties`,
+                ]
+
+                const fileList2 = await self.copyFiles(podName, srcFilesSet2, `${constants.HAPI_PATH}/data/config`)
+
+                resolve(fileList1.concat(fileList2))
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to copy config files to pod '${podName}'`, e))
+            }
         })
     }
 
@@ -287,11 +318,11 @@ export class PlatformInstaller {
                 self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied TLS keys`)
 
                 self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying auxiliary config files ...`)
-                // await this.copyPlatformConfigFiles(pod, stagingDir)
+                await this.copyPlatformConfigFiles(podName, stagingDir)
                 self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied auxiliary config keys`)
 
                 self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Setting file permissions ...`)
-                // await this.setFilePermissions(pod)
+                // await this.setFilePermissions(podName)
                 self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Set file permissions`)
 
                 resolve(true)
