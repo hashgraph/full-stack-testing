@@ -33,8 +33,11 @@ describe('PackageInstallerE2E', () => {
         it('should succeed with valid tag and pod', async () => {
             expect.assertions(1)
             try {
-                fs.mkdirSync('tests/data/tmp', {recursive: true})
-                packageFile = await downloader.fetchPlatform(packageTag, 'test/data/tmp')
+                const tmpDir = 'test/data/tmp'
+                if(!fs.existsSync(tmpDir)) {
+                    fs.mkdirSync(tmpDir);
+                }
+                packageFile = await downloader.fetchPlatform(packageTag, tmpDir)
                 await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
                 const outputs = await kubectl.execContainer(podName, core.constants.ROOT_CONTAINER, `ls -la ${core.constants.HAPI_PATH}`)
                 testLogger.showUser(outputs)
