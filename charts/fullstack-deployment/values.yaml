@@ -430,12 +430,12 @@ deployment:
     minAvailable: 1
     maxUnavailable: ""
   testMetadata:
-    testSuiteName: ""
-    testName: ""
-    testRunUID: ""
-    testCreationTimestamp: ""
-    testExpirationTimestamp: ""
-    testRequester: ""
+    testSuiteName: "testSuiteName"
+    testName: "testName"
+    testRunUID: "testRunUID"
+    testCreationTimestamp: "testCreationTimestamp"
+    testExpirationTimestamp: "testExpirationTimestamp"
+    testRequester: "testRequester"
 
 # hedera node configuration
 # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
