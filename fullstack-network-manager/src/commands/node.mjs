@@ -77,6 +77,8 @@ export class NodeCommand extends BaseCommand {
         const releaseDir = argv.releaseDir
 
         try {
+            self.logger.showUser(constants.LOG_GROUP_DIVIDER)
+
             const releasePrefix = Templates.prepareReleasePrefix(releaseTag)
             let buildZipFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
             const stagingDir = `${releaseDir}/${releasePrefix}/staging/${releaseTag}`

@@ -1,11 +1,12 @@
 import {dirname, normalize} from "path"
 import {fileURLToPath} from "url"
+import chalk from "chalk";
 
 // directory of this fle
 const CUR_FILE_DIR = dirname(fileURLToPath(import.meta.url))
 const USER = `${process.env.USER}`
 const FST_HOME_DIR = `${process.env.HOME}/.fsnetman`
-const HGCAPP_DIR =  "/opt/hgcapp"
+const HGCAPP_DIR = "/opt/hgcapp"
 
 export const constants = {
     USER: `${USER}`,
@@ -29,4 +30,7 @@ export const constants = {
     HEDERA_APP_JAR: 'HederaNode.jar',
     HEDERA_NODE_DEFAULT_STAKE_AMOUNT: 1,
     HEDERA_BUILDS_URL: 'https://builds.hedera.com',
+    LOG_STATUS_PROGRESS: chalk.cyan('>>'),
+    LOG_STATUS_DONE: chalk.green('OK'),
+    LOG_GROUP_DIVIDER: chalk.yellow('----------------------------------------------------------------------------')
 }

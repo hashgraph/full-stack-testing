@@ -83,7 +83,6 @@ export class PlatformInstaller {
 
         return new Promise(async (resolve, reject) => {
             try {
-                self.logger.showUser(chalk.cyan('>>'), `[POD=${podName}] Copying platform: ${buildZipFile} ...`)
                 await this.kubectl.copy(podName,
                     buildZipFile,
                     `${podName}:${constants.HEDERA_USER_HOME_DIR}`,
@@ -94,7 +93,6 @@ export class PlatformInstaller {
                 await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER,
                     `cd ${constants.HAPI_PATH} && jar xvf /home/hedera/build-*`)
 
-                self.logger.showUser(chalk.green('OK'), `[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
                 resolve(true)
             } catch (e) {
                 resolve(new FullstackTestingError('failed to copy platform code into pods', e))
@@ -269,15 +267,33 @@ export class PlatformInstaller {
         })
     }
 
-    async install(pod, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
+    async install(podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
         const self = this
         return new Promise(async (resolve, reject) => {
             try {
-                await this.copyPlatform(pod, buildZipFile)
-                await this.copyGossipKeys(pod, stagingDir)
-                // await this.copyTLSKeys(pod, stagingDir)
+                self.logger.showUser(constants.LOG_GROUP_DIVIDER)
+                self.logger.showUser(chalk.cyan(`Installing platform to ${podName}`))
+
+                self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying platform: ${buildZipFile} ...`)
+                await this.copyPlatform(podName, buildZipFile)
+                self.logger.showUser(constants.LOG_STATUS_DONE,`[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
+
+                self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying gossip keys ...`)
+                await this.copyGossipKeys(podName, stagingDir)
+                self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied gossip keys`)
+
+                self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying TLS keys ...`)
+                await this.copyTLSKeys(podName, stagingDir)
+                self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied TLS keys`)
+
+                self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying auxiliary config files ...`)
                 // await this.copyPlatformConfigFiles(pod, stagingDir)
+                self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied auxiliary config keys`)
+
+                self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Setting file permissions ...`)
                 // await this.setFilePermissions(pod)
+                self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Set file permissions`)
+
                 resolve(true)
             } catch (e) {
                 self.logger.showUserError(e)
