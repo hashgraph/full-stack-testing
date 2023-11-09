@@ -4,6 +4,8 @@ import {pipeline as streamPipeline} from 'node:stream/promises';
 import got from 'got';
 import {DataValidationError, FullstackTestingError, IllegalArgumentError, ResourceNotFoundError} from "./errors.mjs";
 import * as https from "https";
+import {Templates} from "./templates.mjs";
+import {constants} from "./constants.mjs";
 
 export class PackageDownloader {
     /**
@@ -36,8 +38,17 @@ export class PackageDownloader {
                 const req = https.request(url, {method: 'HEAD', timeout: 100, headers: {"Connection": 'close'}})
 
                 req.on('response', r => {
-                    self.logger.debug(r.headers)
-                    if (r.statusCode === 200) {
+                    const statusCode = r.statusCode
+                    self.logger.debug({
+                        response: {
+                            connectOptions: r['connect-options'],
+                            statusCode: r.statusCode,
+                            headers: r.headers,
+                        }
+
+                    })
+
+                    if (statusCode === 200) {
                         return resolve(true)
                     }
 
@@ -64,6 +75,8 @@ export class PackageDownloader {
      * @param destPath destination path for the downloaded file
      */
     async fetchFile(url, destPath) {
+        const self = this
+
         if (!url) throw new IllegalArgumentError('source file URL is required', url)
         if (!destPath) throw new IllegalArgumentError('destination path is required', destPath)
         if (!this.isValidURL(url)) {
@@ -82,7 +95,8 @@ export class PackageDownloader {
                 )
                 resolve(destPath)
             } catch (e) {
-                reject(new ResourceNotFoundError(`failed to download file: ${url}`, url, {url, destPath}))
+                self.logger.error(e)
+                reject(new ResourceNotFoundError(e.message, url, e))
             }
         })
     }
@@ -95,8 +109,11 @@ export class PackageDownloader {
      * @throws Error if the file cannot be read
      */
     async computeFileHash(filePath, algo = 'sha384') {
+        const self = this
+
         return new Promise((resolve, reject) => {
             try {
+                self.logger.debug(`Computing checksum for '${filePath}' using algo '${algo}'`)
                 const checksum = crypto.createHash(algo);
                 const s = fs.createReadStream(filePath)
                 s.on('data', function (d) {
@@ -104,10 +121,11 @@ export class PackageDownloader {
                 });
                 s.on('end', function () {
                     const d = checksum.digest('hex');
+                    self.logger.debug(`Computed checksum '${d}' for '${filePath}' using algo '${algo}'`)
                     resolve(d)
                 })
             } catch (e) {
-                reject(new FullstackTestingError('failed to compute file hash', e, {filePath, algo}))
+                reject(new FullstackTestingError('failed to compute checksum', e, {filePath, algo}))
             }
         })
     }
@@ -134,29 +152,47 @@ export class PackageDownloader {
      *
      * @param tag full semantic version e.g. v0.40.4
      * @param destDir directory where the artifact needs to be saved
+     * @param force whether to download even if the file exists
      * @returns {Promise<string>} full path to the downloaded file
      */
-    async fetchPlatform(tag, destDir) {
-        const parsed = tag.split('.')
-        if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
+    async fetchPlatform(tag, destDir, force = false) {
+        const self = this
+        const releaseDir = Templates.prepareReleasePrefix(tag)
+
         if (!destDir) throw new Error('destination directory path is required')
+
+        if (!fs.existsSync(destDir)) {
+            throw new IllegalArgumentError(`destDir (${destDir}) does not exist`, destDir)
+        } else if(!fs.statSync(destDir).isDirectory()) {
+            throw new IllegalArgumentError(`destDir (${destDir}) is not a directory`, destDir)
+        }
+
+        const downloadDir = `${destDir}/${releaseDir}`
+        const packageURL = `${constants.HEDERA_BUILDS_URL}/node/software/${releaseDir}/build-${tag}.zip`
+        const packageFile = `${downloadDir}/build-${tag}.zip`
+        const checksumURL = `${constants.HEDERA_BUILDS_URL}/node/software/${releaseDir}/build-${tag}.sha384`
+        const checksumPath = `${downloadDir}/build-${tag}.sha384`
 
         return new Promise(async (resolve, reject) => {
             try {
-                const releaseDir = `${parsed[0]}.${parsed[1]}`
-                const packageURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.zip`
-                const packagePath = `${destDir}/build-${tag}.zip`
-                const checksumURL = `https://builds.hedera.com/node/software/${releaseDir}/build-${tag}.sha384`
-                const checksumPath = `${destDir}/build-${tag}.sha384`
+                if (fs.existsSync(packageFile) && !force) {
+                    resolve(packageFile)
+                    return
+                }
 
-                await this.fetchFile(packageURL, packagePath)
+                if (!fs.existsSync(downloadDir)) {
+                    fs.mkdirSync(downloadDir, {recursive: true})
+                }
+
+                await this.fetchFile(packageURL, packageFile)
                 await this.fetchFile(checksumURL, checksumPath)
 
                 const checksum = fs.readFileSync(checksumPath).toString().split(" ")[0]
-                await this.verifyChecksum(packagePath, checksum)
-                resolve(packagePath)
+                await this.verifyChecksum(packageFile, checksum)
+                resolve(packageFile)
             } catch (e) {
-                reject(new FullstackTestingError(`failed to fetch platform artifacts: ${e.message}`, e, {tag, destDir}))
+                self.logger.error(e)
+                reject(new FullstackTestingError(e.message, e, {tag, destDir}))
             }
         })
     }

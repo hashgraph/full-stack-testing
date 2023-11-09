@@ -106,7 +106,7 @@ export class ChartCommand extends BaseCommand {
 
                         }
                     })
-                    .demand(1, 'Select a chart command')
+                    .demandCommand(1, 'Select a chart command')
             }
         }
     }

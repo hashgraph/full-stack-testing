@@ -70,7 +70,7 @@ const Logger = class {
                 // - Write all logs with importance level of `error` or less to `error.log`
                 // - Write all logs with importance level of `info` or less to `fst.log`
                 //
-                new winston.transports.File({filename: `${constants.FST_HOME_DIR}/logs/fst.log`}),
+                new winston.transports.File({filename: `${constants.FST_LOGS_DIR}/fst.log`}),
                 // new winston.transports.File({filename: constants.TMP_DIR + "/logs/error.log", level: 'error'}),
                 // new winston.transports.Console({format: customFormat})
             ],
@@ -93,9 +93,26 @@ const Logger = class {
     showUser(msg, ...args) {
         console.log(util.format(msg, ...args))
     }
+
     showUserError(err) {
-        console.log(chalk.red(err.message))
+        this.error(err.message, err)
+
+        console.log(chalk.red('ERROR: '))
         console.log(err.stack)
+
+        if (err.cause) {
+            console.log(chalk.red('Caused by: '))
+            let depth = 0
+            let cause = err.cause
+            while (cause !== undefined && depth < 10) {
+                if (cause.stack) {
+                    console.log(chalk.red('|-'), cause.stack)
+                }
+
+                cause = cause.cause
+                depth += 1
+            }
+        }
     }
 
     critical(msg, ...args) {

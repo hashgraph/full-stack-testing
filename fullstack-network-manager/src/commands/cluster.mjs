@@ -2,7 +2,6 @@ import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import {BaseCommand} from "./base.mjs";
 import chalk from "chalk";
-import {Kind} from "../core/kind.mjs";
 
 /**
  * Define the core functionalities of 'cluster' command
@@ -89,6 +88,8 @@ export class ClusterCommand extends BaseCommand {
             } else {
                 this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' already exists`)
             }
+
+            // TODO: kubectl config set-context --current --namespace="${NAMESPACE}"
 
             this.showList("namespaces", await this.getNameSpaces())
 
@@ -284,7 +285,7 @@ export class ClusterCommand extends BaseCommand {
                         desc: 'Setup cluster with shared components',
                         builder: yargs => {
                             yargs.option('cluster-name', flags.clusterNameFlag)
-                            yargs.option('namespace', flags.namespaceFlag)
+                            yargs.option('namespace', flags.defaultNamespaceFlag)
                             yargs.option('prometheus-stack', flags.deployPrometheusStack)
                             yargs.option('minio', flags.deployMinio)
                             yargs.option('envoy-gateway', flags.deployEnvoyGateway)
@@ -303,7 +304,7 @@ export class ClusterCommand extends BaseCommand {
 
                         }
                     })
-                    .demand(1, 'Select a cluster command')
+                    .demandCommand(1, 'Select a cluster command')
             }
         }
     }

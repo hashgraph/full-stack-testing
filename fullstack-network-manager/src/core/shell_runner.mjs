@@ -2,9 +2,9 @@ import {spawn} from "child_process";
 import chalk from "chalk";
 
 export class ShellRunner {
-    constructor(opts) {
-        if (!opts || !opts.logger === undefined) throw new Error("An instance of core/Logger is required")
-        this.logger = opts.logger
+    constructor(logger) {
+        if (!logger ) throw new Error("An instance of core/Logger is required")
+        this.logger = logger
     }
 
     /**
@@ -26,7 +26,7 @@ export class ShellRunner {
                 const items = d.toString().split(/\r?\n/)
                 items.forEach(item => {
                     if (item) {
-                        output.push(item)
+                        output.push(item.trim())
                     }
                 })
             })
@@ -36,7 +36,7 @@ export class ShellRunner {
                 const items = d.toString().split(/\r?\n/)
                 items.forEach(item => {
                     if (item) {
-                        errOutput.push(item)
+                        errOutput.push(item.trim())
                     }
                 })
             })

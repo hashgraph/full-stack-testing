@@ -1,4 +1,5 @@
 import {ShellRunner} from "./shell_runner.mjs";
+import {FullstackTestingError} from "./errors.mjs";
 
 export class Kubectl extends ShellRunner {
     /**
@@ -68,5 +69,81 @@ export class Kubectl extends ShellRunner {
      */
     async getNamespace(...args) {
         return this.run(this.prepareCommand('get', 'ns', ...args))
+    }
+
+    /**
+     * Get pod IP of a pod
+     * @param podName name of the pod
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async getPodIP(podName) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const output = await this.run(this.prepareCommand('get', 'pod', podName, `-o jsonpath='{.status.podIP}'`))
+                if (output) resolve(output[0].trim())
+                reject(new FullstackTestingError(`No resource found for ${podName}`))
+            } catch (e) {
+                reject(new FullstackTestingError(`error on detecting IP for pod ${podName}`, e))
+            }
+        })
+    }
+
+    /**
+     * Get cluster IP of a service
+     * @param svcName name of the service
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async getClusterIP(svcName) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const output = await this.run(this.prepareCommand('get', 'svc', svcName, `-o jsonpath='{.spec.clusterIP}'`))
+                if (output) resolve(output[0].trim())
+                reject(new FullstackTestingError(`No resource found for ${svcName}`))
+            } catch (e) {
+                reject(new FullstackTestingError(`error on detecting cluster IP for svc ${svcName}`, e))
+            }
+        })
+    }
+
+
+    /**
+     * Invoke `kubectl wait` command
+     * @param resource a kubernetes resource type (e.g. pod | svc etc.)
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async wait(resource, ...args) {
+        return this.run(this.prepareCommand('wait', resource, ...args))
+    }
+
+    /**
+     * Invoke `kubectl exec` command
+     * @param pod a kubernetes pod name
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async exec(pod,  ...args) {
+        return this.run(this.prepareCommand('exec', pod, ...args))
+    }
+
+    /**
+     * Invoke bash command within a container
+     * @param pod a kubernetes pod name
+     * @param container name of the container within the pod
+     * @param bashScript bash script to be run within the container (e.g 'ls -la /opt/hgcapp')
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async execContainer(pod, container, bashScript) {
+       return this.exec(pod, `-c ${container} -- `, `bash -c "${bashScript}"`)
+    }
+
+    /**
+     * Invoke `kubectl cp` command
+     * @param pod a kubernetes pod name
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async copy(pod, ...args) {
+        return this.run(this.prepareCommand('cp', ...args))
     }
 }

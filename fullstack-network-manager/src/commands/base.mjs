@@ -142,11 +142,12 @@ export class BaseCommand extends ShellRunner {
     }
 
     constructor(opts) {
-        super(opts);
-
+        if (!opts || !opts.logger) throw new Error('An instance of core/Logger is required')
         if (!opts || !opts.kind) throw new Error('An instance of core/Kind is required')
         if (!opts || !opts.helm) throw new Error('An instance of core/Helm is required')
         if (!opts || !opts.kubectl) throw new Error('An instance of core/Kubectl is required')
+
+        super(opts.logger);
 
         this.kind = opts.kind
         this.helm = opts.helm
