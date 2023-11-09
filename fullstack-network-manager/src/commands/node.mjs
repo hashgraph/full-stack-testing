@@ -57,7 +57,7 @@ export class NodeCommand extends BaseCommand {
                         '--no-headers',
                         `-o custom-columns=":metadata.name"`,
                         `-n "${namespace}"`
-                        )
+                    )
                     output.forEach(podName => {
                         nodeIds.push(Templates.extractNodeIdFromPodName(podName))
                         podNames.push(podName)
@@ -110,6 +110,8 @@ export class NodeCommand extends BaseCommand {
             for (const podName of podNames) {
                 await self.plaformInstaller.install(podName, buildZipFile, stagingDir, force);
             }
+
+            return true
         } catch (e) {
             self.logger.showUserError(e)
         }
@@ -118,11 +120,45 @@ export class NodeCommand extends BaseCommand {
     }
 
     async start(argv) {
+        const self = this
 
+        try {
+            const namespace = argv.namespace
+            const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
+            let {podNames, nodeIDs} = await this.checkNetworkNodePods(namespace, nodeIDsArg)
+            for (const podName of podNames) {
+                self.logger.showUser(chalk.cyan('>>'), `Starting node ${podName}`)
+                await self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
+                self.logger.showUser(chalk.green('OK'), `Started node ${podName}`)
+            }
+
+            return true
+        } catch (e) {
+            self.logger.showUserError(e)
+        }
+
+        return false
     }
 
     async stop(argv) {
+        const self = this
 
+        try {
+            const namespace = argv.namespace
+            const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
+            let {podNames, nodeIDs} = await this.checkNetworkNodePods(namespace, nodeIDsArg)
+            for (const podName of podNames) {
+                self.logger.showUser(chalk.cyan('>>'), `Stopping node ${podName}`)
+                await self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
+                self.logger.showUser(chalk.green('OK'), `Stopped node ${podName}`)
+            }
+
+            return true
+        } catch (e) {
+            self.logger.showUserError(e)
+        }
+
+        return false
     }
 
     /**
@@ -161,6 +197,7 @@ export class NodeCommand extends BaseCommand {
                         command: 'start',
                         desc: 'Start a node running Hedera platform',
                         builder: yargs => {
+                            yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('node-ids', flags.nodeIDs)
                         },
                         handler: argv => {
@@ -181,6 +218,7 @@ export class NodeCommand extends BaseCommand {
                         command: 'stop',
                         desc: 'stop a node running Hedera platform',
                         builder: yargs => {
+                            yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('node-ids', flags.nodeIDs)
                         },
                         handler: argv => {
