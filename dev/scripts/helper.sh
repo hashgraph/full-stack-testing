@@ -358,7 +358,7 @@ function prep_address_book() {
   done
 
   # for v.41.* onward
-  if [[ "${PLATFORM_VERSION}" == v0.4* ]]; then
+  if [[ "${PLATFORM_VERSION}" == v0.41* ]]; then
     config_lines+=("nextNodeId, ${node_seq}")
   fi
 
