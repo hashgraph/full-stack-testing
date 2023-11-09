@@ -1,4 +1,4 @@
-import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "./errors.mjs";
+import {DataValidationError, FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "./errors.mjs";
 import chalk from "chalk";
 import * as fs from "fs";
 import {constants} from "./constants.mjs";
@@ -200,7 +200,8 @@ export class PlatformInstaller {
             }
         })
     }
-    async setPathPermission(podName, destPath, mode= '0755', recursive = true, container = constants.ROOT_CONTAINER) {
+
+    async setPathPermission(podName, destPath, mode = '0755', recursive = true, container = constants.ROOT_CONTAINER) {
         const self = this
         if (!podName) throw new MissingArgumentError('podName is required')
         if (!destPath) throw new MissingArgumentError('destPath is required')
@@ -265,6 +266,10 @@ export class PlatformInstaller {
         const appName = process.env.FST_HEDERA_APP_NAME || constants.HEDERA_APP_JAR
         const nodeStakeAmount = process.env.FST_NODE_DEFAULT_STAKE_AMOUNT || constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 
+        const releaseTagParts = releaseTag.split(".")
+        if (releaseTagParts.length !== 3) throw new FullstackTestingError(`release tag must have form v<major>.<minior>.<patch>, found ${releaseTagParts}`, 'v<major>.<minor>.<patch>', releaseTag)
+        const minorVersion = parseInt(releaseTagParts[1], 10)
+
 
         return new Promise(async (resolve, reject) => {
             try {
@@ -285,7 +290,7 @@ export class PlatformInstaller {
                     const externalIP = await self.kubectl.getClusterIP(svcName)
 
                     const account = `${accountIdPrefix}.${accountIdSeq}`
-                    if (releaseTag.startsWith('v0.4')) {
+                    if (minorVersion >= 40) {
                         configLines.push(`address, ${nodeSeq}, ${nodeNickName}, ${nodeName}, ${nodeStakeAmount}, ${internalIP}, ${internalPort}, ${externalIP}, ${externalPort}, ${account}`)
                     } else {
                         configLines.push(`address, ${nodeSeq}, ${nodeName}, ${nodeStakeAmount}, ${internalIP}, ${internalPort}, ${externalIP}, ${externalPort}, ${account}`)
@@ -295,7 +300,7 @@ export class PlatformInstaller {
                     accountIdSeq += 1
                 }
 
-                if (releaseTag.startsWith('v0.41')) {
+                if (minorVersion >= 41) {
                     configLines.push(`nextNodeId, ${nodeSeq}`)
                 }
 
@@ -342,7 +347,7 @@ export class PlatformInstaller {
 
                 self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying platform: ${buildZipFile} ...`)
                 await this.copyPlatform(podName, buildZipFile)
-                self.logger.showUser(constants.LOG_STATUS_DONE,`[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
+                self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
 
                 self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying gossip keys ...`)
                 await this.copyGossipKeys(podName, stagingDir)
