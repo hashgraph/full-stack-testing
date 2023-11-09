@@ -1,4 +1,4 @@
-import {beforeAll, describe, expect, it, test} from "@jest/globals";
+import {beforeAll, beforeEach, describe, expect, it, test} from "@jest/globals";
 import * as core from "../../../src/core/index.mjs";
 import {PackageDownloader, PlatformInstaller} from "../../../src/core/index.mjs";
 import * as fs from 'fs'
@@ -29,7 +29,7 @@ describe('PackageInstallerE2E', () => {
         })
     })
 
-    describe('extractPlatform', () => {
+    describe('copyPlatform', () => {
         it('should succeed with valid tag and pod', async () => {
             expect.assertions(1)
             try {
@@ -95,7 +95,10 @@ describe('PackageInstallerE2E', () => {
     describe('copyGossipKeys', () => {
         it('should succeed to copy gossip keys for node0', async () => {
             const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
-            const fileList = await installer.copyGossipKeys('network-node0-0', stagingDir )
+            const podName = `network-node0-0`
+            await installer.setupHapiDirectories(podName)
+
+            const fileList = await installer.copyGossipKeys(podName, stagingDir )
             expect(fileList.length).toBe(2)
             expect(fileList).toContain('private-node0.pfx')
             expect(fileList).toContain('public.pfx')
@@ -103,7 +106,10 @@ describe('PackageInstallerE2E', () => {
 
         it('should succeed to copy gossip keys for node1', async () => {
             const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
-            const fileList = await installer.copyGossipKeys('network-node1-0', stagingDir )
+            const podName = `network-node1-0`
+            await installer.setupHapiDirectories(podName)
+
+            const fileList = await installer.copyGossipKeys(podName, stagingDir )
             expect(fileList.length).toBe(2)
             expect(fileList).toContain('private-node1.pfx')
             expect(fileList).toContain('public.pfx')
@@ -113,8 +119,11 @@ describe('PackageInstallerE2E', () => {
     describe('copyTLSKeys', () => {
         it('should succeed to copy TLS keys for node0', async () => {
             const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
-            const fileList = await installer.copyTLSKeys('network-node0-0', stagingDir )
-            expect(fileList.length).toBe(6)
+            const podName = `network-node0-0`
+            await installer.setupHapiDirectories(podName)
+
+            const fileList = await installer.copyTLSKeys(podName, stagingDir )
+            expect(fileList.length).toBe(3) // [data , hedera.crt, hedera.key]
             expect(fileList.length).toBeGreaterThanOrEqual(2)
             expect(fileList).toContain('hedera.crt')
             expect(fileList).toContain('hedera.key')
@@ -122,8 +131,11 @@ describe('PackageInstallerE2E', () => {
 
         it('should succeed to copy TLS keys for node1', async () => {
             const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
-            const fileList = await installer.copyTLSKeys('network-node1-0', stagingDir )
-            expect(fileList.length).toBeGreaterThanOrEqual(6)
+            const podName = `network-node1-0`
+            await installer.setupHapiDirectories(podName)
+
+            const fileList = await installer.copyTLSKeys(podName, stagingDir )
+            expect(fileList.length).toBe(3) // [data , hedera.crt, hedera.key]
             expect(fileList).toContain('hedera.crt')
             expect(fileList).toContain('hedera.key')
         })

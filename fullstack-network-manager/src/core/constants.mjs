@@ -20,6 +20,7 @@ export const constants = {
     FST_LOGS_DIR: `${FST_HOME_DIR}/logs`,
     FST_CACHE_DIR: `${FST_HOME_DIR}/cache`,
     RESOURCES_DIR: normalize(CUR_FILE_DIR + "/../../resources"),
+    HGCAPP_DIR: HGCAPP_DIR,
     HAPI_PATH: `${HGCAPP_DIR}/services-hedera/HapiApp2.0`,
     ROOT_CONTAINER: 'root-container',
     DATA_APPS_DIR: 'data/apps',

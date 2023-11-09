@@ -24,6 +24,9 @@ export class PlatformInstaller {
         if (!podName) throw new MissingArgumentError('podName is required')
         return new Promise(async (resolve, reject) => {
             try {
+                // reset HAPI_PATH
+                await this.kubectl.execContainer(podName, containerName, `rm -rf ${constants.HAPI_PATH}`)
+
                 const paths = [
                     constants.HAPI_PATH,
                     `${constants.HAPI_PATH}/data/keys`,
@@ -36,7 +39,7 @@ export class PlatformInstaller {
 
                 resolve(true)
             } catch (e) {
-                reject(e)
+                reject(new FullstackTestingError(`failed to setup directories in pod '${podName}' at ${constants.HAPI_PATH}`, e))
             }
         })
     }
