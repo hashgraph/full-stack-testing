@@ -295,6 +295,10 @@ export class PlatformInstaller {
                     accountIdSeq += 1
                 }
 
+                if (releaseTag.startsWith('v0.41')) {
+                    configLines.push(`nextNodeId, ${nodeSeq}`)
+                }
+
                 fs.writeFileSync(destPath, configLines.join("\n"))
 
                 resolve(configLines)
