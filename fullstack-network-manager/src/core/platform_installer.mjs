@@ -25,10 +25,9 @@ export class PlatformInstaller {
         return new Promise(async (resolve, reject) => {
             try {
                 // reset HAPI_PATH
-                await this.kubectl.execContainer(podName, containerName, `rm -rf ${constants.HAPI_PATH}`)
+                await this.kubectl.execContainer(podName, containerName, `rm -rf ${constants.HGCAPP_SERVICES_HEDERA_PATH}`)
 
                 const paths = [
-                    constants.HAPI_PATH,
                     `${constants.HAPI_PATH}/data/keys`,
                     `${constants.HAPI_PATH}/data/config`,
                 ]
@@ -36,6 +35,8 @@ export class PlatformInstaller {
                 for (const p of paths) {
                     await this.kubectl.execContainer(podName, containerName, `mkdir -p ${p}`)
                 }
+
+                await this.setPathPermission(podName, constants.HGCAPP_SERVICES_HEDERA_PATH)
 
                 resolve(true)
             } catch (e) {
@@ -199,11 +200,41 @@ export class PlatformInstaller {
             }
         })
     }
-
-    async setFilePermissions(srcPath, destPath) {
+    async setPathPermission(podName, destPath, mode= '0755', recursive = true, container = constants.ROOT_CONTAINER) {
         const self = this
+        if (!podName) throw new MissingArgumentError('podName is required')
+        if (!destPath) throw new MissingArgumentError('destPath is required')
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const recursiveFlag = recursive ? '-R' : ''
+                await this.kubectl.execContainer(podName, container, `chown ${recursiveFlag} hedera:hedera ${destPath}`)
+                await this.kubectl.execContainer(podName, container, `chmod ${recursiveFlag} ${mode} ${destPath}`)
+                resolve(true)
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to set permission in '${podName}': ${destPath}`, e))
+            }
+        })
+    }
+
+    async setPlatformDirPermissions(podName) {
+        const self = this
+        if (!podName) throw new MissingArgumentError('podName is required')
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                const destPaths = [
+                    constants.HAPI_PATH
+                ]
+
+                for (const destPath of destPaths) {
+                    await self.setPathPermission(podName, destPath)
+                }
+
+                resolve(true)
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to set permission in '${podName}': ${destPath}`, e))
+            }
         })
     }
 
@@ -322,7 +353,7 @@ export class PlatformInstaller {
                 self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied auxiliary config keys`)
 
                 self.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Setting file permissions ...`)
-                // await this.setFilePermissions(podName)
+                await this.setPlatformDirPermissions(podName)
                 self.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Set file permissions`)
 
                 resolve(true)
