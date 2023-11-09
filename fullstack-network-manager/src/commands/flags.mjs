@@ -15,6 +15,13 @@ export const namespaceFlag = {
     type: 'string'
 }
 
+export const defaultNamespaceFlag = {
+    describe: 'Namespace',
+    default: 'default',
+    alias: 's',
+    type: 'string'
+}
+
 export const deployMirrorNode = {
     describe: 'Deploy mirror node',
     default: true,
