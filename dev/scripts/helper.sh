@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+source "${CUR_DIR}/env.sh"
+
 start_time=$(date +%s)
 TMP_DIR="${SCRIPT_DIR}/../temp"
 
@@ -342,7 +345,7 @@ function prep_address_book() {
     local external_ip="${SVC_IP}"
 
     # for v.40.* onward
-    if [[ "${PLATFORM_PROFILE}" == v0.4* ]]; then
+    if [[ "${PLATFORM_VERSION}" == v0.4* ]]; then
       local node_nick_name="${node_name}"
       config_lines+=("address, ${node_seq}, ${node_nick_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}")
     else
@@ -355,7 +358,9 @@ function prep_address_book() {
   done
 
   # for v.41.* onward
-  #  config_lines+=("nextNodeId, ${node_seq}")
+  if [[ "${PLATFORM_VERSION}" == v0.4* ]]; then
+    config_lines+=("nextNodeId, ${node_seq}")
+  fi
 
   # write contents to config file
   cp "${SCRIPT_DIR}/../local-node/config.template" "${config_file}" || return "${EX_ERR}"
