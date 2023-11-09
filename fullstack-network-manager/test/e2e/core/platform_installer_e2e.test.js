@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import * as path from "path";
 import * as os from "os";
 import {constants} from "../../../src/core/index.mjs";
+import {MissingArgumentError} from "../../../src/core/errors.mjs";
 
 describe('PackageInstallerE2E', () => {
     const testLogger = core.logging.NewLogger('debug')
@@ -88,6 +89,24 @@ describe('PackageInstallerE2E', () => {
             expect(fs.existsSync(`${tmpDir}/templates`)).toBeTruthy()
 
             fs.rmdirSync(tmpDir, {recursive: true})
+        })
+    })
+
+    describe('copyGossipKeys', () => {
+        it('should succeed to copy gossip keys for node0', async () => {
+            const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+            const fileList = await installer.copyGossipKeys('network-node0-0', stagingDir )
+            expect(fileList.length).toBe(2)
+            expect(fileList).toContain('private-node0.pfx')
+            expect(fileList).toContain('public.pfx')
+        })
+
+        it('should succeed to copy gossip keys for node1', async () => {
+            const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+            const fileList = await installer.copyGossipKeys('network-node1-0', stagingDir )
+            expect(fileList.length).toBe(2)
+            expect(fileList).toContain('private-node1.pfx')
+            expect(fileList).toContain('public.pfx')
         })
     })
 })

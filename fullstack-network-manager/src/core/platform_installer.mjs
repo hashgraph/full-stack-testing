@@ -99,19 +99,42 @@ export class PlatformInstaller {
         })
     }
 
-    async copyGossipKeys(releaseDir) {
+    async copyGossipKeys(podName, stagingDir) {
+        if (!podName) throw new MissingArgumentError('podName is required')
+        if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                const keysDir = `${constants.HAPI_PATH}/data/keys`
+                const nodeId = Templates.extractNodeIdFromPodName(podName)
+                await this.kubectl.copy(podName,
+                    `${stagingDir}/templates/node-keys/private-${nodeId}.pfx`,
+                    `${podName}:${keysDir}`,
+                    '-c root-container',
+                )
+
+                await this.kubectl.copy(podName,
+                    `${stagingDir}/templates/node-keys/public.pfx`,
+                    `${podName}:${keysDir}`,
+                    '-c root-container',
+                )
+
+                const fileList = await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls ${keysDir}`)
+
+                resolve(fileList)
+            } catch (e) {
+                reject(new FullstackTestingError(`failed to copy gossip keys to pod '${podName}'`, e))
+            }
+        })
+    }
+
+    async copyPlatformConfigFiles(stagingDir) {
         return new Promise((resolve, reject) => {
 
         })
     }
 
-    async copyPlatformConfigFiles(releaseDir) {
-        return new Promise((resolve, reject) => {
-
-        })
-    }
-
-    async copyTLSKeys(releaseDir) {
+    async copyTLSKeys(stagingDir) {
         return new Promise((resolve, reject) => {
 
         })
@@ -220,7 +243,7 @@ export class PlatformInstaller {
         return new Promise(async (resolve, reject) => {
             try {
                 await this.copyPlatform(pod, buildZipFile)
-                // await this.copyGossipKeys(pod, stagingDir)
+                await this.copyGossipKeys(pod, stagingDir)
                 // await this.copyTLSKeys(pod, stagingDir)
                 // await this.copyPlatformConfigFiles(pod, stagingDir)
                 // await this.setFilePermissions(pod)

@@ -82,7 +82,7 @@ describe('PackageInstaller', () => {
             expect.assertions(1)
             await expect(installer.copyPlatform('', os.tmpdir())).rejects.toThrow(MissingArgumentError)
         })
-        it('should fail for missing releaseDir', async () => {
+        it('should fail for missing buildZipFile path', async () => {
             expect.assertions(1)
             await expect(installer.copyPlatform('network-node0-0', '' )).rejects.toThrow(MissingArgumentError)
         })
@@ -104,6 +104,15 @@ describe('PackageInstaller', () => {
         it('should fail for invalid destPath', async () => {
             await expect(installer.prepareConfigTxt(['node0'],'/INVALID/config.txt', '0.42.0' )).rejects.toThrow(IllegalArgumentError)
         })
+    })
 
+    describe('copyGossipKeys', () => {
+        it('should fail for missing podName', async () => {
+            await expect(installer.copyGossipKeys('', os.tmpdir())).rejects.toThrow(MissingArgumentError)
+        })
+
+        it('should fail for missing stagingDir path', async () => {
+            await expect(installer.copyGossipKeys('network-node0-0', '')).rejects.toThrow(MissingArgumentError)
+        })
     })
 })
