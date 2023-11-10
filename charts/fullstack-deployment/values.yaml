@@ -430,6 +430,7 @@ deployment:
     minAvailable: 1
     maxUnavailable: ""
   testMetadata:
+    enabled: false
     testSuiteName: ""
     testName: ""
     testRunUID: ""

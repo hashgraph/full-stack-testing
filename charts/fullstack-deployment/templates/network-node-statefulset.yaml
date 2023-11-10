@@ -36,6 +36,7 @@ spec:
         app: network-{{ $node.name }}
         fullstack.hedera.com/type: network-node
         fullstack.hedera.com/node-name: {{ $node.name }}
+        {{- include "fullstack.testLabels" $ | nindent 8 }}
     spec:
       {{- if $.Values.deployment.nodeSelector }}
       nodeSelector:
