@@ -146,4 +146,13 @@ export class Kubectl extends ShellRunner {
     async copy(pod, ...args) {
         return this.run(this.prepareCommand('cp', ...args))
     }
+
+    /**
+     * Invoke `kubectl config` command
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async config(...args) {
+        return this.run(this.prepareCommand('config', ...args))
+    }
 }
