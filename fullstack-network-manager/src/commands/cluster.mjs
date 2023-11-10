@@ -89,7 +89,7 @@ export class ClusterCommand extends BaseCommand {
                 this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' already exists`)
             }
 
-            // TODO: kubectl config set-context --current --namespace="${NAMESPACE}"
+            await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
 
             this.showList("namespaces", await this.getNameSpaces())
 
