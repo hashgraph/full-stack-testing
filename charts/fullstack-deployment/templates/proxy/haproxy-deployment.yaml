@@ -18,6 +18,7 @@ spec:
       labels:
         app: haproxy-{{ $node.name }}
         fullstack.hedera.com/type: haproxy
+        {{- include "fullstack.testLabels" $ | nindent 8 }}
     spec:
         {{- if $.Values.deployment.nodeSelector }}
       nodeSelector:
