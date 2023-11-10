@@ -285,7 +285,7 @@ export class ClusterCommand extends BaseCommand {
                         desc: 'Setup cluster with shared components',
                         builder: yargs => {
                             yargs.option('cluster-name', flags.clusterNameFlag)
-                            yargs.option('namespace', flags.defaultNamespaceFlag)
+                            yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('prometheus-stack', flags.deployPrometheusStack)
                             yargs.option('minio', flags.deployMinio)
                             yargs.option('envoy-gateway', flags.deployEnvoyGateway)
