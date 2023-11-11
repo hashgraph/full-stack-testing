@@ -223,12 +223,12 @@ minio-server:
         nodeSelector:
           fullstack-scheduling.io/role: network
         labels:
-          testSuiteName: ""
-          testName: ""
-          testRunUID: ""
-          testCreationTimestamp: ""
-          testExpirationTimestamp: ""
-          testRequester: ""
+          fullstack.hedera.com/testSuiteName: ""
+          fullstack.hedera.com/testName: ""
+          fullstack.hedera.com/testRunUID: ""
+          fullstack.hedera.com/testCreationTimestamp: ""
+          fullstack.hedera.com/testExpirationTimestamp: ""
+          fullstack.hedera.com/testRequester: ""
         tolerations:
           - key: "fullstack-scheduling.io/os"
             operator: "Equal"
@@ -247,12 +247,12 @@ minio-server:
 hedera-mirror-node:
   enabled: true
   labels:
-    testSuiteName: ""
-    testName: ""
-    testRunUID: ""
-    testCreationTimestamp: ""
-    testExpirationTimestamp: ""
-    testRequester: ""
+    fullstack.hedera.com/testSuiteName: ""
+    fullstack.hedera.com/testName: ""
+    fullstack.hedera.com/testRunUID: ""
+    fullstack.hedera.com/testCreationTimestamp: ""
+    fullstack.hedera.com/testExpirationTimestamp: ""
+    fullstack.hedera.com/testRequester: ""
   graphql: # not needed for default FST use case
     enabled: false
   rosetta: # not needed for default FST use case
@@ -382,12 +382,12 @@ hedera-mirror-node:
 hedera-explorer:
   enabled: true
   labels:
-    testSuiteName: ""
-    testName: ""
-    testRunUID: ""
-    testCreationTimestamp: ""
-    testExpirationTimestamp: ""
-    testRequester: ""
+    fullstack.hedera.com/testSuiteName: ""
+    fullstack.hedera.com/testName: ""
+    fullstack.hedera.com/testRunUID: ""
+    fullstack.hedera.com/testCreationTimestamp: ""
+    fullstack.hedera.com/testExpirationTimestamp: ""
+    fullstack.hedera.com/testRequester: ""
   nodeSelector:
     fullstack-scheduling.io/role: network
   tolerations:
