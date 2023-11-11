@@ -89,7 +89,7 @@ export class ClusterCommand extends BaseCommand {
                 this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' already exists`)
             }
 
-            // TODO: kubectl config set-context --current --namespace="${NAMESPACE}"
+            await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
 
             this.showList("namespaces", await this.getNameSpaces())
 
@@ -285,7 +285,7 @@ export class ClusterCommand extends BaseCommand {
                         desc: 'Setup cluster with shared components',
                         builder: yargs => {
                             yargs.option('cluster-name', flags.clusterNameFlag)
-                            yargs.option('namespace', flags.defaultNamespaceFlag)
+                            yargs.option('namespace', flags.namespaceFlag)
                             yargs.option('prometheus-stack', flags.deployPrometheusStack)
                             yargs.option('minio', flags.deployMinio)
                             yargs.option('envoy-gateway', flags.deployEnvoyGateway)

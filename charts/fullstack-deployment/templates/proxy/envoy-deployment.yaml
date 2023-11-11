@@ -18,6 +18,7 @@ spec:
       labels:
         app: envoy-proxy-{{ $node.name }}
         fullstack.hedera.com/type: envoy-proxy
+        {{- include "fullstack.testLabels" $ | nindent 8 }}
     spec:
         {{- if $.Values.deployment.nodeSelector }}
       nodeSelector:
