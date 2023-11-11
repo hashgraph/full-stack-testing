@@ -222,6 +222,13 @@ minio-server:
         size: 10Gi
         nodeSelector:
           fullstack-scheduling.io/role: network
+        labels:
+          fullstack.hedera.com/testSuiteName: ""
+          fullstack.hedera.com/testName: ""
+          fullstack.hedera.com/testRunUID: ""
+          fullstack.hedera.com/testCreationTimestamp: ""
+          fullstack.hedera.com/testExpirationTimestamp: ""
+          fullstack.hedera.com/testRequester: ""
         tolerations:
           - key: "fullstack-scheduling.io/os"
             operator: "Equal"
@@ -239,6 +246,13 @@ minio-server:
 # hedera mirror node configuration
 hedera-mirror-node:
   enabled: true
+  labels:
+    fullstack.hedera.com/testSuiteName: ""
+    fullstack.hedera.com/testName: ""
+    fullstack.hedera.com/testRunUID: ""
+    fullstack.hedera.com/testCreationTimestamp: ""
+    fullstack.hedera.com/testExpirationTimestamp: ""
+    fullstack.hedera.com/testRequester: ""
   graphql: # not needed for default FST use case
     enabled: false
   rosetta: # not needed for default FST use case
@@ -249,6 +263,7 @@ hedera-mirror-node:
     enabled: false # not needed for default FST use case
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+
   # importer is a component of the hedera mirror node
   # config for subchart hedera-mirror/importer
   importer:
@@ -366,6 +381,13 @@ hedera-mirror-node:
 # hedera explorer configuration
 hedera-explorer:
   enabled: true
+  labels:
+    fullstack.hedera.com/testSuiteName: ""
+    fullstack.hedera.com/testName: ""
+    fullstack.hedera.com/testRunUID: ""
+    fullstack.hedera.com/testCreationTimestamp: ""
+    fullstack.hedera.com/testExpirationTimestamp: ""
+    fullstack.hedera.com/testRequester: ""
   nodeSelector:
     fullstack-scheduling.io/role: network
   tolerations:
