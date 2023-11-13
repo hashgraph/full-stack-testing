@@ -289,6 +289,11 @@ function prep_address_book() {
   echo "Preparing address book"
   echo "-----------------------------------------------------------------------------------------------------"
 
+  IFS=. read -a VERSION_PARTS <<< "$PLATFORM_VERSION"
+  echo "MAJOR: ${VERSION_PARTS[0]}, MINOR=${VERSION_PARTS[1]}, PATCH=${VERSION_PARTS[2]}"
+  local MINOR_VERSION=${VERSION_PARTS[1]}
+
+
   local config_file="${TMP_DIR}/config.txt"
   local node_IP=""
   local node_seq="${NODE_SEQ:-0}" # this also used as the account ID suffix
@@ -345,7 +350,7 @@ function prep_address_book() {
     local external_ip="${SVC_IP}"
 
     # for v.40.* onward
-    if [[ "${PLATFORM_VERSION}" == v0.4* ]]; then
+    if [[ "${MINOR_VERSION}" -ge "40" ]]; then
       local node_nick_name="${node_name}"
       config_lines+=("address, ${node_seq}, ${node_nick_name}, ${node_name}, ${node_stake}, ${internal_ip}, ${internal_port}, ${external_ip}, ${external_port}, ${account}")
     else
@@ -358,7 +363,7 @@ function prep_address_book() {
   done
 
   # for v.41.* onward
-  if [[ "${PLATFORM_VERSION}" == v0.41* ]]; then
+  if [[ "${MINOR_VERSION}" -ge "41" ]]; then
     config_lines+=("nextNodeId, ${node_seq}")
   fi
 
