@@ -175,7 +175,7 @@ export class ClusterCommand extends BaseCommand {
             const valuesArg = this.prepareValuesArg(argv.prometheusStack,
               argv.minio, argv.envoyGateway, argv.certManager, argv.certManagerCrds)
 
-            this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`, chalk.yellow(valuesArg)))
+            this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
             await this.chartManager.install(namespace, constants.FST_CHART_SETUP_NAME, chartPath, valuesArg)
             await this.showInstalledChartList(namespace)
 

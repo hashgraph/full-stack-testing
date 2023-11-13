@@ -61,9 +61,6 @@ export class ChartManager {
         try {
             const charts = await this.getInstalledCharts(namespaceName)
             if (!charts.includes(chartName)) {
-                // this.logger.showUser(chalk.cyan('> running helm dependency update for chart:'), chalk.yellow(`${chartName} ...`))
-                // await this.helm.dependency('update', chartPath)
-
                 this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartPath}`))
                 await this.helm.install(`${chartName} ${chartPath} -n ${namespaceName} ${valuesArg}`)
                 this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is installed`)
