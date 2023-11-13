@@ -37,7 +37,7 @@ export class BaseCommand extends ShellRunner {
      * @returns {Promise<boolean>}
      */
     async checkKubectl() {
-        return this.checkDep(`${core.constants.KUBECTL} version`)
+        return this.checkDep(`${core.constants.KUBECTL} version --client`)
     }
 
     /**
