@@ -2,6 +2,7 @@ import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import {BaseCommand} from "./base.mjs";
 import chalk from "chalk";
+import {constants} from "../core/index.mjs";
 
 /**
  * Define the core functionalities of 'cluster' command
@@ -21,21 +22,8 @@ export class ClusterCommand extends BaseCommand {
         return []
     }
 
-    showList(itemType, items = []) {
-        this.logger.showUser(chalk.green(`\n *** List of available ${itemType} ***`))
-        this.logger.showUser(chalk.green(`---------------------------------------`))
-        if (items.length > 0) {
-            items.forEach(name => this.logger.showUser(chalk.yellow(` - ${name}`)))
-        } else {
-            this.logger.showUser(chalk.blue(`[ None ]`))
-        }
-
-        this.logger.showUser("\n")
-        return true
-    }
-
     async showClusterList(argv) {
-        this.showList("clusters", await this.getClusters())
+        this.logger.showList("clusters", await this.getClusters())
         return true
     }
 
@@ -91,7 +79,7 @@ export class ClusterCommand extends BaseCommand {
 
             await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
 
-            this.showList("namespaces", await this.getNameSpaces())
+            this.logger.showList("namespaces", await this.getNameSpaces())
 
             return true
         } catch (e) {
@@ -156,7 +144,7 @@ export class ClusterCommand extends BaseCommand {
                 this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is already deleted`)
             }
 
-            this.showList('clusters', await this.getClusters())
+            this.logger.showList('clusters', await this.getClusters())
 
             return true
         } catch (e) {
@@ -168,7 +156,7 @@ export class ClusterCommand extends BaseCommand {
 
 
     async showInstalledChartList(namespace) {
-        this.showList("charts installed", await this.getInstalledCharts(namespace))
+        this.logger.showList("charts installed", await this.chartManager.getInstalledCharts(namespace))
     }
 
     /**
@@ -182,14 +170,13 @@ export class ClusterCommand extends BaseCommand {
             await this.create(argv)
 
             const clusterName = argv.clusterName
-            const chartName = "fullstack-cluster-setup"
             const namespace = argv.namespace
-            const chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/${chartName}`
+            const chartPath = `full-stack-testing/fullstack-cluster-setup`
             const valuesArg = this.prepareValuesArg(argv.prometheusStack,
               argv.minio, argv.envoyGateway, argv.certManager, argv.certManagerCrds)
 
-            this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`))
-            await this.chartInstall(namespace, chartName, chartPath, valuesArg)
+            this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${clusterName}`, chalk.yellow(valuesArg)))
+            await this.chartManager.install(namespace, constants.FST_CHART_SETUP_NAME, chartPath, valuesArg)
             await this.showInstalledChartList(namespace)
 
             return true

@@ -106,7 +106,7 @@ const Logger = class {
             let cause = err.cause
             while (cause !== undefined && depth < 10) {
                 if (cause.stack) {
-                    console.log(chalk.red('|-'), cause.stack)
+                    console.log(cause.stack)
                 }
 
                 cause = cause.cause
@@ -137,6 +137,19 @@ const Logger = class {
 
     debug(msg, ...args) {
         this.winsonLogger.debug(msg, ...args, this.prepMeta())
+    }
+
+    showList(itemType, items = []) {
+        this.showUser(chalk.green(`\n *** List of ${itemType} ***`))
+        this.showUser(chalk.green(`---------------------------------------`))
+        if (items.length > 0) {
+            items.forEach(name => this.showUser(chalk.yellow(` - ${name}`)))
+        } else {
+            this.showUser(chalk.blue(`[ None ]`))
+        }
+
+        this.showUser("\n")
+        return true
     }
 }
 

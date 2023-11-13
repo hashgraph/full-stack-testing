@@ -1,18 +1,18 @@
 import {BaseCommand} from "./base.mjs";
 import * as core from "../core/index.mjs";
 import * as flags from "./flags.mjs";
+import {constants} from "../core/index.mjs";
 
 
 export class ChartCommand extends BaseCommand {
-    chartPath = `${core.constants.FST_HOME_DIR}/full-stack-testing/charts/fullstack-deployment`
-    chartName = "fullstack-deployment"
+    chartPath = `full-stack-testing/fullstack-deployment`
 
     prepareValuesArg(argv) {
         const {valuesFile, mirrorNode, hederaExplorer} = argv
-        let valuesArg = `--values ${this.chartPath}/values.yaml`
 
+        let valuesArg = ''
         if (valuesFile) {
-            valuesArg += ` --values ${valuesFile}`
+            valuesArg += `--values ${valuesFile}`
         }
 
         valuesArg += ` --set hedera-mirror-node.enabled=${mirrorNode} --set hedera-explorer.enabled=${hederaExplorer}`
@@ -21,23 +21,29 @@ export class ChartCommand extends BaseCommand {
     }
 
     async install(argv) {
-        const namespace = argv.namespace
-        const valuesArg = this.prepareValuesArg(argv)
+        try {
+            const namespace = argv.namespace
+            const valuesArg = this.prepareValuesArg(argv)
 
-        return await this.chartInstall(namespace, this.chartName, this.chartPath, valuesArg)
+            await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, this.chartPath, valuesArg)
+
+            this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
+        } catch (e) {
+            this.logger.showUserError(e)
+        }
     }
 
     async uninstall(argv) {
         const namespace = argv.namespace
 
-        return await this.chartUninstall(namespace, this.chartName)
+        return await this.chartManager.uninstall(namespace, constants.FST_CHART_DEPLOYMENT_NAME)
     }
 
     async upgrade(argv) {
         const namespace = argv.namespace
         const valuesArg = this.prepareValuesArg(argv)
 
-        return await this.chartUpgrade(namespace, this.chartName, this.chartPath, valuesArg)
+        return await this.chartManager.upgrade(namespace, constants.FST_CHART_DEPLOYMENT_NAME, this.chartPath, valuesArg)
     }
 
     static getCommandDefinition(chartCmd) {
