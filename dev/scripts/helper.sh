@@ -285,13 +285,14 @@ function copy_node_keys() {
 
 # prepare address book using all nodes pod IP and store as config.txt
 function prep_address_book() {
+  IFS=. read -a VERSION_PARTS <<< "$PLATFORM_VERSION"
+  local MINOR_VERSION=${VERSION_PARTS[1]}
+
   echo ""
   echo "Preparing address book"
+  echo "PLATFORM_VERSION [ MAJOR: ${VERSION_PARTS[0]}, MINOR=${VERSION_PARTS[1]}, PATCH=${VERSION_PARTS[2]} ]"
   echo "-----------------------------------------------------------------------------------------------------"
 
-  IFS=. read -a VERSION_PARTS <<< "$PLATFORM_VERSION"
-  echo "MAJOR: ${VERSION_PARTS[0]}, MINOR=${VERSION_PARTS[1]}, PATCH=${VERSION_PARTS[2]}"
-  local MINOR_VERSION=${VERSION_PARTS[1]}
 
 
   local config_file="${TMP_DIR}/config.txt"
