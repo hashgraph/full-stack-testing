@@ -55,7 +55,8 @@ export class InitCommand extends BaseCommand {
 
             this.logger.showUser(chalk.green("OK: All required dependencies are found: %s"), chalk.yellow(deps))
 
-
+            const repoURLs = await this.chartManager.setup()
+            this.logger.showUser(chalk.green("OK: Chart repositories are initialized"), chalk.yellow(repoURLs))
 
             return status
         } catch (e) {

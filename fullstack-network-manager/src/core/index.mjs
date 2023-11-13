@@ -7,6 +7,7 @@ import {PackageDownloader} from "./package_downloader.mjs";
 import {PlatformInstaller} from "./platform_installer.mjs";
 import {Zippy} from "./zippy.mjs";
 import {Templates} from "./templates.mjs";
+import {ChartManager} from "./chart_manager.mjs";
 
 // Expose components from the core module
 export {
@@ -19,4 +20,5 @@ export {
     PlatformInstaller,
     Zippy,
     Templates,
+    ChartManager,
 }

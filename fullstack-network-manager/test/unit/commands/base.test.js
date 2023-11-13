@@ -1,5 +1,5 @@
 import {test, expect, it, describe} from "@jest/globals";
-import {Helm, Kubectl, logging} from "../../../src/core/index.mjs";
+import {ChartManager, Helm, Kubectl, logging} from "../../../src/core/index.mjs";
 import {BaseCommand} from "../../../src/commands/base.mjs";
 import * as core from "../../../src/core/index.mjs"
 import {Kind} from "../../../src/core/kind.mjs";
@@ -10,11 +10,14 @@ describe('BaseCommand', () => {
     const kind = new Kind(testLogger)
     const helm = new Helm(testLogger)
     const kubectl = new Kubectl(testLogger)
+    const chartManager = new ChartManager(helm, testLogger)
+
     const baseCmd = new BaseCommand({
         logger: testLogger,
         kind: kind,
         helm: helm,
         kubectl: kubectl,
+        chartManager: chartManager,
     })
 
     describe('runShell', () => {
