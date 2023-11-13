@@ -6,6 +6,7 @@ metadata:
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     fullstack.hedera.com/type: network-node-svc-monitor
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   selector:
     matchLabels:

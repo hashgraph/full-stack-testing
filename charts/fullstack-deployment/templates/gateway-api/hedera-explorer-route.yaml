@@ -5,6 +5,7 @@ metadata:
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     fullstack.hedera.com/type: http-route
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   parentRefs:
     - name: fst

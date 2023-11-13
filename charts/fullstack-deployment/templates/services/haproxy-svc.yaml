@@ -12,6 +12,7 @@ metadata:
     fullstack.hedera.com/type: haproxy-svc
     fullstack.hedera.com/node-name: {{ $node.name }}
     fullstack.hedera.com/prometheus-endpoint: active
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   {{- if default $defaults.loadBalancerEnabled $haproxy.loadBalancerEnabled | eq "true" }}
   type: LoadBalancer
