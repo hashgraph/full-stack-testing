@@ -20,6 +20,7 @@ export const constants = {
     FST_HOME_DIR: FST_HOME_DIR,
     FST_LOGS_DIR: `${FST_HOME_DIR}/logs`,
     FST_CACHE_DIR: `${FST_HOME_DIR}/cache`,
+    FST_CONFIG_FILE: `${FST_HOME_DIR}/fsnetman.config`,
     RESOURCES_DIR: normalize(CUR_FILE_DIR + "/../../resources"),
     HGCAPP_DIR: HGCAPP_DIR,
     HGCAPP_SERVICES_HEDERA_PATH: `${HGCAPP_DIR}/services-hedera`,

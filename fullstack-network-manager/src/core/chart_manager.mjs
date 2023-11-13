@@ -49,7 +49,7 @@ export class ChartManager {
      */
     async getInstalledCharts(namespaceName) {
         try {
-            return await this.helm.list(`-n ${namespaceName}`, '-q')
+            return await this.helm.list(`-n ${namespaceName}`, `--no-headers | awk '{print $9}'`)
         } catch (e) {
             this.logger.showUserError(e)
         }
@@ -57,12 +57,12 @@ export class ChartManager {
         return []
     }
 
-    async install(namespaceName, chartName, chartPath, valuesArg = '') {
+    async install(namespaceName, chartName, chartPath, version, valuesArg = '') {
         try {
             const charts = await this.getInstalledCharts(namespaceName)
             if (!charts.includes(chartName)) {
                 this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartPath}`))
-                await this.helm.install(`${chartName} ${chartPath} -n ${namespaceName} ${valuesArg}`)
+                await this.helm.install(`${chartName} ${chartPath} --version ${version} -n ${namespaceName} ${valuesArg}`)
                 this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is installed`)
             } else {
                 this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is already installed`)

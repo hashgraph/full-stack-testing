@@ -91,13 +91,18 @@ export class ClusterCommand extends BaseCommand {
 
     /**
      * Create a cluster
-     * @param argv
+     * @param argv command arguments
+     * @param config config object
      * @returns {Promise<boolean>}
      */
-    async create(argv) {
+    async create(argv, config = {}) {
         try {
             const clusterName = argv.clusterName
             const clusters = await this.getClusters()
+
+            if (!config) {
+                config = this.configManager.setupConfig(argv)
+            }
 
             this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
             if (!clusters.includes(clusterName)) {
@@ -166,14 +171,16 @@ export class ClusterCommand extends BaseCommand {
      */
     async setup(argv) {
         try {
+            const config = await this.configManager.setupConfig(argv)
+
             // create cluster
-            await this.create(argv)
+            await this.create(argv, config)
 
             const clusterName = argv.clusterName
             const namespace = argv.namespace
             const chartPath = `full-stack-testing/fullstack-cluster-setup`
             const valuesArg = this.prepareValuesArg(argv.prometheusStack,
-              argv.minio, argv.envoyGateway, argv.certManager, argv.certManagerCrds)
+                argv.minio, argv.envoyGateway, argv.certManager, argv.certManagerCrds)
 
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
             await this.chartManager.install(namespace, constants.FST_CHART_SETUP_NAME, chartPath, valuesArg)
@@ -200,10 +207,7 @@ export class ClusterCommand extends BaseCommand {
                     .command({
                         command: 'create',
                         desc: 'Create a cluster',
-                        builder: yargs => {
-                            yargs.option('cluster-name', flags.clusterNameFlag)
-                            yargs.option('namespace', flags.namespaceFlag)
-                        },
+                        builder: y => flags.setCommandFlags(y, flags.clusterName, flags.namespace),
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster create' ===")
                             clusterCmd.logger.debug(argv)
@@ -219,9 +223,7 @@ export class ClusterCommand extends BaseCommand {
                     .command({
                         command: 'delete',
                         desc: 'Delete a cluster',
-                        builder: yargs => {
-                            yargs.option('cluster-name', flags.clusterNameFlag)
-                        },
+                        builder: y => flags.setCommandFlags(y, flags.clusterName),
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster delete' ===")
                             clusterCmd.logger.debug(argv)
@@ -252,9 +254,7 @@ export class ClusterCommand extends BaseCommand {
                     .command({
                         command: 'info',
                         desc: 'Get cluster info',
-                        builder: yargs => {
-                            yargs.option('cluster-name', flags.clusterNameFlag)
-                        },
+                        builder: y => flags.setCommandFlags(y, flags.clusterName),
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster info' ===")
                             clusterCmd.logger.debug(argv)
@@ -270,15 +270,15 @@ export class ClusterCommand extends BaseCommand {
                     .command({
                         command: 'setup',
                         desc: 'Setup cluster with shared components',
-                        builder: yargs => {
-                            yargs.option('cluster-name', flags.clusterNameFlag)
-                            yargs.option('namespace', flags.namespaceFlag)
-                            yargs.option('prometheus-stack', flags.deployPrometheusStack)
-                            yargs.option('minio', flags.deployMinio)
-                            yargs.option('envoy-gateway', flags.deployEnvoyGateway)
-                            yargs.option('cert-manager', flags.deployCertManager)
-                            yargs.option('cert-manager-crds', flags.deployCertManagerCRDs)
-                        },
+                        builder: y => flags.setCommandFlags(y,
+                            flags.clusterName,
+                            flags.namespace,
+                            flags.deployPrometheusStack,
+                            flags.deployMinio,
+                            flags.deployEnvoyGateway,
+                            flags.deployCertManager,
+                            flags.deployCertManagerCRDs,
+                        ),
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
                             clusterCmd.logger.debug(argv)
@@ -297,7 +297,7 @@ export class ClusterCommand extends BaseCommand {
     }
 
     prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
-        certManagerEnabled, certManagerCrdsEnabled) {
+                     certManagerEnabled, certManagerCrdsEnabled) {
         let valuesArg = ''
         valuesArg += ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled}`
         valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`

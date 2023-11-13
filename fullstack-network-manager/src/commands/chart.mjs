@@ -24,8 +24,9 @@ export class ChartCommand extends BaseCommand {
         try {
             const namespace = argv.namespace
             const valuesArg = this.prepareValuesArg(argv)
+            const config = await this.configManager.setupConfig(argv)
 
-            await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, this.chartPath, valuesArg)
+            await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, this.chartPath, config.version, valuesArg)
 
             this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
         } catch (e) {
@@ -55,12 +56,12 @@ export class ChartCommand extends BaseCommand {
                     .command({
                         command: 'install',
                         desc: 'Install FST network deployment chart',
-                        builder: yargs => {
-                            yargs.option('namespace', flags.namespaceFlag)
-                            yargs.option('mirror-node', flags.deployMirrorNode)
-                            yargs.option('hedera-explorer', flags.deployHederaExplorer)
-                            yargs.option('values-file', flags.valuesFile)
-                        },
+                        builder: y => flags.setCommandFlags(y,
+                            flags.namespace,
+                            flags.deployMirrorNode,
+                            flags.deployHederaExplorer,
+                            flags.valuesFile,
+                        ),
                         handler: argv => {
                             chartCmd.logger.debug("==== Running 'chart install' ===")
                             chartCmd.logger.debug(argv)
@@ -76,9 +77,7 @@ export class ChartCommand extends BaseCommand {
                     .command({
                         command: 'uninstall',
                         desc: 'Uninstall FST network deployment chart',
-                        builder: yargs => {
-                            yargs.option('namespace', flags.namespaceFlag)
-                        },
+                        builder: y => flags.setCommandFlags(y, flags.namespace),
                         handler: argv => {
                             chartCmd.logger.debug("==== Running 'chart uninstall' ===")
                             chartCmd.logger.debug(argv)
@@ -94,12 +93,12 @@ export class ChartCommand extends BaseCommand {
                     .command({
                         command: 'upgrade',
                         desc: 'Refresh existing FST network deployment with new values',
-                        builder: yargs => {
-                            yargs.option('namespace', flags.namespaceFlag)
-                            yargs.option('mirror-node', flags.deployMirrorNode)
-                            yargs.option('hedera-explorer', flags.deployHederaExplorer)
-                            yargs.option('values-file', flags.valuesFile)
-                        },
+                        builder: y => flags.setCommandFlags(y,
+                            flags.namespace,
+                            flags.deployMirrorNode,
+                            flags.deployHederaExplorer,
+                            flags.valuesFile,
+                        ),
                         handler: argv => {
                             chartCmd.logger.debug("==== Running 'chart upgrade' ===")
                             chartCmd.logger.debug(argv)

@@ -174,13 +174,13 @@ export class NodeCommand extends BaseCommand {
                     .command({
                         command: 'setup',
                         desc: 'Setup node with a specific version of Hedera platform',
-                        builder: yargs => {
-                            yargs.option('namespace', flags.namespaceFlag)
-                            yargs.option('node-ids', flags.nodeIDs)
-                            yargs.option('release-tag', flags.platformReleaseTag)
-                            yargs.option('release-dir', flags.platformReleaseDir)
-                            yargs.option('force', flags.force)
-                        },
+                        builder: y => flags.setCommandFlags(y,
+                            flags.namespace,
+                            flags.nodeIDs,
+                            flags.platformReleaseTag,
+                            flags.platformReleaseDir,
+                            flags.force,
+                            ),
                         handler: argv => {
                             nodeCmd.logger.debug("==== Running 'node setup' ===")
                             nodeCmd.logger.debug(argv)
@@ -196,10 +196,10 @@ export class NodeCommand extends BaseCommand {
                     .command({
                         command: 'start',
                         desc: 'Start a node running Hedera platform',
-                        builder: yargs => {
-                            yargs.option('namespace', flags.namespaceFlag)
-                            yargs.option('node-ids', flags.nodeIDs)
-                        },
+                        builder: y => flags.setCommandFlags(y,
+                            flags.namespace,
+                            flags.nodeIDs,
+                        ),
                         handler: argv => {
                             console.log("here")
                             nodeCmd.logger.showUser('here2')
@@ -217,10 +217,10 @@ export class NodeCommand extends BaseCommand {
                     .command({
                         command: 'stop',
                         desc: 'stop a node running Hedera platform',
-                        builder: yargs => {
-                            yargs.option('namespace', flags.namespaceFlag)
-                            yargs.option('node-ids', flags.nodeIDs)
-                        },
+                        builder: y => flags.setCommandFlags(y,
+                            flags.namespace,
+                            flags.nodeIDs,
+                        ),
                         handler: argv => {
                             nodeCmd.logger.debug("==== Running 'node stop' ===")
                             nodeCmd.logger.debug(argv)

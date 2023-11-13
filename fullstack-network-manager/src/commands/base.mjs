@@ -2,9 +2,9 @@
 import * as core from "../core/index.mjs"
 import chalk from "chalk";
 import {ShellRunner} from "../core/shell_runner.mjs";
-import {constants} from "../core/index.mjs";
 
 export class BaseCommand extends ShellRunner {
+
     async checkDep(cmd) {
         try {
             this.logger.debug(cmd)
@@ -78,6 +78,7 @@ export class BaseCommand extends ShellRunner {
         if (!opts || !opts.helm) throw new Error('An instance of core/Helm is required')
         if (!opts || !opts.kubectl) throw new Error('An instance of core/Kubectl is required')
         if (!opts || !opts.chartManager) throw new Error('An instance of core/ChartManager is required')
+        if (!opts || !opts.configManager) throw new Error('An instance of core/ConfigManager is required')
 
         super(opts.logger);
 
@@ -85,6 +86,7 @@ export class BaseCommand extends ShellRunner {
         this.helm = opts.helm
         this.kubectl = opts.kubectl
         this.chartManager = opts.chartManager
+        this.configManager = opts.configManager
 
         // map of dependency checks
         this.checks = new Map()

@@ -2,7 +2,7 @@ import yargs from 'yargs';
 import {hideBin} from 'yargs/helpers'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
-import {ChartManager} from "./core/index.mjs";
+import {ChartManager, ConfigManager} from "./core/index.mjs";
 
 export function main(argv) {
     const logger = core.logging.NewLogger('debug')
@@ -12,6 +12,7 @@ export function main(argv) {
     const downloader = new core.PackageDownloader(logger)
     const platformInstaller = new core.PlatformInstaller(logger, kubectl)
     const chartManager = new ChartManager(helm, logger)
+    const configManager = new ConfigManager(logger)
 
     const opts = {
         logger: logger,
@@ -21,6 +22,7 @@ export function main(argv) {
         downloader: downloader,
         platformInstaller: platformInstaller,
         chartManager: chartManager,
+        configManager: configManager,
     }
 
     logger.debug("Constants: %s", JSON.stringify(core.constants))
