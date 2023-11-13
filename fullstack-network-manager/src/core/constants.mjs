@@ -33,5 +33,8 @@ export const constants = {
     HEDERA_BUILDS_URL: 'https://builds.hedera.com',
     LOG_STATUS_PROGRESS: chalk.cyan('>>'),
     LOG_STATUS_DONE: chalk.green('OK'),
-    LOG_GROUP_DIVIDER: chalk.yellow('----------------------------------------------------------------------------')
+    LOG_GROUP_DIVIDER: chalk.yellow('----------------------------------------------------------------------------'),
+    FST_CHART_REPO_URL: 'https://hashgraph.github.io/full-stack-testing/charts',
+    FST_CHART_SETUP_NAME: 'fullstack-cluster-setup',
+    FST_CHART_DEPLOYMENT_NAME: 'fullstack-deployment',
 }

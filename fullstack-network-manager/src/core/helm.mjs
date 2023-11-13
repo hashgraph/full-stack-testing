@@ -58,4 +58,14 @@ export class Helm extends ShellRunner {
     async dependency(subCommand,...args) {
         return this.run(this.prepareCommand('dependency', subCommand, ...args))
     }
+
+    /**
+     * Invoke `helm repo` command
+     * @param subCommand sub-command
+     * @param args args of the command
+     * @returns {Promise<Array>} console output as an array of strings
+     */
+    async repo(subCommand, ...args) {
+        return this.run(this.prepareCommand('repo', subCommand, ...args))
+    }
 }
