@@ -64,6 +64,7 @@ describe('PackageInstallerE2E', () => {
             expect(configLines[2]).toContain('address, 0, node0, node0, 1')
             expect(configLines[3]).toContain('address, 1, node1, node1, 1')
             expect(configLines[4]).toContain('address, 2, node2, node2, 1')
+            expect(configLines[5]).toBe('nextNodeId, 3')
 
             // verify the file exists
             expect(fs.existsSync(configPath)).toBeTruthy()
