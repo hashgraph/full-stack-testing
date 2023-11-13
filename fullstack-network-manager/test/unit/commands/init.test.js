@@ -1,19 +1,21 @@
 import {InitCommand} from "../../../src/commands/init.mjs";
 import {expect, describe, it} from "@jest/globals";
 import * as core  from "../../../src/core/index.mjs";
-import {Helm, Kind, Kubectl} from "../../../src/core/index.mjs";
-import {BaseCommand} from "../../../src/commands/base.mjs";
+import {ChartManager, Helm, Kind, Kubectl} from "../../../src/core/index.mjs";
 
 const testLogger = core.logging.NewLogger('debug')
 describe('InitCommand', () => {
-    const kind = new Kind({logger: testLogger})
-    const helm = new Helm({logger: testLogger})
-    const kubectl = new Kubectl({logger: testLogger})
+    const kind = new Kind(testLogger)
+    const helm = new Helm(testLogger)
+    const kubectl = new Kubectl(testLogger)
+    const chartManager = new ChartManager(helm, testLogger)
+
     const initCmd = new InitCommand({
         logger: testLogger,
         kind: kind,
         helm: helm,
         kubectl: kubectl,
+        chartManager: chartManager,
     })
 
     describe('commands', () => {
