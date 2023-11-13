@@ -6,6 +6,7 @@ metadata:
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
     fullstack.hedera.com/type: gateway
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
   listeners:

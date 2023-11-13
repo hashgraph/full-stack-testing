@@ -9,6 +9,7 @@ metadata:
     fullstack.hedera.com/type: network-node-svc
     fullstack.hedera.com/node-name: {{ $nodeConfig.name }}
     fullstack.hedera.com/prometheus-endpoint: active
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   selector:
     app: network-{{ $nodeConfig.name }}

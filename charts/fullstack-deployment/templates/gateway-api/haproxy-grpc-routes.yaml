@@ -11,6 +11,7 @@ metadata:
   labels:
     fullstack.hedera.com/type: tcp-route
     fullstack.hedera.com/nodeName: {{ $node.name }}
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   parentRefs:
     - name: fst
