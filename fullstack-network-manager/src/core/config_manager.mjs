@@ -72,17 +72,18 @@ export class ConfigManager {
                 config.version = packageJSON.version
 
                 // extract flags from argv
+                if (opts) {
+                    flags.allFlags.forEach(flag => {
+                        if (opts && opts[flag.name] !== undefined) {
+                            config['flags'][flag.name] = opts[flag.name]
+                            writeConfig = true
+                        }
+                    })
 
-                flags.allFlags.forEach(flag => {
-                    if (opts[flag.name] !== undefined) {
-                        config['flags'][flag.name] = opts[flag.name]
-                        writeConfig = true
+                    // store last command that was run
+                    if (opts["_"]) {
+                        config['lastCommand'] = opts["_"]
                     }
-                })
-
-                // store last command that was run
-                if(opts["_"]) {
-                    config['lastCommand'] = opts["_"]
                 }
 
                 // store CLI config

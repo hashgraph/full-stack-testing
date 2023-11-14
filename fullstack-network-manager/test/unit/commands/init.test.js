@@ -1,7 +1,7 @@
 import {InitCommand} from "../../../src/commands/init.mjs";
 import {expect, describe, it} from "@jest/globals";
 import * as core  from "../../../src/core/index.mjs";
-import {ChartManager, Helm, Kind, Kubectl} from "../../../src/core/index.mjs";
+import {ChartManager, ConfigManager, Helm, Kind, Kubectl} from "../../../src/core/index.mjs";
 
 const testLogger = core.logging.NewLogger('debug')
 describe('InitCommand', () => {
@@ -9,6 +9,7 @@ describe('InitCommand', () => {
     const helm = new Helm(testLogger)
     const kubectl = new Kubectl(testLogger)
     const chartManager = new ChartManager(helm, testLogger)
+    const configManager = new ConfigManager(testLogger)
 
     const initCmd = new InitCommand({
         logger: testLogger,
@@ -16,6 +17,7 @@ describe('InitCommand', () => {
         helm: helm,
         kubectl: kubectl,
         chartManager: chartManager,
+        configManager: configManager,
     })
 
     describe('commands', () => {
