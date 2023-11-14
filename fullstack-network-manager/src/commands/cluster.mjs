@@ -321,7 +321,7 @@ export class ClusterCommand extends BaseCommand {
     }
 
     prepareChartPath(config) {
-        let chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+        const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
         let chartPath = `full-stack-testing/fullstack-cluster-setup`
         if (chartDir) {
             chartPath = `${chartDir}/fullstack-cluster-setup`

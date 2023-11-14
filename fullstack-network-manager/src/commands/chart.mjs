@@ -25,7 +25,7 @@ export class ChartCommand extends BaseCommand {
     }
 
     prepareChartPath(config) {
-        let chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+        const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
         let chartPath = `full-stack-testing/fullstack-deployment`
         if (chartDir) {
             chartPath = `${chartDir}/fullstack-deployment`
