@@ -47,9 +47,10 @@ export class ConfigManager {
      * It overwrites previous config values using opts and store in the config file if any value has been changed.
      *
      * @param opts object containing various config related fields (e.g. argv)
+     * @param reset if we should reset old values
      * @returns {Promise<unknown>}
      */
-    async setupConfig(opts) {
+    async setupConfig(opts, reset = false) {
         const self = this
 
         return new Promise((resolve, reject) => {
@@ -59,7 +60,7 @@ export class ConfigManager {
                 let packageJSON = self.loadPackageJSON()
 
                 // if config exist, then load it first
-                if (fs.existsSync(constants.FST_CONFIG_FILE)) {
+                if (!reset && fs.existsSync(constants.FST_CONFIG_FILE)) {
                     const configJSON = fs.readFileSync(constants.FST_CONFIG_FILE)
                     config = JSON.parse(configJSON.toString())
                 }
@@ -74,9 +75,10 @@ export class ConfigManager {
                 // extract flags from argv
                 if (opts) {
                     flags.allFlags.forEach(flag => {
-                        if (opts && opts[flag.name] !== undefined) {
+                        if (opts && opts[flag.name]) {
                             let val = opts[flag.name]
-                            if (flag.name === flags.chartDirectory.name) {
+                            console.log(val)
+                            if (val && flag.name === flags.chartDirectory.name) {
                                val = paths.resolve(val)
                             }
 
@@ -92,7 +94,7 @@ export class ConfigManager {
                 }
 
                 // store CLI config
-                if (writeConfig) {
+                if (reset || writeConfig) {
                     config.updatedAt = new Date().toISOString()
 
                     let configJSON = JSON.stringify(config)
