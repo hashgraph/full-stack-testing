@@ -273,12 +273,12 @@ export class ClusterCommand extends BaseCommand {
                         builder: y => flags.setCommandFlags(y,
                             flags.clusterName,
                             flags.namespace,
+                            flags.chartDirectory,
                             flags.deployPrometheusStack,
                             flags.deployMinio,
                             flags.deployEnvoyGateway,
                             flags.deployCertManager,
                             flags.deployCertManagerCRDs,
-                            flags.chartDirectory,
                         ),
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")

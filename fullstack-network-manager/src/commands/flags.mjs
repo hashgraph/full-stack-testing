@@ -68,7 +68,6 @@ export const deployPrometheusStack = {
     definition: {
         describe: 'Deploy prometheus stack',
         default: true,
-        alias: 'p',
         type: 'boolean'
     }
 }
@@ -78,7 +77,6 @@ export const deployMinio = {
     definition: {
         describe: 'Deploy minio operator',
         default: true,
-        alias: 'o',
         type: 'boolean'
     }
 }
@@ -88,7 +86,6 @@ export const deployEnvoyGateway = {
     definition: {
         describe: 'Deploy envoy gateway',
         default: true,
-        alias: 'e',
         type: 'boolean'
     }
 }
