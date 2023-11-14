@@ -1,5 +1,4 @@
 import { BaseCommand } from './base.mjs'
-import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import { constants } from '../core/index.mjs'
 

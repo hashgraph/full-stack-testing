@@ -1,12 +1,11 @@
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import {
-  DataValidationError,
   FullstackTestingError,
   IllegalArgumentError,
   MissingArgumentError
 } from '../core/errors.mjs'
-import { constants, PackageDownloader, Templates } from '../core/index.mjs'
+import { constants, Templates } from '../core/index.mjs'
 import chalk from 'chalk'
 import * as fs from 'fs'
 
