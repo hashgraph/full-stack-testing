@@ -5,12 +5,16 @@ import {constants} from "../core/index.mjs";
 
 
 export class ChartCommand extends BaseCommand {
-    chartPath = `full-stack-testing/fullstack-deployment`
 
-    prepareValuesArg(argv) {
+    prepareValuesArg(argv, config) {
         const {valuesFile, mirrorNode, hederaExplorer} = argv
 
         let valuesArg = ''
+        let chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+        if (chartDir) {
+           valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
+        }
+
         if (valuesFile) {
             valuesArg += `--values ${valuesFile}`
         }
@@ -20,13 +24,25 @@ export class ChartCommand extends BaseCommand {
         return valuesArg
     }
 
+    prepareChartPath(config) {
+        let chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+        let chartPath = `full-stack-testing/fullstack-deployment`
+        if (chartDir) {
+            chartPath = `${chartDir}/fullstack-deployment`
+        }
+
+        return chartPath
+    }
+
     async install(argv) {
         try {
             const namespace = argv.namespace
-            const valuesArg = this.prepareValuesArg(argv)
-            const config = await this.configManager.setupConfig(argv)
 
-            await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, this.chartPath, config.version, valuesArg)
+            const config = await this.configManager.setupConfig(argv)
+            const valuesArg = this.prepareValuesArg(argv, config)
+            const chartPath = this.prepareChartPath(config)
+
+            await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
 
             this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
         } catch (e) {
@@ -42,9 +58,12 @@ export class ChartCommand extends BaseCommand {
 
     async upgrade(argv) {
         const namespace = argv.namespace
-        const valuesArg = this.prepareValuesArg(argv)
 
-        return await this.chartManager.upgrade(namespace, constants.FST_CHART_DEPLOYMENT_NAME, this.chartPath, valuesArg)
+        const config = await this.configManager.setupConfig(argv)
+        const valuesArg = this.prepareValuesArg(argv, config)
+        const chartPath = this.prepareChartPath(config)
+
+        return await this.chartManager.upgrade(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, valuesArg)
     }
 
     static getCommandDefinition(chartCmd) {
@@ -61,6 +80,7 @@ export class ChartCommand extends BaseCommand {
                             flags.deployMirrorNode,
                             flags.deployHederaExplorer,
                             flags.valuesFile,
+                            flags.chartDirectory,
                         ),
                         handler: argv => {
                             chartCmd.logger.debug("==== Running 'chart install' ===")
@@ -98,6 +118,7 @@ export class ChartCommand extends BaseCommand {
                             flags.deployMirrorNode,
                             flags.deployHederaExplorer,
                             flags.valuesFile,
+                            flags.chartDirectory,
                         ),
                         handler: argv => {
                             chartCmd.logger.debug("==== Running 'chart upgrade' ===")

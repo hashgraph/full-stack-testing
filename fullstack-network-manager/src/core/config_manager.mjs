@@ -29,6 +29,18 @@ export class ConfigManager {
         }
     }
 
+    hasFlag(config, flag) {
+        return !!config.flags[flag.name];
+    }
+
+    flagValue(config, flag) {
+        if (this.hasFlag(config, flag)) {
+            return config.flags[flag.name]
+        }
+
+        return ''
+    }
+
     /**
      * Load and store config
      *

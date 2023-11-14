@@ -37,7 +37,7 @@ const customFormat = winston.format.combine(
     })(),
 )
 
-const Logger = class {
+export const Logger = class {
     /**
      * Create a new logger
      * @param level logging level as supported by winston library:
@@ -101,11 +101,11 @@ const Logger = class {
         console.log(err.stack)
 
         if (err.cause) {
-            console.log(chalk.red('Caused by: '))
             let depth = 0
             let cause = err.cause
             while (cause !== undefined && depth < 10) {
                 if (cause.stack) {
+                    console.log(chalk.red('Caused by:'))
                     console.log(cause.stack)
                 }
 

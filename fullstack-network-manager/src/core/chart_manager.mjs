@@ -59,8 +59,8 @@ export class ChartManager {
 
     async install(namespaceName, chartName, chartPath, version, valuesArg = '') {
         try {
-            const charts = await this.getInstalledCharts(namespaceName)
-            if (!charts.includes(chartName)) {
+            const isInstalled = await this.isChartInstalled(namespaceName, chartName)
+            if (!isInstalled) {
                 this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartPath}`))
                 await this.helm.install(`${chartName} ${chartPath} --version ${version} -n ${namespaceName} ${valuesArg}`)
                 this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is installed`)
@@ -76,11 +76,20 @@ export class ChartManager {
         return false
     }
 
+    async isChartInstalled(namespaceName, chartName) {
+        const charts = await this.getInstalledCharts(namespaceName)
+        for(const item of charts) {
+            if (item.startsWith(chartName)) return true
+        }
+
+        return false
+    }
+
     async uninstall(namespaceName, chartName) {
         try {
             this.logger.showUser(chalk.cyan('> checking chart:'), chalk.yellow(`${chartName}`))
-            const charts = await this.getInstalledCharts(namespaceName)
-            if (charts.includes(chartName)) {
+            const isInstalled = await this.isChartInstalled(namespaceName, chartName)
+            if (isInstalled) {
                 this.logger.showUser(chalk.cyan('> uninstalling chart:'), chalk.yellow(`${chartName}`))
                 await this.helm.uninstall(`-n ${namespaceName} ${chartName}`)
                 this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is uninstalled`)

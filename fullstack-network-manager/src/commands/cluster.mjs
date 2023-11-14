@@ -172,16 +172,16 @@ export class ClusterCommand extends BaseCommand {
     async setup(argv) {
         try {
             const config = await this.configManager.setupConfig(argv)
+            const clusterName = argv.clusterName
+            const namespace = argv.namespace
 
             // create cluster
             await this.create(argv, config)
 
-            const clusterName = argv.clusterName
-            const namespace = argv.namespace
-            const chartPath = `full-stack-testing/fullstack-cluster-setup`
-            const valuesArg = this.prepareValuesArg(argv.prometheusStack,
-                argv.minio, argv.envoyGateway, argv.certManager, argv.certManagerCrds)
-
+            // install fullstack-cluster-setup chart
+            const chartPath = this.prepareChartPath(config)
+            const valuesArg = this.prepareValuesArg(config, argv.prometheusStack, argv.minio, argv.envoyGateway,
+                argv.certManager, argv.certManagerCrds)
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
             await this.chartManager.install(namespace, constants.FST_CHART_SETUP_NAME, chartPath, valuesArg)
             await this.showInstalledChartList(namespace)
@@ -296,18 +296,37 @@ export class ClusterCommand extends BaseCommand {
         }
     }
 
-    prepareValuesArg(prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
+    prepareValuesArg(config, prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
                      certManagerEnabled, certManagerCrdsEnabled) {
+
         let valuesArg = ''
+        let chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+        if (chartDir) {
+            valuesArg = `-f ${chartDir}/fullstack-cluster-setup/values.yaml`
+        }
+
         valuesArg += ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled}`
         valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
         valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
         valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
         valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
+
         if (certManagerEnabled && !certManagerCrdsEnabled) {
             this.logger.showUser(chalk.yellowBright('> WARNING:'), chalk.yellow(
                 'cert-manager CRDs are required for cert-manager, please enable it if you have not installed it independently.'))
         }
+
         return valuesArg
+
+    }
+
+    prepareChartPath(config) {
+        let chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+        let chartPath = `full-stack-testing/fullstack-cluster-setup`
+        if (chartDir) {
+            chartPath = `${chartDir}/fullstack-cluster-setup`
+        }
+
+        return chartPath
     }
 }
