@@ -14,12 +14,7 @@ describe('BaseCommand', () => {
   const configManager = new ConfigManager(testLogger)
 
   const baseCmd = new BaseCommand({
-    logger: testLogger,
-    kind,
-    helm,
-    kubectl,
-    chartManager,
-    configManager
+    logger: testLogger, kind, helm, kubectl, chartManager, configManager
   })
 
   describe('runShell', () => {

@@ -18,29 +18,26 @@ export class ChartManager {
      *
      * @param repoURLs a map of name and chart repository URLs
      * @param force whether or not to update the repo
-     * @returns {Promise<boolean>}
+     * @returns {Promise<string[]>}
      */
   async setup (repoURLs = new Map().set('full-stack-testing', constants.FST_CHART_REPO_URL), force = true) {
-    const self = this
-    return new Promise(async (resolve, reject) => {
-      try {
-        let forceUpdateArg = ''
-        if (force) {
-          forceUpdateArg = '--force-update'
-        }
-
-        const urls = []
-        for (const [name, url] of repoURLs.entries()) {
-          self.logger.debug(`Adding repo ${name} -> ${url}`, { repoName: name, repoURL: url })
-          await this.helm.repo('add', name, url, forceUpdateArg)
-          urls.push(url)
-        }
-
-        resolve(urls)
-      } catch (e) {
-        reject(new FullstackTestingError(`failed to setup chart repositories: ${e.message}`, e))
+    try {
+      let forceUpdateArg = ''
+      if (force) {
+        forceUpdateArg = '--force-update'
       }
-    })
+
+      const urls = []
+      for (const [name, url] of repoURLs.entries()) {
+        this.logger.debug(`Adding repo ${name} -> ${url}`, { repoName: name, repoURL: url })
+        await this.helm.repo('add', name, url, forceUpdateArg)
+        urls.push(url)
+      }
+
+      return urls
+    } catch (e) {
+      throw new FullstackTestingError(`failed to setup chart repositories: ${e.message}`, e)
+    }
   }
 
   /**

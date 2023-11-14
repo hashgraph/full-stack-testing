@@ -31,43 +31,41 @@ export class NodeCommand extends BaseCommand {
      * @returns {Promise<unknown>}
      */
   async checkNetworkNodePods (namespace, nodeIds = [], timeout = '300s') {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const podNames = []
-        if (nodeIds && nodeIds.length > 0) {
-          for (let nodeId of nodeIds) {
-            nodeId = nodeId.trim()
-            const podName = Templates.renderNetworkPodName(nodeId)
+    try {
+      const podNames = []
+      if (nodeIds && nodeIds.length > 0) {
+        for (let nodeId of nodeIds) {
+          nodeId = nodeId.trim()
+          const podName = Templates.renderNetworkPodName(nodeId)
 
-            await this.kubectl.wait('pod',
-              '--for=jsonpath=\'{.status.phase}\'=Running',
-              '-l fullstack.hedera.com/type=network-node',
-                            `-l fullstack.hedera.com/node-name=${nodeId}`,
-                            `--timeout=${timeout}`,
-                            `-n "${namespace}"`
-            )
-
-            podNames.push(podName)
-          }
-        } else {
-          nodeIds = []
-          const output = await this.kubectl.get('pods',
+          await this.kubectl.wait('pod',
+            '--for=jsonpath=\'{.status.phase}\'=Running',
             '-l fullstack.hedera.com/type=network-node',
-            '--no-headers',
-            '-o custom-columns=":metadata.name"',
+                        `-l fullstack.hedera.com/node-name=${nodeId}`,
+                        `--timeout=${timeout}`,
                         `-n "${namespace}"`
           )
-          output.forEach(podName => {
-            nodeIds.push(Templates.extractNodeIdFromPodName(podName))
-            podNames.push(podName)
-          })
-        }
 
-        resolve({ podNames, nodeIDs: nodeIds })
-      } catch (e) {
-        reject(new FullstackTestingError(`Error on detecting pods for nodes (${nodeIds}): ${e.message}`))
+          podNames.push(podName)
+        }
+      } else {
+        nodeIds = []
+        const output = await this.kubectl.get('pods',
+          '-l fullstack.hedera.com/type=network-node',
+          '--no-headers',
+          '-o custom-columns=":metadata.name"',
+                    `-n "${namespace}"`
+        )
+        output.forEach(podName => {
+          nodeIds.push(Templates.extractNodeIdFromPodName(podName))
+          podNames.push(podName)
+        })
       }
-    })
+
+      return { podNames, nodeIDs: nodeIds }
+    } catch (e) {
+      throw new FullstackTestingError(`Error on detecting pods for nodes (${nodeIds}): ${e.message}`)
+    }
   }
 
   async setup (argv) {
@@ -123,7 +121,7 @@ export class NodeCommand extends BaseCommand {
     try {
       const namespace = argv.namespace
       const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
-      const { podNames, nodeIDs } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
+      const { podNames } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
       for (const podName of podNames) {
         self.logger.showUser(chalk.cyan('>>'), `Starting node ${podName}`)
         await self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
@@ -144,7 +142,7 @@ export class NodeCommand extends BaseCommand {
     try {
       const namespace = argv.namespace
       const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
-      const { podNames, nodeIDs } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
+      const { podNames } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
       for (const podName of podNames) {
         self.logger.showUser(chalk.cyan('>>'), `Stopping node ${podName}`)
         await self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')

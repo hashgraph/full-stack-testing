@@ -1,13 +1,12 @@
 import { describe, expect, it } from '@jest/globals'
-import * as core from '../../../src/core/index.mjs'
-import { PackageDownloader, PlatformInstaller, constants } from '../../../src/core/index.mjs'
+import { PackageDownloader, PlatformInstaller, constants, logging, Kubectl } from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 
 describe('PackageInstallerE2E', () => {
-  const testLogger = core.logging.NewLogger('debug')
-  const kubectl = new core.Kubectl(testLogger)
+  const testLogger = logging.NewLogger('debug')
+  const kubectl = new Kubectl(testLogger)
   const installer = new PlatformInstaller(testLogger, kubectl)
   const downloader = new PackageDownloader(testLogger)
   const podName = 'network-node0-0'
@@ -36,7 +35,7 @@ describe('PackageInstallerE2E', () => {
         }
         packageFile = await downloader.fetchPlatform(packageTag, tmpDir)
         await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
-        const outputs = await kubectl.execContainer(podName, core.constants.ROOT_CONTAINER, `ls -la ${core.constants.HAPI_PATH}`)
+        const outputs = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HAPI_PATH}`)
         testLogger.showUser(outputs)
       } catch (e) {
         console.error(e)

@@ -170,7 +170,6 @@ export class ClusterCommand extends BaseCommand {
   async setup (argv) {
     try {
       const config = await this.configManager.setupConfig(argv)
-      const clusterName = argv.clusterName
       const namespace = argv.namespace
 
       // create cluster

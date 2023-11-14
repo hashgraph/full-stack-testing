@@ -41,7 +41,6 @@ export class InitCommand extends BaseCommand {
      */
   async init (argv) {
     try {
-      const config = await this.configManager.setupConfig(argv, true)
       await this.setupHomeDirectory()
 
       const deps = [

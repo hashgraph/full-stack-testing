@@ -9,9 +9,9 @@ import { constants } from './constants.mjs'
 
 export class PackageDownloader {
   /**
-     * Create an instance of Downloader
-     * @param logger an instance of core/Logger
-     */
+   * Create an instance of Downloader
+   * @param logger an instance of core/Logger
+   */
   constructor (logger) {
     if (!logger) throw new IllegalArgumentError('an instance of core/Logger is required', logger)
     this.logger = logger
@@ -20,8 +20,8 @@ export class PackageDownloader {
   isValidURL (url) {
     try {
       // attempt to parse to check URL format
-      new URL(url)
-      return true
+      const out = new URL(url)
+      return out.href !== undefined
     } catch (e) {
     }
 
@@ -49,7 +49,8 @@ export class PackageDownloader {
           })
 
           if (statusCode === 200) {
-            return resolve(true)
+            resolve(true)
+            return
           }
 
           resolve(false)
@@ -69,45 +70,47 @@ export class PackageDownloader {
   }
 
   /**
-     * Fetch data from a URL and save the output to a file
-     *
-     * @param url source file URL
-     * @param destPath destination path for the downloaded file
-     */
+   * Fetch data from a URL and save the output to a file
+   *
+   * @param url source file URL
+   * @param destPath destination path for the downloaded file
+   */
   async fetchFile (url, destPath) {
-    const self = this
+    if (!url) {
+      throw new IllegalArgumentError('source file URL is required', url)
+    }
 
-    if (!url) throw new IllegalArgumentError('source file URL is required', url)
-    if (!destPath) throw new IllegalArgumentError('destination path is required', destPath)
+    if (!destPath) {
+      throw new IllegalArgumentError('destination path is required', destPath)
+    }
+
     if (!this.isValidURL(url)) {
       throw new IllegalArgumentError('source URL is invalid', url)
     }
 
-    return new Promise(async (resolve, reject) => {
-      if (!await this.urlExists(url)) {
-        reject(new ResourceNotFoundError('source URL does not exist', url))
-      }
+    if (!await this.urlExists(url)) {
+      throw new ResourceNotFoundError('source URL does not exist', url)
+    }
 
-      try {
-        await streamPipeline(
-          got.stream(url),
-          fs.createWriteStream(destPath)
-        )
-        resolve(destPath)
-      } catch (e) {
-        self.logger.error(e)
-        reject(new ResourceNotFoundError(e.message, url, e))
-      }
-    })
+    try {
+      await streamPipeline(
+        got.stream(url),
+        fs.createWriteStream(destPath)
+      )
+
+      return destPath
+    } catch (e) {
+      throw new ResourceNotFoundError(e.message, url, e)
+    }
   }
 
   /**
-     * Compute hash of the file contents
-     * @param filePath path of the file
-     * @param algo hash algorithm
-     * @returns {Promise<string>} returns hex digest of the computed hash
-     * @throws Error if the file cannot be read
-     */
+   * Compute hash of the file contents
+   * @param filePath path of the file
+   * @param algo hash algorithm
+   * @returns {Promise<string>} returns hex digest of the computed hash
+   * @throws Error if the file cannot be read
+   */
   async computeFileHash (filePath, algo = 'sha384') {
     const self = this
 
@@ -131,30 +134,30 @@ export class PackageDownloader {
   }
 
   /**
-     * Verifies that the checksum of the sourceFile matches with the contents of the checksumFile
-     *
-     * It throws error if the checksum doesn't match.
-     *
-     * @param sourceFile path to the file for which checksum to be computed
-     * @param checksum expected checksum
-     * @param algo hash algorithm to be used to compute checksum
-     * @throws DataValidationError if the checksum doesn't match
-     */
+   * Verifies that the checksum of the sourceFile matches with the contents of the checksumFile
+   *
+   * It throws error if the checksum doesn't match.
+   *
+   * @param sourceFile path to the file for which checksum to be computed
+   * @param checksum expected checksum
+   * @param algo hash algorithm to be used to compute checksum
+   * @throws DataValidationError if the checksum doesn't match
+   */
   async verifyChecksum (sourceFile, checksum, algo = 'sha384') {
     const computed = await this.computeFileHash(sourceFile, algo)
     if (checksum !== computed) throw new DataValidationError('checksum', checksum, computed)
   }
 
   /**
-     * Fetch platform release artifact
-     *
-     * It fetches the build.zip file containing the release from a URL like: https://builds.hedera.com/node/software/v0.40/build-v0.40.4.zip
-     *
-     * @param tag full semantic version e.g. v0.40.4
-     * @param destDir directory where the artifact needs to be saved
-     * @param force whether to download even if the file exists
-     * @returns {Promise<string>} full path to the downloaded file
-     */
+   * Fetch platform release artifact
+   *
+   * It fetches the build.zip file containing the release from a URL like: https://builds.hedera.com/node/software/v0.40/build-v0.40.4.zip
+   *
+   * @param tag full semantic version e.g. v0.40.4
+   * @param destDir directory where the artifact needs to be saved
+   * @param force whether to download even if the file exists
+   * @returns {Promise<string>} full path to the downloaded file
+   */
   async fetchPlatform (tag, destDir, force = false) {
     const self = this
     const releaseDir = Templates.prepareReleasePrefix(tag)
@@ -173,27 +176,24 @@ export class PackageDownloader {
     const checksumURL = `${constants.HEDERA_BUILDS_URL}/node/software/${releaseDir}/build-${tag}.sha384`
     const checksumPath = `${downloadDir}/build-${tag}.sha384`
 
-    return new Promise(async (resolve, reject) => {
-      try {
-        if (fs.existsSync(packageFile) && !force) {
-          resolve(packageFile)
-          return
-        }
-
-        if (!fs.existsSync(downloadDir)) {
-          fs.mkdirSync(downloadDir, { recursive: true })
-        }
-
-        await this.fetchFile(packageURL, packageFile)
-        await this.fetchFile(checksumURL, checksumPath)
-
-        const checksum = fs.readFileSync(checksumPath).toString().split(' ')[0]
-        await this.verifyChecksum(packageFile, checksum)
-        resolve(packageFile)
-      } catch (e) {
-        self.logger.error(e)
-        reject(new FullstackTestingError(e.message, e, { tag, destDir }))
+    try {
+      if (fs.existsSync(packageFile) && !force) {
+        return packageFile
       }
-    })
+
+      if (!fs.existsSync(downloadDir)) {
+        fs.mkdirSync(downloadDir, { recursive: true })
+      }
+
+      await this.fetchFile(packageURL, packageFile)
+      await this.fetchFile(checksumURL, checksumPath)
+
+      const checksum = fs.readFileSync(checksumPath).toString().split(' ')[0]
+      await this.verifyChecksum(packageFile, checksum)
+      return packageFile
+    } catch (e) {
+      self.logger.error(e)
+      throw new FullstackTestingError(e.message, e, { tag, destDir })
+    }
   }
 }
