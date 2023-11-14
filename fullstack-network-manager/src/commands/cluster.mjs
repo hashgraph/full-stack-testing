@@ -183,7 +183,7 @@ export class ClusterCommand extends BaseCommand {
             const valuesArg = this.prepareValuesArg(config, argv.prometheusStack, argv.minio, argv.envoyGateway,
                 argv.certManager, argv.certManagerCrds)
             this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
-            await this.chartManager.install(namespace, constants.FST_CHART_SETUP_NAME, chartPath, valuesArg)
+            await this.chartManager.install(namespace, constants.FST_CHART_SETUP_NAME, chartPath, config.version, valuesArg)
             await this.showInstalledChartList(namespace)
 
             return true
@@ -278,6 +278,7 @@ export class ClusterCommand extends BaseCommand {
                             flags.deployEnvoyGateway,
                             flags.deployCertManager,
                             flags.deployCertManagerCRDs,
+                            flags.chartDirectory,
                         ),
                         handler: argv => {
                             clusterCmd.logger.debug("==== Running 'cluster setup' ===")
