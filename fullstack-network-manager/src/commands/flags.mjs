@@ -28,7 +28,7 @@ export const namespace = {
     definition: {
         describe: 'Namespace',
         default: core.constants.NAMESPACE_NAME,
-        alias: 's',
+        alias: 'n',
         type: 'string'
     }
 }
