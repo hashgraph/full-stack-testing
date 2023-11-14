@@ -77,7 +77,6 @@ export class ConfigManager {
                     flags.allFlags.forEach(flag => {
                         if (opts && opts[flag.name]) {
                             let val = opts[flag.name]
-                            console.log(val)
                             if (val && flag.name === flags.chartDirectory.name) {
                                val = paths.resolve(val)
                             }
