@@ -3,11 +3,11 @@ import {FullstackTestingError, MissingArgumentError} from "./errors.mjs";
 import {constants} from "./constants.mjs";
 import {Logger} from "./logging.mjs"
 import * as flags from "../commands/flags.mjs";
-import {dirname} from "path";
+import * as paths from "path";
 import {fileURLToPath} from "url";
 
 // cache current directory
-const CUR_FILE_DIR = dirname(fileURLToPath(import.meta.url))
+const CUR_FILE_DIR = paths.dirname(fileURLToPath(import.meta.url))
 
 export class ConfigManager {
     constructor(logger) {
@@ -75,7 +75,12 @@ export class ConfigManager {
                 if (opts) {
                     flags.allFlags.forEach(flag => {
                         if (opts && opts[flag.name] !== undefined) {
-                            config['flags'][flag.name] = opts[flag.name]
+                            let val = opts[flag.name]
+                            if (flag.name === flags.chartDirectory.name) {
+                               val = paths.resolve(val)
+                            }
+
+                            config['flags'][flag.name] =  val
                             writeConfig = true
                         }
                     })
