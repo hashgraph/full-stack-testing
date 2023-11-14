@@ -53,10 +53,8 @@ describe('PackageInstaller', () => {
       fs.rmdirSync(tmpDir, { recursive: true })
     })
 
-    it('should fail if directory does not have data/libs directory is empty', async () => {
-      expect.assertions(1)
-
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'))
+    it('should fail if directory does not have data/apps directory is empty', async () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-app-'))
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, { recursive: true })
       fs.writeFileSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}/app.jar`, '')
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, { recursive: true })
@@ -65,9 +63,7 @@ describe('PackageInstaller', () => {
     })
 
     it('should succeed with non-empty data/apps and data/libs directory', async () => {
-      expect.assertions(1)
-
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'))
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-lib-'))
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, { recursive: true })
       fs.writeFileSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}/app.jar`, '')
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, { recursive: true })

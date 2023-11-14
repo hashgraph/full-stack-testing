@@ -22,7 +22,7 @@ describe('InitCommand', () => {
 
   describe('commands', () => {
     it('init execution should succeed', async () => {
-      await expect(initCmd.init()).resolves.toBe(true)
+      await expect(initCmd.init({})).resolves.toBe(true)
     })
   })
 

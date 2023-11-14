@@ -1,6 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
 import * as core from '../../../src/core/index.mjs'
-import { PackageDownloader } from '../../../src/core/package_downloader.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
@@ -8,7 +7,7 @@ import { IllegalArgumentError, ResourceNotFoundError } from '../../../src/core/e
 
 describe('PackageDownloader', () => {
   const testLogger = core.logging.NewLogger('debug')
-  const downloader = new PackageDownloader(testLogger)
+  const downloader = new core.PackageDownloader(testLogger)
 
   describe('urlExists', () => {
     it('should return true if source URL is valid', async () => {
