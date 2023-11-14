@@ -1,7 +1,6 @@
 const config = {
-    verbose: true,
-    transform: {},
-};
+  verbose: true,
+  transform: {}
+}
 
 export default config
-
