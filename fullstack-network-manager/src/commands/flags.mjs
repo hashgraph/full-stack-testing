@@ -98,7 +98,6 @@ export const deployCertManager = {
     definition: {
         describe: 'Deploy cert manager',
         default: false,
-        alias: 'r',
         type: 'boolean'
     }
 }
@@ -112,7 +111,6 @@ export const deployCertManagerCRDs = {
     definition: {
         describe: 'Deploy cert manager CRDs',
         default: false,
-        alias: 'd',
         type: 'boolean'
     }
 }
