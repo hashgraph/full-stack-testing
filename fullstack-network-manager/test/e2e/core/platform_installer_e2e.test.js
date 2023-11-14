@@ -58,12 +58,13 @@ describe('PackageInstallerE2E', () => {
             const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag)
 
             // verify format is correct
-            expect(configLines.length).toBe(5)
+            expect(configLines.length).toBe(6)
             expect(configLines[0]).toBe(`swirld, ${constants.CLUSTER_NAME}`)
             expect(configLines[1]).toBe(`app, ${constants.HEDERA_APP_JAR}`)
             expect(configLines[2]).toContain('address, 0, node0, node0, 1')
             expect(configLines[3]).toContain('address, 1, node1, node1, 1')
             expect(configLines[4]).toContain('address, 2, node2, node2, 1')
+            expect(configLines[5]).toBe('nextNodeId, 3')
 
             // verify the file exists
             expect(fs.existsSync(configPath)).toBeTruthy()
