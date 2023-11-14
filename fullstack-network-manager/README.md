@@ -41,4 +41,5 @@ Select a command
 - Run `fsnetman` to access the CLI as shown above. 
 - Note that debug logs are stored at `~/.fsnetman/logs/fst.log`. So you may use `tail -f ~/.fsnetman/logs/fst.log | jq
   ` in a separate terminal to keep an eye on the logs.
+- Before making a commit run `npm format`
 
