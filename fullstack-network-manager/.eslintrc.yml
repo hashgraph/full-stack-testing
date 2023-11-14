@@ -6,3 +6,8 @@ parserOptions:
   ecmaVersion: latest
   sourceType: module
 rules: {}
+overrides:
+  - files: ["*.mjs"]
+    parserOptions:
+      ecmaVersion: latest
+      sourceType: module
