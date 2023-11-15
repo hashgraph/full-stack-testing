@@ -7,14 +7,14 @@
         "preset": "conventionalcommits"
       }
     ],
-    "@semantic-release/git",
-    "@semantic-release/github",
     [
       "@semantic-release/npm",
       {
         "pkgRoot": "fullstack-network-manager"
       }
-    ]
+    ],
+    "@semantic-release/git",
+    "@semantic-release/github"
   ],
   "verifyRelease": [
     [
