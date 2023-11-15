@@ -117,6 +117,10 @@ jobs:
         if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         with:
           version: "v3.12.3" # helm version
+        run: |
+          helm repo add haproxytech https://haproxytech.github.io/helm-charts
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
