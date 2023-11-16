@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk from 'chalk'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import { constants } from '../core/index.mjs'
@@ -49,10 +49,9 @@ export class ChartCommand extends BaseCommand {
       await this.kubectl.wait('pod',
         '--for=jsonpath=\'{.status.phase}\'=Running',
         '-l fullstack.hedera.com/type=network-node',
-        `--timeout=900s`,
+        '--timeout=900s'
       )
-      this.logger.showUser(chalk.green('OK'), `network-nodes are running`)
-
+      this.logger.showUser(chalk.green('OK'), 'network-nodes are running')
 
       return true
     } catch (e) {

@@ -20,6 +20,6 @@ describe('PackageDownloaderE2E', () => {
     testLogger.showUser(destPath)
 
     // remove the downloaded files to reduce disk usage
-    fs.rmSync(`${tmpDir}`, {recursive: true})
+    fs.rmSync(`${tmpDir}`, { recursive: true })
   }, 100000)
 })

@@ -78,7 +78,7 @@ describe('PackageDownloader', () => {
         expect(fs.existsSync(destPath)).toBeTruthy()
 
         // remove the file to reduce disk usage
-        fs.rmSync(tmpDir, {recursive: true})
+        fs.rmSync(tmpDir, { recursive: true })
       } catch (e) {
         expect(e).toBeNull()
       }
