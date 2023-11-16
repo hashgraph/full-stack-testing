@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import { constants } from '../core/index.mjs'
@@ -43,6 +44,15 @@ export class ChartCommand extends BaseCommand {
       await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
 
       this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
+
+      this.logger.showUser(chalk.cyan('> waiting for network-node pods to be active (first deployment takes ~10m) ...'))
+      await this.kubectl.wait('pod',
+        '--for=jsonpath=\'{.status.phase}\'=Running',
+        '-l fullstack.hedera.com/type=network-node',
+        `--timeout=900s`,
+      )
+      this.logger.showUser(chalk.green('OK'), `network-nodes are running`)
+
 
       return true
     } catch (e) {
