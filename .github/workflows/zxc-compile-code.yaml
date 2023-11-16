@@ -217,6 +217,14 @@ jobs:
           arguments: spotlessCheck --scan
           build-root-directory: fullstack-gradle-plugin
 
+      # This step is to cache the helm charts before we start unit tests
+      - name: Setup Helm Charts
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        run: |
+          helm repo add haproxytech https://haproxytech.github.io/helm-charts
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
+
       - name: Unit Tests
         id: gradle-test
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
