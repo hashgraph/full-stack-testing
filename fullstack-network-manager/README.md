@@ -56,6 +56,5 @@ Select a command
   fsnetman cluster create
   fsnetman cluster setup
   fsnetman chart install
-  sleep 5 # optional
   npm run test-e2e 
 ```

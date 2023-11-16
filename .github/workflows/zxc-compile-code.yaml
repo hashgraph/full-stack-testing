@@ -163,7 +163,6 @@ jobs:
           fsnetman cluster create
           fsnetman cluster setup
           fsnetman chart install
-          sleep 5
           npm run test-e2e 
 
       # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
