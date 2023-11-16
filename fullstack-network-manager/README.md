@@ -10,7 +10,9 @@ fullstack-network-manager is a CLI tool to manage and deploy a Hedera Network us
 //npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 @hashgraph:registry=https://npm.pkg.github.com
 ```
-* Get your [Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) and setup an environment variable GITHUB_TOKEN.
+
+* Get your [Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) and setup an environment variable GITHUB\_TOKEN.
+
 * Run `npm install -g @hashgraph/fullstack-network-manager`
 
 * Run `fsnetman` from a terminal as shown below
