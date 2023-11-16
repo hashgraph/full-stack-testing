@@ -172,9 +172,6 @@ export class ClusterCommand extends BaseCommand {
       const config = await this.configManager.setupConfig(argv)
       const namespace = argv.namespace
 
-      // create cluster
-      await this.create(argv, config)
-
       // install fullstack-cluster-setup chart
       const chartPath = await this.prepareChartPath(config)
       const valuesArg = this.prepareValuesArg(config, argv.prometheusStack, argv.minio, argv.envoyGateway,
@@ -289,8 +286,8 @@ export class ClusterCommand extends BaseCommand {
     }
   }
 
-  prepareValuesArg(config, prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
-                         certManagerEnabled, certManagerCrdsEnabled) {
+  prepareValuesArg (config, prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
+    certManagerEnabled, certManagerCrdsEnabled) {
     let valuesArg = ''
     const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     if (chartDir) {
@@ -311,7 +308,7 @@ export class ClusterCommand extends BaseCommand {
     return valuesArg
   }
 
-  async prepareChartPath(config) {
+  async prepareChartPath (config) {
     const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     let chartPath = 'full-stack-testing/fullstack-cluster-setup'
     if (chartDir) {
