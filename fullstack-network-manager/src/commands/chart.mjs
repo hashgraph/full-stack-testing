@@ -51,7 +51,7 @@ export class ChartCommand extends BaseCommand {
         '-l fullstack.hedera.com/type=network-node',
         '--timeout=900s'
       )
-      this.logger.showUser(chalk.green('OK'), 'network-nodes are running')
+      this.logger.showUser(chalk.green('OK'), 'network-node pods are running')
 
       return true
     } catch (e) {
