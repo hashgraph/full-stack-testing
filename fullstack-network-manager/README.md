@@ -4,14 +4,14 @@ fullstack-network-manager is a CLI tool to manage and deploy a Hedera Network us
 
 ## Install
 
-* Create or update `~/.npmrc` file and specify the GitHub package registry: `@hashgraph:registry=https://npm.pkg.github.com`
+* Create or update `~/.npmrc` file and specify the GitHub package registry:
 
 ```
-❯ cat ~/.npmrc
+//npm.pkg.github.com/:_authToken=${NPM_TOKEN}
 @hashgraph:registry=https://npm.pkg.github.com
 ```
-
-* Run `npm install -g @hedera/fullstack-network-manager`
+* Get your Github access token and setup and environment variable GITHUB_TOKEN as explained [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#installing-a-package).
+* Run `NPM_TOKEN="${GITHUB_TOKEN}" npm install -g @hashgraph/fullstack-network-manager`
 
 * Run `fsnetman` from a terminal as shown below
 
