@@ -143,14 +143,27 @@ jobs:
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         uses: google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b # v1.1.1
 
-      - name: NodeJS CLI Tests
+      - name: NodeJS CLI Unit Tests
         id: nodejs-test
         working-directory: fullstack-network-manager
         if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run: |
           npm i 
           npm test
-#          npm run test-e2e # tracked by #https://github.com/hashgraph/full-stack-testing/issues/501
+
+      - name: NodeJS CLI E2E Tests
+        id: nodejs-test-e2e
+        working-directory: fullstack-network-manager
+        if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        run: |
+          export DEV_MODE=true
+          npm i 
+          npm link
+          fsnetman init -d ../charts
+          fsnetman cluster create
+          fsnetman cluster setup
+          fsnetman chart install
+          npm run test-e2e 
 
       # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
       - name: Helm Chart Test (Direct Install)

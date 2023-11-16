@@ -78,8 +78,7 @@ describe('PackageDownloader', () => {
         expect(fs.existsSync(destPath)).toBeTruthy()
 
         // remove the file to reduce disk usage
-        fs.rmSync(destPath)
-        fs.rmdirSync(tmpDir)
+        fs.rmSync(tmpDir, { recursive: true })
       } catch (e) {
         expect(e).toBeNull()
       }
@@ -95,7 +94,7 @@ describe('PackageDownloader', () => {
       try {
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
         await downloader.fetchPlatform(tag, tmpDir)
-        fs.rmdirSync(tmpDir, { recursive: true })
+        fs.rmSync(tmpDir, { recursive: true })
       } catch (e) {
         expect(e.cause).not.toBeNull()
         expect(e.cause).toBeInstanceOf(ResourceNotFoundError)
@@ -108,7 +107,7 @@ describe('PackageDownloader', () => {
       try {
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
         await downloader.fetchPlatform('INVALID', os.tmpdir())
-        fs.rmdirSync(tmpDir, { recursive: true })
+        fs.rmSync(tmpDir, { recursive: true })
       } catch (e) {
         expect(e.message).toContain('must include major, minor and patch fields')
       }

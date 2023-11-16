@@ -42,8 +42,19 @@ Select a command
   * Note: you need to do it once. If `fsnetman` already exists in your path, you will need to remove it first.
   * Alternative way would be to run `npm run fsnetman -- <COMMAND> <ARGS>`
 * Run `npm test` or `npm run test` to run the unit tests
-* Run `npm run test-e2e` to run the long-running integration tests
 * Run `fsnetman` to access the CLI as shown above.
 * Note that debug logs are stored at `~/.fsnetman/logs/fst.log`. So you may use `tail -f ~/.fsnetman/logs/fst.log | jq
   ` in a separate terminal to keep an eye on the logs.
 * Before making a commit run `npm run format`
+
+## E2E tests
+
+* In order to run E2E test, we need to set up cluster and install the chart.
+
+```
+  fsnetman init -d ../charts # use the charts directory
+  fsnetman cluster create
+  fsnetman cluster setup
+  fsnetman chart install
+  npm run test-e2e 
+```

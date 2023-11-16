@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import { constants } from '../core/index.mjs'
@@ -21,11 +22,12 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareChartPath (config) {
+  async prepareChartPath (config) {
     const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     let chartPath = 'full-stack-testing/fullstack-deployment'
     if (chartDir) {
       chartPath = `${chartDir}/fullstack-deployment`
+      await this.helm.dependency('update', chartPath)
     }
 
     return chartPath
@@ -37,14 +39,26 @@ export class ChartCommand extends BaseCommand {
 
       const config = await this.configManager.setupConfig(argv)
       const valuesArg = this.prepareValuesArg(argv, config)
-      const chartPath = this.prepareChartPath(config)
+      const chartPath = await this.prepareChartPath(config)
 
       await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
 
       this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
+
+      this.logger.showUser(chalk.cyan('> waiting for network-node pods to be active (first deployment takes ~10m) ...'))
+      await this.kubectl.wait('pod',
+        '--for=jsonpath=\'{.status.phase}\'=Running',
+        '-l fullstack.hedera.com/type=network-node',
+        '--timeout=900s'
+      )
+      this.logger.showUser(chalk.green('OK'), 'network-node pods are running')
+
+      return true
     } catch (e) {
       this.logger.showUserError(e)
     }
+
+    return false
   }
 
   async uninstall (argv) {
@@ -58,7 +72,7 @@ export class ChartCommand extends BaseCommand {
 
     const config = await this.configManager.setupConfig(argv)
     const valuesArg = this.prepareValuesArg(argv, config)
-    const chartPath = this.prepareChartPath(config)
+    const chartPath = await this.prepareChartPath(config)
 
     return await this.chartManager.upgrade(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, valuesArg)
   }
