@@ -157,9 +157,9 @@ jobs:
         if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run: |
           npm i 
-          npx run fsnetman init -d ../charts
-          npx run fsnetman cluster setup
-          npx run fsnetman chart install
+          npm run -- fsnetman init -d ../charts
+          npm run -- fsnetman cluster setup
+          npm run -- fsnetman chart install
           sleep 5
           npm run test-e2e 
 
