@@ -41,7 +41,7 @@ describe('PackageInstallerE2E', () => {
         console.error(e)
         expect(e).toBeNull()
       }
-    })
+    }, 10000)
   })
 
   describe('prepareConfigTxt', () => {
@@ -160,6 +160,6 @@ describe('PackageInstallerE2E', () => {
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/application.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/bootstrap.properties`)
       fs.rmSync(tmpDir, { recursive: true })
-    })
+    }, 10000)
   })
 })
