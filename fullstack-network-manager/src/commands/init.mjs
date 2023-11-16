@@ -42,6 +42,7 @@ export class InitCommand extends BaseCommand {
   async init (argv) {
     try {
       await this.setupHomeDirectory()
+      await this.configManager.setupConfig(argv)
 
       const deps = [
         core.constants.HELM,
