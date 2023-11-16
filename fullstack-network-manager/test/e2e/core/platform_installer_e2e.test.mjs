@@ -1,5 +1,5 @@
-import {beforeAll, describe, expect, it} from '@jest/globals'
-import {PackageDownloader, PlatformInstaller, constants, logging, Kubectl, Templates} from '../../../src/core/index.mjs'
+import { beforeAll, describe, expect, it } from '@jest/globals'
+import { PackageDownloader, PlatformInstaller, constants, logging, Kubectl, Templates } from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
@@ -82,7 +82,7 @@ describe('PackageInstallerE2E', () => {
       // verify file content matches
       expect(fileContents).toBe(configLines.join('\n'))
 
-      fs.rmSync(tmpDir, {recursive: true})
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 
@@ -101,7 +101,7 @@ describe('PackageInstallerE2E', () => {
       // verify copy of local-node data is at staging area
       expect(fs.existsSync(`${tmpDir}/templates`)).toBeTruthy()
 
-      fs.rmSync(tmpDir, {recursive: true})
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 
@@ -172,7 +172,7 @@ describe('PackageInstallerE2E', () => {
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/api-permission.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/application.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/bootstrap.properties`)
-      fs.rmSync(tmpDir, {recursive: true})
+      fs.rmSync(tmpDir, { recursive: true })
     }, 10000)
   })
 })

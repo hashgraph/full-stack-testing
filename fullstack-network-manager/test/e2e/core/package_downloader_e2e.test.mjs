@@ -1,8 +1,6 @@
-import {describe, expect, it} from '@jest/globals'
+import { describe, expect, it } from '@jest/globals'
 import * as fs from 'fs'
-import * as path from 'path'
-import * as os from 'os'
-import {logging, PackageDownloader, Templates} from '../../../src/core/index.mjs'
+import { logging, PackageDownloader, Templates } from '../../../src/core/index.mjs'
 
 describe('PackageDownloaderE2E', () => {
   const testLogger = logging.NewLogger('debug')
