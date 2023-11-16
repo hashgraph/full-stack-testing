@@ -116,7 +116,7 @@ jobs:
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
         if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         with:
-          version: "v3.12.3" # helm version
+          version: "v3.12.3" #  helm version
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
@@ -212,6 +212,14 @@ jobs:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: spotlessCheck --scan
           build-root-directory: fullstack-gradle-plugin
+
+      # This step is to cache the helm charts before we start unit tests
+      - name: Setup Helm Charts
+        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        run: |
+          helm repo add haproxytech https://haproxytech.github.io/helm-charts
+          helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo update
 
       - name: Unit Tests
         id: gradle-test
