@@ -116,7 +116,7 @@ jobs:
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
         if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
         with:
-          version: "v3.12.3" # helm version
+          version: "v3.12.3" #  helm version
         run: |
           helm repo add haproxytech https://haproxytech.github.io/helm-charts
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
