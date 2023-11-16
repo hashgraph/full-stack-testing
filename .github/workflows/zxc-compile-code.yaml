@@ -156,6 +156,7 @@ jobs:
         working-directory: fullstack-network-manager
         if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run: |
+          export DEV_MODE=true
           npm i 
           npm link
           fsnetman init -d ../charts
