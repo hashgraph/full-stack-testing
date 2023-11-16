@@ -159,6 +159,7 @@ jobs:
           npm i 
           npm link
           fsnetman init -d ../charts
+          fsnetman cluster create
           fsnetman cluster setup
           fsnetman chart install
           sleep 5
