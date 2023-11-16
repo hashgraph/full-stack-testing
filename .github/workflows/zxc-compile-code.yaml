@@ -163,7 +163,7 @@ jobs:
           fsnetman cluster create
           fsnetman cluster setup
           fsnetman chart install
-          ls -la ~/.fsnetman/cache/v0.42
+          ls -la ~/.fsnetman/cache/v0.42 || true
           fsnetman node setup -t v0.42.5
           ls -la ~/.fsnetman/cache/v0.42
           npm run test-e2e 
