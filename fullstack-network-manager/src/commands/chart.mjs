@@ -43,9 +43,13 @@ export class ChartCommand extends BaseCommand {
       await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
 
       this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
+
+      return true
     } catch (e) {
       this.logger.showUserError(e)
     }
+
+    return false
   }
 
   async uninstall (argv) {
