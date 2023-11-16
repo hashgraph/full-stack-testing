@@ -1,5 +1,5 @@
-import { describe, expect, it } from '@jest/globals'
-import { PackageDownloader, PlatformInstaller, constants, logging, Kubectl } from '../../../src/core/index.mjs'
+import {beforeAll, describe, expect, it} from '@jest/globals'
+import {PackageDownloader, PlatformInstaller, constants, logging, Kubectl, Templates} from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
@@ -9,9 +9,16 @@ describe('PackageInstallerE2E', () => {
   const kubectl = new Kubectl(testLogger)
   const installer = new PlatformInstaller(testLogger, kubectl)
   const downloader = new PackageDownloader(testLogger)
+  const testCacheDir = 'test/data/tmp'
   const podName = 'network-node0-0'
   const packageTag = 'v0.42.5'
   let packageFile = ''
+
+  beforeAll(() => {
+    if (!fs.existsSync(testCacheDir)) {
+      fs.mkdirSync(testCacheDir)
+    }
+  })
 
   describe('setupHapiDirectories', () => {
     it('should succeed with valid pod', async () => {
@@ -26,14 +33,20 @@ describe('PackageInstallerE2E', () => {
   })
 
   describe('copyPlatform', () => {
+    it('should succeed fetching platform release', async () => {
+      const releasePrefix = Templates.prepareReleasePrefix(packageTag)
+      const destPath = `${testCacheDir}/${releasePrefix}/build-${packageTag}.zip`
+      await expect(downloader.fetchPlatform(packageTag, testCacheDir)).resolves.toBe(destPath)
+      expect(fs.existsSync(destPath)).toBeTruthy()
+      testLogger.showUser(destPath)
+
+      // do not delete the cache dir
+    }, 200000)
+
     it('should succeed with valid tag and pod', async () => {
       expect.assertions(1)
       try {
-        const tmpDir = 'test/data/tmp'
-        if (!fs.existsSync(tmpDir)) {
-          fs.mkdirSync(tmpDir)
-        }
-        packageFile = await downloader.fetchPlatform(packageTag, tmpDir)
+        packageFile = await downloader.fetchPlatform(packageTag, testCacheDir)
         await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
         const outputs = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HAPI_PATH}`)
         testLogger.showUser(outputs)
@@ -41,7 +54,7 @@ describe('PackageInstallerE2E', () => {
         console.error(e)
         expect(e).toBeNull()
       }
-    }, 20000)
+    })
   })
 
   describe('prepareConfigTxt', () => {
@@ -69,7 +82,7 @@ describe('PackageInstallerE2E', () => {
       // verify file content matches
       expect(fileContents).toBe(configLines.join('\n'))
 
-      fs.rmSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, {recursive: true})
     })
   })
 
@@ -88,7 +101,7 @@ describe('PackageInstallerE2E', () => {
       // verify copy of local-node data is at staging area
       expect(fs.existsSync(`${tmpDir}/templates`)).toBeTruthy()
 
-      fs.rmSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, {recursive: true})
     })
   })
 
@@ -159,7 +172,7 @@ describe('PackageInstallerE2E', () => {
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/api-permission.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/application.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/bootstrap.properties`)
-      fs.rmSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, {recursive: true})
     }, 10000)
   })
 })
