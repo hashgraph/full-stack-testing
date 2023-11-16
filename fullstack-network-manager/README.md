@@ -49,7 +49,7 @@ Select a command
 
 ## E2E tests
 
-* In order to run E2E test, we need to setup cluster and install the chart.
+* In order to run E2E test, we need to set up cluster and install the chart.
 
 ```
   fsnetman init -d ../charts # use the charts directory
