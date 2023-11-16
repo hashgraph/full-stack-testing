@@ -21,11 +21,12 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareChartPath (config) {
+  async prepareChartPath (config) {
     const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     let chartPath = 'full-stack-testing/fullstack-deployment'
     if (chartDir) {
       chartPath = `${chartDir}/fullstack-deployment`
+      await this.helm.dependency('update', chartPath)
     }
 
     return chartPath
@@ -37,7 +38,7 @@ export class ChartCommand extends BaseCommand {
 
       const config = await this.configManager.setupConfig(argv)
       const valuesArg = this.prepareValuesArg(argv, config)
-      const chartPath = this.prepareChartPath(config)
+      const chartPath = await this.prepareChartPath(config)
 
       await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
 
@@ -58,7 +59,7 @@ export class ChartCommand extends BaseCommand {
 
     const config = await this.configManager.setupConfig(argv)
     const valuesArg = this.prepareValuesArg(argv, config)
-    const chartPath = this.prepareChartPath(config)
+    const chartPath = await this.prepareChartPath(config)
 
     return await this.chartManager.upgrade(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, valuesArg)
   }
