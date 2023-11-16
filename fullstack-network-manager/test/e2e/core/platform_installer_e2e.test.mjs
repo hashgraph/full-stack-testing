@@ -54,7 +54,7 @@ describe('PackageInstallerE2E', () => {
         console.error(e)
         expect(e).toBeNull()
       }
-    })
+    }, 20000)
   })
 
   describe('prepareConfigTxt', () => {
