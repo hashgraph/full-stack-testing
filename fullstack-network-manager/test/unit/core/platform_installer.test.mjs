@@ -30,7 +30,7 @@ describe('PackageInstaller', () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'))
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, { recursive: true })
       await expect(installer.validatePlatformReleaseDir(tmpDir)).rejects.toThrow(IllegalArgumentError)
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
 
     it('should fail if directory does not have data/libs directory', async () => {
@@ -39,7 +39,7 @@ describe('PackageInstaller', () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'installer-'))
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}`, { recursive: true })
       await expect(installer.validatePlatformReleaseDir(tmpDir)).rejects.toThrow(IllegalArgumentError)
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
 
     it('should fail if directory does not have data/app directory is empty', async () => {
@@ -50,7 +50,7 @@ describe('PackageInstaller', () => {
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, { recursive: true })
       fs.writeFileSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}/test.jar`, '')
       await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
 
     it('should fail if directory does not have data/apps directory is empty', async () => {
@@ -59,7 +59,7 @@ describe('PackageInstaller', () => {
       fs.writeFileSync(`${tmpDir}/${core.constants.DATA_APPS_DIR}/app.jar`, '')
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, { recursive: true })
       await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
 
     it('should succeed with non-empty data/apps and data/libs directory', async () => {
@@ -69,7 +69,7 @@ describe('PackageInstaller', () => {
       fs.mkdirSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}`, { recursive: true })
       fs.writeFileSync(`${tmpDir}/${core.constants.DATA_LIB_DIR}/lib-1.jar`, '')
       await expect(installer.validatePlatformReleaseDir()).rejects.toThrow(MissingArgumentError)
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 

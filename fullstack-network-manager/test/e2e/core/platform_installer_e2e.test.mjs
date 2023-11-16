@@ -69,7 +69,7 @@ describe('PackageInstallerE2E', () => {
       // verify file content matches
       expect(fileContents).toBe(configLines.join('\n'))
 
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 
@@ -88,7 +88,7 @@ describe('PackageInstallerE2E', () => {
       // verify copy of local-node data is at staging area
       expect(fs.existsSync(`${tmpDir}/templates`)).toBeTruthy()
 
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 
@@ -159,7 +159,7 @@ describe('PackageInstallerE2E', () => {
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/api-permission.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/application.properties`)
       expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/bootstrap.properties`)
-      fs.rmdirSync(tmpDir, { recursive: true })
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 })

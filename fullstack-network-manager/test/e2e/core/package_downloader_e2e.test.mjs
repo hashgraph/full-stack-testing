@@ -20,9 +20,6 @@ describe('PackageDownloaderE2E', () => {
     testLogger.showUser(destPath)
 
     // remove the downloaded files to reduce disk usage
-    fs.rmSync(`${tmpDir}/v0.42/build-${tag}.zip`)
-    fs.rmSync(`${tmpDir}/v0.42/build-${tag}.sha384`)
-    fs.rmdirSync(`${tmpDir}/v0.42`)
-    fs.rmdirSync(tmpDir)
+    fs.rmSync(`${tmpDir}`, {recursive: true})
   }, 100000)
 })
