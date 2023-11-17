@@ -44,7 +44,7 @@ jobs:
       enable-spotless-check: true
 
   unit-tests:
-    name: Unit Tests
+    name: FST Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
