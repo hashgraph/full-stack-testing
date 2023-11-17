@@ -51,13 +51,13 @@ jobs:
       enable-unit-tests: true
 
   chart-tests:
-    name: Helm Chart Tests
+    name: FST Helm Chart Tests
     uses: ./.github/workflows/zxc-helm-chart-tests.yaml
     with:
       custom-job-label: Standard
 
   nodejs-tests:
-    name: NodeJS CLI Tests
+    name: FSNETMAN Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
