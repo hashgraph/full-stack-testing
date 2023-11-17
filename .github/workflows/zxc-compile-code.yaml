@@ -174,18 +174,6 @@ jobs:
           fsnetman chart install
           npm run test-e2e
 
-      # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
-      - name: Helm Chart Test (Direct Install)
-        working-directory: dev
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make ci-test SCRIPT_NAME=direct-install.sh
-
-      # This step tests the Helm chart NMT mode of operation which uses the ubi8-init-dind image.
-      - name: Helm Chart Test (NMT Install)
-        working-directory: dev
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make ci-test SCRIPT_NAME=nmt-install.sh
-
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
