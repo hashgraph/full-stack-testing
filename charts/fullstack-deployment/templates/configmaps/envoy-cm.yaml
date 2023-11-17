@@ -6,6 +6,8 @@ kind: ConfigMap
 metadata:
   name: envoy-proxy-cm-{{ $node.name }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
+  labels:
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
   envoy.yaml: |
     {{- tpl ($.Files.Get "config-files/envoy.yaml") (dict "nodeConfig" $node "Template" $.Template) | nindent 4 }}
