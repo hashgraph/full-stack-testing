@@ -9,7 +9,7 @@ import {
 
 describe('Errors', () => {
   const message = 'errorMessage'
-  const cause = 'cause'
+  const cause = new Error('cause')
 
   it('should construct correct FullstackTestingError', () => {
     const error = new FullstackTestingError(message, cause)
