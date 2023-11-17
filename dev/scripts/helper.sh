@@ -2,11 +2,6 @@
 CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 source "${CUR_DIR}/env.sh"
 
-start_time=$(date +%s)
-TMP_DIR="${SCRIPT_DIR}/../temp"
-
-readonly start_time TMP_DIR
-
 # load .env file
 set -a
 # shellcheck source=./../temp/.env
