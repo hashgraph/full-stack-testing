@@ -31,6 +31,7 @@ readonly PLATFORM_VERSION="${PLATFORM_VERSION:-v0.39.1}"
 readonly PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
+readonly PLATFORM_INSTALLER_URL=$(prepare_platform_software_URL "${PLATFORM_VERSION}")
 
 readonly OPENJDK_VERSION="${OPENJDK_VERSION:-17.0.2}"
 
@@ -79,7 +80,8 @@ function fetch_nmt() {
 # Fetch platform build.zip file
 function fetch_platform_build() {
   echo ""
-  echo "Fetching Platform ${PLATFORM_VERSION}"
+  echo "Fetching Platform ${PLATFORM_VERSION}: ${PLATFORM_INSTALLER_URL}"
+  echo "Local path: ${PLATFORM_INSTALLER_PATH}"
   echo "-----------------------------------------------------------------------------------------------------"
 
   if [[ -f "${PLATFORM_INSTALLER_PATH}" ]]; then
@@ -87,7 +89,7 @@ function fetch_platform_build() {
     return "${EX_OK}"
   fi
 
-  gsutil cp "gs://fst-resources/platform/${PLATFORM_INSTALLER}" "${PLATFORM_INSTALLER_PATH}" || return "${EX_ERR}"
+  curl -L "${PLATFORM_INSTALLER_URL}" -o "${PLATFORM_INSTALLER_PATH}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
