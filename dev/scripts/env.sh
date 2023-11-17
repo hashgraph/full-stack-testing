@@ -83,7 +83,7 @@ function parse_minor_version() {
 
 function prepare_platform_software_URL() {
     local platform_version="$1"
-    local minor_version=$(parse_minor_version $platform_version)
+    local minor_version=$(parse_minor_version "${platform_version}")
 
     # https://builds.hedera.com/node/software/v0.40/build-v0.40.0.zip
     local platform_url="https://builds.hedera.com/node/software/v${minor_version}/build-${platform_version}.zip"
