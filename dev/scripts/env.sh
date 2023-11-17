@@ -81,12 +81,19 @@ function parse_minor_version() {
   echo "${minor_version}"
 }
 
+function parse_release_dir() {
+  local platform_version="$1"
+  IFS=. read -a VERSION_PARTS <<< "$platform_version"
+  local release_dir="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}"
+  echo "${release_dir}"
+}
+
 function prepare_platform_software_URL() {
     local platform_version="$1"
-    local minor_version=$(parse_minor_version "${platform_version}")
+    local release_dir=$(parse_release_dir "${platform_version}")
 
     # https://builds.hedera.com/node/software/v0.40/build-v0.40.0.zip
-    local platform_url="https://builds.hedera.com/node/software/v${minor_version}/build-${platform_version}.zip"
+    local platform_url="https://builds.hedera.com/node/software/${release_dir}/build-${platform_version}.zip"
     echo "${platform_url}"
 }
 
