@@ -26,7 +26,7 @@ on:
         description: "Custom Job Label:"
         type: string
         required: false
-        default: "Helm Chart Tests"
+        default: "Helm Chart Test"
 
 defaults:
   run:
@@ -42,7 +42,7 @@ permissions:
 
 jobs:
   test:
-    name: ${{ inputs.custom-job-label || 'Helm Chart Tests' }} (${{ matrix.scriptName }})
+    name: ${{ inputs.custom-job-label || 'Helm Chart Test' }} (${{ matrix.scriptName }})
     runs-on: [self-hosted, Linux, medium, ephemeral]
     strategy:
       fail-fast: false
