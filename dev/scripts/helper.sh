@@ -28,6 +28,7 @@ readonly NMT_INSTALLER_PATH="${NMT_INSTALLER_DIR}/${NMT_INSTALLER}"
 readonly NMT_PROFILE="jrs" # we only allow jrs profile
 
 readonly PLATFORM_VERSION="${PLATFORM_VERSION:-v0.39.1}"
+readonly MINOR_VERSION==$(parse_minor_version "${PLATFORM_VERSION}")
 readonly PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
@@ -282,15 +283,11 @@ function copy_node_keys() {
 
 # prepare address book using all nodes pod IP and store as config.txt
 function prep_address_book() {
-  IFS=. read -a VERSION_PARTS <<< "$PLATFORM_VERSION"
-  local MINOR_VERSION=${VERSION_PARTS[1]}
-
   echo ""
   echo "Preparing address book"
-  echo "PLATFORM_VERSION [ MAJOR: ${VERSION_PARTS[0]}, MINOR=${VERSION_PARTS[1]}, PATCH=${VERSION_PARTS[2]} ]"
+  echo "Platform version: ${PLATFORM_VERSION}"
+  echo "Minor version: ${MINOR_VERSION}"
   echo "-----------------------------------------------------------------------------------------------------"
-
-
 
   local config_file="${TMP_DIR}/config.txt"
   local node_IP=""
