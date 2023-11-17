@@ -84,7 +84,7 @@ jobs:
           kubectl get crd
           kubectl get node --show-labels
 
-      - name: Helm Chart Test (NMT Install)
+      - name: Helm Chart Test
         working-directory: dev
         if: ${{ !cancelled() && !failure() }}
         run: |
