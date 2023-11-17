@@ -74,6 +74,7 @@ function fetch_nmt() {
   #    -H "X-GitHub-Api-Version: 2022-11-28" \
   #    "${NMT_DOWNLOAD_URL}" -o "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
 
+  mkdir -p "${NMT_INSTALLER_DIR}"
   gsutil cp "gs://fst-resources/nmt/${NMT_INSTALLER}" "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
@@ -90,6 +91,7 @@ function fetch_platform_build() {
     return "${EX_OK}"
   fi
 
+  mkdir -p "${PLATFORM_INSTALLER_DIR}"
   curl -L "${PLATFORM_INSTALLER_URL}" -o "${PLATFORM_INSTALLER_PATH}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
