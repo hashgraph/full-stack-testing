@@ -51,6 +51,10 @@ jobs:
         # nmt-install.sh uses ubi8-init-dind image
         scriptName: [ direct-install.sh, nmt-install.sh  ]
     steps:
+      - name: Initialize Job Variables
+        id: vars
+        run: |
+          echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
@@ -84,6 +88,6 @@ jobs:
         working-directory: dev
         if: ${{ !cancelled() && !failure() }}
         run: |
-          echo "Running test with SCRIPT_NAME=${matrix.scriptName}"
-          make ci-test SCRIPT_NAME="${matrix.scriptName}"
+          echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
+          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
 
