@@ -28,7 +28,7 @@ readonly NMT_INSTALLER_PATH="${NMT_INSTALLER_DIR}/${NMT_INSTALLER}"
 readonly NMT_PROFILE="jrs" # we only allow jrs profile
 
 readonly PLATFORM_VERSION="${PLATFORM_VERSION:-v0.39.1}"
-readonly MINOR_VERSION==$(parse_minor_version "${PLATFORM_VERSION}")
+readonly MINOR_VERSION=$(parse_minor_version "${PLATFORM_VERSION}")
 readonly PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
