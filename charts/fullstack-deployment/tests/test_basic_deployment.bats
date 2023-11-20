@@ -53,10 +53,9 @@ setup() {
     # make few attempts to check systemctl status
     while [[ "${attempts}" -lt "${MAX_ATTEMPTS}" && "${systemctl_status}" -ne "${EX_OK}" ]]; do
       attempts=$((attempts + 1))
-      kubectl exec "${node}" -c root-container -n "${NAMESPACE}" -- systemctl status --no-pager
-      systemctl_status="${?}"
+      systemctl_status=$(kubectl exec "${node}" -c root-container -n "${NAMESPACE}" -- systemctl is-system-running)
       log_debug "Checked systemctl status in ${node} (Attempt #${attempts}/${MAX_ATTEMPTS})... >>>>> status: ${systemctl_status} <<<<<"
-      if [[ "${systemctl_status}" -ne "${EX_OK}" ]]; then
+      if [[ "${systemctl_status}" -ne "running" ]]; then
         log_debug "Sleeping 5s..."
         sleep 5
       fi
