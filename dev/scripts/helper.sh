@@ -60,22 +60,22 @@ function fetch_nmt() {
     return "${EX_OK}"
   fi
 
-  #  echo "NMT Release URL: ${NMT_RELEASE_URL}"
-  #  NMT_DOWNLOAD_URL=$(curl -sL \
-  #                       -H "Accept: application/vnd.github+json" \
-  #                       -H "Authorization: Bearer ${GITHUB_TOKEN}"\
-  #                       -H "X-GitHub-Api-Version: 2022-11-28" \
-  #                    "${NMT_RELEASE_URL}" | jq ".assets[0] | .url" | sed 's/\"//g')
-  #  echo "NMT Download URL: ${NMT_DOWNLOAD_URL}"
-  #  echo "Downloading NMT..."
-  #  curl -L \
-  #    -H 'Accept: application/octet-stream' \
-  #    -H "Authorization: Bearer ${GITHUB_TOKEN}"\
-  #    -H "X-GitHub-Api-Version: 2022-11-28" \
-  #    "${NMT_DOWNLOAD_URL}" -o "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
-
   mkdir -p "${NMT_INSTALLER_DIR}"
-  gsutil cp "gs://fst-resources/nmt/${NMT_INSTALLER}" "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
+
+  # fetch nmt version.properties file to find the actual release file name
+  local release_dir=$(parse_release_dir "${NMT_VERSION}")
+  local nmt_version_url="https://builds.hedera.com/node/mgmt-tools/${release_dir}/version.properties"
+  echo "NMT version.properties URL: ${nmt_version_url}"
+  curl -L "${nmt_version_url}" -o "${NMT_INSTALLER_DIR}/version.properties" || return "${EX_ERR}"
+  cat "${NMT_INSTALLER_DIR}/version.properties"
+
+  # parse version.properties file to determine the actual URL
+  local nmt_release_file=$(grep "^${NMT_VERSION}" "${NMT_INSTALLER_DIR}/version.properties"|cut -d'=' -f2)
+  local nmt_release_url="https://builds.hedera.com/node/mgmt-tools/${release_dir}/${nmt_release_file}"
+  echo "NMT release URL: ${nmt_release_url}"
+  curl -L "${nmt_release_url}" -o "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
+  ls -la "${NMT_INSTALLER_DIR}"
+
   return "${EX_OK}"
 }
 

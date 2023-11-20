@@ -515,3 +515,4 @@ dev/temp/.env
 charts/deleteme.yaml
 node_modules
 fullstack-network-manager/coverage
+dev/resources/nmt/version.properties
