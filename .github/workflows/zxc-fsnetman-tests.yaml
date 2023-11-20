@@ -86,18 +86,6 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
-
-      - name: NodeJS CLI Unit Tests
-        id: nodejs-test
-        working-directory: fullstack-network-manager
-        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
-        run: |
-          which npm
-          which bash
-          npm -v
-          npm i 
-          npm test
-
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
@@ -120,6 +108,17 @@ jobs:
           kubectl config get-contexts
           kubectl get crd
           kubectl get node --show-labels
+
+      - name: NodeJS CLI Unit Tests
+        id: nodejs-test
+        working-directory: fullstack-network-manager
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          which npm
+          which bash
+          npm -v
+          npm i 
+          npm test
 
       - name: NodeJS CLI E2E Tests
         id: nodejs-test-e2e
