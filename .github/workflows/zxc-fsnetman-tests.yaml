@@ -1,0 +1,110 @@
+##
+# Copyright (C) 2023 Hedera Hashgraph, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##
+
+name: "ZXC: Helm Chart Tests"
+# The purpose of this reusable workflow is to compile the code and run the unit tests on every PR and commit.
+# This reusable component is called by the following workflows:
+# - .github/workflows/flow-pull-request-checks.yaml
+
+on:
+  workflow_call:
+    inputs:
+      custom-job-label:
+        description: "Custom Job Label:"
+        type: string
+        required: false
+        default: "FSNETMAN Test"
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+  pull-requests: write
+  checks: write
+  statuses: write
+
+jobs:
+  test:
+    name: ${{ inputs.custom-job-label || 'FSNETMAN Test' }}
+    runs-on: [self-hosted, Linux, medium, ephemeral]
+    steps:
+      - name: Get related changed files
+        id: changed-files
+        uses: tj-actions/changed-files@25ef3926d147cd02fc7e931c1ef50772bbb0d25d #v40.1.1
+        with:
+          files: |
+            fullstack-network-manager/**
+
+      - name: List all related changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+
+      - name: Setup Node
+        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: NodeJS CLI Unit Tests
+        id: nodejs-test
+        working-directory: fullstack-network-manager
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        run: |
+          npm i 
+          npm test
+
+      - name: Setup Kind
+        uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        with:
+          config: dev/dev-cluster.yaml
+          version: v0.19.0
+          verbosity: 3
+          wait: 120s
+
+      - name: Setup Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        with:
+          version: "v3.12.3" #  helm version
+
+      # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
+      - name: Kubernetes Cluster Info
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        run: |
+          kubectl config get-contexts
+          kubectl get crd
+          kubectl get node --show-labels
+
+      - name: NodeJS CLI E2E Tests
+        id: nodejs-test-e2e
+        working-directory: fullstack-network-manager
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        run: |
+          export DEV_MODE=true
+          npm i 
+          npm link
+          fsnetman init -d ../charts
+          fsnetman cluster create
+          fsnetman cluster setup
+          fsnetman chart install
+          npm run test-e2e 
