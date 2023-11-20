@@ -78,6 +78,8 @@ jobs:
           if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
+          else
+            echo "No relevant files are changed. No need to run helm chart tests"
           fi
 
       - name: Initialize Job Variables
