@@ -86,6 +86,7 @@ jobs:
         id: vars
         run: |
           echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
+
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}

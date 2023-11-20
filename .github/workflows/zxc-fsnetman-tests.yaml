@@ -72,11 +72,19 @@ jobs:
             echo "No relevant files are changed. No need to run fsnetman tests"
           fi
 
+      - name: Checkout Code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        with:
+          # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
+          fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
+
       - name: Setup Node
         uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           node-version: ${{ inputs.node-version }}
+
 
       - name: NodeJS CLI Unit Tests
         id: nodejs-test
