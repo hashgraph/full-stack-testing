@@ -14,7 +14,7 @@
 # limitations under the License.
 ##
 
-name: "ZXC: Helm Chart Tests"
+name: "ZXC: FSNETMAN Tests"
 # The purpose of this reusable workflow is to compile the code and run the unit tests on every PR and commit.
 # This reusable component is called by the following workflows:
 # - .github/workflows/flow-pull-request-checks.yaml
@@ -26,7 +26,12 @@ on:
         description: "Custom Job Label:"
         type: string
         required: false
-        default: "Helm Chart Test"
+        default: "FSNETMAN Test"
+      node-version:
+        description: "NodeJS Version:"
+        type: string
+        required: false
+        default: "18"
 
 defaults:
   run:
@@ -42,52 +47,31 @@ permissions:
 
 jobs:
   test:
-    name: ${{ inputs.custom-job-label || 'Helm Chart Test' }} (${{ matrix.scriptName }})
+    name: ${{ inputs.custom-job-label || 'FSNETMAN Test' }}
     runs-on: [self-hosted, Linux, medium, ephemeral]
-    strategy:
-      fail-fast: false
-      matrix:
-        # direct-install.sh uses ubi8-init-java17 image
-        # nmt-install.sh uses ubi8-init-dind image
-        scriptName: [ direct-install.sh, nmt-install.sh  ]
     steps:
-      - name: Get changed files related to charts
+      - name: Get related changed files
         id: changed-files
         uses: tj-actions/changed-files@25ef3926d147cd02fc7e931c1ef50772bbb0d25d #v40.1.1
         with:
           files: |
-            chart:
-              - charts/**
-            scripts:
-              - dev/**
+            fullstack-network-manager/**
 
-      - name: List all changed files related to charts
+      - name: List all related changed files
         id: check-changed-files
         run: |
-          echo "Modified charts files"
+          echo "Modified files"
           echo "-------------------------------------------------------------------"
-          for file in ${{ steps.changed-files.outputs.chart_all_changed_files }}; do
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo " - ${file} was changed"
           done
           echo ""
-          echo "Modified script files"
-          echo "-------------------------------------------------------------------"
-          for file in ${{ steps.changed-files.outputs.script_all_changed_files }}; do
-            echo " - ${file} was changed"
-          done
-          echo ""
-          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
+          if [ "${{ steps.changed-files.outputs.any_changed }}" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
-            echo "Executing helm chart tests...."
+            echo "Executing fsnetman tests...."
           else
-            echo ">> No relevant files are changed. No need to run helm chart tests"
+            echo ">> No relevant files are changed. No need to run fsnetman tests"
           fi
-
-      - name: Initialize Job Variables
-        id: vars
-        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
-        run: |
-          echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
 
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -95,6 +79,12 @@ jobs:
         with:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
+
+      - name: Setup Node
+        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        with:
+          node-version: ${{ inputs.node-version }}
 
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
@@ -119,10 +109,27 @@ jobs:
           kubectl get crd
           kubectl get node --show-labels
 
-      - name: Helm Chart Test
-        working-directory: dev
+      - name: NodeJS CLI Unit Tests
+        id: nodejs-test
+        working-directory: fullstack-network-manager
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          which npm
+          which bash
+          npm -v
+          npm i 
+          npm test
 
+      - name: NodeJS CLI E2E Tests
+        id: nodejs-test-e2e
+        working-directory: fullstack-network-manager
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          export DEV_MODE=true
+          npm i 
+          npm link
+          fsnetman init -d ../charts
+          fsnetman cluster create
+          fsnetman cluster setup
+          fsnetman chart install
+          npm run test-e2e 
