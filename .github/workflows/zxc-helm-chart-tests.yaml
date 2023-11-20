@@ -85,6 +85,7 @@ jobs:
 
       - name: Initialize Job Variables
         id: vars
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
 
@@ -106,7 +107,7 @@ jobs:
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
-        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           version: "v3.12.3" #  helm version
 

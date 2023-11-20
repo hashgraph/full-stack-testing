@@ -60,7 +60,7 @@ jobs:
       - name: List all related changed files
         id: check-changed-files
         run: |
-          echo "Modified nodejs files"
+          echo "Modified files"
           echo "-------------------------------------------------------------------"
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo " - ${file} was changed"
