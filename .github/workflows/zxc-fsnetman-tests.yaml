@@ -60,9 +60,13 @@ jobs:
       - name: List all related changed files
         id: check-changed-files
         run: |
-          echo "Modified nodejs files: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "Modified nodejs files"
+          echo "-------------------------------------------------------------------"
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo " - ${file} was changed"
+          done
           if [ "${{ steps.changed-files.outputs.any_changed }}" ]; then
-            echo "run-tests="true" >> "${GITHUB_OUTPUT}"
+            echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing fsnetman tests...."
           fi
 

@@ -64,10 +64,19 @@ jobs:
       - name: List all changed files related to charts
         id: check-changed-files
         run: |
-          echo "Modified charts files: ${{ steps.changed-files.outputs.chart_all_changed_files }}"
-          echo "Modified scripts files: ${{ steps.changed-files.outputs.scripts_all_changed_files }}"
+          echo "Modified charts files"
+          echo "-------------------------------------------------------------------"
+          for file in ${{ steps.changed-files.outputs.chart_all_changed_files }}; do
+            echo " - ${file} was changed"
+          done
+          echo ""
+          echo "Modified script files"
+          echo "-------------------------------------------------------------------"
+          for file in ${{ steps.changed-files.outputs.script_all_changed_files }}; do
+            echo " - ${file} was changed"
+          done
           if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
-            echo "run-tests="true" >> "${GITHUB_OUTPUT}"
+            echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
           fi
 
