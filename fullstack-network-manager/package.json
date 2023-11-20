@@ -59,12 +59,5 @@
   "engines": {
     "node": ">=18.18.2",
     "npm": ">=9.8.1"
-  },
-  "remarkConfig": {
-    "plugins": [
-      "remark-preset-lint-consistent",
-      "remark-preset-lint-recommended",
-      ["remark-lint-list-item-indent", "space"]
-    ]
   }
 }
