@@ -52,18 +52,24 @@ jobs:
         scriptName: [ direct-install.sh, nmt-install.sh  ]
     steps:
       - name: Get changed files related to charts
-        id: changed-chart-files
+        id: changed-files
         uses: tj-actions/changed-files@25ef3926d147cd02fc7e931c1ef50772bbb0d25d #v40.1.1
         with:
           files: |
-            charts/**
-            dev/**
+            chart:
+              - charts/**
+            scripts:
+              - dev/**
 
       - name: List all changed files related to charts
+        id: check-changed-files
         run: |
-          for file in ${{ steps.changed-chart-files.outputs.all_changed_files }}; do
-            echo "$file was changed"
-          done
+          echo "Modified charts files: ${{ steps.changed-files.outputs.chart_all_changed_files }}"
+          echo "Modified scripts files: ${{ steps.changed-files.outputs.scripts_all_changed_files }}"
+          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
+            echo "run-tests="true" >> "${GITHUB_OUTPUT}"
+            echo "Executing helm chart tests...."
+          fi
 
       - name: Initialize Job Variables
         id: vars
@@ -71,14 +77,14 @@ jobs:
           echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        if: ${{ steps.changed-chart-files.outputs.any_changed && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
-        if: ${{ steps.changed-chart-files.outputs.any_changed && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           config: dev/dev-cluster.yaml
           version: v0.19.0
@@ -87,13 +93,13 @@ jobs:
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
-        if: ${{ steps.changed-chart-files.outputs.any_changed && !cancelled() && !failure() }}
+        if: ${{ steps.changed-files.outputs.any_changed && !cancelled() && !failure() }}
         with:
           version: "v3.12.3" #  helm version
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
-        if: ${{ steps.changed-chart-files.outputs.any_changed && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           kubectl config get-contexts
           kubectl get crd
@@ -101,7 +107,7 @@ jobs:
 
       - name: Helm Chart Test
         working-directory: dev
-        if: ${{ steps.changed-chart-files.outputs.any_changed && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
           make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
