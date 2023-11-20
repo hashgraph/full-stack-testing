@@ -430,6 +430,12 @@ function copy_config_files() {
     copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
   done
 
+  # create gc.log file since otherwise node doesn't start when using older NMT releases (e.g. v1.2.2)
+  "${KCTL}" exec  "${pod}" -c root-container -- touch "${HAPI_PATH}/gc.log" || return "${EX_ERR}"
+  set_permission "${pod}" "${HAPI_PATH}/gc.log"
+
+
+
   return "${EX_OK}"
 }
 
