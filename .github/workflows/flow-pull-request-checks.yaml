@@ -57,7 +57,7 @@ jobs:
       custom-job-label: Standard
 
   fsnetman-tests:
-    name: FSNETMAN Tests
+    name: fsnetman Tests
     uses: ./.github/workflows/zxc-fsnetman-tests.yaml
     with:
       custom-job-label: Standard
