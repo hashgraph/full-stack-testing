@@ -65,11 +65,12 @@ jobs:
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo " - ${file} was changed"
           done
+          echo ""
           if [ "${{ steps.changed-files.outputs.any_changed }}" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing fsnetman tests...."
           else
-            echo "No relevant files are changed. No need to run fsnetman tests"
+            echo ">> No relevant files are changed. No need to run fsnetman tests"
           fi
 
       - name: Checkout Code
