@@ -56,7 +56,7 @@ jobs:
     with:
       custom-job-label: Standard
 
-  nodejs-tests:
+  fsnetman-tests:
     name: FSNETMAN Tests
     uses: ./.github/workflows/zxc-fsnetman-tests.yaml
     with:
