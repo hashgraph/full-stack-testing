@@ -27,6 +27,11 @@ on:
         type: string
         required: false
         default: "FSNETMAN Test"
+      node-version:
+        description: "NodeJS Version:"
+        type: string
+        required: false
+        default: "18"
 
 defaults:
   run:

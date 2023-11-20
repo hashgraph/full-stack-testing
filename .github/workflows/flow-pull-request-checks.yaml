@@ -61,7 +61,6 @@ jobs:
     uses: ./.github/workflows/zxc-fsnetman-tests.yaml
     with:
       custom-job-label: Standard
-      node-version: 18
 
   codecov:
     name: CodeCov
