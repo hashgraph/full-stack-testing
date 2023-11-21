@@ -313,7 +313,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Uninstall shared components from cluster',
             builder: y => flags.setCommandFlags(y,
               flags.clusterName,
-              flags.namespace,
+              flags.namespace
             ),
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster reset' ===")
