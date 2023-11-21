@@ -112,6 +112,16 @@ export const deployCertManagerCRDs = {
   }
 }
 
+export const deployJsonRpcRelay = {
+  name: 'json-rpc-relay',
+  definition: {
+    describe: 'Deploy JSON RPC Relay',
+    default: true,
+    alias: 'j',
+    type: 'boolean'
+  }
+}
+
 export const platformReleaseTag = {
   name: 'release-tag',
   definition: {

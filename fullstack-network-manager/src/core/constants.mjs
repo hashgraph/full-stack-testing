@@ -7,6 +7,9 @@ const CUR_FILE_DIR = dirname(fileURLToPath(import.meta.url))
 const USER = `${process.env.USER}`
 const FST_HOME_DIR = `${process.env.HOME}/.fsnetman`
 const HGCAPP_DIR = '/opt/hgcapp'
+const CHART_REPO_FST = 'https://hashgraph.github.io/full-stack-testing/charts'
+const CHART_REPO_JSON_RPC_RELAY = 'https://hashgraph.github.io/hedera-json-rpc-relay/charts'
+const CHART_MIRROR_NODE = 'https://hashgraph.github.io/hedera-mirror-node/charts'
 
 export const constants = {
   USER: `${USER}`,
@@ -35,7 +38,10 @@ export const constants = {
   LOG_STATUS_PROGRESS: chalk.cyan('>>'),
   LOG_STATUS_DONE: chalk.green('OK'),
   LOG_GROUP_DIVIDER: chalk.yellow('----------------------------------------------------------------------------'),
-  FST_CHART_REPO_URL: 'https://hashgraph.github.io/full-stack-testing/charts',
   FST_CHART_SETUP_NAME: 'fullstack-cluster-setup',
-  FST_CHART_DEPLOYMENT_NAME: 'fullstack-deployment'
+  FST_CHART_DEPLOYMENT_NAME: 'fullstack-deployment',
+  DEFAULT_CHART_REPO: new Map()
+    .set('full-stack-testing', CHART_REPO_FST)
+    .set('hedera-json-rpc-relay', CHART_REPO_JSON_RPC_RELAY)
+    .set('hedera-mirror-node', CHART_MIRROR_NODE)
 }

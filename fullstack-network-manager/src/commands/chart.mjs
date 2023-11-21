@@ -90,6 +90,7 @@ export class ChartCommand extends BaseCommand {
               flags.namespace,
               flags.deployMirrorNode,
               flags.deployHederaExplorer,
+              flags.deployJsonRpcRelay,
               flags.valuesFile,
               flags.chartDirectory
             ),

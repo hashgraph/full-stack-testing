@@ -20,7 +20,7 @@ export class ChartManager {
      * @param force whether or not to update the repo
      * @returns {Promise<string[]>}
      */
-  async setup (repoURLs = new Map().set('full-stack-testing', constants.FST_CHART_REPO_URL), force = true) {
+  async setup (repoURLs = constants.DEFAULT_CHART_REPO, force = true) {
     try {
       let forceUpdateArg = ''
       if (force) {
