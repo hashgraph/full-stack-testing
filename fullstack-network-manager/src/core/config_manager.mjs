@@ -74,14 +74,18 @@ export class ConfigManager {
       // extract flags from argv
       if (opts) {
         flags.allFlags.forEach(flag => {
-          if (opts && opts[flag.name]) {
+          if (opts && opts[flag.name] !== undefined) {
             let val = opts[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
               console.log(val)
               val = paths.resolve(val)
             }
 
-            config.flags[flag.name] = val
+            if (val === undefined) {
+              config.flags[flag.name] = ''
+            } else {
+              config.flags[flag.name] = val
+            }
             writeConfig = true
           }
         })

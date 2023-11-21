@@ -189,6 +189,33 @@ export class ClusterCommand extends BaseCommand {
   }
 
   /**
+   * Uninstall shared components from the cluster and perform any other necessary cleanups
+   * @param argv
+   * @returns {Promise<boolean>}
+   */
+  async reset (argv) {
+    try {
+      const config = await this.configManager.setupConfig(argv)
+      const namespace = argv.namespace
+
+      // uninstall fullstack-cluster-setup chart
+      const chartPath = await this.prepareChartPath(config)
+      const valuesArg = this.prepareValuesArg(config, argv.prometheusStack, argv.minio, argv.envoyGateway,
+        argv.certManager, argv.certManagerCrds)
+      this.logger.showUser(chalk.cyan('> resetting cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
+      await this.chartManager.uninstall(namespace, constants.FST_CHART_SETUP_NAME, chartPath, config.version, valuesArg)
+
+      await this.showInstalledChartList(namespace)
+
+      return true
+    } catch (e) {
+      this.logger.showUserError(e)
+    }
+
+    return false
+  }
+
+  /**
      * Return Yargs command definition for 'cluster' command
      * @param clusterCmd an instance of ClusterCommand
      */
@@ -276,6 +303,24 @@ export class ClusterCommand extends BaseCommand {
 
               clusterCmd.setup(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster setup`====')
+
+                if (!r) process.exit(1)
+              })
+            }
+          })
+          .command({
+            command: 'reset',
+            desc: 'Uninstall shared components from cluster',
+            builder: y => flags.setCommandFlags(y,
+              flags.clusterName,
+              flags.namespace
+            ),
+            handler: argv => {
+              clusterCmd.logger.debug("==== Running 'cluster reset' ===")
+              clusterCmd.logger.debug(argv)
+
+              clusterCmd.reset(argv).then(r => {
+                clusterCmd.logger.debug('==== Finished running `cluster reset`====')
 
                 if (!r) process.exit(1)
               })
