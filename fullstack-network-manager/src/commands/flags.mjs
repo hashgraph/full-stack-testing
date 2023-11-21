@@ -64,15 +64,6 @@ export const valuesFile = {
   }
 }
 
-export const relayValuesFile = {
-  name: 'relay-values-file',
-  definition: {
-    describe: 'Comma separated chart values files for JSON RPC relay',
-    default: `${constants.RESOURCES_DIR}/templates/values/json-rpc-relay.yaml`,
-    type: 'string'
-  }
-}
-
 export const deployPrometheusStack = {
   name: 'prometheus-stack',
   definition: {
@@ -189,7 +180,6 @@ export const allFlags = [
   deployHederaExplorer,
   deployJsonRpcRelay,
   valuesFile,
-  relayValuesFile,
   deployPrometheusStack,
   deployMinio,
   deployEnvoyGateway,

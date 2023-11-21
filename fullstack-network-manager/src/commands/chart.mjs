@@ -37,17 +37,6 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  async prepareChartPath (config, chartRepo = 'full-stack-testing', chartName = 'fullstack-deployment') {
-    const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
-    if (chartDir) {
-      const chartPath = `${chartDir}/${chartName}`
-      await this.helm.dependency('update', chartPath)
-      return chartPath
-    }
-
-    return `${chartRepo}/${chartName}`
-  }
-
   async installFSTChart (config) {
     try {
       const namespace = this.configManager.flagValue(config, flags.namespace)
@@ -68,41 +57,12 @@ export class ChartCommand extends BaseCommand {
     }
   }
 
-  async installJSONRpcRelay (config) {
-    try {
-      const valuesFile = this.configManager.flagValue(config, flags.relayValuesFile)
-      if (!valuesFile) {
-        throw new MissingArgumentError('specify --relay-values-file for JSON RPC relay')
-      }
-
-      const namespace = this.configManager.flagValue(config, flags.namespace)
-      const valuesArg = this.prepareValuesFiles(valuesFile)
-      const chartPath = await this.prepareChartPath(config, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
-
-      await this.chartManager.install(namespace, constants.CHART_JSON_RPC_RELAY_NAME, chartPath, '', valuesArg)
-
-      this.logger.showUser(chalk.cyan('> waiting for hedera-json-rpc-relay to be ready...'))
-      await this.kubectl.wait('pod',
-        '--for=condition=ready',
-        '-l app=hedera-json-rpc-relay',
-        '--timeout=900s'
-      )
-      this.logger.showUser(chalk.green('OK'), 'hedera-json-rpc-relay pods are running')
-    } catch (e) {
-      throw new FullstackTestingError(`failed install '${constants.CHART_JSON_RPC_RELAY_NAME}' chart`, e)
-    }
-  }
-
   async install (argv) {
     try {
       const config = await this.configManager.setupConfig(argv)
       const namespace = this.configManager.flagValue(config, flags.namespace)
 
       await this.installFSTChart(config)
-
-      if (this.configManager.flagValue(config, flags.deployJsonRpcRelay)) {
-        await this.installJSONRpcRelay(config)
-      }
 
       this.logger.showList('Deployed Charts', await this.chartManager.getInstalledCharts(namespace))
       return true
@@ -145,16 +105,8 @@ export class ChartCommand extends BaseCommand {
                 flags.deployHederaExplorer,
                 flags.deployJsonRpcRelay,
                 flags.valuesFile,
-                flags.relayValuesFile,
                 flags.chartDirectory
               )
-
-              return y.command({
-                command: 'relay',
-                desc: 'Install JSON RPC Relays',
-                handler: argv => {
-                }
-              })
             },
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart install' ===")
