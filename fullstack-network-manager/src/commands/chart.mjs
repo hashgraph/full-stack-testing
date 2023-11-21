@@ -12,11 +12,7 @@ export class ChartCommand extends BaseCommand {
       const valuesFiles = valuesFile.split(',')
       valuesFiles.forEach(vf => {
         const vfp = paths.resolve(vf)
-        if (!valuesArg) {
-          valuesArg += ` -f ${vfp}`
-        } else {
-          valuesArg += ` --values ${vfp}`
-        }
+        valuesArg += ` --values ${vfp}`
       })
     }
 
