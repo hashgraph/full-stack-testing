@@ -8,7 +8,7 @@ export class Helm extends ShellRunner {
      * @returns {string}
      */
   prepareCommand (action, ...args) {
-    let cmd = `helm ${action} `
+    let cmd = `helm ${action}`
     args.forEach(arg => { cmd += ` ${arg}` })
     return cmd
   }
