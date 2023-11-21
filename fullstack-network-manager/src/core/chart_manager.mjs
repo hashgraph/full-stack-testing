@@ -1,4 +1,4 @@
-import { constants } from './constants.mjs'
+import { constants } from './index.mjs'
 import chalk from 'chalk'
 import { FullstackTestingError } from './errors.mjs'
 

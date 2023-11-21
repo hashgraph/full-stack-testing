@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
-import { constants } from './constants.mjs'
+import { constants } from './index.mjs'
 import { Logger } from './logging.mjs'
 import * as flags from '../commands/flags.mjs'
 import * as paths from 'path'

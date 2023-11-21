@@ -1,7 +1,7 @@
 import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
 import chalk from 'chalk'
 import * as fs from 'fs'
-import { constants } from './constants.mjs'
+import { constants } from './index.mjs'
 import { Templates } from './templates.mjs'
 import * as path from 'path'
 

@@ -5,7 +5,7 @@ import got from 'got'
 import { DataValidationError, FullstackTestingError, IllegalArgumentError, ResourceNotFoundError } from './errors.mjs'
 import * as https from 'https'
 import { Templates } from './templates.mjs'
-import { constants } from './constants.mjs'
+import { constants } from './index.mjs'
 
 export class PackageDownloader {
   /**

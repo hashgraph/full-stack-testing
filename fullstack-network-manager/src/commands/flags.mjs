@@ -56,9 +56,18 @@ export const deployHederaExplorer = {
 export const valuesFile = {
   name: 'values-file',
   definition: {
-    describe: 'Helm chart values file [ to override defaults ]',
+    describe: 'Comma separated chart values files',
     default: '',
     alias: 'f',
+    type: 'string'
+  }
+}
+
+export const relayValuesFile = {
+  name: 'relay-values-file',
+  definition: {
+    describe: 'Comma separated chart values files for JSON RPC relay',
+    default: '',
     type: 'string'
   }
 }
