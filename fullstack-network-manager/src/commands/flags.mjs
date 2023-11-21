@@ -1,3 +1,4 @@
+import {constants} from "./../core/index.mjs";
 import * as core from './../core/index.mjs'
 
 /**
@@ -67,7 +68,7 @@ export const relayValuesFile = {
   name: 'relay-values-file',
   definition: {
     describe: 'Comma separated chart values files for JSON RPC relay',
-    default: '',
+    default: `${constants.RESOURCES_DIR}/templates/values/json-rpc-relay.yaml`,
     type: 'string'
   }
 }
@@ -125,7 +126,7 @@ export const deployJsonRpcRelay = {
   name: 'json-rpc-relay',
   definition: {
     describe: 'Deploy JSON RPC Relay',
-    default: true,
+    default: false,
     alias: 'j',
     type: 'boolean'
   }
@@ -186,6 +187,7 @@ export const allFlags = [
   namespace,
   deployMirrorNode,
   deployHederaExplorer,
+  deployJsonRpcRelay,
   valuesFile,
   relayValuesFile,
   deployPrometheusStack,

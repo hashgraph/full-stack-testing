@@ -242,7 +242,7 @@ export class PlatformInstaller {
     const accountIdStart = process.env.FST_NODE_ACCOUNT_ID_START || '3'
     const internalPort = process.env.FST_NODE_INTERNAL_GOSSIP_PORT || '50111'
     const externalPort = process.env.FST_NODE_EXTERNAL_GOSSIP_PORT || '50111'
-    const ledgerName = process.env.FST_LEDGER_NAME || constants.CLUSTER_NAME
+    const ledgerName = process.env.FST_LEDGER_NAME || '298'
     const appName = process.env.FST_HEDERA_APP_NAME || constants.HEDERA_APP_JAR
     const nodeStakeAmount = process.env.FST_NODE_DEFAULT_STAKE_AMOUNT || constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 

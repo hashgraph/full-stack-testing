@@ -1,0 +1,8 @@
+replicaCount: 1
+image:
+  pullPolicy: Always
+  tag: '0.36.0'
+config:
+  CHAIN_ID: '0x12a'
+  MIRROR_NODE_URL: "fullstack-deployment-rest"
+  HEDERA_NETWORK: { "network-node0-0-svc:50211": "0.0.3" }
