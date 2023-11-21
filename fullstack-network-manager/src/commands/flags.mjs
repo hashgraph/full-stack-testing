@@ -187,6 +187,7 @@ export const allFlags = [
   deployMirrorNode,
   deployHederaExplorer,
   valuesFile,
+  relayValuesFile,
   deployPrometheusStack,
   deployMinio,
   deployEnvoyGateway,

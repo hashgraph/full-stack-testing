@@ -19,8 +19,10 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (argv, config) {
-    const { valuesFile, mirrorNode, hederaExplorer } = argv
+  prepareValuesArg (config) {
+    const valuesFile = this.configManager.flagValue(config, flags.valuesFile)
+    const deployMirrorNode = this.configManager.flagValue(config, flags.deployMirrorNode)
+    const deployHederaExplorer = this.configManager.flagValue(config, flags.deployHederaExplorer)
 
     let valuesArg = ''
     const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
@@ -30,7 +32,7 @@ export class ChartCommand extends BaseCommand {
 
     valuesArg += this.prepareValuesFiles(valuesFile)
 
-    valuesArg += ` --set hedera-mirror-node.enabled=${mirrorNode} --set hedera-explorer.enabled=${hederaExplorer}`
+    valuesArg += ` --set hedera-mirror-node.enabled=${deployMirrorNode} --set hedera-explorer.enabled=${deployHederaExplorer}`
 
     return valuesArg
   }
@@ -46,17 +48,13 @@ export class ChartCommand extends BaseCommand {
     return `${chartRepo}/${chartName}`
   }
 
-  async installFSTChart (argv) {
+  async installFSTChart (config) {
     try {
-      const namespace = argv.namespace
-
-      const config = await this.configManager.setupConfig(argv)
-      const valuesArg = this.prepareValuesArg(argv, config)
-      const chartPath = await this.prepareChartPath(config)
+      const namespace = this.configManager.flagValue(config, flags.namespace)
+      const valuesArg = this.prepareValuesArg(config)
+      const chartPath = await this.prepareChartPath(config, constants.CHART_FST_REPO_NAME, constants.CHART_FST_DEPLOYMENT_NAME)
 
       await this.chartManager.install(namespace, constants.CHART_FST_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
-
-      this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
 
       this.logger.showUser(chalk.cyan('> waiting for network-node pods to be active (first deployment takes ~10m) ...'))
       await this.kubectl.wait('pod',
@@ -66,37 +64,38 @@ export class ChartCommand extends BaseCommand {
       )
       this.logger.showUser(chalk.green('OK'), 'network-node pods are running')
     } catch (e) {
-      throw new FullstackTestingError('failed install FST chart', e)
+      throw new FullstackTestingError(`failed install '${constants.CHART_FST_DEPLOYMENT_NAME}' chart`, e)
     }
   }
 
-  async installJSONRpcRelay (argv, config) {
+  async installJSONRpcRelay (config) {
     try {
-      const namespace = argv.namespace
-      const valuesArg = this.prepareValuesArg(argv, config)
-      const chartPath = await this.prepareChartPath(config)
+      const namespace = this.configManager.flagValue(config, flags.namespace)
+      const valuesArg = this.prepareValuesFiles(config[flags.relayValuesFile.name])
+      const chartPath = await this.prepareChartPath(config, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
 
-      await this.chartManager.install(namespace, constants.CHART_FST_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
+      await this.chartManager.install(namespace, constants.CHART_JSON_RPC_RELAY_NAME, chartPath, '', valuesArg)
 
-      this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
-
-      this.logger.showUser(chalk.cyan('> waiting for network-node pods to be active (first deployment takes ~10m) ...'))
-      await this.kubectl.wait('pod',
-        '--for=jsonpath=\'{.status.phase}\'=Running',
-        '-l fullstack.hedera.com/type=network-node',
-        '--timeout=900s'
-      )
-      this.logger.showUser(chalk.green('OK'), 'network-node pods are running')
+      // this.logger.showUser(chalk.cyan('> waiting for hedera-json-rpc-relay to be active ...'))
+      // await this.kubectl.wait('pod',
+      //   '--for=jsonpath=\'{.status.phase}\'=Running',
+      //   '-l fullstack.hedera.com/type=network-node',
+      //   '--timeout=900s'
+      // )
+      this.logger.showUser(chalk.green('OK'), 'hedera-json-rpc-relay pods are running')
     } catch (e) {
-      throw new FullstackTestingError('failed install FST chart', e)
+      throw new FullstackTestingError(`failed install '${constants.CHART_JSON_RPC_RELAY_NAME}' chart`, e)
     }
   }
 
   async install (argv) {
     try {
       const config = await this.configManager.setupConfig(argv)
-      await this.installFSTChart(argv, config)
-      await this.installJSONRpcRelay(argv, config)
+      const namespace = this.configManager.flagValue(config, flags.namespace)
+
+      await this.installFSTChart(config)
+      await this.installJSONRpcRelay(config)
+      this.logger.showList('Deployed Charts', await this.chartManager.getInstalledCharts(namespace))
       return true
     } catch (e) {
       this.logger.showUserError(e)
