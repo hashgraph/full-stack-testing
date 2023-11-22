@@ -192,7 +192,7 @@ export const chainId = {
 }
 
 // Ref: https://github.com/hashgraph/hedera-json-rpc-relay/blob/main/docs/configuration.md
-export const operatorId= {
+export const operatorId = {
   name: 'operator-id',
   definition: {
     describe: 'Operator ID',
@@ -202,7 +202,7 @@ export const operatorId= {
 }
 
 // Ref: https://github.com/hashgraph/hedera-json-rpc-relay/blob/main/docs/configuration.md
-export const operatorKey= {
+export const operatorKey = {
   name: 'operator-key',
   definition: {
     describe: 'Operator Key',

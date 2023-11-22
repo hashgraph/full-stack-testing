@@ -125,7 +125,7 @@ export class RelayCommand extends BaseCommand {
                 flags.nodeIDs,
                 flags.releaseTag,
                 flags.operatorId,
-                flags.operatorKey,
+                flags.operatorKey
               )
             },
             handler: argv => {
@@ -144,8 +144,8 @@ export class RelayCommand extends BaseCommand {
             desc: 'Uninstall JSON RPC relay',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
-              flags.nodeIDs,
-              ),
+              flags.nodeIDs
+            ),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart uninstall' ===")
               chartCmd.logger.debug(argv)

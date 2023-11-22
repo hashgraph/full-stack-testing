@@ -176,7 +176,7 @@ export class NodeCommand extends BaseCommand {
               flags.releaseTag,
               flags.platformReleaseDir,
               flags.force,
-              flags.chainId,
+              flags.chainId
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node setup' ===")
