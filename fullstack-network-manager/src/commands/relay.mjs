@@ -1,12 +1,14 @@
 import chalk from 'chalk'
-import {DataValidationError, FullstackTestingError, MissingArgumentError} from '../core/errors.mjs'
+import { MissingArgumentError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as paths from 'path'
 import { constants } from '../core/index.mjs'
 
 export class RelayCommand extends BaseCommand {
-  prepareValuesFiles (valuesFile) {
+  prepareValuesArg (config) {
+    const valuesFile = this.configManager.flagValue(config, flags.valuesFile)
+
     let valuesArg = ''
     if (valuesFile) {
       const valuesFiles = valuesFile.split(',')
@@ -16,31 +18,78 @@ export class RelayCommand extends BaseCommand {
       })
     }
 
+    valuesArg += ` --set config.MIRROR_NODE_URL=${constants.CHART_FST_DEPLOYMENT_NAME}-rest`
+
+    const chainID = this.configManager.flagValue(config, flags.chainId)
+    if (chainID) {
+      valuesArg += ` --set config.CHAIN_ID=${chainID}`
+    }
+
+    const releaseTag = this.configManager.flagValue(config, flags.releaseTag)
+    if (releaseTag) {
+      valuesArg += ` --set image.tag=${releaseTag.replace(/^v/, '')}`
+    }
+
+    const replicaCount = this.configManager.flagValue(config, flags.replicaCount)
+    if (replicaCount) {
+      valuesArg += ` --set replicaCount=${replicaCount}`
+    }
+
+    const operatorId = this.configManager.flagValue(config, flags.operatorId)
+    if (operatorId) {
+      valuesArg += ` --set config.OPERATOR_ID_MAIN=${operatorId}`
+    }
+
+    const operatorKey = this.configManager.flagValue(config, flags.operatorKey)
+    if (operatorKey) {
+      valuesArg += ` --set config.OPERATOR_KEY_MAIN=${operatorKey}`
+    }
+
+    const nodeIDs = this.configManager.flagValue(config, flags.nodeIDs)
+    if (!nodeIDs) {
+      throw new MissingArgumentError('Node IDs must be specified')
+    }
+
+    nodeIDs.split(',').forEach(nodeID => {
+      const networkKey = `network-${nodeID.trim()}-0-svc:50211`
+      valuesArg += ` --set config.HEDERA_NETWORK.${networkKey}=0.0.3`
+    })
+
     return valuesArg
+  }
+
+  prepareReleaseName (config) {
+    const nodeIDs = this.configManager.flagValue(config, flags.nodeIDs)
+    if (!nodeIDs) {
+      throw new MissingArgumentError('Node IDs must be specified')
+    }
+
+    let releaseName = 'relay'
+    nodeIDs.split(',').forEach(nodeID => {
+      releaseName += `-${nodeID}`
+    })
+
+    return releaseName
   }
 
   async install (argv) {
     try {
       const config = await this.configManager.setupConfig(argv)
       const namespace = this.configManager.flagValue(config, flags.namespace)
-
-      let valuesFile = this.configManager.flagValue(config, flags.valuesFile)
-      if (!valuesFile) {
-        valuesFile = `${constants.RESOURCES_DIR}/templates/values/json-rpc-relay.yaml`
-      }
-
-      const valuesArg = this.prepareValuesFiles(valuesFile)
+      const valuesArg = this.prepareValuesArg(config)
       const chartPath = await this.prepareChartPath(config, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
+      const releaseName = this.prepareReleaseName(config)
 
-      await this.chartManager.install(namespace, constants.CHART_JSON_RPC_RELAY_NAME, chartPath, '', valuesArg)
+      await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
 
-      this.logger.showUser(chalk.cyan('> waiting for hedera-json-rpc-relay to be ready...'))
+      this.logger.showUser(chalk.cyan(`> waiting for ${releaseName} pods to be ready...`))
       await this.kubectl.wait('pod',
         '--for=condition=ready',
         '-l app=hedera-json-rpc-relay',
+        `-l app.kubernetes.io/instance=${releaseName}`,
         '--timeout=900s'
       )
-      this.logger.showUser(chalk.green('OK'), 'hedera-json-rpc-relay pods are running')
+      this.logger.showUser(chalk.green('OK'), `${releaseName} pods are ready`)
       this.logger.showList('Deployed Relays', await this.chartManager.getInstalledCharts(namespace))
       return true
     } catch (e) {
@@ -51,8 +100,10 @@ export class RelayCommand extends BaseCommand {
   }
 
   async uninstall (argv) {
-    const namespace = argv.namespace
-    return await this.chartManager.uninstall(namespace, constants.CHART_JSON_RPC_RELAY_NAME)
+    const config = await this.configManager.setupConfig(argv)
+    const namespace = this.configManager.flagValue(config, flags.namespace)
+    const releaseName = this.prepareReleaseName(config)
+    return await this.chartManager.uninstall(namespace, releaseName)
   }
 
   static getCommandDefinition (chartCmd) {
@@ -68,7 +119,13 @@ export class RelayCommand extends BaseCommand {
               flags.setCommandFlags(y,
                 flags.namespace,
                 flags.valuesFile,
-                flags.chartDirectory
+                flags.chartDirectory,
+                flags.replicaCount,
+                flags.chainId,
+                flags.nodeIDs,
+                flags.releaseTag,
+                flags.operatorId,
+                flags.operatorKey,
               )
             },
             handler: argv => {
@@ -85,7 +142,10 @@ export class RelayCommand extends BaseCommand {
           .command({
             command: 'uninstall',
             desc: 'Uninstall JSON RPC relay',
-            builder: y => flags.setCommandFlags(y, flags.namespace),
+            builder: y => flags.setCommandFlags(y,
+              flags.namespace,
+              flags.nodeIDs,
+              ),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart uninstall' ===")
               chartCmd.logger.debug(argv)

@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import {DataValidationError, FullstackTestingError, MissingArgumentError} from '../core/errors.mjs'
+import { FullstackTestingError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as paths from 'path'

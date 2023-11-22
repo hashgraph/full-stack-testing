@@ -1,4 +1,3 @@
-import {constants} from "./../core/index.mjs";
 import * as core from './../core/index.mjs'
 
 /**
@@ -123,10 +122,10 @@ export const deployJsonRpcRelay = {
   }
 }
 
-export const platformReleaseTag = {
+export const releaseTag = {
   name: 'release-tag',
   definition: {
-    describe: 'Platform release tag (e.g. v0.42.4, fetch build-<tag>.zip from https://builds.hedera.com)',
+    describe: 'Release tag to be used (e.g. v0.42.5)',
     default: '',
     alias: 't',
     type: 'string'
@@ -136,7 +135,7 @@ export const platformReleaseTag = {
 export const platformReleaseDir = {
   name: 'release-dir',
   definition: {
-    describe: 'Platform release cache dir (containing release directories named as v<major>.<minor>. e.g. v0.42)',
+    describe: 'Platform release cache (containing release directories named as v<major>.<minor>. e.g. v0.42)',
     default: core.constants.FST_CACHE_DIR,
     alias: 'd',
     type: 'string'
@@ -173,6 +172,45 @@ export const chartDirectory = {
   }
 }
 
+export const replicaCount = {
+  name: 'replica-count',
+  definition: {
+    describe: 'Replica count',
+    default: 1,
+    alias: '',
+    type: 'number'
+  }
+}
+
+export const chainId = {
+  name: 'chain-id',
+  definition: {
+    describe: 'Chain ID',
+    default: '298', // Ref: https://github.com/hashgraph/hedera-json-rpc-relay#configuration
+    type: 'string'
+  }
+}
+
+// Ref: https://github.com/hashgraph/hedera-json-rpc-relay/blob/main/docs/configuration.md
+export const operatorId= {
+  name: 'operator-id',
+  definition: {
+    describe: 'Operator ID',
+    default: '0.0.2',
+    type: 'string'
+  }
+}
+
+// Ref: https://github.com/hashgraph/hedera-json-rpc-relay/blob/main/docs/configuration.md
+export const operatorKey= {
+  name: 'operator-key',
+  definition: {
+    describe: 'Operator Key',
+    default: '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137',
+    type: 'string'
+  }
+}
+
 export const allFlags = [
   clusterName,
   namespace,
@@ -184,9 +222,13 @@ export const allFlags = [
   deployMinio,
   deployEnvoyGateway,
   deployCertManagerCRDs,
-  platformReleaseTag,
+  releaseTag,
   platformReleaseDir,
   nodeIDs,
   force,
-  chartDirectory
+  chartDirectory,
+  replicaCount,
+  chainId,
+  operatorId,
+  operatorKey
 ]

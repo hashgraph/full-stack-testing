@@ -173,9 +173,10 @@ export class NodeCommand extends BaseCommand {
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.nodeIDs,
-              flags.platformReleaseTag,
+              flags.releaseTag,
               flags.platformReleaseDir,
-              flags.force
+              flags.force,
+              flags.chainId,
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node setup' ===")

@@ -1,9 +1,9 @@
 'use strict'
-import {MissingArgumentError} from "../core/errors.mjs";
+import { MissingArgumentError } from '../core/errors.mjs'
 import * as core from '../core/index.mjs'
 import chalk from 'chalk'
 import { ShellRunner } from '../core/shell_runner.mjs'
-import * as flags from "./flags.mjs";
+import * as flags from './flags.mjs'
 
 export class BaseCommand extends ShellRunner {
   async checkDep (cmd) {

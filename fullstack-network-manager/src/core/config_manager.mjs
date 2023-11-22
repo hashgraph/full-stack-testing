@@ -48,9 +48,10 @@ export class ConfigManager {
    *
    * @param opts object containing various config related fields (e.g. argv)
    * @param reset if we should reset old values
+   * @param flagList list of flags to be processed
    * @returns {Promise<unknown>}
    */
-  async setupConfig (opts, reset = false) {
+  async setupConfig (opts, reset = false, flagList = flags.allFlags) {
     const self = this
 
     try {
@@ -73,7 +74,7 @@ export class ConfigManager {
 
       // extract flags from argv
       if (opts) {
-        flags.allFlags.forEach(flag => {
+        flagList.forEach(flag => {
           if (opts && opts[flag.name] !== undefined) {
             let val = opts[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {

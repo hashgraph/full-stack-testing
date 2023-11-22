@@ -1,9 +1,9 @@
-import {constants} from './index.mjs'
+import { constants } from './index.mjs'
 import chalk from 'chalk'
-import {FullstackTestingError} from './errors.mjs'
+import { FullstackTestingError } from './errors.mjs'
 
 export class ChartManager {
-  constructor(helm, logger) {
+  constructor (helm, logger) {
     if (!logger) throw new Error('An instance of core/Logger is required')
     if (!helm) throw new Error('An instance of core/Helm is required')
 
@@ -20,7 +20,7 @@ export class ChartManager {
    * @param force whether or not to update the repo
    * @returns {Promise<string[]>}
    */
-  async setup(repoURLs = constants.DEFAULT_CHART_REPO, force = true) {
+  async setup (repoURLs = constants.DEFAULT_CHART_REPO, force = true) {
     try {
       let forceUpdateArg = ''
       if (force) {
@@ -29,7 +29,7 @@ export class ChartManager {
 
       const urls = []
       for (const [name, url] of repoURLs.entries()) {
-        this.logger.debug(`Adding repo ${name} -> ${url}`, {repoName: name, repoURL: url})
+        this.logger.debug(`Adding repo ${name} -> ${url}`, { repoName: name, repoURL: url })
         await this.helm.repo('add', name, url, forceUpdateArg)
         urls.push(url)
       }
@@ -44,9 +44,9 @@ export class ChartManager {
    * List available clusters
    * @returns {Promise<string[]>}
    */
-  async getInstalledCharts(namespaceName) {
+  async getInstalledCharts (namespaceName) {
     try {
-      return await this.helm.list(`-n ${namespaceName}`, '--no-headers | awk \'{print $9}\'')
+      return await this.helm.list(`-n ${namespaceName}`, '--no-headers | awk \'{print $1 " [" $9"]"}\'')
     } catch (e) {
       this.logger.showUserError(e)
     }
@@ -54,7 +54,7 @@ export class ChartManager {
     return []
   }
 
-  async install(namespaceName, chartName, chartPath, version, valuesArg = '') {
+  async install (namespaceName, chartName, chartPath, version, valuesArg = '') {
     try {
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
       if (!isInstalled) {
@@ -70,9 +70,9 @@ export class ChartManager {
 
         this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartPath}`))
         await this.helm.install(`${chartName} ${chartPath} ${versionArg} ${namespaceArg} ${valuesArg}`)
-        this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is installed`)
+        this.logger.showUser(chalk.green('OK'), 'chart is installed:', chalk.yellow(`${chartName} (${chartPath})`))
       } else {
-        this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is already installed`)
+        this.logger.showUser(chalk.green('OK'), 'chart is already installed:', chalk.yellow(`${chartName} (${chartPath})`))
       }
 
       return true
@@ -83,25 +83,26 @@ export class ChartManager {
     return false
   }
 
-  async isChartInstalled(namespaceName, chartName) {
+  async isChartInstalled (namespaceName, chartName) {
     const charts = await this.getInstalledCharts(namespaceName)
     for (const item of charts) {
-      if (item.startsWith(chartName)) return true
+      const n = item.split(" [")
+      if (chartName === n[0]) return true
     }
 
     return false
   }
 
-  async uninstall(namespaceName, chartName) {
+  async uninstall (namespaceName, chartName) {
     try {
-      this.logger.showUser(chalk.cyan('> checking chart:'), chalk.yellow(`${chartName}`))
+      this.logger.showUser(chalk.cyan('> checking chart release:'), chalk.yellow(`${chartName}`))
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
       if (isInstalled) {
-        this.logger.showUser(chalk.cyan('> uninstalling chart:'), chalk.yellow(`${chartName}`))
+        this.logger.showUser(chalk.cyan('> uninstalling chart release:'), chalk.yellow(`${chartName}`))
         await this.helm.uninstall(`-n ${namespaceName} ${chartName}`)
-        this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is uninstalled`)
+        this.logger.showUser(chalk.green('OK'), 'chart release is uninstalled:', chalk.yellow(chartName))
       } else {
-        this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already uninstalled`)
+        this.logger.showUser(chalk.green('OK'), 'chart release is already uninstalled:', chalk.yellow(chartName))
       }
 
       return true
@@ -112,7 +113,7 @@ export class ChartManager {
     return false
   }
 
-  async upgrade(namespaceName, chartName, chartPath, valuesArg = '') {
+  async upgrade (namespaceName, chartName, chartPath, valuesArg = '') {
     try {
       this.logger.showUser(chalk.cyan('> upgrading chart:'), chalk.yellow(`${chartName}`))
       await this.helm.upgrade(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)
