@@ -40,12 +40,12 @@ describe('Kubectl', () => {
 
   it('should get IP of a pod', async () => {
     await expect(kubectl.getPodIP('podName')).rejects.toThrow(FullstackTestingError)
-    expect(shellSpy).toHaveBeenCalledWith(`kubectl get pod podName -o jsonpath='{.status.podIP}'`)
+    expect(shellSpy).toHaveBeenCalledWith('kubectl get pod podName -o jsonpath=\'{.status.podIP}\'')
   })
 
   it('should get cluster IP of a service', async () => {
     await expect(kubectl.getClusterIP('svcName')).rejects.toThrow(FullstackTestingError)
-    expect(shellSpy).toHaveBeenCalledWith(`kubectl get svc svcName -o jsonpath='{.spec.clusterIP}'`)
+    expect(shellSpy).toHaveBeenCalledWith('kubectl get svc svcName -o jsonpath=\'{.spec.clusterIP}\'')
   })
 
   it('should run kubectl wait', async () => {
