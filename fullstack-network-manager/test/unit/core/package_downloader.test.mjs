@@ -50,7 +50,7 @@ describe('PackageDownloader', () => {
         await downloader.fetchFile('INVALID_URL', os.tmpdir())
       } catch (e) {
         expect(e).toBeInstanceOf(IllegalArgumentError)
-        expect(e.message).toBe('source URL is invalid')
+        expect(e.message).toBe("source URL 'INVALID_URL' is invalid")
       }
     })
 
