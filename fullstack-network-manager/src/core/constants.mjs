@@ -29,7 +29,7 @@ export const HEDERA_DATA_LIB_DIR = 'data/lib'
 export const HEDERA_USER_HOME_DIR = '/home/hedera'
 export const HEDERA_APP_JAR = 'HederaNode.jar'
 export const HEDERA_NODE_DEFAULT_STAKE_AMOUNT = 1
-export const HEDERA_BUILDS_URL = 'https=//builds.hedera.com'
+export const HEDERA_BUILDS_URL = 'https://builds.hedera.com'
 
 // --------------- Logging related constants ---------------------------------------------------------------------------
 export const LOG_STATUS_PROGRESS = chalk.cyan('>>')

@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 import { pipeline as streamPipeline } from 'node:stream/promises'
@@ -85,7 +86,7 @@ export class PackageDownloader {
     }
 
     if (!this.isValidURL(url)) {
-      throw new IllegalArgumentError('source URL is invalid', url)
+      throw new IllegalArgumentError(`source URL '${url}' is invalid`, url)
     }
 
     if (!await this.urlExists(url)) {
@@ -175,6 +176,7 @@ export class PackageDownloader {
     const packageFile = `${downloadDir}/build-${tag}.zip`
     const checksumURL = `${constants.HEDERA_BUILDS_URL}/node/software/${releaseDir}/build-${tag}.sha384`
     const checksumPath = `${downloadDir}/build-${tag}.sha384`
+    this.logger.showUser(chalk.cyan('>>'), `Package URL: ${packageURL}`)
 
     try {
       if (fs.existsSync(packageFile) && !force) {

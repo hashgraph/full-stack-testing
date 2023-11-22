@@ -3,6 +3,7 @@ import { hideBin } from 'yargs/helpers'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
 import { ChartManager, ConfigManager } from './core/index.mjs'
+import 'dotenv/config'
 
 export function main (argv) {
   const logger = core.logging.NewLogger('debug')
