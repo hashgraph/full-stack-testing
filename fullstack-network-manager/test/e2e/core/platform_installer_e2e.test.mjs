@@ -63,12 +63,13 @@ describe('PackageInstallerE2E', () => {
       const configPath = `${tmpDir}/config.txt`
       const nodeIDs = ['node0', 'node1', 'node2']
       const releaseTag = 'v0.42.0'
+      const chainId = '299'
 
-      const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag)
+      const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag, chainId)
 
       // verify format is correct
       expect(configLines.length).toBe(6)
-      expect(configLines[0]).toBe(`swirld, ${constants.CLUSTER_NAME}`)
+      expect(configLines[0]).toBe(`swirld, ${chainId}`)
       expect(configLines[1]).toBe(`app, ${constants.HEDERA_APP_JAR}`)
       expect(configLines[2]).toContain('address, 0, node0, node0, 1')
       expect(configLines[3]).toContain('address, 1, node1, node1, 1')

@@ -21,6 +21,7 @@ export const RESOURCES_DIR = normalize(CUR_FILE_DIR + '/../../resources')
 export const ROOT_CONTAINER = 'root-container'
 
 // --------------- Hedera related constants --------------------------------------------------------------------
+export const HEDERA_CHAIN_ID = '298'
 export const HEDERA_HGCAPP_DIR = '/opt/hgcapp'
 export const HEDERA_SERVICES_PATH = `${HEDERA_HGCAPP_DIR}/services-hedera`
 export const HEDERA_HAPI_PATH = `${HEDERA_SERVICES_PATH}/HapiApp2.0`
