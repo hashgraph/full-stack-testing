@@ -78,7 +78,7 @@ export class PlatformInstaller {
     if (!fs.statSync(buildZipFile).isFile()) throw new IllegalArgumentError('buildZipFile does not exists', buildZipFile)
 
     try {
-      await this.kubectl.copy(podName,
+      await this.kubectl.copy(
         buildZipFile,
         `${podName}:${constants.HEDERA_USER_HOME_DIR}`,
         '-c root-container'
@@ -99,7 +99,7 @@ export class PlatformInstaller {
     try {
       for (const srcPath of srcFiles) {
         self.logger.debug(`Copying files into ${podName}: ${srcPath} -> ${destDir}`)
-        await this.kubectl.copy(podName,
+        await this.kubectl.copy(
           srcPath,
           `${podName}:${destDir}`,
           `-c ${container}`
