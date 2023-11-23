@@ -155,7 +155,7 @@ jobs:
         working-directory: fullstack-network-manager
         if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run: |
-          npm i 
+          npm i
           npm test
 
       - name: NodeJS CLI E2E Tests
@@ -164,13 +164,13 @@ jobs:
         if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         run: |
           export DEV_MODE=true
-          npm i 
+          npm i
           npm link
           fsnetman init -d ../charts
           fsnetman cluster create
           fsnetman cluster setup
           fsnetman chart install
-          npm run test-e2e 
+          npm run test-e2e
 
       # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
       - name: Helm Chart Test (Direct Install)
@@ -187,6 +187,7 @@ jobs:
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
@@ -194,6 +195,7 @@ jobs:
       - name: Examples Compile
         id: gradle-build-examples
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
@@ -202,6 +204,7 @@ jobs:
       - name: Gradle Plugin Compile
         id: gradle-build-gradle-plugin
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
