@@ -25,7 +25,7 @@ readonly HAPI_PATH="${HGCAPP_DIR}/services-hedera/HapiApp2.0"
 readonly HEDERA_HOME_DIR="/home/hedera"
 readonly RELEASE_NAME="${RELEASE_NAME:-fst}"
 
-readonly NMT_VERSION="${NMT_VERSION:-v2.0.0-alpha.0}"
+readonly NMT_VERSION="${NMT_VERSION:-v1.2.2}"
 readonly NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/releases/tags/${NMT_VERSION}"
 readonly NMT_INSTALLER="node-mgmt-tools-installer-${NMT_VERSION}.run"
 readonly NMT_INSTALLER_DIR="${SCRIPT_DIR}/../resources/nmt"

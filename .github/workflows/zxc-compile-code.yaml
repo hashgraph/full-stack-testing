@@ -187,7 +187,6 @@ jobs:
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
@@ -195,7 +194,6 @@ jobs:
       - name: Examples Compile
         id: gradle-build-examples
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
@@ -204,7 +202,6 @@ jobs:
       - name: Gradle Plugin Compile
         id: gradle-build-gradle-plugin
         uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
