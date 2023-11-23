@@ -87,6 +87,13 @@ jobs:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
+      - name: Setup Make
+        run: |
+          if ! command -v make >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y make
+          fi
+
       - name: Setup Java
         uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
         with:
