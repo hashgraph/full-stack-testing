@@ -132,11 +132,10 @@ export const releaseTag = {
   }
 }
 
-export const platformReleaseDir = {
-  name: 'release-dir',
+export const cacheDir = {
+  name: 'cache-dir',
   definition: {
-    describe: 'Platform release cache (containing release directories named as v<major>.<minor>. e.g. v0.42)',
-    default: core.constants.FST_CACHE_DIR,
+    describe: 'Local cache directory containing platform release artifacts',
     alias: 'd',
     type: 'string'
   }
@@ -223,7 +222,7 @@ export const allFlags = [
   deployEnvoyGateway,
   deployCertManagerCRDs,
   releaseTag,
-  platformReleaseDir,
+  cacheDir,
   nodeIDs,
   force,
   chartDirectory,

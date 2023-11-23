@@ -1,13 +1,14 @@
+import { ListrEnquirerPromptAdapter } from '@listr2/prompt-adapter-enquirer'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import {
   FullstackTestingError,
-  IllegalArgumentError,
-  MissingArgumentError
+  IllegalArgumentError
 } from '../core/errors.mjs'
 import { constants, Templates } from '../core/index.mjs'
 import chalk from 'chalk'
 import * as fs from 'fs'
+import { Listr } from 'listr2'
 
 /**
  * Defines the core functionalities of 'node' command
@@ -24,12 +25,12 @@ export class NodeCommand extends BaseCommand {
   }
 
   /**
-     * Check if pods are running or not
-     * @param namespace
-     * @param nodeIds
-     * @param timeout
-     * @returns {Promise<unknown>}
-     */
+   * Check if pods are running or not
+   * @param namespace
+   * @param nodeIds
+   * @param timeout
+   * @returns {Promise<unknown>}
+   */
   async checkNetworkNodePods (namespace, nodeIds = [], timeout = '300s') {
     try {
       const podNames = []
@@ -41,9 +42,9 @@ export class NodeCommand extends BaseCommand {
           await this.kubectl.wait('pod',
             '--for=jsonpath=\'{.status.phase}\'=Running',
             '-l fullstack.hedera.com/type=network-node',
-                        `-l fullstack.hedera.com/node-name=${nodeId}`,
-                        `--timeout=${timeout}`,
-                        `-n "${namespace}"`
+            `-l fullstack.hedera.com/node-name=${nodeId}`,
+            `--timeout=${timeout}`,
+            `-n "${namespace}"`
           )
 
           podNames.push(podName)
@@ -54,7 +55,7 @@ export class NodeCommand extends BaseCommand {
           '-l fullstack.hedera.com/type=network-node',
           '--no-headers',
           '-o custom-columns=":metadata.name"',
-                    `-n "${namespace}"`
+          `-n "${namespace}"`
         )
         output.forEach(podName => {
           nodeIds.push(Templates.extractNodeIdFromPodName(podName))
@@ -70,51 +71,113 @@ export class NodeCommand extends BaseCommand {
 
   async setup (argv) {
     const self = this
-    if (!argv.releaseTag && !argv.releaseDir) throw new MissingArgumentError('release-tag or release-dir argument is required')
 
-    try {
-      const config = await this.configManager.setupConfig(argv)
-      const namespace = this.configManager.flagValue(config, flags.namespace)
-      const force = this.configManager.flagValue(config, flags.force)
-      const releaseTag = this.configManager.flagValue(config, flags.releaseTag)
-      const releaseDir = this.configManager.flagValue(config, flags.platformReleaseDir)
-      const chainId = this.configManager.flagValue(config, flags.chainId)
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const config = {
+            namespace: argv.namespace,
+            releaseTag: argv.releaseTag,
+            cacheDir: argv.cacheDir,
+            force: argv.force,
+            chainId: argv.chainId
+          }
 
-      self.logger.showUser(constants.LOG_GROUP_DIVIDER)
+          if (!config.namespace) {
+            const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+            const initial = namespaces.indexOf(`namespace/${constants.NAMESPACE_NAME}`)
+            const namespace = await task.prompt(ListrEnquirerPromptAdapter).run({
+              type: 'select',
+              initial,
+              message: 'Which namespace do you wish to use?',
+              choices: namespaces
+            })
 
-      const releasePrefix = Templates.prepareReleasePrefix(releaseTag)
-      let buildZipFile = `${releaseDir}/${releasePrefix}/build-${releaseTag}.zip`
-      const stagingDir = `${releaseDir}/${releasePrefix}/staging/${releaseTag}`
-      const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
+            config.namespace = namespace.replace('namespace/', '')
+          }
 
-      fs.mkdirSync(stagingDir, { recursive: true })
+          if (!config.nodeIds) {
+            const nodeIds = await task.prompt(ListrEnquirerPromptAdapter).run({
+              type: 'input',
+              default: 'node0,node1,node2',
+              message: 'Which nodes do you wish to setup? Use comma separated list?'
+            })
 
-      // pre-check
-      const { podNames, nodeIDs } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
+            config.nodeIds = nodeIds.split(',')
+          }
 
-      // fetch platform build-<tag>.zip file
-      if (force || !fs.existsSync(buildZipFile)) {
-        self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package 'build-${releaseTag}.zip' from '${constants.HEDERA_BUILDS_URL}' ...`)
-        buildZipFile = await this.downloader.fetchPlatform(releaseTag, releaseDir)
-      } else {
-        self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${releaseTag}.zip`)
+          if (!config.releaseTag) {
+            config.releaseTag = await task.prompt(ListrEnquirerPromptAdapter).run({
+              type: 'text',
+              default: 'v0.42.5',
+              message: 'Which platform version do you wish to setup?'
+            })
+          }
+
+          if (!config.cacheDir) {
+            config.cacheDir = await task.prompt(ListrEnquirerPromptAdapter).run({
+              type: 'text',
+              default: constants.FST_CACHE_DIR,
+              message: 'Which directory do you wish to use as local cache?'
+            })
+          }
+
+          // compute other config parameters
+          config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
+          config.buildZipFile = `${config.cacheDir}/${config.releasePrefix}/build-${config.releaseTag}.zip`
+          config.stagingDir = `${config.cacheDir}/${config.releasePrefix}/staging/${config.releaseTag}`
+
+          // prepare staging directory
+          fs.mkdirSync(config.stagingDir, { recursive: true })
+
+          // set config in the context for later tasks to use
+          ctx.config = config
+          self.logger.debug('Setup config', { config })
+        }
+      },
+      {
+        title: 'Fetch platform artifacts',
+        task: async (ctx) => {
+          const config = ctx.config
+          if (config.force || !fs.existsSync(config.buildZipFile)) {
+            self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package 'build-${config.releaseTag}.zip' from '${constants.HEDERA_BUILDS_URL}' ...`)
+            ctx.config.buildZipFile = await this.downloader.fetchPlatform(ctx.config.releaseTag, config.cacheDir)
+          } else {
+            self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${config.releaseTag}.zip`)
+          }
+          self.logger.showUser(chalk.green('OK'), `Platform package: ${config.buildZipFile}`)
+        }
+      },
+      {
+        title: 'Identify network pods in the cluster',
+        task: async (ctx) => {
+          const config = ctx.config
+          const { podNames } = await this.checkNetworkNodePods(config.namespace, config.nodeIds)
+          ctx.config.podNames = podNames
+        }
+      },
+      {
+        title: 'Prepare artifacts for node setup',
+        task: async (ctx, task) => {
+          const config = ctx.config
+          await this.plaformInstaller.prepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
+        }
+      },
+      {
+        title: 'Setup network nodes',
+        task: async (ctx, task) => {
+          const config = ctx.config
+          for (const podName of config.podNames) {
+            await self.plaformInstaller.install(podName, config.buildZipFile, config.stagingDir, config.force)
+          }
+        }
       }
-      self.logger.showUser(chalk.green('OK'), `Platform package: ${buildZipFile}`)
+    ], { concurrent: false })
 
-      // prepare staging
-      await this.plaformInstaller.prepareStaging(nodeIDs, stagingDir, releaseTag, force, chainId)
+    await tasks.run()
 
-      // setup
-      for (const podName of podNames) {
-        await self.plaformInstaller.install(podName, buildZipFile, stagingDir, force)
-      }
-
-      return true
-    } catch (e) {
-      self.logger.showUserError(e)
-    }
-
-    return false
+    return true
   }
 
   async start (argv) {
@@ -160,9 +223,9 @@ export class NodeCommand extends BaseCommand {
   }
 
   /**
-     * Return Yargs command definition for 'node' command
-     * @param nodeCmd an instance of NodeCommand
-     */
+   * Return Yargs command definition for 'node' command
+   * @param nodeCmd an instance of NodeCommand
+   */
   static getCommandDefinition (nodeCmd) {
     return {
       command: 'node',
@@ -176,7 +239,7 @@ export class NodeCommand extends BaseCommand {
               flags.namespace,
               flags.nodeIDs,
               flags.releaseTag,
-              flags.platformReleaseDir,
+              flags.cacheDir,
               flags.force,
               flags.chainId
             ),
@@ -188,6 +251,9 @@ export class NodeCommand extends BaseCommand {
                 nodeCmd.logger.debug('==== Finished running `node setup`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                nodeCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
