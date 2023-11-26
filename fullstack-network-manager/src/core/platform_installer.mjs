@@ -1,9 +1,9 @@
-import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
-import chalk from 'chalk'
 import * as fs from 'fs'
+import { Listr } from 'listr2'
+import * as path from 'path'
+import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
 import { constants } from './index.mjs'
 import { Templates } from './templates.mjs'
-import * as path from 'path'
 
 /**
  * PlatformInstaller install platform code in the root-container of a network pod
@@ -305,7 +305,7 @@ export class PlatformInstaller {
 
       // prepare address book
       await this.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
-      self.logger.showUser(chalk.green('OK'), `Prepared config.txt: ${configTxtPath}`)
+      self.logger.debug(`Prepared config.txt: ${configTxtPath}`)
 
       return true
     } catch (e) {
@@ -313,35 +313,51 @@ export class PlatformInstaller {
     }
   }
 
+  setupInstallTasks (podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
+    const self = this
+    return new Listr([
+      {
+        title: 'Copy platform',
+        task: (_, task) =>
+          self.copyPlatform(podName, buildZipFile)
+      },
+      {
+        title: 'Copy Gossip keys',
+        task: (_, task) =>
+          self.copyGossipKeys(podName, stagingDir)
+      },
+      {
+        title: 'Copy TLS keys',
+        task: (_, task) =>
+          self.copyTLSKeys(podName, stagingDir)
+      },
+      {
+        title: 'Copy configuration files',
+        task: (_, task) =>
+          self.copyPlatformConfigFiles(podName, stagingDir)
+      },
+      {
+        title: 'Set file permissions',
+        task: (_, task) =>
+          self.setPlatformDirPermissions(podName)
+      }
+    ],
+    {
+      concurrent: false,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
+    }
+    )
+  }
+
   async install (podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
     try {
-      this.logger.showUser(constants.LOG_GROUP_DIVIDER)
-      this.logger.showUser(chalk.cyan(`Installing platform to ${podName}`))
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying platform: ${buildZipFile} ...`)
-      await this.copyPlatform(podName, buildZipFile)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying gossip keys ...`)
-      await this.copyGossipKeys(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied gossip keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying TLS keys ...`)
-      await this.copyTLSKeys(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied TLS keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying auxiliary config files ...`)
-      await this.copyPlatformConfigFiles(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied auxiliary config keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Setting file permissions ...`)
-      await this.setPlatformDirPermissions(podName)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Set file permissions`)
-
+      const tasks = this.setupInstallTasks(podName, buildZipFile, stagingDir, force, homeDir)
+      await tasks.run()
       return true
     } catch (e) {
-      this.logger.showUserError(e)
-      throw e
+      throw new FullstackTestingError('Failed to install', e)
     }
   }
 }

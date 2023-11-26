@@ -24,48 +24,22 @@ export class NodeCommand extends BaseCommand {
     this.plaformInstaller = opts.platformInstaller
   }
 
-  /**
-   * Check if pods are running or not
-   * @param namespace
-   * @param nodeIds
-   * @param timeout
-   * @returns {Promise<unknown>}
-   */
-  async checkNetworkNodePods (namespace, nodeIds = [], timeout = '300s') {
+  async checkNetworkNodePod (namespace, nodeId, timeout = '300s') {
+    nodeId = nodeId.trim()
+    const podName = Templates.renderNetworkPodName(nodeId)
+
     try {
-      const podNames = []
-      if (nodeIds && nodeIds.length > 0) {
-        for (let nodeId of nodeIds) {
-          nodeId = nodeId.trim()
-          const podName = Templates.renderNetworkPodName(nodeId)
+      await this.kubectl.wait('pod',
+        '--for=jsonpath=\'{.status.phase}\'=Running',
+        '-l fullstack.hedera.com/type=network-node',
+        `-l fullstack.hedera.com/node-name=${nodeId}`,
+        '--timeout=300s',
+        `-n "${namespace}"`
+      )
 
-          await this.kubectl.wait('pod',
-            '--for=jsonpath=\'{.status.phase}\'=Running',
-            '-l fullstack.hedera.com/type=network-node',
-            `-l fullstack.hedera.com/node-name=${nodeId}`,
-            `--timeout=${timeout}`,
-            `-n "${namespace}"`
-          )
-
-          podNames.push(podName)
-        }
-      } else {
-        nodeIds = []
-        const output = await this.kubectl.get('pods',
-          '-l fullstack.hedera.com/type=network-node',
-          '--no-headers',
-          '-o custom-columns=":metadata.name"',
-          `-n "${namespace}"`
-        )
-        output.forEach(podName => {
-          nodeIds.push(Templates.extractNodeIdFromPodName(podName))
-          podNames.push(podName)
-        })
-      }
-
-      return { podNames, nodeIDs: nodeIds }
+      return podName
     } catch (e) {
-      throw new FullstackTestingError(`Error on detecting pods for nodes (${nodeIds}): ${e.message}`)
+      throw new FullstackTestingError(`failed to detect pod for node: ${nodeId}`, e)
     }
   }
 
@@ -81,7 +55,18 @@ export class NodeCommand extends BaseCommand {
             releaseTag: argv.releaseTag,
             cacheDir: argv.cacheDir,
             force: argv.force,
-            chainId: argv.chainId
+            chainId: argv.chainId,
+            nodeIds: []
+          }
+
+          if (argv.nodeIds) {
+            const items = argv.nodeIds.split(',')
+            items.forEach(item => {
+              const nodeId = item.trim()
+              if (nodeId) {
+                config.nodeIds.push(nodeId)
+              }
+            })
           }
 
           if (!config.namespace) {
@@ -97,14 +82,19 @@ export class NodeCommand extends BaseCommand {
             config.namespace = namespace.replace('namespace/', '')
           }
 
-          if (!config.nodeIds) {
+          if (!config.nodeIds || config.nodeIds.length <= 0) {
             const nodeIds = await task.prompt(ListrEnquirerPromptAdapter).run({
               type: 'input',
               default: 'node0,node1,node2',
-              message: 'Which nodes do you wish to setup? Use comma separated list?'
+              message: 'Which nodes do you wish to setup? Use comma separated list:'
             })
 
-            config.nodeIds = nodeIds.split(',')
+            nodeIds.split(',').forEach(item => {
+              const nodeId = item.trim()
+              if (nodeId) {
+                config.nodeIds.push(nodeId)
+              }
+            })
           }
 
           if (!config.releaseTag) {
@@ -137,28 +127,41 @@ export class NodeCommand extends BaseCommand {
         }
       },
       {
-        title: 'Fetch platform artifacts',
+        title: 'Fetch platform',
         task: async (ctx) => {
           const config = ctx.config
           if (config.force || !fs.existsSync(config.buildZipFile)) {
-            self.logger.showUser(chalk.cyan('>>'), `Fetching Platform package 'build-${config.releaseTag}.zip' from '${constants.HEDERA_BUILDS_URL}' ...`)
-            ctx.config.buildZipFile = await this.downloader.fetchPlatform(ctx.config.releaseTag, config.cacheDir)
-          } else {
-            self.logger.showUser(chalk.cyan('>>'), `Found Platform package in cache: build-${config.releaseTag}.zip`)
+            ctx.config.buildZipFile = await self.downloader.fetchPlatform(ctx.config.releaseTag, config.cacheDir)
           }
-          self.logger.showUser(chalk.green('OK'), `Platform package: ${config.buildZipFile}`)
         }
       },
       {
-        title: 'Identify network pods in the cluster',
-        task: async (ctx) => {
-          const config = ctx.config
-          const { podNames } = await this.checkNetworkNodePods(config.namespace, config.nodeIds)
-          ctx.config.podNames = podNames
+        title: 'Identify network pods',
+        task: async (ctx, task) => {
+          ctx.config.podNames = []
+
+          const subTasks = []
+          for (const nodeId of ctx.config.nodeIds) {
+            subTasks.push({
+              title: `Check network pod: ${chalk.yellow(nodeId)}`,
+              task: async () => {
+                const podName = await self.checkNetworkNodePod(ctx.config.namespace, nodeId)
+                ctx.config.podNames.push(podName)
+              }
+            })
+          }
+
+          // setup the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
+            }
+          })
         }
       },
       {
-        title: 'Prepare artifacts for node setup',
+        title: 'Prepare artifacts',
         task: async (ctx, task) => {
           const config = ctx.config
           await this.plaformInstaller.prepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
@@ -168,14 +171,35 @@ export class NodeCommand extends BaseCommand {
         title: 'Setup network nodes',
         task: async (ctx, task) => {
           const config = ctx.config
+
+          const subTasks = []
           for (const podName of config.podNames) {
-            await self.plaformInstaller.install(podName, config.buildZipFile, config.stagingDir, config.force)
+            const nodeId = Templates.extractNodeIdFromPodName(podName)
+            subTasks.push({
+              title: `Setup node: ${chalk.yellow(nodeId)}`,
+              task: () =>
+                self.plaformInstaller.setupInstallTasks(podName, config.buildZipFile, config.stagingDir, config.force)
+            })
           }
+
+          // setup the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
+            }
+          })
         }
       }
-    ], { concurrent: false })
+    ], {
+      concurrent: false
+    })
 
-    await tasks.run()
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError('Error in setting up nodes', e)
+    }
 
     return true
   }
@@ -249,7 +273,6 @@ export class NodeCommand extends BaseCommand {
 
               nodeCmd.setup(argv).then(r => {
                 nodeCmd.logger.debug('==== Finished running `node setup`====')
-
                 if (!r) process.exit(1)
               }).catch(err => {
                 nodeCmd.logger.showUserError(err)
@@ -266,14 +289,15 @@ export class NodeCommand extends BaseCommand {
             ),
             handler: argv => {
               console.log('here')
-              nodeCmd.logger.showUser('here2')
               nodeCmd.logger.debug("==== Running 'node start' ===")
               nodeCmd.logger.debug(argv)
 
               nodeCmd.start(argv).then(r => {
                 nodeCmd.logger.debug('==== Finished running `node start`====')
-
                 if (!r) process.exit(1)
+              }).catch(err => {
+                nodeCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -290,8 +314,10 @@ export class NodeCommand extends BaseCommand {
 
               nodeCmd.stop(argv).then(r => {
                 nodeCmd.logger.debug('==== Finished running `node stop`====')
-
                 if (!r) process.exit(1)
+              }).catch(err => {
+                nodeCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
