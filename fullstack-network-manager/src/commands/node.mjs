@@ -1,14 +1,11 @@
-import { ListrEnquirerPromptAdapter } from '@listr2/prompt-adapter-enquirer'
-import { BaseCommand } from './base.mjs'
-import * as flags from './flags.mjs'
-import {
-  FullstackTestingError,
-  IllegalArgumentError
-} from '../core/errors.mjs'
-import { constants, Templates } from '../core/index.mjs'
 import chalk from 'chalk'
 import * as fs from 'fs'
 import { Listr } from 'listr2'
+import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
+import { constants, Templates } from '../core/index.mjs'
+import { BaseCommand } from './base.mjs'
+import * as flags from './flags.mjs'
+import * as prompts from './prompts.mjs'
 
 /**
  * Defines the core functionalities of 'node' command
@@ -39,8 +36,37 @@ export class NodeCommand extends BaseCommand {
 
       return podName
     } catch (e) {
-      throw new FullstackTestingError(`failed to detect pod for node: ${nodeId}`, e)
+      throw new FullstackTestingError(`no pod found for nodeId: ${nodeId}`, e)
     }
+  }
+
+  /**
+   * Return task for checking for all network node pods
+   */
+  taskCheckNetworkNodePods (ctx, task) {
+    if (!ctx.config) {
+      ctx.config = {}
+    }
+
+    ctx.config.podNames = {}
+
+    const subTasks = []
+    for (const nodeId of ctx.config.nodeIds) {
+      subTasks.push({
+        title: `Check network pod: ${chalk.yellow(nodeId)}`,
+        task: async (ctx) => {
+          ctx.config.podNames[nodeId] = await this.checkNetworkNodePod(ctx.config.namespace, nodeId)
+        }
+      })
+    }
+
+    // setup the sub-tasks
+    return task.newListr(subTasks, {
+      concurrent: true,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
+    })
   }
 
   async setup (argv) {
@@ -51,66 +77,12 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           const config = {
-            namespace: argv.namespace,
-            releaseTag: argv.releaseTag,
-            cacheDir: argv.cacheDir,
-            force: argv.force,
-            chainId: argv.chainId,
-            nodeIds: []
-          }
-
-          if (argv.nodeIds) {
-            const items = argv.nodeIds.split(',')
-            items.forEach(item => {
-              const nodeId = item.trim()
-              if (nodeId) {
-                config.nodeIds.push(nodeId)
-              }
-            })
-          }
-
-          if (!config.namespace) {
-            const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
-            const initial = namespaces.indexOf(`namespace/${constants.NAMESPACE_NAME}`)
-            const namespace = await task.prompt(ListrEnquirerPromptAdapter).run({
-              type: 'select',
-              initial,
-              message: 'Which namespace do you wish to use?',
-              choices: namespaces
-            })
-
-            config.namespace = namespace.replace('namespace/', '')
-          }
-
-          if (!config.nodeIds || config.nodeIds.length <= 0) {
-            const nodeIds = await task.prompt(ListrEnquirerPromptAdapter).run({
-              type: 'input',
-              default: 'node0,node1,node2',
-              message: 'Which nodes do you wish to setup? Use comma separated list:'
-            })
-
-            nodeIds.split(',').forEach(item => {
-              const nodeId = item.trim()
-              if (nodeId) {
-                config.nodeIds.push(nodeId)
-              }
-            })
-          }
-
-          if (!config.releaseTag) {
-            config.releaseTag = await task.prompt(ListrEnquirerPromptAdapter).run({
-              type: 'text',
-              default: 'v0.42.5',
-              message: 'Which platform version do you wish to setup?'
-            })
-          }
-
-          if (!config.cacheDir) {
-            config.cacheDir = await task.prompt(ListrEnquirerPromptAdapter).run({
-              type: 'text',
-              default: constants.FST_CACHE_DIR,
-              message: 'Which directory do you wish to use as local cache?'
-            })
+            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
+            releaseTag: await prompts.promptReleaseTag(task, argv.releaseTag),
+            cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
+            force: await prompts.promptForce(task, argv.force),
+            chainId: await prompts.promptChainId(task, argv.chainId)
           }
 
           // compute other config parameters
@@ -136,31 +108,6 @@ export class NodeCommand extends BaseCommand {
         }
       },
       {
-        title: 'Identify network pods',
-        task: async (ctx, task) => {
-          ctx.config.podNames = []
-
-          const subTasks = []
-          for (const nodeId of ctx.config.nodeIds) {
-            subTasks.push({
-              title: `Check network pod: ${chalk.yellow(nodeId)}`,
-              task: async () => {
-                const podName = await self.checkNetworkNodePod(ctx.config.namespace, nodeId)
-                ctx.config.podNames.push(podName)
-              }
-            })
-          }
-
-          // setup the sub-tasks
-          return task.newListr(subTasks, {
-            concurrent: true,
-            rendererOptions: {
-              collapseSubtasks: false
-            }
-          })
-        }
-      },
-      {
         title: 'Prepare artifacts',
         task: async (ctx, task) => {
           const config = ctx.config
@@ -168,13 +115,17 @@ export class NodeCommand extends BaseCommand {
         }
       },
       {
+        title: 'Identify network pods',
+        task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
+      },
+      {
         title: 'Setup network nodes',
         task: async (ctx, task) => {
           const config = ctx.config
 
           const subTasks = []
-          for (const podName of config.podNames) {
-            const nodeId = Templates.extractNodeIdFromPodName(podName)
+          for (const nodeId of ctx.config.nodeIds) {
+            const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Setup node: ${chalk.yellow(nodeId)}`,
               task: () =>
@@ -207,43 +158,99 @@ export class NodeCommand extends BaseCommand {
   async start (argv) {
     const self = this
 
-    try {
-      const namespace = argv.namespace
-      const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
-      const { podNames } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
-      for (const podName of podNames) {
-        self.logger.showUser(chalk.cyan('>>'), `Starting node ${podName}`)
-        await self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
-        self.logger.showUser(chalk.green('OK'), `Started node ${podName}`)
-      }
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          ctx.config = {
+            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+          }
+        }
+      },
+      {
+        title: 'Identify network pods',
+        task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
+      },
+      {
+        title: 'Starting nodes',
+        task: (ctx, task) => {
+          const subTasks = []
+          for (const nodeId of ctx.config.nodeIds) {
+            const podName = ctx.config.podNames[nodeId]
+            subTasks.push({
+              title: `Start node: ${chalk.yellow(nodeId)}`,
+              task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
+            })
+          }
 
-      return true
+          // setup the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
+            }
+          })
+        }
+      }
+    ], { concurrent: false })
+
+    try {
+      await tasks.run()
     } catch (e) {
-      self.logger.showUserError(e)
+      throw new FullstackTestingError('Error starting node', e)
     }
 
-    return false
+    return true
   }
 
   async stop (argv) {
     const self = this
 
-    try {
-      const namespace = argv.namespace
-      const nodeIDsArg = argv.nodeIds ? argv.nodeIds.split(',') : []
-      const { podNames } = await this.checkNetworkNodePods(namespace, nodeIDsArg)
-      for (const podName of podNames) {
-        self.logger.showUser(chalk.cyan('>>'), `Stopping node ${podName}`)
-        await self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
-        self.logger.showUser(chalk.green('OK'), `Stopped node ${podName}`)
-      }
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          ctx.config = {
+            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+          }
+        }
+      },
+      {
+        title: 'Identify network pods',
+        task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
+      },
+      {
+        title: 'Stopping nodes',
+        task: (ctx, task) => {
+          const subTasks = []
+          for (const nodeId of ctx.config.nodeIds) {
+            const podName = ctx.config.podNames[nodeId]
+            subTasks.push({
+              title: `Stop node: ${chalk.yellow(nodeId)}`,
+              task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
+            })
+          }
 
-      return true
+          // setup the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
+            }
+          })
+        }
+      }
+    ], { concurrent: false })
+
+    try {
+      await tasks.run()
     } catch (e) {
-      self.logger.showUserError(e)
+      throw new FullstackTestingError('Error starting node', e)
     }
 
-    return false
+    return true
   }
 
   /**
@@ -288,7 +295,6 @@ export class NodeCommand extends BaseCommand {
               flags.nodeIDs
             ),
             handler: argv => {
-              console.log('here')
               nodeCmd.logger.debug("==== Running 'node start' ===")
               nodeCmd.logger.debug(argv)
 
