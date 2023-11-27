@@ -117,7 +117,7 @@ jobs:
           which npm
           which bash
           npm -v
-          npm i 
+          npm i
           npm test
 
       - name: NodeJS CLI E2E Tests
@@ -126,10 +126,10 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           export DEV_MODE=true
-          npm i 
+          npm i
           npm link
           fsnetman init -d ../charts
           fsnetman cluster create
           fsnetman cluster setup
           fsnetman chart install
-          npm run test-e2e 
+          npm run test-e2e
