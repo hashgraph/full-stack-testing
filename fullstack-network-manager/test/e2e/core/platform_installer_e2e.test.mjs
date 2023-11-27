@@ -92,9 +92,10 @@ describe('PackageInstallerE2E', () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
       const configPath = `${tmpDir}/config.txt`
       const nodeIDs = ['node0', 'node1', 'node2']
-      const releaseTag = 'v0.42.0'
+      const releaseTag = 'v0.42.0x'
 
-      await expect(installer.prepareStaging(nodeIDs, tmpDir, releaseTag)).resolves.toBeTruthy()
+      const ctx = await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
+      expect(ctx).not.toBeNull()
 
       // verify the config.txt exists
       expect(fs.existsSync(configPath)).toBeTruthy()
@@ -163,7 +164,8 @@ describe('PackageInstallerE2E', () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
       const nodeIDs = ['node0']
       const releaseTag = 'v0.42.0'
-      await installer.prepareStaging(nodeIDs, tmpDir, releaseTag)
+      const ctx = await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
+      expect(ctx).not.toBeNull()
 
       const fileList = await installer.copyPlatformConfigFiles(podName, tmpDir)
       expect(fileList.length).toBeGreaterThanOrEqual(6)

@@ -95,7 +95,7 @@ export class NodeCommand extends BaseCommand {
 
           // set config in the context for later tasks to use
           ctx.config = config
-          self.logger.debug('Setup config', { config })
+          self.logger.debug('Initialized config', { config })
         }
       },
       {
@@ -108,15 +108,15 @@ export class NodeCommand extends BaseCommand {
         }
       },
       {
-        title: 'Prepare artifacts',
-        task: async (ctx, task) => {
-          const config = ctx.config
-          await this.plaformInstaller.prepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
-        }
-      },
-      {
         title: 'Identify network pods',
         task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
+      },
+      {
+        title: 'Prepare staging',
+        task: async (ctx, task) => {
+          const config = ctx.config
+          return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
+        }
       },
       {
         title: 'Setup network nodes',
@@ -129,7 +129,7 @@ export class NodeCommand extends BaseCommand {
             subTasks.push({
               title: `Setup node: ${chalk.yellow(nodeId)}`,
               task: () =>
-                self.plaformInstaller.setupInstallTasks(podName, config.buildZipFile, config.stagingDir, config.force)
+                self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.force)
             })
           }
 
@@ -143,7 +143,8 @@ export class NodeCommand extends BaseCommand {
         }
       }
     ], {
-      concurrent: false
+      concurrent: false,
+      showErrorMessage: false
     })
 
     try {

@@ -90,7 +90,7 @@ export class PlatformInstaller {
 
       return true
     } catch (e) {
-      throw new FullstackTestingError('failed to copy platform code into pods', e)
+      throw new FullstackTestingError(`failed to copy platform code to pod '${podName}'`, e)
     }
   }
 
@@ -291,29 +291,53 @@ export class PlatformInstaller {
     }
   }
 
-  async prepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
+  /**
+   * Return a lit of task to prepare the staging directory
+   * @param nodeIDs list of node IDs
+   * @param stagingDir full path to the staging directory
+   * @param releaseTag release version
+   * @param force force flag
+   * @param chainId chain ID
+   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
+   */
+  taskPrepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
     const self = this
-    try {
-      if (!fs.existsSync(stagingDir)) {
-        fs.mkdirSync(stagingDir, { recursive: true })
+    const configTxtPath = `${stagingDir}/config.txt`
+
+    return new Listr([
+      {
+        title: 'Copy templates',
+        task: () => {
+          if (!fs.existsSync(stagingDir)) {
+            fs.mkdirSync(stagingDir, { recursive: true })
+          }
+
+          fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
+        }
+      },
+      {
+        title: 'Prepare config.txt',
+        task: () => self.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
       }
-
-      const configTxtPath = `${stagingDir}/config.txt`
-
-      // copy a templates from fsnetman resources directory
-      fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
-
-      // prepare address book
-      await this.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
-      self.logger.debug(`Prepared config.txt: ${configTxtPath}`)
-
-      return true
-    } catch (e) {
-      throw new FullstackTestingError('failed to preparing staging area', e)
+    ],
+    {
+      concurrent: false,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
     }
+    )
   }
 
-  setupInstallTasks (podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
+  /**
+   * Return a list of task to perform node installation
+   * @param podName name of the pod
+   * @param buildZipFile path to the platform build.zip file
+   * @param stagingDir staging directory path
+   * @param force force flag
+   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
+   */
+  taskInstall (podName, buildZipFile, stagingDir, force = false) {
     const self = this
     return new Listr([
       {
@@ -349,15 +373,5 @@ export class PlatformInstaller {
       }
     }
     )
-  }
-
-  async install (podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
-    try {
-      const tasks = this.setupInstallTasks(podName, buildZipFile, stagingDir, force, homeDir)
-      await tasks.run()
-      return true
-    } catch (e) {
-      throw new FullstackTestingError('Failed to install', e)
-    }
   }
 }
