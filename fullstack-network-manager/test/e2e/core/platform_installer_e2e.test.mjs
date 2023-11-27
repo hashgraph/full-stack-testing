@@ -92,7 +92,7 @@ describe('PackageInstallerE2E', () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
       const configPath = `${tmpDir}/config.txt`
       const nodeIDs = ['node0', 'node1', 'node2']
-      const releaseTag = 'v0.42.0x'
+      const releaseTag = 'v0.42.0'
 
       const ctx = await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
       expect(ctx).not.toBeNull()
