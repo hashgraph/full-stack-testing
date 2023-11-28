@@ -2,11 +2,6 @@
 CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 source "${CUR_DIR}/env.sh"
 
-start_time=$(date +%s)
-TMP_DIR="${SCRIPT_DIR}/../temp"
-
-readonly start_time TMP_DIR
-
 # load .env file
 set -a
 # shellcheck source=./../temp/.env
@@ -33,9 +28,11 @@ readonly NMT_INSTALLER_PATH="${NMT_INSTALLER_DIR}/${NMT_INSTALLER}"
 readonly NMT_PROFILE="jrs" # we only allow jrs profile
 
 readonly PLATFORM_VERSION="${PLATFORM_VERSION:-v0.39.1}"
+readonly MINOR_VERSION=$(parse_minor_version "${PLATFORM_VERSION}")
 readonly PLATFORM_INSTALLER="build-${PLATFORM_VERSION}.zip"
 readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
+readonly PLATFORM_INSTALLER_URL=$(prepare_platform_software_URL "${PLATFORM_VERSION}")
 
 readonly OPENJDK_VERSION="${OPENJDK_VERSION:-17.0.2}"
 
@@ -63,28 +60,30 @@ function fetch_nmt() {
     return "${EX_OK}"
   fi
 
-  #  echo "NMT Release URL: ${NMT_RELEASE_URL}"
-  #  NMT_DOWNLOAD_URL=$(curl -sL \
-  #                       -H "Accept: application/vnd.github+json" \
-  #                       -H "Authorization: Bearer ${GITHUB_TOKEN}"\
-  #                       -H "X-GitHub-Api-Version: 2022-11-28" \
-  #                    "${NMT_RELEASE_URL}" | jq ".assets[0] | .url" | sed 's/\"//g')
-  #  echo "NMT Download URL: ${NMT_DOWNLOAD_URL}"
-  #  echo "Downloading NMT..."
-  #  curl -L \
-  #    -H 'Accept: application/octet-stream' \
-  #    -H "Authorization: Bearer ${GITHUB_TOKEN}"\
-  #    -H "X-GitHub-Api-Version: 2022-11-28" \
-  #    "${NMT_DOWNLOAD_URL}" -o "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
+  mkdir -p "${NMT_INSTALLER_DIR}"
 
-  gsutil cp "gs://fst-resources/nmt/${NMT_INSTALLER}" "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
+  # fetch nmt version.properties file to find the actual release file name
+  local release_dir=$(parse_release_dir "${NMT_VERSION}")
+  local nmt_version_url="https://builds.hedera.com/node/mgmt-tools/${release_dir}/version.properties"
+  echo "NMT version.properties URL: ${nmt_version_url}"
+  curl -L "${nmt_version_url}" -o "${NMT_INSTALLER_DIR}/version.properties" || return "${EX_ERR}"
+  cat "${NMT_INSTALLER_DIR}/version.properties"
+
+  # parse version.properties file to determine the actual URL
+  local nmt_release_file=$(grep "^${NMT_VERSION}" "${NMT_INSTALLER_DIR}/version.properties"|cut -d'=' -f2)
+  local nmt_release_url="https://builds.hedera.com/node/mgmt-tools/${release_dir}/${nmt_release_file}"
+  echo "NMT release URL: ${nmt_release_url}"
+  curl -L "${nmt_release_url}" -o "${NMT_INSTALLER_PATH}" || return "${EX_ERR}"
+  ls -la "${NMT_INSTALLER_DIR}"
+
   return "${EX_OK}"
 }
 
 # Fetch platform build.zip file
 function fetch_platform_build() {
   echo ""
-  echo "Fetching Platform ${PLATFORM_VERSION}"
+  echo "Fetching Platform ${PLATFORM_VERSION}: ${PLATFORM_INSTALLER_URL}"
+  echo "Local path: ${PLATFORM_INSTALLER_PATH}"
   echo "-----------------------------------------------------------------------------------------------------"
 
   if [[ -f "${PLATFORM_INSTALLER_PATH}" ]]; then
@@ -92,7 +91,8 @@ function fetch_platform_build() {
     return "${EX_OK}"
   fi
 
-  gsutil cp "gs://fst-resources/platform/${PLATFORM_INSTALLER}" "${PLATFORM_INSTALLER_PATH}" || return "${EX_ERR}"
+  mkdir -p "${PLATFORM_INSTALLER_DIR}"
+  curl -L "${PLATFORM_INSTALLER_URL}" -o "${PLATFORM_INSTALLER_PATH}" || return "${EX_ERR}"
   return "${EX_OK}"
 }
 
@@ -285,15 +285,11 @@ function copy_node_keys() {
 
 # prepare address book using all nodes pod IP and store as config.txt
 function prep_address_book() {
-  IFS=. read -a VERSION_PARTS <<< "$PLATFORM_VERSION"
-  local MINOR_VERSION=${VERSION_PARTS[1]}
-
   echo ""
   echo "Preparing address book"
-  echo "PLATFORM_VERSION [ MAJOR: ${VERSION_PARTS[0]}, MINOR=${VERSION_PARTS[1]}, PATCH=${VERSION_PARTS[2]} ]"
+  echo "Platform version: ${PLATFORM_VERSION}"
+  echo "Minor version: ${MINOR_VERSION}"
   echo "-----------------------------------------------------------------------------------------------------"
-
-
 
   local config_file="${TMP_DIR}/config.txt"
   local node_IP=""
@@ -433,6 +429,12 @@ function copy_config_files() {
   for file in "${files[@]}"; do
     copy_files "${pod}" "${srcDir}" "${file}" "${dstDir}" || return "${EX_ERR}"
   done
+
+  # create gc.log file since otherwise node doesn't start when using older NMT releases (e.g. v1.2.2)
+  "${KCTL}" exec  "${pod}" -c root-container -- touch "${HAPI_PATH}/gc.log" || return "${EX_ERR}"
+  set_permission "${pod}" "${HAPI_PATH}/gc.log"
+
+
 
   return "${EX_OK}"
 }

@@ -44,20 +44,23 @@ jobs:
       enable-spotless-check: true
 
   unit-tests:
-    name: Unit Tests
+    name: FST Java Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
       enable-unit-tests: true
 
-  nodejs-tests:
-    name: NodeJS CLI Tests
-    uses: ./.github/workflows/zxc-compile-code.yaml
+  chart-tests:
+    name: FS Helm Chart Tests
+    uses: ./.github/workflows/zxc-helm-chart-tests.yaml
     with:
       custom-job-label: Standard
-      enable-unit-tests: false
-      enable-nodejs-tests: true
-      node-version: 18
+
+  fsnetman-tests:
+    name: FS Network Manager Tests
+    uses: ./.github/workflows/zxc-fsnetman-tests.yaml
+    with:
+      custom-job-label: Standard
 
   codecov:
     name: CodeCov
