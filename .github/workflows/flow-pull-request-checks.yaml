@@ -44,20 +44,20 @@ jobs:
       enable-spotless-check: true
 
   unit-tests:
-    name: FST Unit Tests
+    name: FST Java Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
       custom-job-label: Standard
       enable-unit-tests: true
 
   chart-tests:
-    name: FST Helm Chart Tests
+    name: FS Helm Chart Tests
     uses: ./.github/workflows/zxc-helm-chart-tests.yaml
     with:
       custom-job-label: Standard
 
   fsnetman-tests:
-    name: fsnetman Tests
+    name: FS Network Manager Tests
     uses: ./.github/workflows/zxc-fsnetman-tests.yaml
     with:
       custom-job-label: Standard
