@@ -1,9 +1,9 @@
-import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
-import chalk from 'chalk'
 import * as fs from 'fs'
+import { Listr } from 'listr2'
+import * as path from 'path'
+import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
 import { constants } from './index.mjs'
 import { Templates } from './templates.mjs'
-import * as path from 'path'
 
 /**
  * PlatformInstaller install platform code in the root-container of a network pod
@@ -90,7 +90,7 @@ export class PlatformInstaller {
 
       return true
     } catch (e) {
-      throw new FullstackTestingError('failed to copy platform code into pods', e)
+      throw new FullstackTestingError(`failed to copy platform code to pod '${podName}'`, e)
     }
   }
 
@@ -291,57 +291,87 @@ export class PlatformInstaller {
     }
   }
 
-  async prepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
+  /**
+   * Return a lit of task to prepare the staging directory
+   * @param nodeIDs list of node IDs
+   * @param stagingDir full path to the staging directory
+   * @param releaseTag release version
+   * @param force force flag
+   * @param chainId chain ID
+   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
+   */
+  taskPrepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
     const self = this
-    try {
-      if (!fs.existsSync(stagingDir)) {
-        fs.mkdirSync(stagingDir, { recursive: true })
+    const configTxtPath = `${stagingDir}/config.txt`
+
+    return new Listr([
+      {
+        title: 'Copy templates',
+        task: () => {
+          if (!fs.existsSync(stagingDir)) {
+            fs.mkdirSync(stagingDir, { recursive: true })
+          }
+
+          fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
+        }
+      },
+      {
+        title: 'Prepare config.txt',
+        task: () => self.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
       }
-
-      const configTxtPath = `${stagingDir}/config.txt`
-
-      // copy a templates from fsnetman resources directory
-      fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
-
-      // prepare address book
-      await this.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
-      self.logger.showUser(chalk.green('OK'), `Prepared config.txt: ${configTxtPath}`)
-
-      return true
-    } catch (e) {
-      throw new FullstackTestingError('failed to preparing staging area', e)
+    ],
+    {
+      concurrent: false,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
     }
+    )
   }
 
-  async install (podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
-    try {
-      this.logger.showUser(constants.LOG_GROUP_DIVIDER)
-      this.logger.showUser(chalk.cyan(`Installing platform to ${podName}`))
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying platform: ${buildZipFile} ...`)
-      await this.copyPlatform(podName, buildZipFile)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying gossip keys ...`)
-      await this.copyGossipKeys(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied gossip keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying TLS keys ...`)
-      await this.copyTLSKeys(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied TLS keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying auxiliary config files ...`)
-      await this.copyPlatformConfigFiles(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied auxiliary config keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Setting file permissions ...`)
-      await this.setPlatformDirPermissions(podName)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Set file permissions`)
-
-      return true
-    } catch (e) {
-      this.logger.showUserError(e)
-      throw e
+  /**
+   * Return a list of task to perform node installation
+   * @param podName name of the pod
+   * @param buildZipFile path to the platform build.zip file
+   * @param stagingDir staging directory path
+   * @param force force flag
+   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
+   */
+  taskInstall (podName, buildZipFile, stagingDir, force = false) {
+    const self = this
+    return new Listr([
+      {
+        title: 'Copy platform',
+        task: (_, task) =>
+          self.copyPlatform(podName, buildZipFile)
+      },
+      {
+        title: 'Copy Gossip keys',
+        task: (_, task) =>
+          self.copyGossipKeys(podName, stagingDir)
+      },
+      {
+        title: 'Copy TLS keys',
+        task: (_, task) =>
+          self.copyTLSKeys(podName, stagingDir)
+      },
+      {
+        title: 'Copy configuration files',
+        task: (_, task) =>
+          self.copyPlatformConfigFiles(podName, stagingDir)
+      },
+      {
+        title: 'Set file permissions',
+        task: (_, task) =>
+          self.setPlatformDirPermissions(podName)
+      }
+    ],
+    {
+      concurrent: false,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
     }
+    )
   }
 }

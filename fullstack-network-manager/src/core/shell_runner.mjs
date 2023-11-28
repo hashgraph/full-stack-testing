@@ -15,6 +15,7 @@ export class ShellRunner {
   async run (cmd) {
     const self = this
     const callStack = new Error().stack // capture the callstack to be included in error
+    self.logger.debug(`Executing command: '${cmd}'`)
 
     return new Promise((resolve, reject) => {
       const child = spawn(cmd, {
@@ -53,7 +54,7 @@ export class ShellRunner {
           reject(err)
         }
 
-        self.logger.debug(cmd, { commandExitCode: code, commandExitSignal: signal, commandOutput: output })
+        self.logger.debug(`Finished executing: '${cmd}'`, { commandExitCode: code, commandExitSignal: signal, commandOutput: output })
         resolve(output)
       })
     })
