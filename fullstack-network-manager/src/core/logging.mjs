@@ -1,5 +1,5 @@
 import * as winston from 'winston'
-import { constants } from './constants.mjs'
+import { constants } from './index.mjs'
 import { v4 as uuidv4 } from 'uuid'
 import * as util from 'util'
 import chalk from 'chalk'

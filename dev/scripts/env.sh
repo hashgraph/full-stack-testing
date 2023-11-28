@@ -74,9 +74,32 @@ function setup() {
     load_env_file
 }
 
+function parse_minor_version() {
+  local platform_version="$1"
+  IFS=. read -a VERSION_PARTS <<< "$platform_version"
+  local minor_version=${VERSION_PARTS[1]}
+  echo "${minor_version}"
+}
+
+function parse_release_dir() {
+  local platform_version="$1"
+  IFS=. read -a VERSION_PARTS <<< "$platform_version"
+  local release_dir="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}"
+  echo "${release_dir}"
+}
+
+function prepare_platform_software_URL() {
+    local platform_version="$1"
+    local release_dir=$(parse_release_dir "${platform_version}")
+
+    # https://builds.hedera.com/node/software/v0.40/build-v0.40.0.zip
+    local platform_url="https://builds.hedera.com/node/software/${release_dir}/build-${platform_version}.zip"
+    echo "${platform_url}"
+}
+
+
 # ----------------------------- Setup ENV Variables -------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-readonly SCRIPT_DIR
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly CLUSTER_SETUP_VALUES_FILE="${TMP_DIR}/cluster-values.yaml"
 load_env_file

@@ -28,11 +28,6 @@ on:
         type: boolean
         required: false
         default: false
-      enable-nodejs-tests:
-        description: "NodeJS Testing Enabled"
-        type: boolean
-        required: false
-        default: false
       enable-spotless-check:
         description: "Spotless Check Enabled"
         type: boolean
@@ -102,7 +97,7 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -114,7 +109,7 @@ jobs:
 
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
-        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           config: dev/dev-cluster.yaml
           version: v0.19.0
@@ -123,13 +118,13 @@ jobs:
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
-        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           version: "v3.12.3" #  helm version
 
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
-        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
           kubectl config get-contexts
           kubectl get crd
@@ -139,8 +134,8 @@ jobs:
       # May be removed once the artifacts are publicly accessible.
       - name: Authenticate to Google Cloud
         id: google-auth
-        uses: google-github-actions/auth@35b0e87d162680511bf346c299f71c9c5c379033 # v1.1.1
-        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        uses: google-github-actions/auth@f105ef0cdb3b102a020be1767fcc8a974898b7c6 # v1.2.0
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           token_format: 'access_token'
           workload_identity_provider: "projects/101730247931/locations/global/workloadIdentityPools/hedera-registry-pool/providers/hedera-registry-gh-actions"
@@ -152,43 +147,9 @@ jobs:
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         uses: google-github-actions/setup-gcloud@e30db14379863a8c79331b04a9969f4c1e225e0b # v1.1.1
 
-      - name: NodeJS CLI Unit Tests
-        id: nodejs-test
-        working-directory: fullstack-network-manager
-        if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
-        run: |
-          npm i
-          npm test
-
-      - name: NodeJS CLI E2E Tests
-        id: nodejs-test-e2e
-        working-directory: fullstack-network-manager
-        if: ${{ inputs.enable-nodejs-tests && !cancelled() && !failure() }}
-        run: |
-          export DEV_MODE=true
-          npm i
-          npm link
-          fsnetman init -d ../charts
-          fsnetman cluster create
-          fsnetman cluster setup
-          fsnetman chart install
-          npm run test-e2e
-
-      # This step tests the Helm chart direct mode of operation which uses the ubi8-init-java17 image.
-      - name: Helm Chart Test (Direct Install)
-        working-directory: dev
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make ci-test SCRIPT_NAME=direct-install.sh
-
-      # This step tests the Helm chart NMT mode of operation which uses the ubi8-init-dind image.
-      - name: Helm Chart Test (NMT Install)
-        working-directory: dev
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: make ci-test SCRIPT_NAME=nmt-install.sh
-
       - name: Compile
         id: gradle-build
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -196,7 +157,7 @@ jobs:
 
       - name: Examples Compile
         id: gradle-build-examples
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -205,7 +166,7 @@ jobs:
 
       - name: Gradle Plugin Compile
         id: gradle-build-gradle-plugin
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -213,14 +174,14 @@ jobs:
           build-root-directory: fullstack-gradle-plugin
 
       - name: Spotless Check
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-spotless-check && steps.gradle-build.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: spotlessCheck --scan
 
       - name: Examples Spotless Check
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-spotless-check && steps.gradle-build-examples.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -228,7 +189,7 @@ jobs:
           build-root-directory: fullstack-examples
 
       - name: Gradle Plugin Spotless Check
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-spotless-check && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -237,7 +198,7 @@ jobs:
 
       # This step is to cache the helm charts before we start unit tests
       - name: Setup Helm Charts
-        if: ${{ (inputs.enable-unit-tests || inputs.enable-nodejs-tests) && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
           helm repo add haproxytech https://haproxytech.github.io/helm-charts
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -245,7 +206,7 @@ jobs:
 
       - name: Unit Tests
         id: gradle-test
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -253,7 +214,7 @@ jobs:
 
       - name: Examples Unit Tests
         id: gradle-test-examples
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build-examples.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -262,7 +223,7 @@ jobs:
 
       - name: Gradle Plugin Unit Tests
         id: gradle-test-gradle-plugin
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -281,7 +242,7 @@ jobs:
       # Technically, this step is not required since the Gradle check task implicitly includes it but is executed again
       # here to prevent failures if future modules are not wired properly.
       - name: Jacoco Coverage Report
-        uses: gradle/gradle-build-action@842c587ad8aa4c68eeba24c396e15af4c2e9f30a # v2.9.0
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}

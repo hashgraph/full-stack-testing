@@ -1,4 +1,4 @@
-import { constants } from './constants.mjs'
+import { constants } from './index.mjs'
 import chalk from 'chalk'
 import { FullstackTestingError } from './errors.mjs'
 
@@ -12,15 +12,15 @@ export class ChartManager {
   }
 
   /**
-     * Setup chart repositories
-     *
-     * This must be invoked before calling other methods
-     *
-     * @param repoURLs a map of name and chart repository URLs
-     * @param force whether or not to update the repo
-     * @returns {Promise<string[]>}
-     */
-  async setup (repoURLs = new Map().set('full-stack-testing', constants.FST_CHART_REPO_URL), force = true) {
+   * Setup chart repositories
+   *
+   * This must be invoked before calling other methods
+   *
+   * @param repoURLs a map of name and chart repository URLs
+   * @param force whether or not to update the repo
+   * @returns {Promise<string[]>}
+   */
+  async setup (repoURLs = constants.DEFAULT_CHART_REPO, force = true) {
     try {
       let forceUpdateArg = ''
       if (force) {
@@ -41,12 +41,12 @@ export class ChartManager {
   }
 
   /**
-     * List available clusters
-     * @returns {Promise<string[]>}
-     */
+   * List available clusters
+   * @returns {Promise<string[]>}
+   */
   async getInstalledCharts (namespaceName) {
     try {
-      return await this.helm.list(`-n ${namespaceName}`, '--no-headers | awk \'{print $9}\'')
+      return await this.helm.list(`-n ${namespaceName}`, '--no-headers | awk \'{print $1 " [" $9"]"}\'')
     } catch (e) {
       this.logger.showUserError(e)
     }
@@ -58,11 +58,21 @@ export class ChartManager {
     try {
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
       if (!isInstalled) {
+        let versionArg = ''
+        if (version) {
+          versionArg = `--version ${version}`
+        }
+
+        let namespaceArg = ''
+        if (namespaceName) {
+          namespaceArg = `-n ${namespaceName}`
+        }
+
         this.logger.showUser(chalk.cyan('> installing chart:'), chalk.yellow(`${chartPath}`))
-        await this.helm.install(`${chartName} ${chartPath} --version ${version} -n ${namespaceName} ${valuesArg}`)
-        this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is installed`)
+        await this.helm.install(`${chartName} ${chartPath} ${versionArg} ${namespaceArg} ${valuesArg}`)
+        this.logger.showUser(chalk.green('OK'), 'chart is installed:', chalk.yellow(`${chartName} (${chartPath})`))
       } else {
-        this.logger.showUser(chalk.green('OK'), `chart '${chartPath}' is already installed`)
+        this.logger.showUser(chalk.green('OK'), 'chart is already installed:', chalk.yellow(`${chartName} (${chartPath})`))
       }
 
       return true
@@ -76,7 +86,8 @@ export class ChartManager {
   async isChartInstalled (namespaceName, chartName) {
     const charts = await this.getInstalledCharts(namespaceName)
     for (const item of charts) {
-      if (item.startsWith(chartName)) return true
+      const n = item.split(' [')
+      if (chartName === n[0]) return true
     }
 
     return false
@@ -84,14 +95,14 @@ export class ChartManager {
 
   async uninstall (namespaceName, chartName) {
     try {
-      this.logger.showUser(chalk.cyan('> checking chart:'), chalk.yellow(`${chartName}`))
+      this.logger.showUser(chalk.cyan('> checking chart release:'), chalk.yellow(`${chartName}`))
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
       if (isInstalled) {
-        this.logger.showUser(chalk.cyan('> uninstalling chart:'), chalk.yellow(`${chartName}`))
+        this.logger.showUser(chalk.cyan('> uninstalling chart release:'), chalk.yellow(`${chartName}`))
         await this.helm.uninstall(`-n ${namespaceName} ${chartName}`)
-        this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is uninstalled`)
+        this.logger.showUser(chalk.green('OK'), 'chart release is uninstalled:', chalk.yellow(chartName))
       } else {
-        this.logger.showUser(chalk.green('OK'), `chart '${chartName}' is already uninstalled`)
+        this.logger.showUser(chalk.green('OK'), 'chart release is already uninstalled:', chalk.yellow(chartName))
       }
 
       return true

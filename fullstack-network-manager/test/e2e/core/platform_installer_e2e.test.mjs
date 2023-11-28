@@ -48,7 +48,7 @@ describe('PackageInstallerE2E', () => {
       try {
         packageFile = await downloader.fetchPlatform(packageTag, testCacheDir)
         await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
-        const outputs = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HAPI_PATH}`)
+        const outputs = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
         testLogger.showUser(outputs)
       } catch (e) {
         console.error(e)
@@ -63,12 +63,13 @@ describe('PackageInstallerE2E', () => {
       const configPath = `${tmpDir}/config.txt`
       const nodeIDs = ['node0', 'node1', 'node2']
       const releaseTag = 'v0.42.0'
+      const chainId = '299'
 
-      const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag)
+      const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag, chainId)
 
       // verify format is correct
       expect(configLines.length).toBe(6)
-      expect(configLines[0]).toBe(`swirld, ${constants.CLUSTER_NAME}`)
+      expect(configLines[0]).toBe(`swirld, ${chainId}`)
       expect(configLines[1]).toBe(`app, ${constants.HEDERA_APP_JAR}`)
       expect(configLines[2]).toContain('address, 0, node0, node0, 1')
       expect(configLines[3]).toContain('address, 1, node1, node1, 1')
@@ -93,7 +94,7 @@ describe('PackageInstallerE2E', () => {
       const nodeIDs = ['node0', 'node1', 'node2']
       const releaseTag = 'v0.42.0'
 
-      await expect(installer.prepareStaging(nodeIDs, tmpDir, releaseTag)).resolves.toBeTruthy()
+      await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
 
       // verify the config.txt exists
       expect(fs.existsSync(configPath)).toBeTruthy()
@@ -113,8 +114,8 @@ describe('PackageInstallerE2E', () => {
 
       const fileList = await installer.copyGossipKeys(podName, stagingDir)
       expect(fileList.length).toBe(2)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/keys/private-node0.pfx`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/keys/public.pfx`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/private-node0.pfx`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/public.pfx`)
     })
 
     it('should succeed to copy gossip keys for node1', async () => {
@@ -124,8 +125,8 @@ describe('PackageInstallerE2E', () => {
 
       const fileList = await installer.copyGossipKeys(podName, stagingDir)
       expect(fileList.length).toBe(2)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/keys/private-node1.pfx`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/keys/public.pfx`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/private-node1.pfx`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/public.pfx`)
     })
   })
 
@@ -138,8 +139,8 @@ describe('PackageInstallerE2E', () => {
       const fileList = await installer.copyTLSKeys(podName, stagingDir)
       expect(fileList.length).toBe(3) // [data , hedera.crt, hedera.key]
       expect(fileList.length).toBeGreaterThanOrEqual(2)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/hedera.crt`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/hedera.key`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.crt`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.key`)
     })
 
     it('should succeed to copy TLS keys for node1', async () => {
@@ -149,8 +150,8 @@ describe('PackageInstallerE2E', () => {
 
       const fileList = await installer.copyTLSKeys(podName, stagingDir)
       expect(fileList.length).toBe(3) // [data , hedera.crt, hedera.key]
-      expect(fileList).toContain(`${constants.HAPI_PATH}/hedera.crt`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/hedera.key`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.crt`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.key`)
     })
   })
 
@@ -162,16 +163,17 @@ describe('PackageInstallerE2E', () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
       const nodeIDs = ['node0']
       const releaseTag = 'v0.42.0'
-      await installer.prepareStaging(nodeIDs, tmpDir, releaseTag)
+
+      await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
 
       const fileList = await installer.copyPlatformConfigFiles(podName, tmpDir)
       expect(fileList.length).toBeGreaterThanOrEqual(6)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/config.txt`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/log4j2.xml`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/settings.txt`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/api-permission.properties`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/application.properties`)
-      expect(fileList).toContain(`${constants.HAPI_PATH}/data/config/bootstrap.properties`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/config.txt`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/log4j2.xml`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/settings.txt`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/config/api-permission.properties`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/config/application.properties`)
+      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/config/bootstrap.properties`)
       fs.rmSync(tmpDir, { recursive: true })
     }, 10000)
   })

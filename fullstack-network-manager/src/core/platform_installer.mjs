@@ -1,9 +1,9 @@
-import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
-import chalk from 'chalk'
 import * as fs from 'fs'
-import { constants } from './constants.mjs'
-import { Templates } from './templates.mjs'
+import { Listr } from 'listr2'
 import * as path from 'path'
+import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
+import { constants } from './index.mjs'
+import { Templates } from './templates.mjs'
 
 /**
  * PlatformInstaller install platform code in the root-container of a network pod
@@ -22,18 +22,18 @@ export class PlatformInstaller {
 
     try {
       // reset HAPI_PATH
-      await this.kubectl.execContainer(podName, containerName, `rm -rf ${constants.HGCAPP_SERVICES_HEDERA_PATH}`)
+      await this.kubectl.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}`)
 
       const paths = [
-        `${constants.HAPI_PATH}/data/keys`,
-        `${constants.HAPI_PATH}/data/config`
+        `${constants.HEDERA_HAPI_PATH}/data/keys`,
+        `${constants.HEDERA_HAPI_PATH}/data/config`
       ]
 
       for (const p of paths) {
         await this.kubectl.execContainer(podName, containerName, `mkdir -p ${p}`)
       }
 
-      await this.setPathPermission(podName, constants.HGCAPP_SERVICES_HEDERA_PATH)
+      await this.setPathPermission(podName, constants.HEDERA_SERVICES_PATH)
 
       return true
     } catch (e) {
@@ -48,27 +48,27 @@ export class PlatformInstaller {
     }
 
     const dataDir = `${releaseDir}/data`
-    const appsDir = `${releaseDir}/${constants.DATA_APPS_DIR}`
-    const libDir = `${releaseDir}/${constants.DATA_LIB_DIR}`
+    const appsDir = `${releaseDir}/${constants.HEDERA_DATA_APPS_DIR}`
+    const libDir = `${releaseDir}/${constants.HEDERA_DATA_LIB_DIR}`
 
     if (!fs.existsSync(dataDir)) {
       throw new IllegalArgumentError('releaseDir does not have data directory', releaseDir)
     }
 
     if (!fs.existsSync(appsDir)) {
-      throw new IllegalArgumentError(`'${constants.DATA_APPS_DIR}' missing in '${releaseDir}'`, releaseDir)
+      throw new IllegalArgumentError(`'${constants.HEDERA_DATA_APPS_DIR}' missing in '${releaseDir}'`, releaseDir)
     }
 
     if (!fs.existsSync(libDir)) {
-      throw new IllegalArgumentError(`'${constants.DATA_LIB_DIR}' missing in '${releaseDir}'`, releaseDir)
+      throw new IllegalArgumentError(`'${constants.HEDERA_DATA_LIB_DIR}' missing in '${releaseDir}'`, releaseDir)
     }
 
-    if (!fs.statSync(`${releaseDir}/data/apps`).isEmpty()) {
-      throw new IllegalArgumentError(`'${constants.DATA_APPS_DIR}' is empty in releaseDir: ${releaseDir}`, releaseDir)
+    if (!fs.statSync(appsDir).isEmpty()) {
+      throw new IllegalArgumentError(`'${constants.HEDERA_DATA_APPS_DIR}' is empty in releaseDir: ${releaseDir}`, releaseDir)
     }
 
-    if (!fs.statSync(`${releaseDir}/data/lib`).isEmpty()) {
-      throw new IllegalArgumentError(`'${constants.DATA_LIB_DIR}' is empty in releaseDir: ${releaseDir}`, releaseDir)
+    if (!fs.statSync(libDir).isEmpty()) {
+      throw new IllegalArgumentError(`'${constants.HEDERA_DATA_LIB_DIR}' is empty in releaseDir: ${releaseDir}`, releaseDir)
     }
   }
 
@@ -86,11 +86,11 @@ export class PlatformInstaller {
 
       await this.setupHapiDirectories(podName)
       await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER,
-        `cd ${constants.HAPI_PATH} && jar xvf /home/hedera/build-*`)
+        `cd ${constants.HEDERA_HAPI_PATH} && jar xvf /home/hedera/build-*`)
 
       return true
     } catch (e) {
-      throw new FullstackTestingError('failed to copy platform code into pods', e)
+      throw new FullstackTestingError(`failed to copy platform code to pod '${podName}'`, e)
     }
   }
 
@@ -125,7 +125,7 @@ export class PlatformInstaller {
     if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
 
     try {
-      const keysDir = `${constants.HAPI_PATH}/data/keys`
+      const keysDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
       const nodeId = Templates.extractNodeIdFromPodName(podName)
       const srcFiles = [
         `${stagingDir}/templates/node-keys/private-${nodeId}.pfx`,
@@ -151,7 +151,7 @@ export class PlatformInstaller {
         `${stagingDir}/templates/settings.txt`
       ]
 
-      const fileList1 = await self.copyFiles(podName, srcFilesSet1, constants.HAPI_PATH)
+      const fileList1 = await self.copyFiles(podName, srcFilesSet1, constants.HEDERA_HAPI_PATH)
 
       const srcFilesSet2 = [
         `${stagingDir}/templates/properties/api-permission.properties`,
@@ -159,7 +159,7 @@ export class PlatformInstaller {
         `${stagingDir}/templates/properties/bootstrap.properties`
       ]
 
-      const fileList2 = await self.copyFiles(podName, srcFilesSet2, `${constants.HAPI_PATH}/data/config`)
+      const fileList2 = await self.copyFiles(podName, srcFilesSet2, `${constants.HEDERA_HAPI_PATH}/data/config`)
 
       return fileList1.concat(fileList2)
     } catch (e) {
@@ -174,7 +174,7 @@ export class PlatformInstaller {
     if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
 
     try {
-      const destDir = constants.HAPI_PATH
+      const destDir = constants.HEDERA_HAPI_PATH
       const srcFiles = [
         `${stagingDir}/templates/hedera.key`,
         `${stagingDir}/templates/hedera.crt`
@@ -206,7 +206,7 @@ export class PlatformInstaller {
 
     try {
       const destPaths = [
-        constants.HAPI_PATH
+        constants.HEDERA_HAPI_PATH
       ]
 
       for (const destPath of destPaths) {
@@ -225,9 +225,10 @@ export class PlatformInstaller {
    * @param destPath path where config.txt should be written
    * @param releaseTag release tag e.g. v0.42.0
    * @param template path to the confit.template file
+   * @param chainId chain ID (298 for local network)
    * @returns {Promise<unknown>}
    */
-  async prepareConfigTxt (nodeIDs, destPath, releaseTag, template = `${constants.RESOURCES_DIR}/templates/config.template`) {
+  async prepareConfigTxt (nodeIDs, destPath, releaseTag, chainId = constants.HEDERA_CHAIN_ID, template = `${constants.RESOURCES_DIR}/templates/config.template`) {
     const self = this
 
     if (!nodeIDs || nodeIDs.length === 0) throw new MissingArgumentError('list of node IDs is required')
@@ -242,7 +243,7 @@ export class PlatformInstaller {
     const accountIdStart = process.env.FST_NODE_ACCOUNT_ID_START || '3'
     const internalPort = process.env.FST_NODE_INTERNAL_GOSSIP_PORT || '50111'
     const externalPort = process.env.FST_NODE_EXTERNAL_GOSSIP_PORT || '50111'
-    const ledgerName = process.env.FST_LEDGER_NAME || constants.CLUSTER_NAME
+    const ledgerId = process.env.FST_CHAIN_ID || chainId
     const appName = process.env.FST_HEDERA_APP_NAME || constants.HEDERA_APP_JAR
     const nodeStakeAmount = process.env.FST_NODE_DEFAULT_STAKE_AMOUNT || constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 
@@ -252,7 +253,7 @@ export class PlatformInstaller {
 
     try {
       const configLines = []
-      configLines.push(`swirld, ${ledgerName}`)
+      configLines.push(`swirld, ${ledgerId}`)
       configLines.push(`app, ${appName}`)
 
       let nodeSeq = 0
@@ -290,57 +291,87 @@ export class PlatformInstaller {
     }
   }
 
-  async prepareStaging (nodeIDs, stagingDir, releaseTag, force = false) {
+  /**
+   * Return a lit of task to prepare the staging directory
+   * @param nodeIDs list of node IDs
+   * @param stagingDir full path to the staging directory
+   * @param releaseTag release version
+   * @param force force flag
+   * @param chainId chain ID
+   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
+   */
+  taskPrepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
     const self = this
-    try {
-      if (!fs.existsSync(stagingDir)) {
-        fs.mkdirSync(stagingDir, { recursive: true })
+    const configTxtPath = `${stagingDir}/config.txt`
+
+    return new Listr([
+      {
+        title: 'Copy templates',
+        task: () => {
+          if (!fs.existsSync(stagingDir)) {
+            fs.mkdirSync(stagingDir, { recursive: true })
+          }
+
+          fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
+        }
+      },
+      {
+        title: 'Prepare config.txt',
+        task: () => self.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
       }
-
-      const configTxtPath = `${stagingDir}/config.txt`
-
-      // copy a templates from fsnetman resources directory
-      fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
-
-      // prepare address book
-      await this.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, `${stagingDir}/templates/config.template`)
-      self.logger.showUser(chalk.green('OK'), `Prepared config.txt: ${configTxtPath}`)
-
-      return true
-    } catch (e) {
-      throw new FullstackTestingError('failed to preparing staging area', e)
+    ],
+    {
+      concurrent: false,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
     }
+    )
   }
 
-  async install (podName, buildZipFile, stagingDir, force = false, homeDir = constants.FST_HOME_DIR) {
-    try {
-      this.logger.showUser(constants.LOG_GROUP_DIVIDER)
-      this.logger.showUser(chalk.cyan(`Installing platform to ${podName}`))
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying platform: ${buildZipFile} ...`)
-      await this.copyPlatform(podName, buildZipFile)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied platform into network-node: ${buildZipFile}`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying gossip keys ...`)
-      await this.copyGossipKeys(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied gossip keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying TLS keys ...`)
-      await this.copyTLSKeys(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied TLS keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Copying auxiliary config files ...`)
-      await this.copyPlatformConfigFiles(podName, stagingDir)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Copied auxiliary config keys`)
-
-      this.logger.showUser(constants.LOG_STATUS_PROGRESS, `[POD=${podName}] Setting file permissions ...`)
-      await this.setPlatformDirPermissions(podName)
-      this.logger.showUser(constants.LOG_STATUS_DONE, `[POD=${podName}] Set file permissions`)
-
-      return true
-    } catch (e) {
-      this.logger.showUserError(e)
-      throw e
+  /**
+   * Return a list of task to perform node installation
+   * @param podName name of the pod
+   * @param buildZipFile path to the platform build.zip file
+   * @param stagingDir staging directory path
+   * @param force force flag
+   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
+   */
+  taskInstall (podName, buildZipFile, stagingDir, force = false) {
+    const self = this
+    return new Listr([
+      {
+        title: 'Copy platform',
+        task: (_, task) =>
+          self.copyPlatform(podName, buildZipFile)
+      },
+      {
+        title: 'Copy Gossip keys',
+        task: (_, task) =>
+          self.copyGossipKeys(podName, stagingDir)
+      },
+      {
+        title: 'Copy TLS keys',
+        task: (_, task) =>
+          self.copyTLSKeys(podName, stagingDir)
+      },
+      {
+        title: 'Copy configuration files',
+        task: (_, task) =>
+          self.copyPlatformConfigFiles(podName, stagingDir)
+      },
+      {
+        title: 'Set file permissions',
+        task: (_, task) =>
+          self.setPlatformDirPermissions(podName)
+      }
+    ],
+    {
+      concurrent: false,
+      rendererOptions: {
+        collapseSubtasks: false
+      }
     }
+    )
   }
 }
