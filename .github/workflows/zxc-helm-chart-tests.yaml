@@ -1,0 +1,127 @@
+##
+# Copyright (C) 2023 Hedera Hashgraph, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##
+
+name: "ZXC: FS Helm Chart Tests"
+# The purpose of this reusable workflow is to compile the code and run the unit tests on every PR and commit.
+# This reusable component is called by the following workflows:
+# - .github/workflows/flow-pull-request-checks.yaml
+
+on:
+  workflow_call:
+    inputs:
+      custom-job-label:
+        description: "Custom Job Label:"
+        type: string
+        required: false
+        default: "Helm Chart Test"
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+  pull-requests: write
+  checks: write
+  statuses: write
+
+jobs:
+  test:
+    name: ${{ inputs.custom-job-label || 'Helm Chart Test' }} (${{ matrix.scriptName }})
+    runs-on: [self-hosted, Linux, medium, ephemeral]
+    strategy:
+      fail-fast: false
+      matrix:
+        # direct-install.sh uses ubi8-init-java17 image
+        # nmt-install.sh uses ubi8-init-dind image
+        scriptName: [ direct-install.sh, nmt-install.sh  ]
+    steps:
+      - name: Get changed files related to charts
+        id: changed-files
+        uses: tj-actions/changed-files@25ef3926d147cd02fc7e931c1ef50772bbb0d25d #v40.1.1
+        with:
+          files: |
+            chart:
+              - charts/**
+            scripts:
+              - dev/**
+
+      - name: List all changed files related to charts
+        id: check-changed-files
+        run: |
+          echo "Modified charts files"
+          echo "-------------------------------------------------------------------"
+          for file in ${{ steps.changed-files.outputs.chart_all_changed_files }}; do
+            echo " - ${file} was changed"
+          done
+          echo ""
+          echo "Modified script files"
+          echo "-------------------------------------------------------------------"
+          for file in ${{ steps.changed-files.outputs.script_all_changed_files }}; do
+            echo " - ${file} was changed"
+          done
+          echo ""
+          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
+            echo "run-tests=true" >> "${GITHUB_OUTPUT}"
+            echo "Executing helm chart tests...."
+          else
+            echo ">> No relevant files are changed. No need to run helm chart tests"
+          fi
+
+      - name: Initialize Job Variables
+        id: vars
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout Code
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        with:
+          # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
+          fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
+
+      - name: Setup Kind
+        uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        with:
+          config: dev/dev-cluster.yaml
+          version: v0.19.0
+          verbosity: 3
+          wait: 120s
+
+      - name: Setup Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        with:
+          version: "v3.12.3" #  helm version
+
+      # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
+      - name: Kubernetes Cluster Info
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          kubectl config get-contexts
+          kubectl get crd
+          kubectl get node --show-labels
+
+      - name: Helm Chart Test
+        working-directory: dev
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
+          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
