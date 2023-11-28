@@ -2,6 +2,7 @@ import { ClusterCommand } from './cluster.mjs'
 import { InitCommand } from './init.mjs'
 import { ChartCommand } from './chart.mjs'
 import { NodeCommand } from './node.mjs'
+import { RelayCommand } from './relay.mjs'
 
 /*
  * Return a list of Yargs command builder to be exposed through CLI
@@ -12,12 +13,14 @@ function Initialize (opts) {
   const clusterCmd = new ClusterCommand(opts)
   const chartCmd = new ChartCommand(opts)
   const nodeCmd = new NodeCommand(opts)
+  const relayCmd = new RelayCommand(opts)
 
   return [
     InitCommand.getCommandDefinition(initCmd),
     ClusterCommand.getCommandDefinition(clusterCmd),
     ChartCommand.getCommandDefinition(chartCmd),
-    NodeCommand.getCommandDefinition(nodeCmd)
+    NodeCommand.getCommandDefinition(nodeCmd),
+    RelayCommand.getCommandDefinition(relayCmd)
   ]
 }
 

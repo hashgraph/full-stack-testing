@@ -3,7 +3,7 @@ import * as core from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { IllegalArgumentError, ResourceNotFoundError } from '../../../src/core/errors.mjs'
+import { IllegalArgumentError, MissingArgumentError, ResourceNotFoundError } from '../../../src/core/errors.mjs'
 
 describe('PackageDownloader', () => {
   const testLogger = core.logging.NewLogger('debug')
@@ -50,7 +50,7 @@ describe('PackageDownloader', () => {
         await downloader.fetchFile('INVALID_URL', os.tmpdir())
       } catch (e) {
         expect(e).toBeInstanceOf(IllegalArgumentError)
-        expect(e.message).toBe('source URL is invalid')
+        expect(e.message).toBe("source URL 'INVALID_URL' is invalid")
       }
     })
 
@@ -87,6 +87,18 @@ describe('PackageDownloader', () => {
 
   describe('fetchPlatform', () => {
     it('should fail if platform release tag is missing', async () => {
+      expect.assertions(2)
+
+      try {
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
+        await downloader.fetchPlatform('', tmpDir)
+        fs.rmSync(tmpDir, { recursive: true })
+      } catch (e) {
+        expect(e.cause).not.toBeNull()
+        expect(e).toBeInstanceOf(MissingArgumentError)
+      }
+    })
+    it('should fail if platform release artifact is not found', async () => {
       expect.assertions(2)
 
       const tag = 'v0.40.0-INVALID'

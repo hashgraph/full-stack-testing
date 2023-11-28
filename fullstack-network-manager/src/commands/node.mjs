@@ -72,12 +72,14 @@ export class NodeCommand extends BaseCommand {
     const self = this
     if (!argv.releaseTag && !argv.releaseDir) throw new MissingArgumentError('release-tag or release-dir argument is required')
 
-    const namespace = argv.namespace
-    const force = argv.force
-    const releaseTag = argv.releaseTag
-    const releaseDir = argv.releaseDir
-
     try {
+      const config = await this.configManager.setupConfig(argv)
+      const namespace = this.configManager.flagValue(config, flags.namespace)
+      const force = this.configManager.flagValue(config, flags.force)
+      const releaseTag = this.configManager.flagValue(config, flags.releaseTag)
+      const releaseDir = this.configManager.flagValue(config, flags.platformReleaseDir)
+      const chainId = this.configManager.flagValue(config, flags.chainId)
+
       self.logger.showUser(constants.LOG_GROUP_DIVIDER)
 
       const releasePrefix = Templates.prepareReleasePrefix(releaseTag)
@@ -100,7 +102,7 @@ export class NodeCommand extends BaseCommand {
       self.logger.showUser(chalk.green('OK'), `Platform package: ${buildZipFile}`)
 
       // prepare staging
-      await this.plaformInstaller.prepareStaging(nodeIDs, stagingDir, releaseTag, force)
+      await this.plaformInstaller.prepareStaging(nodeIDs, stagingDir, releaseTag, force, chainId)
 
       // setup
       for (const podName of podNames) {
@@ -173,9 +175,10 @@ export class NodeCommand extends BaseCommand {
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.nodeIDs,
-              flags.platformReleaseTag,
+              flags.releaseTag,
               flags.platformReleaseDir,
-              flags.force
+              flags.force,
+              flags.chainId
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node setup' ===")

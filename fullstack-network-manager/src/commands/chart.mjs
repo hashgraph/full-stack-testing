@@ -1,11 +1,28 @@
 import chalk from 'chalk'
+import { FullstackTestingError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
+import * as paths from 'path'
 import { constants } from '../core/index.mjs'
 
 export class ChartCommand extends BaseCommand {
-  prepareValuesArg (argv, config) {
-    const { valuesFile, mirrorNode, hederaExplorer } = argv
+  prepareValuesFiles (valuesFile) {
+    let valuesArg = ''
+    if (valuesFile) {
+      const valuesFiles = valuesFile.split(',')
+      valuesFiles.forEach(vf => {
+        const vfp = paths.resolve(vf)
+        valuesArg += ` --values ${vfp}`
+      })
+    }
+
+    return valuesArg
+  }
+
+  prepareValuesArg (config) {
+    const valuesFile = this.configManager.flagValue(config, flags.valuesFile)
+    const deployMirrorNode = this.configManager.flagValue(config, flags.deployMirrorNode)
+    const deployHederaExplorer = this.configManager.flagValue(config, flags.deployHederaExplorer)
 
     let valuesArg = ''
     const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
@@ -13,37 +30,20 @@ export class ChartCommand extends BaseCommand {
       valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
     }
 
-    if (valuesFile) {
-      valuesArg += `--values ${valuesFile}`
-    }
+    valuesArg += this.prepareValuesFiles(valuesFile)
 
-    valuesArg += ` --set hedera-mirror-node.enabled=${mirrorNode} --set hedera-explorer.enabled=${hederaExplorer}`
+    valuesArg += ` --set hedera-mirror-node.enabled=${deployMirrorNode} --set hedera-explorer.enabled=${deployHederaExplorer}`
 
     return valuesArg
   }
 
-  async prepareChartPath (config) {
-    const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
-    let chartPath = 'full-stack-testing/fullstack-deployment'
-    if (chartDir) {
-      chartPath = `${chartDir}/fullstack-deployment`
-      await this.helm.dependency('update', chartPath)
-    }
-
-    return chartPath
-  }
-
-  async install (argv) {
+  async installFSTChart (config) {
     try {
-      const namespace = argv.namespace
+      const namespace = this.configManager.flagValue(config, flags.namespace)
+      const valuesArg = this.prepareValuesArg(config)
+      const chartPath = await this.prepareChartPath(config, constants.CHART_FST_REPO_NAME, constants.CHART_FST_DEPLOYMENT_NAME)
 
-      const config = await this.configManager.setupConfig(argv)
-      const valuesArg = this.prepareValuesArg(argv, config)
-      const chartPath = await this.prepareChartPath(config)
-
-      await this.chartManager.install(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
-
-      this.logger.showList('charts', await this.chartManager.getInstalledCharts(namespace))
+      await this.chartManager.install(namespace, constants.CHART_FST_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
 
       this.logger.showUser(chalk.cyan('> waiting for network-node pods to be active (first deployment takes ~10m) ...'))
       await this.kubectl.wait('pod',
@@ -52,7 +52,19 @@ export class ChartCommand extends BaseCommand {
         '--timeout=900s'
       )
       this.logger.showUser(chalk.green('OK'), 'network-node pods are running')
+    } catch (e) {
+      throw new FullstackTestingError(`failed install '${constants.CHART_FST_DEPLOYMENT_NAME}' chart`, e)
+    }
+  }
 
+  async install (argv) {
+    try {
+      const config = await this.configManager.setupConfig(argv)
+      const namespace = this.configManager.flagValue(config, flags.namespace)
+
+      await this.installFSTChart(config)
+
+      this.logger.showList('Deployed Charts', await this.chartManager.getInstalledCharts(namespace))
       return true
     } catch (e) {
       this.logger.showUserError(e)
@@ -64,7 +76,7 @@ export class ChartCommand extends BaseCommand {
   async uninstall (argv) {
     const namespace = argv.namespace
 
-    return await this.chartManager.uninstall(namespace, constants.FST_CHART_DEPLOYMENT_NAME)
+    return await this.chartManager.uninstall(namespace, constants.CHART_FST_DEPLOYMENT_NAME)
   }
 
   async upgrade (argv) {
@@ -74,7 +86,7 @@ export class ChartCommand extends BaseCommand {
     const valuesArg = this.prepareValuesArg(argv, config)
     const chartPath = await this.prepareChartPath(config)
 
-    return await this.chartManager.upgrade(namespace, constants.FST_CHART_DEPLOYMENT_NAME, chartPath, valuesArg)
+    return await this.chartManager.upgrade(namespace, constants.CHART_FST_DEPLOYMENT_NAME, chartPath, valuesArg)
   }
 
   static getCommandDefinition (chartCmd) {
@@ -86,13 +98,16 @@ export class ChartCommand extends BaseCommand {
           .command({
             command: 'install',
             desc: 'Install FST network deployment chart',
-            builder: y => flags.setCommandFlags(y,
-              flags.namespace,
-              flags.deployMirrorNode,
-              flags.deployHederaExplorer,
-              flags.valuesFile,
-              flags.chartDirectory
-            ),
+            builder: y => {
+              flags.setCommandFlags(y,
+                flags.namespace,
+                flags.deployMirrorNode,
+                flags.deployHederaExplorer,
+                flags.deployJsonRpcRelay,
+                flags.valuesFile,
+                flags.chartDirectory
+              )
+            },
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart install' ===")
               chartCmd.logger.debug(argv)

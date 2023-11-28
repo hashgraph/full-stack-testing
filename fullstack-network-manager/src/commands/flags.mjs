@@ -56,7 +56,7 @@ export const deployHederaExplorer = {
 export const valuesFile = {
   name: 'values-file',
   definition: {
-    describe: 'Helm chart values file [ to override defaults ]',
+    describe: 'Comma separated chart values files',
     default: '',
     alias: 'f',
     type: 'string'
@@ -112,10 +112,20 @@ export const deployCertManagerCRDs = {
   }
 }
 
-export const platformReleaseTag = {
+export const deployJsonRpcRelay = {
+  name: 'json-rpc-relay',
+  definition: {
+    describe: 'Deploy JSON RPC Relay',
+    default: false,
+    alias: 'j',
+    type: 'boolean'
+  }
+}
+
+export const releaseTag = {
   name: 'release-tag',
   definition: {
-    describe: 'Platform release tag (e.g. v0.42.4, fetch build-<tag>.zip from https://builds.hedera.com)',
+    describe: 'Release tag to be used (e.g. v0.42.5)',
     default: '',
     alias: 't',
     type: 'string'
@@ -125,7 +135,7 @@ export const platformReleaseTag = {
 export const platformReleaseDir = {
   name: 'release-dir',
   definition: {
-    describe: 'Platform release cache dir (containing release directories named as v<major>.<minor>. e.g. v0.42)',
+    describe: 'Platform release cache (containing release directories named as v<major>.<minor>. e.g. v0.42)',
     default: core.constants.FST_CACHE_DIR,
     alias: 'd',
     type: 'string'
@@ -162,19 +172,63 @@ export const chartDirectory = {
   }
 }
 
+export const replicaCount = {
+  name: 'replica-count',
+  definition: {
+    describe: 'Replica count',
+    default: 1,
+    alias: '',
+    type: 'number'
+  }
+}
+
+export const chainId = {
+  name: 'chain-id',
+  definition: {
+    describe: 'Chain ID',
+    default: '298', // Ref: https://github.com/hashgraph/hedera-json-rpc-relay#configuration
+    type: 'string'
+  }
+}
+
+// Ref: https://github.com/hashgraph/hedera-json-rpc-relay/blob/main/docs/configuration.md
+export const operatorId = {
+  name: 'operator-id',
+  definition: {
+    describe: 'Operator ID',
+    default: '0.0.2',
+    type: 'string'
+  }
+}
+
+// Ref: https://github.com/hashgraph/hedera-json-rpc-relay/blob/main/docs/configuration.md
+export const operatorKey = {
+  name: 'operator-key',
+  definition: {
+    describe: 'Operator Key',
+    default: '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137',
+    type: 'string'
+  }
+}
+
 export const allFlags = [
   clusterName,
   namespace,
   deployMirrorNode,
   deployHederaExplorer,
+  deployJsonRpcRelay,
   valuesFile,
   deployPrometheusStack,
   deployMinio,
   deployEnvoyGateway,
   deployCertManagerCRDs,
-  platformReleaseTag,
+  releaseTag,
   platformReleaseDir,
   nodeIDs,
   force,
-  chartDirectory
+  chartDirectory,
+  replicaCount,
+  chainId,
+  operatorId,
+  operatorKey
 ]

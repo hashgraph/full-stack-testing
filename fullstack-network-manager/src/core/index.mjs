@@ -1,5 +1,5 @@
 import * as logging from './logging.mjs'
-import { constants } from './constants.mjs'
+import * as constants from './constants.mjs'
 import { Kind } from './kind.mjs'
 import { Helm } from './helm.mjs'
 import { Kubectl } from './kubectl.mjs'
