@@ -1,6 +1,6 @@
+import { Listr } from 'listr2'
 import { BaseCommand } from './base.mjs'
 import * as core from '../core/index.mjs'
-import chalk from 'chalk'
 import { constants } from '../core/index.mjs'
 import * as fs from 'fs'
 import { FullstackTestingError } from '../core/errors.mjs'
@@ -11,11 +11,10 @@ import * as flags from './flags.mjs'
  */
 export class InitCommand extends BaseCommand {
   /**
-     * Setup home directories
-     * @param dirs a list of directories that need to be created in sequence
-     * @returns {Promise<void>}
-     */
-  async setupHomeDirectory (dirs = [
+   * Setup home directories
+   * @param dirs a list of directories that need to be created in sequence
+   */
+  setupHomeDirectory (dirs = [
     constants.FST_HOME_DIR,
     constants.FST_LOGS_DIR,
     constants.FST_CACHE_DIR
@@ -27,50 +26,85 @@ export class InitCommand extends BaseCommand {
         if (!fs.existsSync(dirPath)) {
           fs.mkdirSync(dirPath)
         }
-        self.logger.showUser(chalk.green(`OK: setup directory: ${dirPath}`))
+        self.logger.debug(`OK: setup directory: ${dirPath}`)
       })
     } catch (e) {
       this.logger.error(e)
       throw new FullstackTestingError(e.message, e)
     }
+
+    return dirs
   }
 
   /**
-     * Executes the init CLI command
-     * @returns {Promise<boolean>}
-     */
+   * Executes the init CLI command
+   * @returns {Promise<boolean>}
+   */
   async init (argv) {
-    try {
-      await this.setupHomeDirectory()
-      await this.configManager.setupConfig(argv, true)
+    const self = this
 
-      const deps = [
-        core.constants.HELM,
-        core.constants.KIND,
-        core.constants.KUBECTL
-      ]
+    const tasks = new Listr([
+      {
+        title: 'Setup home directory and cache',
+        task: async (ctx, _) => {
+          ctx.dirs = this.setupHomeDirectory()
+        }
+      },
+      {
+        title: 'Setup config manager',
+        task: async (ctx, _) => {
+          ctx.config = await this.configManager.setupConfig(argv, true)
+        }
+      },
+      {
+        title: 'Check dependencies',
+        task: async (_, task) => {
+          const deps = [
+            core.constants.HELM,
+            core.constants.KIND,
+            core.constants.KUBECTL
+          ]
 
-      const status = await this.checkDependencies(deps)
-      if (!status) {
-        return false
+          const subTasks = self.depManager.taskCheckDependencies(deps)
+
+          // setup the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
+            }
+          })
+        }
+      },
+      {
+        title: 'Setup chart manager',
+        task: async (ctx, _) => {
+          ctx.repoURLs = await this.chartManager.setup()
+        }
+      },
+      {
+        title: 'Generate status report',
+        task: (ctx, _) => {
+          self.logger.showList('Home Directories', ctx.dirs)
+          self.logger.showList('Chart Repository', ctx.repoURLs)
+          self.logger.showJSON('Cached Config', ctx.config)
+        }
       }
+    ])
 
-      this.logger.showUser(chalk.green('OK: All required dependencies are found: %s'), chalk.yellow(deps))
-
-      const repoURLs = await this.chartManager.setup()
-      this.logger.showList('Chart Repository', repoURLs)
-
-      return status
+    try {
+      await tasks.run()
     } catch (e) {
-      this.logger.showUserError(e)
-      return false
+      throw new FullstackTestingError('Error running init', e)
     }
+
+    return true
   }
 
   /**
-     * Return Yargs command definition for 'init' command
-     * @param initCmd an instance of InitCommand
-     */
+   * Return Yargs command definition for 'init' command
+   * @param initCmd an instance of InitCommand
+   */
   static getCommandDefinition (initCmd) {
     return {
       command: 'init',
@@ -79,6 +113,9 @@ export class InitCommand extends BaseCommand {
       handler: (argv) => {
         initCmd.init(argv).then(r => {
           if (!r) process.exit(1)
+        }).catch(err => {
+          initCmd.logger.showUserError(err)
+          process.exit(1)
         })
       }
     }

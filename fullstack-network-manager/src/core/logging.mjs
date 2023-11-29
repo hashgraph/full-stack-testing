@@ -39,20 +39,20 @@ const customFormat = winston.format.combine(
 
 export const Logger = class {
   /**
-     * Create a new logger
-     * @param level logging level as supported by winston library:
-     * {
-     *   emerg: 0,
-     *   alert: 1,
-     *   crit: 2,
-     *   error: 3,
-     *   warning: 4,
-     *   notice: 5,
-     *   info: 6,
-     *   debug: 7
-     * }
-     * @constructor
-     */
+   * Create a new logger
+   * @param level logging level as supported by winston library:
+   * {
+   *   emerg: 0,
+   *   alert: 1,
+   *   crit: 2,
+   *   error: 3,
+   *   warning: 4,
+   *   notice: 5,
+   *   info: 6,
+   *   debug: 7
+   * }
+   * @constructor
+   */
   constructor (level) {
     this.nextTraceId()
 
@@ -138,8 +138,8 @@ export const Logger = class {
     this.winsonLogger.debug(msg, ...args, this.prepMeta())
   }
 
-  showList (itemType, items = []) {
-    this.showUser(chalk.green(`\n *** List of ${itemType} ***`))
+  showList (title, items = []) {
+    this.showUser(chalk.green(`\n *** ${title} ***`))
     this.showUser(chalk.green('---------------------------------------'))
     if (items.length > 0) {
       items.forEach(name => this.showUser(chalk.yellow(` - ${name}`)))
@@ -149,6 +149,12 @@ export const Logger = class {
 
     this.showUser('\n')
     return true
+  }
+
+  showJSON (title, obj) {
+    this.showUser(chalk.green(`\n *** ${title} ***`))
+    this.showUser(chalk.green('---------------------------------------'))
+    console.log(JSON.stringify(obj, null, ' '))
   }
 }
 

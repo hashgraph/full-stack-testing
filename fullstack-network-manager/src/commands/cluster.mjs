@@ -23,7 +23,7 @@ export class ClusterCommand extends BaseCommand {
   }
 
   async showClusterList (argv) {
-    this.logger.showList('clusters', await this.getClusters())
+    this.logger.showList('Clusters', await this.getClusters())
     return true
   }
 
@@ -78,7 +78,7 @@ export class ClusterCommand extends BaseCommand {
 
       await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
 
-      this.logger.showList('namespaces', await this.getNameSpaces())
+      this.logger.showList('Namespaces', await this.getNameSpaces())
 
       return true
     } catch (e) {
@@ -148,7 +148,7 @@ export class ClusterCommand extends BaseCommand {
         this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is already deleted`)
       }
 
-      this.logger.showList('clusters', await this.getClusters())
+      this.logger.showList('Clusters', await this.getClusters())
 
       return true
     } catch (e) {
@@ -159,7 +159,7 @@ export class ClusterCommand extends BaseCommand {
   }
 
   async showInstalledChartList (namespace) {
-    this.logger.showList('charts installed', await this.chartManager.getInstalledCharts(namespace))
+    this.logger.showList('Installed Charts', await this.chartManager.getInstalledCharts(namespace))
   }
 
   /**

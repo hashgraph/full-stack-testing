@@ -78,7 +78,6 @@ export class ConfigManager {
           if (opts && opts[flag.name] !== undefined) {
             let val = opts[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
-              console.log(val)
               val = paths.resolve(val)
             }
 
