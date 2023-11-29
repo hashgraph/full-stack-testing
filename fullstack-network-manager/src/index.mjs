@@ -2,7 +2,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
-import { ChartManager, ConfigManager } from './core/index.mjs'
+import { ChartManager, ConfigManager, DependencyManager } from './core/index.mjs'
 import 'dotenv/config'
 
 export function main (argv) {
@@ -14,6 +14,7 @@ export function main (argv) {
   const platformInstaller = new core.PlatformInstaller(logger, kubectl)
   const chartManager = new ChartManager(helm, logger)
   const configManager = new ConfigManager(logger)
+  const depManager = new DependencyManager(logger)
 
   const opts = {
     logger,
@@ -23,7 +24,8 @@ export function main (argv) {
     downloader,
     platformInstaller,
     chartManager,
-    configManager
+    configManager,
+    depManager
   }
 
   logger.debug('Constants: %s', JSON.stringify(core.constants))

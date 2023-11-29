@@ -9,6 +9,7 @@ import { Zippy } from './zippy.mjs'
 import { Templates } from './templates.mjs'
 import { ChartManager } from './chart_manager.mjs'
 import { ConfigManager } from './config_manager.mjs'
+import { DependencyManager } from './dependency_manager.mjs'
 
 // Expose components from the core module
 export {
@@ -22,5 +23,6 @@ export {
   Zippy,
   Templates,
   ChartManager,
-  ConfigManager
+  ConfigManager,
+  DependencyManager
 }

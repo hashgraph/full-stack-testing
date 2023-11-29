@@ -10,6 +10,7 @@ describe('InitCommand', () => {
   const kubectl = new Kubectl(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
+  const depManager = new ConfigManager(testLogger)
 
   const initCmd = new InitCommand({
     logger: testLogger,
@@ -17,7 +18,8 @@ describe('InitCommand', () => {
     helm,
     kubectl,
     chartManager,
-    configManager
+    configManager,
+    depManager
   })
 
   describe('commands', () => {
