@@ -147,7 +147,27 @@ export async function promptChartDir (task, input) {
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.chartDirectory.name}`, e)
+  }
+}
+
+export async function promptValuesFile (task, input) {
+  try {
+    if (input && !fs.existsSync(input)) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.valuesFile.definition.default,
+        message: 'Which values.yaml file do you wish to use?'
+      })
+
+      if (!fs.existsSync(input)) {
+        throw new IllegalArgumentError('Invalid values.yaml file', input)
+      }
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.valuesFile.name}`, e)
   }
 }
 
@@ -263,5 +283,37 @@ export async function promptDeployCertManagerCRDs (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
+  }
+}
+
+export async function promptDeployMirrorNode (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployMirrorNode.definition.default,
+        message: 'Would you like to deploy Hedera Mirror Node?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployMirrorNode.name}`, e)
+  }
+}
+
+export async function promptDeployHederaExplorer (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployHederaExplorer.definition.default,
+        message: 'Would you like to deploy Hedera Explorer?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployHederaExplorer.name}`, e)
   }
 }
