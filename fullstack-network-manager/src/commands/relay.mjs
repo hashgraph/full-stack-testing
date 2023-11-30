@@ -75,9 +75,10 @@ export class RelayCommand extends BaseCommand {
   async install (argv) {
     try {
       const config = await this.configManager.setupConfig(argv)
+      const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
       const namespace = this.configManager.flagValue(config, flags.namespace)
       const valuesArg = this.prepareValuesArg(config)
-      const chartPath = await this.prepareChartPath(config, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
+      const chartPath = await this.prepareChartPath(chartDir, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
       const releaseName = this.prepareReleaseName(config)
 
       await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
