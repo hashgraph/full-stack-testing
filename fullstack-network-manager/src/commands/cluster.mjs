@@ -201,6 +201,7 @@ export class ClusterCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           const cachedConfig = await self.configManager.setupConfig(argv)
+          self.logger.debug('Setup cached config', { cachedConfig, argv })
 
           // extract config values
           const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
@@ -227,6 +228,8 @@ export class ClusterCommand extends BaseCommand {
             deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager, namespaces),
             deployCertManagerCRDs: await prompts.promptDeployCertManagerCRDs(task, deployCertManagerCRDs, namespaces)
           }
+
+          self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
 
           ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
         }
@@ -334,8 +337,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Create a cluster',
             builder: y => flags.setCommandFlags(y, flags.clusterName, flags.namespace),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster create' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster create' ===", { argv })
 
               clusterCmd.create(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster create`====')
@@ -352,8 +354,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Delete a cluster',
             builder: y => flags.setCommandFlags(y, flags.clusterName),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster delete' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster delete' ===", { argv })
 
               clusterCmd.delete(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster delete`====')
@@ -369,8 +370,7 @@ export class ClusterCommand extends BaseCommand {
             command: 'list',
             desc: 'List all clusters',
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster list' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster list' ===", { argv })
 
               clusterCmd.showClusterList().then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster list`====')
@@ -387,9 +387,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Get cluster info',
             builder: y => flags.setCommandFlags(y, flags.clusterName),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster info' ===")
-              clusterCmd.logger.debug(argv)
-
+              clusterCmd.logger.debug("==== Running 'cluster info' ===", { argv })
               clusterCmd.getClusterInfo(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster info`====')
 
@@ -414,8 +412,7 @@ export class ClusterCommand extends BaseCommand {
               flags.deployCertManagerCRDs
             ),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster setup' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster setup' ===", { argv })
 
               clusterCmd.setup(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster setup`====')
@@ -435,8 +432,7 @@ export class ClusterCommand extends BaseCommand {
               flags.namespace
             ),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster reset' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster reset' ===", { argv })
 
               clusterCmd.reset(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster reset`====')

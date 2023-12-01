@@ -30,7 +30,7 @@ export class ConfigManager {
   }
 
   hasFlag (config, flag) {
-    return !!config.flags[flag.name]
+    return config.flags[flag.name] !== undefined
   }
 
   flagValue (config, flag) {

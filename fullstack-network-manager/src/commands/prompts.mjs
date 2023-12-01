@@ -236,7 +236,7 @@ export async function promptDeployEnvoyGateway (task, input) {
 
 export async function promptDeployCertManager (task, input) {
   try {
-    if (input === undefined) {
+    if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
         default: flags.deployCertManager.definition.default,
@@ -252,7 +252,7 @@ export async function promptDeployCertManager (task, input) {
 
 export async function promptDeployCertManagerCRDs (task, input) {
   try {
-    if (input === undefined) {
+    if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
         default: flags.deployCertManagerCRDs.definition.default,
