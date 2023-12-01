@@ -103,60 +103,39 @@ export class ClusterCommand extends BaseCommand {
         }
       },
       {
-        title: 'Check cluster',
-        task: async (ctx, _) => {
-          ctx.clusters = await self.getClusters()
-        }
-      },
-      {
-        title: 'Check namespace',
-        task: async (ctx, _) => {
-          ctx.namespaces = await self.getNameSpaces()
-        }
-      },
-      {
-        title: 'Crete cluster',
+        title: 'Create cluster',
         task: async (ctx, _) => {
           const clusterName = ctx.config.clusterName
+          ctx.clusters = await self.getClusters()
           if (!ctx.clusters.includes(clusterName)) {
             await self.kind.createCluster(
               `-n ${clusterName}`,
               `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
             )
+
+            await self.kubectl.get('--raw=\'/healthz?verbose\'')
           }
-        },
-        skip: (ctx, _) => ctx.clusters.includes(ctx.config.clusterName)
+        }
       },
       {
         title: 'Create namespace',
         task: async (ctx, _) => {
           const namespace = ctx.config.namespace
+          ctx.namespaces = await self.getNameSpaces()
           if (!ctx.namespaces.includes(`namespace/${namespace}`)) {
             await self.kubectl.createNamespace(namespace)
           }
-        },
-        skip: (ctx, _) => ctx.namespaces.includes(`namespace/${ctx.config.namespace}`)
-      },
-      {
-        title: 'Set namespace for kubectl context',
-        task: async (ctx, _) => {
-          const namespace = ctx.config.namespace
+
           await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
 
-          ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
-
           // display info
+          ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
           self.logger.showList('Namespaces', ctx.namespaces)
           self.logger.showList('Clusters', ctx.clusters)
           self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
         }
       }
-    ], {
-      concurrent: false,
-      rendererOptions: {
-        timer: true
-      }
-    })
+    ])
 
     try {
       await tasks.run()
