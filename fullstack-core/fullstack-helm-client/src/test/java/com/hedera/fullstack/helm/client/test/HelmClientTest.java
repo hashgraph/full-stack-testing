@@ -67,7 +67,7 @@ class HelmClientTest {
 
     private static final String NAMESPACE = "helm-client-test-ns";
     private static HelmClient helmClient;
-    private static final int INSTALL_TIMEOUT = 10;
+    private static final int INSTALL_TIMEOUT = 30;
 
     private static final List<LogEntry> EXPECTED_LOG_ENTRIES = List.of(
             LogEntryBuilder.builder()
