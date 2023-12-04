@@ -153,9 +153,11 @@ export class ClusterCommand extends BaseCommand {
           await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
 
           // display info
+          ctx.namespaces = await self.getNameSpaces()
           ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
-          self.logger.showList('Namespaces', ctx.namespaces)
-          self.logger.showList('Clusters', ctx.clusters)
+          ctx.clusters = await self.getClusters()
+          self.logger.showList('Namespaces', await ctx.namespaces)
+          self.logger.showList('Clusters', await ctx.clusters)
           self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
         }
       }
