@@ -38,9 +38,9 @@ dependencies {
 }
 
 dependencies.constraints {
-    api("org.slf4j:slf4j-api:2.0.7")
-    api("org.slf4j:slf4j-nop:2.0.7")
-    api("org.slf4j:slf4j-simple:2.0.7")
+    api("org.slf4j:slf4j-api:2.0.9")
+    api("org.slf4j:slf4j-nop:2.0.9")
+    api("org.slf4j:slf4j-simple:2.0.9")
     api("com.jcovalent.junit:jcovalent-junit-logging:0.3.1")
     api("io.github.classgraph:classgraph:4.8.161")
 
