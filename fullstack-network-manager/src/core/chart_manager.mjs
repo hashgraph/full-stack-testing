@@ -86,8 +86,9 @@ export class ChartManager {
   async isChartInstalled (namespaceName, chartName) {
     const charts = await this.getInstalledCharts(namespaceName)
     for (const item of charts) {
-      const n = item.split(' [')
-      if (chartName === n[0]) return true
+      if (item.startsWith(chartName)) {
+        return true
+      }
     }
 
     return false

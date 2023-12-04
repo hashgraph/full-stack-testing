@@ -1,22 +1,40 @@
 import { ListrEnquirerPromptAdapter } from '@listr2/prompt-adapter-enquirer'
-import { FullstackTestingError } from '../core/errors.mjs'
+import fs from 'fs'
+import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
 import { constants } from '../core/index.mjs'
 import * as flags from './flags.mjs'
 
 export async function promptNamespaceArg (task, input) {
   try {
     if (!input) {
-      const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
-      const initial = namespaces.indexOf(`namespace/${constants.NAMESPACE_NAME}`)
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'select',
-        initial,
-        message: 'Which namespace do you wish to use?',
-        choices: namespaces
+        type: 'text',
+        default: flags.namespace.definition.default,
+        message: 'Enter namespace name: '
       })
     }
 
     return input.replace('namespace/', '')
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.namespace.name}`, e)
+  }
+}
+
+export async function promptSelectNamespaceArg (task, input, choices = []) {
+  try {
+    const initial = choices.indexOf(`namespace/${input}`)
+    if (initial < 0) {
+      const input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'select',
+        initial,
+        message: 'Which namespace do you wish to use?',
+        choices
+      })
+
+      return input.replace('namespace/', '')
+    }
+
+    return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.namespace.name}`, e)
   }
@@ -110,5 +128,140 @@ export async function promptChainId (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
+  }
+}
+
+export async function promptChartDir (task, input) {
+  try {
+    if (input && !fs.existsSync(input)) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.chartDirectory.definition.default,
+        message: 'Which charts directory do you wish to use?'
+      })
+
+      if (!fs.existsSync(input)) {
+        throw new IllegalArgumentError('Invalid chart directory', input)
+      }
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
+  }
+}
+
+export async function promptClusterNameArg (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.clusterName.definition.default,
+        message: 'Enter cluster name: '
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.clusterName.name}`, e)
+  }
+}
+
+export async function promptSelectClusterNameArg (task, input, choices = []) {
+  try {
+    const initial = choices.indexOf(input)
+    if (initial < 0) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'select',
+        initial,
+        message: 'Select cluster',
+        choices
+      })
+      return input.replace('namespace/', '')
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.clusterName.name}`, e)
+  }
+}
+
+export async function promptDeployPrometheusStack (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployPrometheusStack.definition.default,
+        message: 'Would you like to deploy prometheus stack?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployPrometheusStack.name}`, e)
+  }
+}
+
+export async function promptDeployMinio (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployMinio.definition.default,
+        message: 'Would you like to deploy MinIO?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployMinio.name}`, e)
+  }
+}
+
+export async function promptDeployEnvoyGateway (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployEnvoyGateway.definition.default,
+        message: 'Would you like to deploy Envoy Gateway?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployEnvoyGateway.name}`, e)
+  }
+}
+
+export async function promptDeployCertManager (task, input) {
+  try {
+    if (typeof input !== 'boolean') {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployCertManager.definition.default,
+        message: 'Would you like to deploy Cert Manager?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployCertManager.name}`, e)
+  }
+}
+
+export async function promptDeployCertManagerCRDs (task, input) {
+  try {
+    if (typeof input !== 'boolean') {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployCertManagerCRDs.definition.default,
+        message: 'Would you like to deploy Cert Manager CRDs?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
   }
 }

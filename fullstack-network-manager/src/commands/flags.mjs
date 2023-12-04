@@ -221,6 +221,7 @@ export const allFlags = [
   deployPrometheusStack,
   deployMinio,
   deployEnvoyGateway,
+  deployCertManager,
   deployCertManagerCRDs,
   releaseTag,
   cacheDir,

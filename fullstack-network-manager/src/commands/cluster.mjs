@@ -1,18 +1,21 @@
+import {Listr} from 'listr2'
+import {FullstackTestingError} from '../core/errors.mjs'
 import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
-import { BaseCommand } from './base.mjs'
+import {BaseCommand} from './base.mjs'
 import chalk from 'chalk'
-import { constants } from '../core/index.mjs'
+import {constants} from '../core/index.mjs'
+import * as prompts from './prompts.mjs'
 
 /**
  * Define the core functionalities of 'cluster' command
  */
 export class ClusterCommand extends BaseCommand {
   /**
-     * List available clusters
-     * @returns {Promise<string[]>}
-     */
-  async getClusters () {
+   * List available clusters
+   * @returns {Promise<string[]>}
+   */
+  async getClusters() {
     try {
       return await this.kind.getClusters('-q')
     } catch (e) {
@@ -22,16 +25,16 @@ export class ClusterCommand extends BaseCommand {
     return []
   }
 
-  async showClusterList (argv) {
+  async showClusterList() {
     this.logger.showList('Clusters', await this.getClusters())
     return true
   }
 
   /**
-     * List available namespaces
-     * @returns {Promise<string[]>}
-     */
-  async getNameSpaces () {
+   * List available namespaces
+   * @returns {Promise<string[]>}
+   */
+  async getNameSpaces() {
     try {
       return await this.kubectl.getNamespace('--no-headers', '-o name')
     } catch (e) {
@@ -42,17 +45,17 @@ export class ClusterCommand extends BaseCommand {
   }
 
   /**
-     * Get cluster-info for the given cluster name
-     * @param argv arguments containing cluster name
-     * @returns {Promise<boolean>}
-     */
-  async getClusterInfo (argv) {
+   * Get cluster-info for the given cluster name
+   * @param argv arguments containing cluster name
+   * @returns {Promise<boolean>}
+   */
+  async getClusterInfo(argv) {
     try {
       const clusterName = argv.clusterName
       const cmd = `kubectl cluster-info --context kind-${clusterName}`
       const output = await this.run(cmd)
 
-      this.logger.showUser(`Cluster information (${clusterName})\n---------------------------------------`)
+      this.logger.showUser(chalk.green(`\nCluster information (${clusterName})\n---------------------------------------`))
       output.forEach(line => this.logger.showUser(line))
       this.logger.showUser('\n')
       return true
@@ -63,7 +66,7 @@ export class ClusterCommand extends BaseCommand {
     return false
   }
 
-  async createNamespace (argv) {
+  async createNamespace(argv) {
     try {
       const namespace = argv.namespace
       const namespaces = await this.getNameSpaces()
@@ -89,103 +92,212 @@ export class ClusterCommand extends BaseCommand {
   }
 
   /**
-     * Create a cluster
-     * @param argv command arguments
-     * @param config config object
-     * @returns {Promise<boolean>}
-     */
-  async create (argv, config = {}) {
-    try {
-      const clusterName = argv.clusterName
-      const clusters = await this.getClusters()
-
-      if (!config) {
-        config = this.configManager.setupConfig(argv)
-      }
-
-      this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
-      if (!clusters.includes(clusterName)) {
-        this.logger.showUser(chalk.cyan('> creating cluster:'), chalk.yellow(`${clusterName} ...`))
-        await this.kind.createCluster(
-                    `-n ${clusterName}`,
-                    `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
-        )
-        this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is created`)
-      } else {
-        this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' already exists`)
-      }
-
-      // show all clusters and cluster-info
-      await this.showClusterList()
-
-      await this.getClusterInfo(argv)
-
-      await this.createNamespace(argv)
-
-      return true
-    } catch (e) {
-      this.logger.showUserError(e)
-    }
-
-    return false
-  }
-
-  /**
-     * Delete a cluster
-     * @param argv
-     * @returns {Promise<boolean>}
-     */
-  async delete (argv) {
-    try {
-      const clusterName = argv.clusterName
-      const clusters = await this.getClusters()
-      this.logger.showUser(chalk.cyan('> checking cluster:'), chalk.yellow(`${clusterName}`))
-      if (clusters.includes(clusterName)) {
-        this.logger.showUser(chalk.cyan('> deleting cluster:'), chalk.yellow(`${clusterName} ...`))
-        await this.kind.deleteCluster(clusterName)
-        this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is deleted`)
-      } else {
-        this.logger.showUser(chalk.green('OK'), `cluster '${clusterName}' is already deleted`)
-      }
-
-      this.logger.showList('Clusters', await this.getClusters())
-
-      return true
-    } catch (e) {
-      this.logger.showUserError(e)
-    }
-
-    return false
-  }
-
-  async showInstalledChartList (namespace) {
+   * Show list of installed chart
+   * @param namespace
+   */
+  async showInstalledChartList(namespace) {
     this.logger.showList('Installed Charts', await this.chartManager.getInstalledCharts(namespace))
   }
 
   /**
-     * Setup cluster with shared components
-     * @param argv
-     * @returns {Promise<boolean>}
-     */
-  async setup (argv) {
+   * Create a cluster
+   * @param argv command arguments
+   * @returns {Promise<boolean>}
+   */
+  async create(argv) {
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+
+          // get existing choices
+          ctx.clusters = await self.kind.getClusters('-q')
+
+          // extract config values
+          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+
+          ctx.config = {
+            clusterName: await prompts.promptClusterNameArg(task, clusterName),
+            namespace: await prompts.promptNamespaceArg(task, namespace)
+          }
+        }
+      },
+      {
+        title: 'Create cluster',
+        task: async (ctx, _) => {
+          const clusterName = ctx.config.clusterName
+          ctx.clusters = await self.getClusters()
+          if (!ctx.clusters.includes(clusterName)) {
+            await self.kind.createCluster(
+              `-n ${clusterName}`,
+              `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
+            )
+
+            await self.kubectl.get('--raw=\'/healthz?verbose\'')
+          }
+        }
+      },
+      {
+        title: 'Create namespace',
+        task: async (ctx, _) => {
+          const namespace = ctx.config.namespace
+          ctx.namespaces = await self.getNameSpaces()
+          if (!ctx.namespaces.includes(`namespace/${namespace}`)) {
+            await self.kubectl.createNamespace(namespace)
+          }
+
+          await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
+
+          // display info
+          ctx.namespaces = await self.getNameSpaces()
+          ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
+          ctx.clusters = await self.getClusters()
+          self.logger.showList('Namespaces', await ctx.namespaces)
+          self.logger.showList('Clusters', await ctx.clusters)
+          self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
+        }
+      }
+    ])
+
     try {
-      const config = await this.configManager.setupConfig(argv)
-      const namespace = argv.namespace
-
-      // install fullstack-cluster-setup chart
-      const chartPath = await this.prepareChartPath(config)
-      const valuesArg = this.prepareValuesArg(config, argv.prometheusStack, argv.minio, argv.envoyGateway,
-        argv.certManager, argv.certManagerCrds)
-      this.logger.showUser(chalk.cyan('> setting up cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
-      await this.chartManager.install(namespace, constants.CHART_FST_SETUP_NAME, chartPath, config.version, valuesArg)
-      await this.showInstalledChartList(namespace)
-
-      return true
+      await tasks.run()
     } catch (e) {
-      this.logger.showUserError(e)
+      throw new FullstackTestingError('Error on cluster create', e)
     }
 
-    return false
+    return true
+  }
+
+  /**
+   * Delete a cluster
+   * @param argv
+   * @returns {Promise<boolean>}
+   */
+  async delete(argv) {
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
+
+          // get existing choices
+          ctx.clusters = await self.kind.getClusters('-q')
+
+          ctx.config = {
+            clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, ctx.clusters)
+          }
+        }
+      },
+      {
+        title: 'Delete cluster',
+        task: async (ctx, _) => {
+          await this.kind.deleteCluster(ctx.config.clusterName)
+          self.logger.showList('Clusters', await self.getClusters())
+        },
+        skip: (ctx, _) => !ctx.clusters.includes(ctx.config.clusterName)
+      }
+    ])
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError('Error on cluster reset', e)
+    }
+
+    return true
+  }
+
+  /**
+   * Setup cluster with shared components
+   * @param argv
+   * @returns {Promise<boolean>}
+   */
+  async setup(argv) {
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          self.logger.debug('Setup cached config', {cachedConfig, argv})
+
+          // extract config values
+          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          const chartDir = self.configManager.flagValue(cachedConfig, flags.chartDirectory)
+          const deployPrometheusStack = self.configManager.flagValue(cachedConfig, flags.deployPrometheusStack)
+          const deployMinio = self.configManager.flagValue(cachedConfig, flags.deployMinio)
+          const deployEnvoyGateway = self.configManager.flagValue(cachedConfig, flags.deployEnvoyGateway)
+          const deployCertManager = self.configManager.flagValue(cachedConfig, flags.deployCertManager)
+          const deployCertManagerCRDs = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCRDs)
+
+          // get existing choices
+          const clusters = await self.kind.getClusters('-q')
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+
+          // prompt if inputs are empty and set it in the context
+          ctx.config = {
+            clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, clusters),
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
+            chartDir: await prompts.promptChartDir(task, chartDir),
+            deployPrometheusStack: await prompts.promptDeployPrometheusStack(task, deployPrometheusStack),
+            deployMinio: await prompts.promptDeployMinio(task, deployMinio),
+            deployEnvoyGateway: await prompts.promptDeployEnvoyGateway(task, deployEnvoyGateway),
+            deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager, namespaces),
+            deployCertManagerCRDs: await prompts.promptDeployCertManagerCRDs(task, deployCertManagerCRDs, namespaces)
+          }
+
+          self.logger.debug('Prepare ctx.config', {config: ctx.config, argv})
+
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
+        }
+      },
+      {
+        title: 'Prepare chart values',
+        task: async (ctx, _) => {
+          ctx.chartPath = await this.prepareChartPath(ctx.config.chartDir)
+          ctx.valuesArg = this.prepareValuesArg(
+            ctx.config.chartDir,
+            ctx.config.deployPrometheusStack,
+            ctx.config.deployMinio,
+            ctx.config.deployEnvoyGateway,
+            ctx.config.deployCertManager,
+            ctx.config.deployCertManagerCRDs
+          )
+        },
+        skip: (ctx, _) => ctx.isChartInstalled
+      },
+      {
+        title: `Install '${constants.CHART_FST_SETUP_NAME}' chart`,
+        task: async (ctx, _) => {
+          const namespace = ctx.config.namespace
+          const version = ctx.config.version
+
+          const chartPath = ctx.chartPath
+          const valuesArg = ctx.valuesArg
+
+          await self.chartManager.install(namespace, constants.CHART_FST_SETUP_NAME, chartPath, version, valuesArg)
+          await self.showInstalledChartList(namespace)
+        },
+        skip: (ctx, _) => ctx.isChartInstalled
+      }
+    ])
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError('Error on cluster setup', e)
+    }
+
+    return true
   }
 
   /**
@@ -193,33 +305,54 @@ export class ClusterCommand extends BaseCommand {
    * @param argv
    * @returns {Promise<boolean>}
    */
-  async reset (argv) {
+  async reset(argv) {
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+
+          // get existing choices
+          const clusters = await self.kind.getClusters('-q')
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+
+          ctx.config = {
+            clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, clusters),
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces)
+          }
+
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(namespace, constants.CHART_FST_SETUP_NAME)
+        }
+      },
+      {
+        title: `Uninstall '${constants.CHART_FST_SETUP_NAME}' chart`,
+        task: async (ctx, _) => {
+          const namespace = ctx.config.namespace
+          await self.chartManager.uninstall(namespace, constants.CHART_FST_SETUP_NAME)
+          await self.showInstalledChartList(namespace)
+        },
+        skip: (ctx, _) => !ctx.isChartInstalled
+      }
+    ])
+
     try {
-      const config = await this.configManager.setupConfig(argv)
-      const namespace = argv.namespace
-
-      // uninstall fullstack-cluster-setup chart
-      const chartPath = await this.prepareChartPath(config)
-      const valuesArg = this.prepareValuesArg(config, argv.prometheusStack, argv.minio, argv.envoyGateway,
-        argv.certManager, argv.certManagerCrds)
-      this.logger.showUser(chalk.cyan('> resetting cluster:'), chalk.yellow(`${chartPath}`, chalk.yellow(valuesArg)))
-      await this.chartManager.uninstall(namespace, constants.CHART_FST_SETUP_NAME, chartPath, config.version, valuesArg)
-
-      await this.showInstalledChartList(namespace)
-
-      return true
+      await tasks.run()
     } catch (e) {
-      this.logger.showUserError(e)
+      throw new FullstackTestingError('Error on cluster reset', e)
     }
 
-    return false
+    return true
   }
 
   /**
-     * Return Yargs command definition for 'cluster' command
-     * @param clusterCmd an instance of ClusterCommand
-     */
-  static getCommandDefinition (clusterCmd) {
+   * Return Yargs command definition for 'cluster' command
+   * @param clusterCmd an instance of ClusterCommand
+   */
+  static getCommandDefinition(clusterCmd) {
     return {
       command: 'cluster',
       desc: 'Manage FST cluster',
@@ -230,13 +363,15 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Create a cluster',
             builder: y => flags.setCommandFlags(y, flags.clusterName, flags.namespace),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster create' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster create' ===", {argv})
 
               clusterCmd.create(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster create`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                clusterCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -245,13 +380,15 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Delete a cluster',
             builder: y => flags.setCommandFlags(y, flags.clusterName),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster delete' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster delete' ===", {argv})
 
               clusterCmd.delete(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster delete`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                clusterCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -259,13 +396,15 @@ export class ClusterCommand extends BaseCommand {
             command: 'list',
             desc: 'List all clusters',
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster list' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster list' ===", {argv})
 
               clusterCmd.showClusterList().then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster list`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                clusterCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -274,13 +413,14 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Get cluster info',
             builder: y => flags.setCommandFlags(y, flags.clusterName),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster info' ===")
-              clusterCmd.logger.debug(argv)
-
+              clusterCmd.logger.debug("==== Running 'cluster info' ===", {argv})
               clusterCmd.getClusterInfo(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster info`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                clusterCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -298,13 +438,15 @@ export class ClusterCommand extends BaseCommand {
               flags.deployCertManagerCRDs
             ),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster setup' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster setup' ===", {argv})
 
               clusterCmd.setup(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster setup`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                clusterCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -316,13 +458,15 @@ export class ClusterCommand extends BaseCommand {
               flags.namespace
             ),
             handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster reset' ===")
-              clusterCmd.logger.debug(argv)
+              clusterCmd.logger.debug("==== Running 'cluster reset' ===", {argv})
 
               clusterCmd.reset(argv).then(r => {
                 clusterCmd.logger.debug('==== Finished running `cluster reset`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                clusterCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -331,10 +475,25 @@ export class ClusterCommand extends BaseCommand {
     }
   }
 
-  prepareValuesArg (config, prometheusStackEnabled, minioEnabled, envoyGatewayEnabled,
-    certManagerEnabled, certManagerCrdsEnabled) {
+  /**
+   * Prepare values arg for chart install command
+   *
+   * @param chartDir local charts directory (default is empty)
+   * @param prometheusStackEnabled a bool to denote whether to install prometheus stack
+   * @param minioEnabled a bool to denote whether to install minio
+   * @param envoyGatewayEnabled a bool to denote whether to install envoy-gateway
+   * @param certManagerEnabled a bool to denote whether to install cert manager
+   * @param certManagerCrdsEnabled a bool to denote whether to install cert manager CRDs
+   * @returns {string}
+   */
+  prepareValuesArg(chartDir = flags.chartDirectory.definition.default,
+                   prometheusStackEnabled = flags.deployPrometheusStack.definition.default,
+                   minioEnabled = flags.deployMinio.definition.default,
+                   envoyGatewayEnabled = flags.deployEnvoyGateway.definition.default,
+                   certManagerEnabled = flags.deployCertManager.definition.default,
+                   certManagerCrdsEnabled = flags.deployCertManagerCRDs.definition.default
+  ) {
     let valuesArg = ''
-    const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     if (chartDir) {
       valuesArg = `-f ${chartDir}/fullstack-cluster-setup/values.yaml`
     }
@@ -353,8 +512,12 @@ export class ClusterCommand extends BaseCommand {
     return valuesArg
   }
 
-  async prepareChartPath (config) {
-    const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
+  /**
+   * Prepare chart path
+   * @param chartDir local charts directory (default is empty)
+   * @returns {Promise<string>}
+   */
+  async prepareChartPath(chartDir = flags.chartDirectory.definition.default) {
     let chartPath = 'full-stack-testing/fullstack-cluster-setup'
     if (chartDir) {
       chartPath = `${chartDir}/fullstack-cluster-setup`
