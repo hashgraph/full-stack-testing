@@ -20,4 +20,4 @@ plugins {
     id("com.hedera.fullstack.maven-publish")
 }
 
-dependencies { api(platform(project(":fullstack-bom"))) }
+dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
