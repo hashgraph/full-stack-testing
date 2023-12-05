@@ -1,9 +1,10 @@
-import chalk from 'chalk'
+import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as paths from 'path'
 import { constants } from '../core/index.mjs'
+import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
   prepareValuesFiles (valuesFile) {
@@ -19,13 +20,8 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (config) {
-    const valuesFile = this.configManager.flagValue(config, flags.valuesFile)
-    const deployMirrorNode = this.configManager.flagValue(config, flags.deployMirrorNode)
-    const deployHederaExplorer = this.configManager.flagValue(config, flags.deployHederaExplorer)
-
+  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer) {
     let valuesArg = ''
-    const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     if (chartDir) {
       valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
     }
@@ -37,56 +33,149 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  async installFSTChart (config) {
-    try {
-      const namespace = this.configManager.flagValue(config, flags.namespace)
-      const valuesArg = this.prepareValuesArg(config)
-      const chartPath = await this.prepareChartPath(config, constants.CHART_FST_REPO_NAME, constants.CHART_FST_DEPLOYMENT_NAME)
+  async prepareConfig (task, argv) {
+    const cachedConfig = await this.configManager.setupConfig(argv)
+    const namespace = this.configManager.flagValue(cachedConfig, flags.namespace)
+    const chartDir = this.configManager.flagValue(cachedConfig, flags.chartDirectory)
+    const valuesFile = this.configManager.flagValue(cachedConfig, flags.valuesFile)
+    const deployMirrorNode = this.configManager.flagValue(cachedConfig, flags.deployMirrorNode)
+    const deployExplorer = this.configManager.flagValue(cachedConfig, flags.deployHederaExplorer)
 
-      await this.chartManager.install(namespace, constants.CHART_FST_DEPLOYMENT_NAME, chartPath, config.version, valuesArg)
-
-      this.logger.showUser(chalk.cyan('> waiting for network-node pods to be active (first deployment takes ~10m) ...'))
-      await this.kubectl.wait('pod',
-        '--for=jsonpath=\'{.status.phase}\'=Running',
-        '-l fullstack.hedera.com/type=network-node',
-        '--timeout=900s'
-      )
-      this.logger.showUser(chalk.green('OK'), 'network-node pods are running')
-    } catch (e) {
-      throw new FullstackTestingError(`failed install '${constants.CHART_FST_DEPLOYMENT_NAME}' chart`, e)
+    // prompt if values are missing and create a config object
+    const config = {
+      namespace: await prompts.promptNamespaceArg(task, namespace),
+      chartDir: await prompts.promptChartDir(task, chartDir),
+      valuesFile: await prompts.promptChartDir(task, valuesFile),
+      deployMirrorNode: await prompts.promptDeployMirrorNode(task, deployMirrorNode),
+      deployHederaExplorer: await prompts.promptDeployHederaExplorer(task, deployExplorer),
+      timeout: '900s',
+      version: cachedConfig.version
     }
+
+    // compute values
+    config.chartPath = await this.prepareChartPath(config.chartDir,
+      constants.CHART_FST_REPO_NAME, constants.CHART_FST_DEPLOYMENT_NAME)
+
+    config.valuesArg = this.prepareValuesArg(config.chartDir,
+      config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer)
+
+    return config
   }
 
   async install (argv) {
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          ctx.config = await self.prepareConfig(task, argv)
+        }
+      },
+      {
+        title: `Install chart '${constants.CHART_FST_DEPLOYMENT_NAME}'`,
+        task: async (ctx, _) => {
+          await this.chartManager.install(
+            ctx.config.namespace,
+            constants.CHART_FST_DEPLOYMENT_NAME,
+            ctx.config.chartPath,
+            ctx.config.version,
+            ctx.config.valuesArg)
+        }
+      },
+      {
+        title: 'Waiting for network pods to be ready',
+        task: async (ctx, _) => {
+          const timeout = ctx.config.timeout || '900s'
+          await this.kubectl.wait('pod',
+            '--for=jsonpath=\'{.status.phase}\'=Running',
+            '-l fullstack.hedera.com/type=network-node',
+            `--timeout=${timeout}`
+          )
+        }
+      }
+    ])
+
     try {
-      const config = await this.configManager.setupConfig(argv)
-      const namespace = this.configManager.flagValue(config, flags.namespace)
-
-      await this.installFSTChart(config)
-
-      this.logger.showList('Deployed Charts', await this.chartManager.getInstalledCharts(namespace))
-      return true
+      await tasks.run()
     } catch (e) {
-      this.logger.showUserError(e)
+      throw new FullstackTestingError(`Error installing chart ${constants.CHART_FST_DEPLOYMENT_NAME}`, e)
     }
 
-    return false
+    return true
   }
 
   async uninstall (argv) {
-    const namespace = argv.namespace
+    const self = this
 
-    return await this.chartManager.uninstall(namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          ctx.config = {
+            namespace: await prompts.promptNamespaceArg(task, namespace)
+          }
+        }
+      },
+      {
+        title: `Uninstall chart ${constants.CHART_FST_DEPLOYMENT_NAME}`,
+        task: async (ctx, _) => {
+          await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+        }
+      }
+    ])
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError('Error starting node', e)
+    }
+
+    return true
   }
 
   async upgrade (argv) {
-    const namespace = argv.namespace
+    const self = this
 
-    const config = await this.configManager.setupConfig(argv)
-    const valuesArg = this.prepareValuesArg(argv, config)
-    const chartPath = await this.prepareChartPath(config)
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          ctx.config = await self.prepareConfig(task, argv)
+        }
+      },
+      {
+        title: `Upgrade chart '${constants.CHART_FST_DEPLOYMENT_NAME}'`,
+        task: async (ctx, _) => {
+          await this.chartManager.upgrade(
+            ctx.config.namespace,
+            constants.CHART_FST_DEPLOYMENT_NAME,
+            ctx.config.chartPath,
+            ctx.config.valuesArg)
+        }
+      },
+      {
+        title: 'Waiting for network pods to be ready',
+        task: async (ctx, _) => {
+          const timeout = ctx.config.timeout || '900s'
+          await this.kubectl.wait('pod',
+            '--for=jsonpath=\'{.status.phase}\'=Running',
+            '-l fullstack.hedera.com/type=network-node',
+            `--timeout=${timeout}`
+          )
+        }
+      }
+    ])
 
-    return await this.chartManager.upgrade(namespace, constants.CHART_FST_DEPLOYMENT_NAME, chartPath, valuesArg)
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError(`Error upgrading chart ${constants.CHART_FST_DEPLOYMENT_NAME}`, e)
+    }
+
+    return true
   }
 
   static getCommandDefinition (chartCmd) {
@@ -116,6 +205,9 @@ export class ChartCommand extends BaseCommand {
                 chartCmd.logger.debug('==== Finished running `chart install`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                chartCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -131,6 +223,9 @@ export class ChartCommand extends BaseCommand {
                 chartCmd.logger.debug('==== Finished running `chart uninstall`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                chartCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -152,6 +247,9 @@ export class ChartCommand extends BaseCommand {
                 chartCmd.logger.debug('==== Finished running `chart upgrade`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                chartCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })

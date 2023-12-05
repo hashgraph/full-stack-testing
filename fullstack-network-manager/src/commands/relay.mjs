@@ -1,14 +1,13 @@
-import chalk from 'chalk'
-import { MissingArgumentError } from '../core/errors.mjs'
+import { Listr } from 'listr2'
+import { FullstackTestingError, MissingArgumentError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as paths from 'path'
 import { constants } from '../core/index.mjs'
+import * as prompts from './prompts.mjs'
 
 export class RelayCommand extends BaseCommand {
-  prepareValuesArg (config) {
-    const valuesFile = this.configManager.flagValue(config, flags.valuesFile)
-
+  prepareValuesArg (valuesFile, nodeIDs, chainID, releaseTag, replicaCount, operatorID, operatorKey) {
     let valuesArg = ''
     if (valuesFile) {
       const valuesFiles = valuesFile.split(',')
@@ -20,37 +19,31 @@ export class RelayCommand extends BaseCommand {
 
     valuesArg += ` --set config.MIRROR_NODE_URL=${constants.CHART_FST_DEPLOYMENT_NAME}-rest`
 
-    const chainID = this.configManager.flagValue(config, flags.chainId)
     if (chainID) {
       valuesArg += ` --set config.CHAIN_ID=${chainID}`
     }
 
-    const releaseTag = this.configManager.flagValue(config, flags.releaseTag)
     if (releaseTag) {
       valuesArg += ` --set image.tag=${releaseTag.replace(/^v/, '')}`
     }
 
-    const replicaCount = this.configManager.flagValue(config, flags.replicaCount)
     if (replicaCount) {
       valuesArg += ` --set replicaCount=${replicaCount}`
     }
 
-    const operatorId = this.configManager.flagValue(config, flags.operatorId)
-    if (operatorId) {
-      valuesArg += ` --set config.OPERATOR_ID_MAIN=${operatorId}`
+    if (operatorID) {
+      valuesArg += ` --set config.OPERATOR_ID_MAIN=${operatorID}`
     }
 
-    const operatorKey = this.configManager.flagValue(config, flags.operatorKey)
     if (operatorKey) {
       valuesArg += ` --set config.OPERATOR_KEY_MAIN=${operatorKey}`
     }
 
-    const nodeIDs = this.configManager.flagValue(config, flags.nodeIDs)
     if (!nodeIDs) {
       throw new MissingArgumentError('Node IDs must be specified')
     }
 
-    nodeIDs.split(',').forEach(nodeID => {
+    nodeIDs.forEach(nodeID => {
       const networkKey = `network-${nodeID.trim()}-0-svc:50211`
       valuesArg += ` --set config.HEDERA_NETWORK.${networkKey}=0.0.3`
     })
@@ -58,14 +51,13 @@ export class RelayCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareReleaseName (config) {
-    const nodeIDs = this.configManager.flagValue(config, flags.nodeIDs)
+  prepareReleaseName (nodeIDs = []) {
     if (!nodeIDs) {
       throw new MissingArgumentError('Node IDs must be specified')
     }
 
     let releaseName = 'relay'
-    nodeIDs.split(',').forEach(nodeID => {
+    nodeIDs.forEach(nodeID => {
       releaseName += `-${nodeID}`
     })
 
@@ -73,40 +65,143 @@ export class RelayCommand extends BaseCommand {
   }
 
   async install (argv) {
+    const self = this
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          self.logger.debug('Setup cached config', { cachedConfig, argv })
+
+          // extract config values
+          const valuesFile = self.configManager.flagValue(cachedConfig, flags.valuesFile)
+          const nodeIds = self.configManager.flagValue(cachedConfig, flags.nodeIDs)
+          const chainId = self.configManager.flagValue(cachedConfig, flags.chainId)
+          const releaseTag = self.configManager.flagValue(cachedConfig, flags.releaseTag)
+          const replicaCount = self.configManager.flagValue(cachedConfig, flags.replicaCount)
+          const operatorId = self.configManager.flagValue(cachedConfig, flags.operatorId)
+          const operatorKey = self.configManager.flagValue(cachedConfig, flags.operatorKey)
+
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          const chartDir = self.configManager.flagValue(cachedConfig, flags.chartDirectory)
+
+          // prompt if inputs are empty and set it in the context
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          ctx.config = {
+            chartDir: await prompts.promptChartDir(task, chartDir),
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
+            valuesFile: await prompts.promptValuesFile(task, valuesFile),
+            nodeIds: await prompts.promptNodeIdsArg(task, nodeIds),
+            chainId: await prompts.promptChainId(task, chainId),
+            releaseTag: await prompts.promptReleaseTag(task, releaseTag),
+            replicaCount: await prompts.promptReplicaCount(task, replicaCount),
+            operatorId: await prompts.promptOperatorId(task, operatorId),
+            operatorKey: await prompts.promptOperatorId(task, operatorKey)
+          }
+
+          self.logger.debug('Finished prompts', { ctx })
+
+          ctx.releaseName = this.prepareReleaseName(ctx.config.nodeIds)
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, ctx.releaseName)
+
+          self.logger.debug('Finished ctx initialization', { ctx })
+        }
+      },
+      {
+        title: 'Prepare chart values',
+        task: async (ctx, _) => {
+          ctx.chartPath = await this.prepareChartPath(ctx.config.chartDir, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
+          ctx.valuesArg = this.prepareValuesArg(
+            ctx.config.valuesFile,
+            ctx.config.nodeIds,
+            ctx.config.chainId,
+            ctx.config.releaseTag,
+            ctx.config.replicaCount,
+            ctx.config.operatorId,
+            ctx.config.operatorKey
+          )
+        },
+        skip: (ctx, _) => ctx.isChartInstalled
+      },
+      {
+        title: 'Install JSON RPC Relay',
+        task: async (ctx, _) => {
+          const namespace = ctx.config.namespace
+          const releaseName = ctx.releaseName
+          const chartPath = ctx.chartPath
+          const valuesArg = ctx.valuesArg
+
+          await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
+
+          await this.kubectl.wait('pod',
+            '--for=condition=ready',
+            '-l app=hedera-json-rpc-relay',
+            `-l app.kubernetes.io/instance=${releaseName}`,
+            '--timeout=900s'
+          )
+
+          this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
+        }
+      }
+    ])
+
     try {
-      const config = await this.configManager.setupConfig(argv)
-      const namespace = this.configManager.flagValue(config, flags.namespace)
-      const valuesArg = this.prepareValuesArg(config)
-      const chartPath = await this.prepareChartPath(config, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
-      const releaseName = this.prepareReleaseName(config)
-
-      await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
-
-      this.logger.showUser(chalk.cyan(`> waiting for ${releaseName} pods to be ready...`))
-      await this.kubectl.wait('pod',
-        '--for=condition=ready',
-        '-l app=hedera-json-rpc-relay',
-        `-l app.kubernetes.io/instance=${releaseName}`,
-        '--timeout=900s'
-      )
-      this.logger.showUser(chalk.green('OK'), `${releaseName} pods are ready`)
-      this.logger.showList('Deployed Relays', await this.chartManager.getInstalledCharts(namespace))
-      return true
+      await tasks.run()
     } catch (e) {
-      this.logger.showUserError(e)
+      throw new FullstackTestingError('Error installing relays', e)
     }
 
-    return false
+    return true
   }
 
   async uninstall (argv) {
-    const config = await this.configManager.setupConfig(argv)
-    const namespace = this.configManager.flagValue(config, flags.namespace)
-    const releaseName = this.prepareReleaseName(config)
-    return await this.chartManager.uninstall(namespace, releaseName)
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          self.logger.debug('Setup cached config', { cachedConfig, argv })
+
+          // extract config values
+          const nodeIds = self.configManager.flagValue(cachedConfig, flags.nodeIDs)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+
+          // prompt if inputs are empty and set it in the context
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          ctx.config = {
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
+            nodeIds: await prompts.promptNodeIdsArg(task, nodeIds)
+          }
+
+          ctx.config.releaseName = this.prepareReleaseName(ctx.config.nodeIds)
+          self.logger.debug('Finished ctx initialization', { ctx })
+        }
+      },
+      {
+        title: 'Install JSON RPC Relay',
+        task: async (ctx, _) => {
+          const namespace = ctx.config.namespace
+          const releaseName = ctx.config.releaseName
+
+          await this.chartManager.uninstall(namespace, releaseName)
+
+          this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
+        }
+      }
+    ])
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError('Error uninstalling relays', e)
+    }
+
+    return true
   }
 
-  static getCommandDefinition (chartCmd) {
+  static getCommandDefinition (relayCmd) {
     return {
       command: 'relay',
       desc: 'Manage JSON RPC relays',
@@ -129,13 +224,15 @@ export class RelayCommand extends BaseCommand {
               )
             },
             handler: argv => {
-              chartCmd.logger.debug("==== Running 'chart install' ===")
-              chartCmd.logger.debug(argv)
+              relayCmd.logger.debug("==== Running 'chart install' ===", { argv })
 
-              chartCmd.install(argv).then(r => {
-                chartCmd.logger.debug('==== Finished running `chart install`====')
+              relayCmd.install(argv).then(r => {
+                relayCmd.logger.debug('==== Finished running `chart install`====')
 
                 if (!r) process.exit(1)
+              }).catch(err => {
+                relayCmd.logger.showUserError(err)
+                process.exit(1)
               })
             }
           })
@@ -147,11 +244,11 @@ export class RelayCommand extends BaseCommand {
               flags.nodeIDs
             ),
             handler: argv => {
-              chartCmd.logger.debug("==== Running 'chart uninstall' ===")
-              chartCmd.logger.debug(argv)
+              relayCmd.logger.debug("==== Running 'chart uninstall' ===", { argv })
+              relayCmd.logger.debug(argv)
 
-              chartCmd.uninstall(argv).then(r => {
-                chartCmd.logger.debug('==== Finished running `chart uninstall`====')
+              relayCmd.uninstall(argv).then(r => {
+                relayCmd.logger.debug('==== Finished running `chart uninstall`====')
 
                 if (!r) process.exit(1)
               })

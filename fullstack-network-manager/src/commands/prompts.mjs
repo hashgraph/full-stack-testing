@@ -48,7 +48,7 @@ export async function promptNodeIdsArg (task, input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'input',
         default: 'node0,node1,node2',
-        message: 'Which nodes do you wish to setup? Use comma separated list:'
+        message: 'Enter list of node IDs (comma separated list):'
       })
     }
 
@@ -72,8 +72,8 @@ export async function promptReleaseTag (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: 'v0.42.5',
-        message: 'Which platform version do you wish to setup?'
+        default: flags.releaseTag.definition.default,
+        message: 'Enter release version:'
       })
     }
 
@@ -89,7 +89,7 @@ export async function promptCacheDir (task, input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
         default: constants.FST_CACHE_DIR,
-        message: 'Which directory do you wish to use as local cache?'
+        message: 'Enter local cache directory path:'
       })
     }
 
@@ -121,7 +121,7 @@ export async function promptChainId (task, input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
         default: flags.chainId.definition.default,
-        message: 'Which chain ID do you wish to use?'
+        message: 'Enter chain ID: '
       })
     }
 
@@ -137,7 +137,7 @@ export async function promptChartDir (task, input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
         default: flags.chartDirectory.definition.default,
-        message: 'Which charts directory do you wish to use?'
+        message: 'Enter local charts directory path: '
       })
 
       if (!fs.existsSync(input)) {
@@ -147,7 +147,27 @@ export async function promptChartDir (task, input) {
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.chartDirectory.name}`, e)
+  }
+}
+
+export async function promptValuesFile (task, input) {
+  try {
+    if (input && !fs.existsSync(input)) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.valuesFile.definition.default,
+        message: 'Enter path to values.yaml: '
+      })
+
+      if (!fs.existsSync(input)) {
+        throw new IllegalArgumentError('Invalid values.yaml file', input)
+      }
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.valuesFile.name}`, e)
   }
 }
 
@@ -263,5 +283,85 @@ export async function promptDeployCertManagerCRDs (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
+  }
+}
+
+export async function promptDeployMirrorNode (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployMirrorNode.definition.default,
+        message: 'Would you like to deploy Hedera Mirror Node?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployMirrorNode.name}`, e)
+  }
+}
+
+export async function promptDeployHederaExplorer (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deployHederaExplorer.definition.default,
+        message: 'Would you like to deploy Hedera Explorer?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployHederaExplorer.name}`, e)
+  }
+}
+
+export async function promptOperatorId (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.operatorId.definition.default,
+        message: 'Enter operator ID: '
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.operatorId.name}`, e)
+  }
+}
+
+export async function promptOperatorKey (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.operatorKey.definition.default,
+        message: 'Enter operator ID: '
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.operatorKey.name}`, e)
+  }
+}
+
+export async function promptReplicaCount (task, input) {
+  try {
+    if (typeof input !== 'number') {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'number',
+        default: flags.replicaCount.definition.default,
+        message: 'How many replica do you want?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.replicaCount.name}`, e)
   }
 }
