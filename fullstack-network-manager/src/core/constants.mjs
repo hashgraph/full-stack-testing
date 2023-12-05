@@ -53,3 +53,7 @@ export const DEFAULT_CHART_REPO = new Map()
   .set(CHART_FST_REPO_NAME, CHART_REPO_FST_URL)
   .set(CHART_JSON_RPC_RELAY_REPO_NAME, CHART_REPO_JSON_RPC_RELAY_URL)
   .set(CHART_MIRROR_NODE_REPO_NAME, CHART_MIRROR_NODE_URL)
+
+// ------------------- Hedera Account related ---------------------------------------------------------------------------------
+export const OPERATOR_ID = process.env.FST_OPERATOR_ID || '0.0.2'
+export const OPERATOR_KEY = process.env.FST_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
