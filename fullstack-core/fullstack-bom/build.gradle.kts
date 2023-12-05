@@ -31,18 +31,18 @@ javaPlatform {
 dependencies {
     // Define the external Bill of Material (BOM) required by this project
     api(platform("io.fabric8:kubernetes-client-bom:6.6.2"))
-    api(platform("org.junit:junit-bom:5.9.3"))
+    api(platform("org.junit:junit-bom:5.10.1"))
     api(platform("org.assertj:assertj-bom:3.24.2"))
     api(platform("com.fasterxml.jackson:jackson-bom:2.15.2"))
     api(platform("org.mockito:mockito-bom:5.3.1"))
-    api(enforcedPlatform("org.apache.logging.log4j:log4j-bom:2.20.0"))
+    api(platform("org.apache.logging.log4j:log4j-bom:2.20.0"))
 }
 
 dependencies.constraints {
     api("org.slf4j:slf4j-api:2.0.9")
     api("org.slf4j:slf4j-nop:2.0.9")
     api("org.slf4j:slf4j-simple:2.0.9")
-    api("com.jcovalent.junit:jcovalent-junit-logging:0.3.1")
+    api("com.jcovalent.junit:jcovalent-junit-logging:0.3.2")
     api("io.github.classgraph:classgraph:4.8.161")
 
     for (p in rootProject.childProjects) {

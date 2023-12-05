@@ -19,4 +19,4 @@ plugins {
     id("com.hedera.fullstack.jpms-modules")
 }
 
-dependencies { api(enforcedPlatform(project(":fullstack-bom"))) }
+dependencies { api(platform(project(":fullstack-bom"))) }
