@@ -275,14 +275,14 @@ export async function promptDeployCertManagerCRDs (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployCertManagerCRDs.definition.default,
+        default: flags.deployCertManagerCrds.definition.default,
         message: 'Would you like to deploy Cert Manager CRDs?'
       })
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCrds.name}`, e)
   }
 }
 
@@ -315,6 +315,54 @@ export async function promptDeployHederaExplorer (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.deployHederaExplorer.name}`, e)
+  }
+}
+
+export async function promptEnableTls(task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.enableTls.definition.default,
+        message: 'Would you like to enable TLS?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.enableTls.name}`, e)
+  }
+}
+
+export async function promptTlsClusterIssuerName(task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.tlsClusterIssuerName.definition.default,
+        message: 'Enter TLS cluster issuer name:'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerName.name}`, e)
+  }
+}
+
+export async function promptTlsClusterIssuerNamespace(task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.tlsClusterIssuerNamespace.definition.default,
+        message: 'Enter TLS cluster issuer namespace:'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerNamespace.name}`, e)
   }
 }
 

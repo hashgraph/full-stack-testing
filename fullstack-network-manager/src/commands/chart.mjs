@@ -59,6 +59,9 @@ export class ChartCommand extends BaseCommand {
     const valuesFile = this.configManager.flagValue(cachedConfig, flags.valuesFile)
     const deployMirrorNode = this.configManager.flagValue(cachedConfig, flags.deployMirrorNode)
     const deployExplorer = this.configManager.flagValue(cachedConfig, flags.deployHederaExplorer)
+    const enableTls = this.configManager.flagValue(cachedConfig, flags.enableTls)
+    const tlsClusterIssuerName = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerName)
+    const tlsClusterIssuerNamespace = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerNamespace)
 
     // prompt if values are missing and create a config object
     const config = {
@@ -67,6 +70,9 @@ export class ChartCommand extends BaseCommand {
       valuesFile: await prompts.promptChartDir(task, valuesFile),
       deployMirrorNode: await prompts.promptDeployMirrorNode(task, deployMirrorNode),
       deployHederaExplorer: await prompts.promptDeployHederaExplorer(task, deployExplorer),
+      enableTls: await prompts.promptEnableTls(task, enableTls),
+      tlsClusterIssuerName: await prompts.promptTlsClusterIssuerName(task, tlsClusterIssuerName),
+      tlsClusterIssuerNamespace: await prompts.promptTlsClusterIssuerNamespace(task, tlsClusterIssuerNamespace),
       timeout: '900s',
       version: cachedConfig.version
     }
@@ -76,7 +82,8 @@ export class ChartCommand extends BaseCommand {
       constants.CHART_FST_REPO_NAME, constants.CHART_FST_DEPLOYMENT_NAME)
 
     config.valuesArg = this.prepareValuesArg(config.chartDir,
-      config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer)
+      config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer,
+      config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace)
 
     return config
   }
