@@ -28,6 +28,12 @@
       { "cmd": "./gradlew versionAsSpecified --scan -PnewVersion=${nextRelease.version}" }
     ],
     [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "fullstack-network-manager"
+      }
+    ],
+    [
       "@semantic-release/git",
       {
         "assets": [
