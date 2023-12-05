@@ -270,7 +270,7 @@ export async function promptDeployCertManager (task, input) {
   }
 }
 
-export async function promptDeployCertManagerCRDs (task, input) {
+export async function promptDeployCertManagerCrds (task, input) {
   try {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -283,6 +283,22 @@ export async function promptDeployCertManagerCRDs (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCrds.name}`, e)
+  }
+}
+
+export async function promptAcmeClusterIssuer(task, input) {
+  try {
+    if (typeof input !== 'boolean') {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.acmeClusterIssuer.definition.default,
+        message: 'Would you like to deploy ACME Cluster Issuer?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.acmeClusterIssuer.name}`, e)
   }
 }
 

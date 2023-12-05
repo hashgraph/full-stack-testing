@@ -244,7 +244,8 @@ export class ClusterCommand extends BaseCommand {
           const deployMinio = self.configManager.flagValue(cachedConfig, flags.deployMinio)
           const deployEnvoyGateway = self.configManager.flagValue(cachedConfig, flags.deployEnvoyGateway)
           const deployCertManager = self.configManager.flagValue(cachedConfig, flags.deployCertManager)
-          const deployCertManagerCRDs = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCRDs)
+          const deployCertManagerCrds = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCrds)
+          const acmeClusterIssuer = self.configManager.flagValue(cachedConfig, flags.acmeClusterIssuer)
 
           // get existing choices
           const clusters = await self.kind.getClusters('-q')
@@ -258,8 +259,9 @@ export class ClusterCommand extends BaseCommand {
             deployPrometheusStack: await prompts.promptDeployPrometheusStack(task, deployPrometheusStack),
             deployMinio: await prompts.promptDeployMinio(task, deployMinio),
             deployEnvoyGateway: await prompts.promptDeployEnvoyGateway(task, deployEnvoyGateway),
-            deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager, namespaces),
-            deployCertManagerCRDs: await prompts.promptDeployCertManagerCRDs(task, deployCertManagerCRDs, namespaces)
+            deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager),
+            deployCertManagerCrds: await prompts.promptDeployCertManagerCrds(task, deployCertManagerCrds),
+            acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer)
           }
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
@@ -277,7 +279,7 @@ export class ClusterCommand extends BaseCommand {
             ctx.config.deployMinio,
             ctx.config.deployEnvoyGateway,
             ctx.config.deployCertManager,
-            ctx.config.certManagerCrds,
+            ctx.config.deployCertManagerCrds,
             ctx.config.acmeClusterIssuer
           )
         },
