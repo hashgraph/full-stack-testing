@@ -4,7 +4,6 @@ import { ShellRunner } from '../core/shell_runner.mjs'
 
 export class BaseCommand extends ShellRunner {
   async prepareChartPath (chartDir, chartRepo, chartName) {
-    if (!chartDir) throw new MissingArgumentError('chartDir is required')
     if (!chartRepo) throw new MissingArgumentError('chart repo name is required')
     if (!chartName) throw new MissingArgumentError('chart name is required')
 
