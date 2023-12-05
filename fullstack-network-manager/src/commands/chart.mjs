@@ -7,6 +7,21 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
+  getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace) {
+
+      const gatewayPrefix = 'gatewayApi.gateway'
+      let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
+      valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
+      valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerNamespace=${tlsClusterIssuerNamespace}`
+
+      const listenerPrefix = `${gatewayPrefix}.listeners`
+      valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
+      valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
+      valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=${enableTls}`
+
+      return valuesArg
+  }
+
   prepareValuesFiles (valuesFile) {
     let valuesArg = ''
     if (valuesFile) {
@@ -20,7 +35,7 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer) {
+  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace) {
     let valuesArg = ''
     if (chartDir) {
       valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
@@ -29,6 +44,10 @@ export class ChartCommand extends BaseCommand {
     valuesArg += this.prepareValuesFiles(valuesFile)
 
     valuesArg += ` --set hedera-mirror-node.enabled=${deployMirrorNode} --set hedera-explorer.enabled=${deployHederaExplorer}`
+
+    if (enableTls) {
+      valuesArg += this.getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace)
+    }
 
     return valuesArg
   }
@@ -203,7 +222,10 @@ export class ChartCommand extends BaseCommand {
                 flags.deployHederaExplorer,
                 flags.deployJsonRpcRelay,
                 flags.valuesFile,
-                flags.chartDirectory
+                flags.chartDirectory,
+                flags.enableTls,
+                flags.tlsClusterIssuerName,
+                flags.tlsClusterIssuerNamespace
               )
             },
             handler: argv => {
@@ -246,7 +268,10 @@ export class ChartCommand extends BaseCommand {
               flags.deployMirrorNode,
               flags.deployHederaExplorer,
               flags.valuesFile,
-              flags.chartDirectory
+              flags.chartDirectory,
+              flags.enableTls,
+              flags.tlsClusterIssuerName,
+              flags.tlsClusterIssuerNamespace
             ),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart upgrade' ===")

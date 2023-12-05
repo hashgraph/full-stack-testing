@@ -12,5 +12,5 @@ spec:
       sectionName: hedera-explorer
   rules:
     - backendRefs:
-      - name: fst-hedera-explorer
+      - name: fullstack-deployment-hedera-explorer
         port: 80
