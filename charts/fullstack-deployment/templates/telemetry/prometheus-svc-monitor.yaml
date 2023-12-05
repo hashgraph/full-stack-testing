@@ -1,4 +1,4 @@
-{{- if $.Values.telemetry.prometheus.svcMonitor.enabled | eq "true" }}
+{{- if $.Values.telemetry.prometheus.svcMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

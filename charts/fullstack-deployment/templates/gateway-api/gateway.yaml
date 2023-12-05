@@ -42,7 +42,9 @@ spec:
     - name: grpcs-{{ $node.name }} # for exposing grpc port 50212 from haproxy or network-node
       protocol: {{ $.Values.gatewayApi.gateway.listeners.grpcs.tlsEnabled | ternary "TLS" "TCP" }}
       port: {{ $grpcs_port }}
+      {{- if $.Values.gatewayApi.gateway.listeners.grpcs.tlsEnabled }}
       hostname: {{ tpl $.Values.gatewayApi.route.hostname (dict "node" $node "Template" $.Template) }}
+      {{- end }}
       allowedRoutes:
         kinds:
           - kind: "TCPRoute"
@@ -59,7 +61,9 @@ spec:
     - name: grpc-web-{{ $node.name }} # for exposing grpc-web port 8080 from envoy-proxy
       protocol: {{ $.Values.gatewayApi.gateway.listeners.grpcWeb.tlsEnabled | ternary "HTTPS" "HTTP" }}
       port: {{ $grpc_web_port }}
+      {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.tlsEnabled }}
       hostname: {{ tpl $.Values.gatewayApi.route.hostname (dict "node" $node "Template" $.Template) }}
+      {{- end }}
       {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.tlsEnabled }}
       tls:
         mode: Terminate
