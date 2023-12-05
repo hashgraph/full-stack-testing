@@ -1,15 +1,13 @@
 'use strict'
 import { MissingArgumentError } from '../core/errors.mjs'
 import { ShellRunner } from '../core/shell_runner.mjs'
-import * as flags from './flags.mjs'
 
 export class BaseCommand extends ShellRunner {
-  async prepareChartPath (config, chartRepo, chartName) {
-    if (!config) throw new MissingArgumentError('config is required')
+  async prepareChartPath (chartDir, chartRepo, chartName) {
+    if (!chartDir) throw new MissingArgumentError('chartDir is required')
     if (!chartRepo) throw new MissingArgumentError('chart repo name is required')
     if (!chartName) throw new MissingArgumentError('chart name is required')
 
-    const chartDir = this.configManager.flagValue(config, flags.chartDirectory)
     if (chartDir) {
       const chartPath = `${chartDir}/${chartName}`
       await this.helm.dependency('update', chartPath)
