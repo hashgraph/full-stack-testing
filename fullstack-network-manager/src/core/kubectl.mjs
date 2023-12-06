@@ -1,5 +1,5 @@
-import {ShellRunner} from './shell_runner.mjs'
-import {FullstackTestingError} from './errors.mjs'
+import { ShellRunner } from './shell_runner.mjs'
+import { FullstackTestingError } from './errors.mjs'
 
 export class Kubectl extends ShellRunner {
   /**
@@ -8,7 +8,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {string}
    */
-  prepareCommand(action, ...args) {
+  prepareCommand (action, ...args) {
     let cmd = `kubectl ${action}`
     args.forEach(arg => {
       cmd += ` ${arg}`
@@ -22,7 +22,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async create(resource, ...args) {
+  async create (resource, ...args) {
     return this.run(this.prepareCommand('create', resource, ...args))
   }
 
@@ -31,7 +31,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async createNamespace(...args) {
+  async createNamespace (...args) {
     return this.create('ns', ...args)
   }
 
@@ -41,7 +41,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async delete(resource, ...args) {
+  async delete (resource, ...args) {
     return this.run(this.prepareCommand('delete', resource, ...args))
   }
 
@@ -50,7 +50,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async deleteNamespace(...args) {
+  async deleteNamespace (...args) {
     return this.delete('ns', ...args)
   }
 
@@ -60,7 +60,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async get(resource, ...args) {
+  async get (resource, ...args) {
     return this.run(this.prepareCommand('get', resource, ...args))
   }
 
@@ -69,7 +69,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async getNamespace(...args) {
+  async getNamespace (...args) {
     return this.get('ns', ...args)
   }
 
@@ -78,7 +78,7 @@ export class Kubectl extends ShellRunner {
    * @param podName name of the pod
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async getPodIP(podName) {
+  async getPodIP (podName) {
     try {
       const output = await this.run(this.prepareCommand('get', 'pod', podName, '-o jsonpath=\'{.status.podIP}\''))
 
@@ -97,7 +97,7 @@ export class Kubectl extends ShellRunner {
    * @param svcName name of the service
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async getClusterIP(svcName) {
+  async getClusterIP (svcName) {
     try {
       const output = await this.run(this.prepareCommand('get', 'svc', svcName, '-o jsonpath=\'{.spec.clusterIP}\''))
       if (output) {
@@ -116,7 +116,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async wait(resource, ...args) {
+  async wait (resource, ...args) {
     return this.run(this.prepareCommand('wait', resource, ...args))
   }
 
@@ -126,7 +126,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async exec(pod, ...args) {
+  async exec (pod, ...args) {
     return this.run(this.prepareCommand('exec', pod, ...args))
   }
 
@@ -137,7 +137,7 @@ export class Kubectl extends ShellRunner {
    * @param bashScript bash script to be run within the container (e.g 'ls -la /opt/hgcapp')
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async execContainer(pod, container, bashScript) {
+  async execContainer (pod, container, bashScript) {
     return this.exec(pod, `-c ${container}`, `-- bash -c "${bashScript}"`)
   }
 
@@ -147,7 +147,7 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async copy(...args) {
+  async copy (...args) {
     return this.run(this.prepareCommand('cp', ...args))
   }
 
@@ -156,18 +156,18 @@ export class Kubectl extends ShellRunner {
    * @param args args of the command
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async config(...args) {
+  async config (...args) {
     return this.run(this.prepareCommand('config', ...args))
   }
 
   /**
    * Invoke `kubectl port-forward svc/<svc name>` command
    * @param resource name of the service or pod. Must be of the format pod/<pod name> or svc/<service name>
-   * @param localPort port to be forwarded
-   * @param remotePort port of the host machine
+   * @param localPort port of the host machine
+   * @param remotePort port to be forwarded from the service or pod
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async portForward(resource, localPort, remotePort) {
-    return this.run(this.prepareCommand(`port-forward ${resource} ${localPort} ${remotePort} &`))
+  async portForward (resource, localPort, remotePort) {
+    return this.run(this.prepareCommand(`port-forward ${resource} ${localPort}:${remotePort} &`))
   }
 }

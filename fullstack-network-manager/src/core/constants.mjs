@@ -1,3 +1,4 @@
+import { AccountId } from '@hashgraph/sdk'
 import { dirname, normalize } from 'path'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
@@ -21,17 +22,23 @@ export const RESOURCES_DIR = normalize(CUR_FILE_DIR + '/../../resources')
 
 export const ROOT_CONTAINER = 'root-container'
 
-// --------------- Hedera related constants --------------------------------------------------------------------
-export const HEDERA_CHAIN_ID = '298'
+// --------------- Hedera network and node related constants --------------------------------------------------------------------
+export const HEDERA_CHAIN_ID = process.env.FST_CHAIN_ID || '298'
 export const HEDERA_HGCAPP_DIR = '/opt/hgcapp'
 export const HEDERA_SERVICES_PATH = `${HEDERA_HGCAPP_DIR}/services-hedera`
 export const HEDERA_HAPI_PATH = `${HEDERA_SERVICES_PATH}/HapiApp2.0`
 export const HEDERA_DATA_APPS_DIR = 'data/apps'
 export const HEDERA_DATA_LIB_DIR = 'data/lib'
 export const HEDERA_USER_HOME_DIR = '/home/hedera'
-export const HEDERA_APP_JAR = 'HederaNode.jar'
-export const HEDERA_NODE_DEFAULT_STAKE_AMOUNT = 1
+export const HEDERA_APP_NAME = 'HederaNode.jar'
 export const HEDERA_BUILDS_URL = 'https://builds.hedera.com'
+export const HEDERA_NODE_ACCOUNT_ID_START = AccountId.fromString(process.env.FST_NODE_ACCOUNT_ID_START || '0.0.3')
+export const HEDERA_NODE_INTERNAL_GOSSIP_PORT = process.env.FST_NODE_INTERNAL_GOSSIP_PORT || '50111'
+export const HEDERA_NODE_EXTERNAL_GOSSIP_PORT = process.env.FST_NODE_EXTERNAL_GOSSIP_PORT || '50111'
+
+export const HEDERA_NODE_GRPC_PORT = process.env.FST_NODE_GRPC_PORT || '50211'
+export const HEDERA_NODE_GRPCS_PORT = process.env.FST_NODE_GRPC_PORT || '50212'
+export const HEDERA_NODE_DEFAULT_STAKE_AMOUNT = process.env.FST_NODE_DEFAULT_STAKE_AMOUNT || 1
 
 // --------------- Logging related constants ---------------------------------------------------------------------------
 export const LOG_STATUS_PROGRESS = chalk.cyan('>>')

@@ -1,20 +1,17 @@
 import chalk from 'chalk'
 import * as fs from 'fs'
-import {Listr} from 'listr2'
-import {FullstackTestingError, IllegalArgumentError} from '../core/errors.mjs'
-import {constants, Templates} from '../core/index.mjs'
-import {BaseCommand} from './base.mjs'
+import { Listr } from 'listr2'
+import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
+import { constants, Templates } from '../core/index.mjs'
+import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as prompts from './prompts.mjs'
-import {
-  Wallet, LocalProvider, PrivateKey, AccountCreateTransaction, Hbar, Client, AccountBalanceQuery
-} from '@hashgraph/sdk'
 
 /**
  * Defines the core functionalities of 'node' command
  */
 export class NodeCommand extends BaseCommand {
-  constructor(opts) {
+  constructor (opts) {
     super(opts)
 
     if (!opts || !opts.downloader) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
@@ -24,7 +21,7 @@ export class NodeCommand extends BaseCommand {
     this.plaformInstaller = opts.platformInstaller
   }
 
-  async checkNetworkNodePod(namespace, nodeId, timeout = '300s') {
+  async checkNetworkNodePod (namespace, nodeId, timeout = '300s') {
     nodeId = nodeId.trim()
     const podName = Templates.renderNetworkPodName(nodeId)
 
@@ -37,72 +34,10 @@ export class NodeCommand extends BaseCommand {
     }
   }
 
-  async createTestAccount(nodeId, accountKey) {
-    const nodeSvc = Templates.renderNodeSvcName(nodeId)
-    // await this.kubectl.portForward(`svc/${nodeSvc}`, 50211, 50211)
-    const client = Client.forNetwork({'127.0.0.0:50211': '0.0.3'})
-
-    const wallet = new Wallet(
-      constants.OPERATOR_ID,
-      constants.OPERATOR_KEY,
-      new LocalProvider({client})
-    )
-
-    // self.logger.debug(`Test account public key = ${accountKey.publicKey.toString()}`)
-
-    // Create a new account with 0 balance
-    try {
-      let transaction = await new AccountCreateTransaction()
-        .setInitialBalance(new Hbar(0))
-        .setKey(accountKey.publicKey)
-        .freezeWithSigner(wallet)
-
-      transaction = await transaction.signWithSigner(wallet)
-      const response = await transaction.executeWithSigner(wallet)
-      const receipt = await response.getReceiptWithSigner(wallet)
-
-      const balance = await new AccountBalanceQuery()
-        .setAccountId(wallet.getAccountId())
-        .executeWithSigner(wallet);
-
-      self.logger.showUserError(
-        `Created new account using node '${nodeId}': ${receipt.accountId.toString()}`
-      )
-      self.logger.showUserError(
-        `Account balance: ${balance}`
-      )
-
-      // // stop port-forward
-      // try {
-      //   await this.run(`pkill kubectl -9`)
-      // } catch (e) {
-      //   this.logger.warn('failed to stop port-forwarding', e)
-      // }
-
-      return {wallet: wallet, receipt: receipt}
-    } catch (e) {
-      throw new FullstackTestingError(
-        `failed to create account using node: ${nodeId}`, e)
-    }
-  }
-
-  async checkNetworkNode(nodeId) {
-    try {
-      const accountKey = PrivateKey.generate()
-      await this.createTestAccount(nodeId, accountKey)
-    } catch (e) {
-      throw new FullstackTestingError(
-        `failed to check network node '${nodeId}'`
-
-
-        , e)
-    }
-  }
-
   /**
    * Return task for checking for all network node pods
    */
-  taskCheckNetworkNodePods(ctx, task) {
+  taskCheckNetworkNodePods (ctx, task) {
     if (!ctx.config) {
       ctx.config = {}
     }
@@ -114,14 +49,11 @@ export class NodeCommand extends BaseCommand {
       subTasks.push({
         title:
 
-
           `
     Check
     network
-    pod: ${chalk.yellow(nodeId)}`
+    pod: ${chalk.yellow(nodeId)}`,
 
-
-        ,
         task: async (ctx) => {
           ctx.config.podNames[nodeId] = await this.checkNetworkNodePod(ctx.config.namespace, nodeId)
         }
@@ -137,60 +69,60 @@ export class NodeCommand extends BaseCommand {
     })
   }
 
-  async setup(argv) {
+  async setup (argv) {
     const self = this
 
     const tasks = new Listr([
-        {
-          title: 'Initialize',
-          task: async (ctx, task) => {
-            const config = {
-              namespace: await prompts.promptNamespaceArg(task, argv.namespace),
-              nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
-              releaseTag: await prompts.promptReleaseTag(task, argv.releaseTag),
-              cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
-              force: await prompts.promptForce(task, argv.force),
-              chainId: await prompts.promptChainId(task, argv.chainId)
-            }
-
-            // compute other config parameters
-            config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
-            config.buildZipFile = `${config.cacheDir} /${config.releasePrefix}/build-${config.releaseTag}.zip`
-            config.stagingDir = `${config.cacheDir}/${config.releasePrefix}/staging/${config.releaseTag}`
-
-            // prepare staging directory
-            fs.mkdirSync(config.stagingDir, {recursive: true})
-
-            // set config in the context for later tasks to use
-            ctx.config = config
-            self.logger.debug('Initialized config', {config})
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          const config = {
+            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
+            releaseTag: await prompts.promptReleaseTag(task, argv.releaseTag),
+            cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
+            force: await prompts.promptForce(task, argv.force),
+            chainId: await prompts.promptChainId(task, argv.chainId)
           }
-        },
-        {
-          title: 'Fetch platform',
-          task: async (ctx, _) => {
-            const config = ctx.config
 
-            if (config.force || !fs.existsSync(config.buildZipFile)) {
-              ctx.config.buildZipFile = await self.downloader.fetchPlatform(ctx.config.releaseTag, config.cacheDir)
-            }
+          // compute other config parameters
+          config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
+          config.buildZipFile = `${config.cacheDir} /${config.releasePrefix}/build-${config.releaseTag}.zip`
+          config.stagingDir = `${config.cacheDir}/${config.releasePrefix}/staging/${config.releaseTag}`
+
+          // prepare staging directory
+          fs.mkdirSync(config.stagingDir, { recursive: true })
+
+          // set config in the context for later tasks to use
+          ctx.config = config
+          self.logger.debug('Initialized config', { config })
+        }
+      },
+      {
+        title: 'Fetch platform',
+        task: async (ctx, _) => {
+          const config = ctx.config
+
+          if (config.force || !fs.existsSync(config.buildZipFile)) {
+            ctx.config.buildZipFile = await self.downloader.fetchPlatform(ctx.config.releaseTag, config.cacheDir)
           }
-        },
-        {
-          title: 'Identify network pods',
-          task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
-        },
-        {
-          title: 'Prepare staging',
-          task:
+        }
+      },
+      {
+        title: 'Identify network pods',
+        task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
+      },
+      {
+        title: 'Prepare staging',
+        task:
             async (ctx, task) => {
               const config = ctx.config
               return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
             }
-        },
-        {
-          title: 'Setup network nodes',
-          task:
+      },
+      {
+        title: 'Setup network nodes',
+        task:
             async (ctx, task) => {
               const config = ctx.config
 
@@ -212,13 +144,13 @@ export class NodeCommand extends BaseCommand {
                 }
               })
             }
-        },
-      ],
-      {
-        concurrent: false,
-        showErrorMessage:
-          false
       }
+    ],
+    {
+      concurrent: false,
+      showErrorMessage:
+          false
+    }
     )
 
     try {
@@ -230,7 +162,7 @@ export class NodeCommand extends BaseCommand {
     return true
   }
 
-  async start(argv) {
+  async start (argv) {
     const self = this
 
     const tasks = new Listr([
@@ -270,16 +202,7 @@ export class NodeCommand extends BaseCommand {
           })
         }
       },
-      {
-        title: 'Check network',
-        task: async (ctx, task) => {
-
-          for (const nodeId of ctx.config.nodeIds) {
-            await self.checkNetworkNode(nodeId)
-          }
-        }
-      }
-    ], {concurrent: false})
+    ], { concurrent: false })
 
     try {
       await tasks.run()
@@ -290,7 +213,7 @@ export class NodeCommand extends BaseCommand {
     return true
   }
 
-  async stop(argv) {
+  async stop (argv) {
     const self = this
 
     const tasks = new Listr([
@@ -330,7 +253,7 @@ export class NodeCommand extends BaseCommand {
           })
         }
       }
-    ], {concurrent: false})
+    ], { concurrent: false })
 
     try {
       await tasks.run()
@@ -345,7 +268,7 @@ export class NodeCommand extends BaseCommand {
    * Return Yargs command definition for 'node' command
    * @param nodeCmd an instance of NodeCommand
    */
-  static getCommandDefinition(nodeCmd) {
+  static getCommandDefinition (nodeCmd) {
     return {
       command: 'node',
       desc: 'Manage a FST node running Hedera platform',
