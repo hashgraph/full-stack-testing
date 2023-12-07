@@ -21,7 +21,7 @@ plugins {
     id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.maven-publish")
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
 }
 
 dependencies {
