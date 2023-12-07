@@ -56,7 +56,7 @@ export const Logger = class {
   constructor (level) {
     this.nextTraceId()
 
-    this.winsonLogger = winston.createLogger({
+    this.winstonLogger = winston.createLogger({
       level,
       format: winston.format.combine(
         customFormat,
@@ -114,28 +114,20 @@ export const Logger = class {
     }
   }
 
-  critical (msg, ...args) {
-    this.winsonLogger.crit(msg, ...args, this.prepMeta())
-  }
-
   error (msg, ...args) {
-    this.winsonLogger.error(msg, ...args, this.prepMeta())
+    this.winstonLogger.error(msg, ...args, this.prepMeta())
   }
 
   warn (msg, ...args) {
-    this.winsonLogger.warn(msg, ...args, this.prepMeta())
-  }
-
-  notice (msg, ...args) {
-    this.winsonLogger.notice(msg, ...args, this.prepMeta())
+    this.winstonLogger.warn(msg, ...args, this.prepMeta())
   }
 
   info (msg, ...args) {
-    this.winsonLogger.info(msg, ...args, this.prepMeta())
+    this.winstonLogger.info(msg, ...args, this.prepMeta())
   }
 
   debug (msg, ...args) {
-    this.winsonLogger.debug(msg, ...args, this.prepMeta())
+    this.winstonLogger.debug(msg, ...args, this.prepMeta())
   }
 
   showList (title, items = []) {
