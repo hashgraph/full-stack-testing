@@ -270,4 +270,9 @@ jobs:
           GIT_AUTHOR_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
           GIT_COMMITTER_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_COMMITTER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
-        run: npx semantic-release
+        run: |
+          # create .npmrc file to publish fullstack-network-manager to Github NPM registry
+          rm -f ./fullstack-network-manager/.npmrc  || true
+          echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" > ./fullstack-network-manager/.npmrc
+          echo "@hashgraph:registry=https://npm.pkg.github.com" >> ./fullstack-network-manager/.npmrc
+          npx semantic-release
