@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import * as fs from 'fs'
 import { Listr } from 'listr2'
 import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
+import { sleep } from '../core/helpers.mjs'
 import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
@@ -34,6 +35,38 @@ export class NodeCommand extends BaseCommand {
     }
   }
 
+  async checkNetworkNodeStarted (nodeId, status = 'ACTIVE') {
+    nodeId = nodeId.trim()
+    const podName = Templates.renderNetworkPodName(nodeId)
+    const logfilePath = `${constants.HEDERA_HAPI_PATH}/logs/hgcaa.log`
+    const maxAttempt = 15
+    let attempt = 0
+    let isActive = false
+
+    while (attempt < maxAttempt) {
+      try {
+        const output = await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `cat ${logfilePath} | grep "status = ${status}"`)
+        if (output.length > 0) {
+          isActive = true
+          break
+        }
+        this.logger.debug(`Node ${nodeId} is not ${status} yet. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+      } catch (e) {
+        this.logger.warn(`error in checking if node is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+      }
+      attempt += 1
+      await sleep(1000)
+    }
+
+    if (!isActive) {
+      throw new FullstackTestingError(`node '${nodeId}' is not ${status} [ attempt = ${attempt}/${maxAttempt} ]`)
+    }
+
+    this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}] `)
+
+    return true
+  }
+
   /**
    * Return task for checking for all network node pods
    */
@@ -47,13 +80,7 @@ export class NodeCommand extends BaseCommand {
     const subTasks = []
     for (const nodeId of ctx.config.nodeIds) {
       subTasks.push({
-        title:
-
-          `
-    Check
-    network
-    pod: ${chalk.yellow(nodeId)}`,
-
+        title: `Check network pod: ${chalk.yellow(nodeId)}`,
         task: async (ctx) => {
           ctx.config.podNames[nodeId] = await this.checkNetworkNodePod(ctx.config.namespace, nodeId)
         }
@@ -186,9 +213,7 @@ export class NodeCommand extends BaseCommand {
           for (const nodeId of ctx.config.nodeIds) {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
-              title: `
-    Start
-    node: ${chalk.yellow(nodeId)}`,
+              title: `Start node: ${chalk.yellow(nodeId)}`,
               task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
             })
           }
@@ -202,6 +227,26 @@ export class NodeCommand extends BaseCommand {
           })
         }
       },
+      {
+        title: 'Check nodes are ACTIVE',
+        task: (ctx, task) => {
+          const subTasks = []
+          for (const nodeId of ctx.config.nodeIds) {
+            subTasks.push({
+              title: `Check node: ${chalk.yellow(nodeId)}`,
+              task: () => self.checkNetworkNodeStarted(nodeId)
+            })
+          }
+
+          // setup the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
+            }
+          })
+        }
+      }
     ], { concurrent: false })
 
     try {
@@ -237,9 +282,7 @@ export class NodeCommand extends BaseCommand {
           for (const nodeId of ctx.config.nodeIds) {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
-              title: `
-    Stop
-    node: ${chalk.yellow(nodeId)}`,
+              title: `Stop node: ${chalk.yellow(nodeId)}`,
               task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
             })
           }

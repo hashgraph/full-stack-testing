@@ -6,11 +6,11 @@ import {
   PrivateKey,
   Wallet
 } from '@hashgraph/sdk'
-import {afterAll, beforeAll, describe, expect, it} from '@jest/globals'
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals'
 import net from 'net'
-import {NodeCommand} from '../../../src/commands/node.mjs'
-import {FullstackTestingError, MissingArgumentError} from '../../../src/core/errors.mjs'
-import {sleep} from '../../../src/core/helpers.mjs'
+import { NodeCommand } from '../../../src/commands/node.mjs'
+import { FullstackTestingError, MissingArgumentError } from '../../../src/core/errors.mjs'
+import { sleep } from '../../../src/core/helpers.mjs'
 import {
   ChartManager,
   ConfigManager,
@@ -21,7 +21,7 @@ import {
   PlatformInstaller,
   constants, DependencyManager, Templates
 } from '../../../src/core/index.mjs'
-import {TEST_CACHE_DIR, testLogger} from '../../test_util.js'
+import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
 
 class TestHelper {
   static killKubectlPortForwardProcesses = async function (nodeCmd) {
@@ -29,7 +29,7 @@ class TestHelper {
 
     // kill any previous port-forwarding commands if possible
     const processIds = await nodeCmd.run('ps aux | grep "kubectl port-forward" | awk \'{print $2}\'')
-    for (let pid of processIds) {
+    for (const pid of processIds) {
       try {
         await nodeCmd.run(`kill -9 ${pid}`)
       } catch (e) {
@@ -66,7 +66,7 @@ class TestHelper {
             await sleep(1000)
             nodeCmd.logger.debug(`Checking exposed port '${localPort}' of node ${nodeId}`)
             // `nc -zv 127.0.0.1 ${localPort}`
-            socket = net.createConnection({port: localPort})
+            socket = net.createConnection({ port: localPort })
             nodeCmd.logger.debug(`Connected to exposed port '${localPort}' of node ${nodeId}`)
             break
           } catch (e) {
@@ -85,38 +85,9 @@ class TestHelper {
         localPort += 1
       }
 
-      return Client.fromConfig({network})
+      return Client.fromConfig({ network })
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
-    }
-  }
-
-  static async pingNetworkNodeGRPCPort(nodeCmd, nodeIds) {
-    if (!nodeCmd || !(nodeCmd instanceof NodeCommand)) throw new MissingArgumentError('An instance of command/NodeCommand is required')
-
-    try {
-      // attempt to ping nodes several times before triggering error
-      let allNodeActive = false
-      let attempt = 0
-      const client = await TestHelper.prepareNodeClient(nodeCmd, nodeIds)
-      while (attempt < 20) {
-        await sleep(1000)
-        try {
-          nodeCmd.logger.debug('Running ping...')
-          await client.pingAll()
-          allNodeActive = true
-          break
-        } catch (e) {
-          attempt += 1
-        }
-      }
-
-      if (client && client.close !== undefined) {
-        client.close()
-      }
-      return allNodeActive
-    } catch (e) {
-      throw new FullstackTestingError('ping failed for all nodes', e)
     }
   }
 }
@@ -152,6 +123,9 @@ describe('NodeCommand', () => {
     chainId: constants.HEDERA_CHAIN_ID
   }
 
+  beforeAll(() => TestHelper.killKubectlPortForwardProcesses(nodeCmd))
+  afterAll(() => TestHelper.killKubectlPortForwardProcesses(nodeCmd))
+
   describe('start', () => {
     it('node setup should succeed', async () => {
       expect.assertions(1)
@@ -161,39 +135,37 @@ describe('NodeCommand', () => {
         console.error(e)
         expect(e).toBeNull()
       }
-    }, 10000)
+    }, 20000)
 
     it('node start should succeed', async () => {
-        expect.assertions(1)
-        try {
-          await expect(nodeCmd.start(argv)).resolves.toBeTruthy()
-        } catch (e) {
-          console.error(e)
-          expect(e).toBeNull()
-        }
-      },
-      20000
-    )
-
-    it('pinging all nodes should succeed', async () => {
+      expect.assertions(1)
       try {
-        await expect(TestHelper.pingNetworkNodeGRPCPort(nodeCmd, argv.nodeIds)).resolves.toBeTruthy()
-        await TestHelper.killKubectlPortForwardProcesses(nodeCmd)
+        await expect(nodeCmd.start(argv)).resolves.toBeTruthy()
       } catch (e) {
         console.error(e)
         expect(e).toBeNull()
       }
-    }, 20000)
+    },
+    60000
+    )
 
-    it.skip('balance query should succeed', async () => {
+    it('nodes should be in ACTIVE status', async () => {
+      const nodeIds = argv.nodeIds.split(',')
+      for (const nodeId of nodeIds) {
+        await expect(nodeCmd.checkNetworkNodeStarted(nodeId)).resolves.toBeTruthy()
+      }
+    }, 50000)
+
+    it('balance query should succeed', async () => {
       expect.assertions(1)
-      try {
-        const client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+      let client = null
 
+      try {
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
         const wallet = new Wallet(
           constants.OPERATOR_ID,
           constants.OPERATOR_KEY,
-          new LocalProvider({client})
+          new LocalProvider({ client })
         )
 
         const balance = await new AccountBalanceQuery()
@@ -205,18 +177,23 @@ describe('NodeCommand', () => {
         console.error(e)
         expect(e).toBeNull()
       }
+
+      if (client) {
+        client.close()
+      }
     }, 20000)
 
-    it.skip('account creation should succeed', async () => {
+    it('account creation should succeed', async () => {
       expect.assertions(1)
-      try {
-        const accountKey = PrivateKey.generate()
-        const client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+      let client = null
 
+      try {
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        const accountKey = PrivateKey.generate()
         const wallet = new Wallet(
           constants.OPERATOR_ID,
           constants.OPERATOR_KEY,
-          new LocalProvider({client})
+          new LocalProvider({ client })
         )
 
         let transaction = await new AccountCreateTransaction()
@@ -232,6 +209,10 @@ describe('NodeCommand', () => {
       } catch (e) {
         console.error(e)
         expect(e).toBeNull()
+      }
+
+      if (client) {
+        client.close()
       }
     }, 20000)
   })
