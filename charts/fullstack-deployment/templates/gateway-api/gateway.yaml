@@ -7,10 +7,6 @@ metadata:
   labels:
     fullstack.hedera.com/type: gateway
     {{- include "fullstack.testLabels" $ | nindent 4 }}
-  {{- if $.Values.gatewayApi.gateway.tlsEnabled }}
-  annotations:
-    cert-manager.io/cluster-issuer: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}
-  {{- end }}
 spec:
   gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
   listeners:
@@ -101,23 +97,4 @@ spec:
           - kind: TCPRoute
     {{- end }}
 {{- end }}
-{{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.tlsEnabled }}
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: self-signed-ca-secret-hedera-explorer
-  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
-spec:
-  isCA: false
-  commonName: self-signed-ca-secret-hedera-explorer
-  secretName: self-signed-ca-secret-hedera-explorer
-  privateKey:
-    algorithm: ECDSA
-    size: 256
-  issuerRef:
-    name: self-signed
-    kind: ClusterIssuer
-    namespace: {{ default "cert-manager" $.Values.gatewayApi.gateway.tlsClusterIssuerNamespace }}
-    group: cert-manager.io
-{{- end }}
+

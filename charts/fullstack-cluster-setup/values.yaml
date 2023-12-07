@@ -27,8 +27,6 @@ cloud:
 cert-manager:
   namespace: cert-manager
   installCRDs: false
-  extraArgs:
-    - --feature-gates=ExperimentalGatewayAPISupport=true
 
 acme-cluster-issuer:
   issuers:
