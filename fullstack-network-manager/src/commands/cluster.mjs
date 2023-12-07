@@ -142,13 +142,10 @@ export class ClusterCommand extends BaseCommand {
         }
       },
       {
-        title: 'Create namespace(s)',
+        title: 'Create namespace',
         task: async (ctx, _) => {
           const namespace = ctx.config.namespace
           ctx.namespaces = await self.getNameSpaces()
-          if (!ctx.namespaces.includes(`namespace/cert-manager`)) {
-            await self.kubectl.createNamespace('cert-manager')
-          }
           if (!ctx.namespaces.includes(`namespace/${namespace}`)) {
             await self.kubectl.createNamespace(namespace)
           }
