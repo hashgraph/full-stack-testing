@@ -275,4 +275,5 @@ jobs:
           rm -f ./fullstack-network-manager/.npmrc  || true
           echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" > ./fullstack-network-manager/.npmrc
           echo "@hashgraph:registry=https://npm.pkg.github.com" >> ./fullstack-network-manager/.npmrc
+          cat ./fullstack-network-manager/.npmrc
           npx semantic-release
