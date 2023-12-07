@@ -143,7 +143,10 @@ export class RelayCommand extends BaseCommand {
           this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -190,7 +193,10 @@ export class RelayCommand extends BaseCommand {
           this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()

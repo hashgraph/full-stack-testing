@@ -144,7 +144,7 @@ export class NodeCommand extends BaseCommand {
       }
     ], {
       concurrent: false,
-      showErrorMessage: false
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
     })
 
     try {
@@ -189,12 +189,16 @@ export class NodeCommand extends BaseCommand {
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
-              collapseSubtasks: false
+              collapseSubtasks: false,
+              timer: constants.LISTR_DEFAULT_RENDERER_TIMER_OPTION
             }
           })
         }
       }
-    ], { concurrent: false })
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -238,12 +242,16 @@ export class NodeCommand extends BaseCommand {
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
-              collapseSubtasks: false
+              collapseSubtasks: false,
+              timer: constants.LISTR_DEFAULT_RENDERER_TIMER_OPTION
             }
           })
         }
       }
-    ], { concurrent: false })
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()

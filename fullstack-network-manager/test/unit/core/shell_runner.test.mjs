@@ -14,10 +14,10 @@ describe('ShellRunner', () => {
   it('should run command', async () => {
     await shellRunner.run('ls -l')
     expect(loggerSpy).toHaveBeenNthCalledWith(1, 'Executing command: \'ls -l\'')
-    expect(loggerSpy).toHaveBeenNthCalledWith(2,'Finished executing: \'ls -l\'', {
-      'commandExitCode': expect.any(Number),
-      'commandExitSignal': null,
-      'commandOutput': expect.any(Array)
+    expect(loggerSpy).toHaveBeenNthCalledWith(2, 'Finished executing: \'ls -l\'', {
+      commandExitCode: expect.any(Number),
+      commandExitSignal: null,
+      commandOutput: expect.any(Array)
     })
     expect(readableSpy).toHaveBeenCalledWith('data', expect.anything())
     expect(childProcessSpy).toHaveBeenCalledWith('exit', expect.anything())

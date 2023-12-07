@@ -1,3 +1,4 @@
+import { color, PRESET_TIMER } from 'listr2'
 import { dirname, normalize } from 'path'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
@@ -53,3 +54,20 @@ export const DEFAULT_CHART_REPO = new Map()
   .set(CHART_FST_REPO_NAME, CHART_REPO_FST_URL)
   .set(CHART_JSON_RPC_RELAY_REPO_NAME, CHART_REPO_JSON_RPC_RELAY_URL)
   .set(CHART_MIRROR_NODE_REPO_NAME, CHART_MIRROR_NODE_URL)
+
+// Listr related
+export const LISTR_DEFAULT_RENDERER_TIMER_OPTION = {
+  ...PRESET_TIMER,
+  condition: (duration) => duration > 100,
+  format: (duration) => {
+    if (duration > 10000) {
+      return color.red
+    }
+
+    return color.green
+  }
+}
+
+export const LISTR_DEFAULT_RENDERER_OPTION = {
+  timer: LISTR_DEFAULT_RENDERER_TIMER_OPTION
+}
