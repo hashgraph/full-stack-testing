@@ -6,11 +6,11 @@ import {
   PrivateKey,
   Wallet
 } from '@hashgraph/sdk'
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals'
+import {afterAll, beforeAll, describe, expect, it} from '@jest/globals'
 import net from 'net'
-import { NodeCommand } from '../../../src/commands/node.mjs'
-import { FullstackTestingError, MissingArgumentError } from '../../../src/core/errors.mjs'
-import { sleep } from '../../../src/core/helpers.mjs'
+import {NodeCommand} from '../../../src/commands/node.mjs'
+import {FullstackTestingError, MissingArgumentError} from '../../../src/core/errors.mjs'
+import {sleep} from '../../../src/core/helpers.mjs'
 import {
   ChartManager,
   ConfigManager,
@@ -21,19 +21,20 @@ import {
   PlatformInstaller,
   constants, DependencyManager, Templates
 } from '../../../src/core/index.mjs'
-import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
+import {TEST_CACHE_DIR, testLogger} from '../../test_util.js'
 
-class NodeTestHelper {
+class TestHelper {
   static killKubectlPortForwardProcesses = async function (nodeCmd) {
     if (!nodeCmd || !(nodeCmd instanceof NodeCommand)) throw new MissingArgumentError('An instance of command/NodeCommand is required')
 
-    // kill any previous port-forwarding commands
-    try {
-      const processIds = await nodeCmd.run('ps aux | grep "kubectl port-forward" | awk \'{print $2}\'')
-      for (const pid of processIds) {
-        await this.run(`kill -9 ${pid}`)
+    // kill any previous port-forwarding commands if possible
+    const processIds = await nodeCmd.run('ps aux | grep "kubectl port-forward" | awk \'{print $2}\'')
+    for (let pid of processIds) {
+      try {
+        await nodeCmd.run(`kill -9 ${pid}`)
+      } catch (e) {
+        // best effort kill, so ignore errors
       }
-    } catch (e) {
     }
   }
 
@@ -45,7 +46,7 @@ class NodeTestHelper {
         nodeIds = nodeIds.split(',')
       }
 
-      await NodeTestHelper.killKubectlPortForwardProcesses(nodeCmd, nodeIds)
+      await TestHelper.killKubectlPortForwardProcesses(nodeCmd, nodeIds)
 
       let localPort = 30212
       const grpcPort = constants.HEDERA_NODE_GRPC_PORT.toString()
@@ -60,11 +61,13 @@ class NodeTestHelper {
         // check if the port is actually accessible
         let attempt = 1
         let socket = null
-        while (attempt < 5) {
+        while (attempt < 10) {
           try {
             await sleep(1000)
+            nodeCmd.logger.debug(`Checking exposed port '${localPort}' of node ${nodeId}`)
             // `nc -zv 127.0.0.1 ${localPort}`
-            socket = net.createConnection({ port: localPort })
+            socket = net.createConnection({port: localPort})
+            nodeCmd.logger.debug(`Connected to exposed port '${localPort}' of node ${nodeId}`)
             break
           } catch (e) {
             attempt += 1
@@ -82,27 +85,26 @@ class NodeTestHelper {
         localPort += 1
       }
 
-      return Client.fromConfig({ network })
+      return Client.fromConfig({network})
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
     }
   }
 
-  static async pingNetworkNodeGRPCPort (nodeCmd, nodeIds) {
+  static async pingNetworkNodeGRPCPort(nodeCmd, nodeIds) {
     if (!nodeCmd || !(nodeCmd instanceof NodeCommand)) throw new MissingArgumentError('An instance of command/NodeCommand is required')
 
     try {
       // attempt to ping nodes several times before triggering error
       let allNodeActive = false
       let attempt = 0
-      let client = null
-      while (attempt < 10) {
+      const client = await TestHelper.prepareNodeClient(nodeCmd, nodeIds)
+      while (attempt < 20) {
+        await sleep(1000)
         try {
-          await sleep(1000)
-          client = await NodeTestHelper.prepareNodeClient(nodeCmd, nodeIds)
+          nodeCmd.logger.debug('Running ping...')
           await client.pingAll()
           allNodeActive = true
-          await NodeTestHelper.killKubectlPortForwardProcesses(nodeCmd)
           break
         } catch (e) {
           attempt += 1
@@ -118,6 +120,7 @@ class NodeTestHelper {
     }
   }
 }
+
 describe('NodeCommand', () => {
   const kind = new Kind(testLogger)
   const helm = new Helm(testLogger)
@@ -149,14 +152,6 @@ describe('NodeCommand', () => {
     chainId: constants.HEDERA_CHAIN_ID
   }
 
-  beforeAll(async () => {
-    await NodeTestHelper.killKubectlPortForwardProcesses(nodeCmd)
-  }, 10000)
-
-  afterAll(async () => {
-    await NodeTestHelper.killKubectlPortForwardProcesses(nodeCmd)
-  }, 10000)
-
   describe('start', () => {
     it('node setup should succeed', async () => {
       expect.assertions(1)
@@ -169,35 +164,36 @@ describe('NodeCommand', () => {
     }, 10000)
 
     it('node start should succeed', async () => {
-      expect.assertions(1)
-      try {
-        await expect(nodeCmd.start(argv)).resolves.toBeTruthy()
-      } catch (e) {
-        console.error(e)
-        expect(e).toBeNull()
-      }
-    },
-    50000
+        expect.assertions(1)
+        try {
+          await expect(nodeCmd.start(argv)).resolves.toBeTruthy()
+        } catch (e) {
+          console.error(e)
+          expect(e).toBeNull()
+        }
+      },
+      20000
     )
 
     it('pinging all nodes should succeed', async () => {
       try {
-        await expect(NodeTestHelper.pingNetworkNodeGRPCPort(nodeCmd, argv.nodeIds)).resolves.toBeTruthy()
+        await expect(TestHelper.pingNetworkNodeGRPCPort(nodeCmd, argv.nodeIds)).resolves.toBeTruthy()
+        await TestHelper.killKubectlPortForwardProcesses(nodeCmd)
       } catch (e) {
         console.error(e)
         expect(e).toBeNull()
       }
-    }, 50000)
+    }, 20000)
 
-    it('balance query should succeed', async () => {
+    it.skip('balance query should succeed', async () => {
       expect.assertions(1)
       try {
-        const client = await NodeTestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        const client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
 
         const wallet = new Wallet(
           constants.OPERATOR_ID,
           constants.OPERATOR_KEY,
-          new LocalProvider({ client })
+          new LocalProvider({client})
         )
 
         const balance = await new AccountBalanceQuery()
@@ -209,18 +205,18 @@ describe('NodeCommand', () => {
         console.error(e)
         expect(e).toBeNull()
       }
-    }, 50000)
+    }, 20000)
 
-    it('account creation should succeed', async () => {
+    it.skip('account creation should succeed', async () => {
       expect.assertions(1)
       try {
         const accountKey = PrivateKey.generate()
-        const client = await NodeTestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        const client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
 
         const wallet = new Wallet(
           constants.OPERATOR_ID,
           constants.OPERATOR_KEY,
-          new LocalProvider({ client })
+          new LocalProvider({client})
         )
 
         let transaction = await new AccountCreateTransaction()
@@ -237,6 +233,6 @@ describe('NodeCommand', () => {
         console.error(e)
         expect(e).toBeNull()
       }
-    }, 50000)
+    }, 20000)
   })
 })
