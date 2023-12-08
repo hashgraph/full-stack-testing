@@ -27,7 +27,13 @@ export class NodeCommand extends BaseCommand {
     const podName = Templates.renderNetworkPodName(nodeId)
 
     try {
-      await this.kubectl.wait('pod', '--for=jsonpath=\'{.status.phase}\'=Running', '-l fullstack.hedera.com/type=network-node', `-l fullstack.hedera.com/node-name=${nodeId}`, '--timeout=300s', `-n "${namespace}"`)
+      await this.kubectl.wait('pod',
+        '--for=jsonpath=\'{.status.phase}\'=Running',
+        '-l fullstack.hedera.com/type=network-node',
+        `-l fullstack.hedera.com/node-name=${nodeId}`,
+        '--timeout=300s',
+        `-n "${namespace}"`
+      )
 
       return podName
     } catch (e) {
