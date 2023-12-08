@@ -28,6 +28,10 @@ on:
 permissions:
   contents: read
 
+env:
+  GRADLE_CACHE_USERNAME: ${{ secrets.GRADLE_CACHE_USERNAME }}
+  GRADLE_CACHE_PASSWORD: ${{ secrets.GRADLE_CACHE_PASSWORD }}
+
 jobs:
   snyk:
     name: Snyk Monitor

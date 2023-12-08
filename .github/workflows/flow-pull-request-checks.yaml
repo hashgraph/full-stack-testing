@@ -81,6 +81,8 @@ jobs:
       custom-job-label: Standard
       enable-codecov-analysis: true
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   sonar:
@@ -93,6 +95,8 @@ jobs:
       custom-job-label: Standard
       enable-sonar-analysis: true
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
 
   snyk:
@@ -105,4 +109,6 @@ jobs:
       custom-job-label: Standard
       enable-snyk-scan: true
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       snyk-token: ${{ secrets.SNYK_TOKEN }}
