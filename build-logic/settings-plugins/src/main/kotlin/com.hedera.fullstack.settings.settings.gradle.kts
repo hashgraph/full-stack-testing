@@ -23,6 +23,7 @@ pluginManagement {
 
 plugins {
     id("com.gradle.enterprise")
+    id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 val isCiServer = System.getenv().containsKey("CI")

@@ -268,7 +268,6 @@ jobs:
           rm -f .npmrc || true
           echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' > ".npmrc"
           echo '@hashgraph:registry=https://npm.pkg.github.com' >> ".npmrc"
-          cat .npmrc
 
       - name: Publish Semantic Release
         env:
