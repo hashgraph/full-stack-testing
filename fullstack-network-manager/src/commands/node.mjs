@@ -41,11 +41,10 @@ export class NodeCommand extends BaseCommand {
     }
   }
 
-  async checkNetworkNodeStarted (nodeId, status = 'ACTIVE') {
+  async checkNetworkNodeStarted (nodeId, maxAttempt = 50, status = 'ACTIVE') {
     nodeId = nodeId.trim()
     const podName = Templates.renderNetworkPodName(nodeId)
     const logfilePath = `${constants.HEDERA_HAPI_PATH}/logs/hgcaa.log`
-    const maxAttempt = 15
     let attempt = 0
     let isActive = false
 

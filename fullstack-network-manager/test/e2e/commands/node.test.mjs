@@ -153,7 +153,7 @@ describe('NodeCommand', () => {
       const nodeIds = argv.nodeIds.split(',')
       for (const nodeId of nodeIds) {
         try {
-          await expect(nodeCmd.checkNetworkNodeStarted(nodeId)).resolves.toBeTruthy()
+          await expect(nodeCmd.checkNetworkNodeStarted(nodeId, 5)).resolves.toBeTruthy()
         } catch (e) {
           testLogger.showUserError(e)
         }
