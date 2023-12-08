@@ -134,7 +134,7 @@ jobs:
           fsnetman chart install
           npm run test-e2e
       - name: Output logs
-        id: nodejs-test-e2e
+        id: nodejs-test-e2e-logs
         working-directory: fullstack-network-manager
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() }}
         run: |
