@@ -31,15 +31,17 @@ plugins {
 }
 
 repositories {
-    // mavenLocal() // uncomment to use local maven repository
-    // Use Maven Central for dependencies
-    mavenCentral()
+    // Source Maven Central Artifacts from JFrog Artifactory
+    maven { url = uri("https://artifacts.swirldslabs.io/artifactory/central-maven-external/") }
 }
 
 // Configure the JVM build environment
 java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
