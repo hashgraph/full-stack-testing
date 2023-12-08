@@ -41,6 +41,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  GRADLE_CACHE_USERNAME: ${{ secrets.GRADLE_CACHE_USERNAME }}
+  GRADLE_CACHE_PASSWORD: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
 defaults:
   run:
@@ -104,6 +106,8 @@ jobs:
       java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       gpg-key-contents: ${{ secrets.GPG_KEY_CONTENTS }}
       gpg-key-passphrase: ${{ secrets.GPG_KEY_PASSPHRASE }}
       git-user-name: ${{ secrets.GIT_USER_NAME }}
