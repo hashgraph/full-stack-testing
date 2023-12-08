@@ -6,7 +6,7 @@ metadata:
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
   isCA: false
-  commonName: {{ $.Values.gatewayApi.route.hederaExplorerHostname }}
+  commonName: {{ $.Values.deployment.hederaExplorer.hostname }}
   secretName: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-hedera-explorer
   privateKey:
     algorithm: RSA

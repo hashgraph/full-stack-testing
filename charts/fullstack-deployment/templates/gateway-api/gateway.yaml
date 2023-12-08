@@ -73,7 +73,7 @@ spec:
     - name: hedera-explorer # for exposing fullstack-deployment-hedera-explorer port 80
       protocol: {{ $.Values.gatewayApi.gateway.listeners.hederaExplorer.tlsEnabled | ternary "HTTPS" "HTTP" }}
       port: {{ $.Values.gatewayApi.gateway.listeners.hederaExplorer.port }}
-      hostname: {{ $.Values.gatewayApi.route.hederaExplorerHostname }}
+      hostname: {{ $.Values.deployment.hederaExplorer.hostname }}
       {{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.tlsEnabled }}
       tls:
         mode: Terminate

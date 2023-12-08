@@ -72,7 +72,7 @@ gatewayApi:
         tlsEnabled: false
   route:
     hostname: "{{ .node.name }}.fst.local"
-    hederaExplorerHostname: "explorer.fst.local"
+
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:
@@ -421,6 +421,8 @@ hedera-explorer:
 
 # common deployment configuration
 deployment:
+  hederaExplorer:
+    hostname: "explorer.fst.local"
   podAnnotations: {}
   podLabels: {}
   nodeSelector: {}
