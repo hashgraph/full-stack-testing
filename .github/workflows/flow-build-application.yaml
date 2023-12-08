@@ -42,7 +42,7 @@ on:
         description: "Java JDK Version:"
         type: string
         required: false
-        default: "17.0.7"
+        default: "21.0.1"
       java-distribution:
         description: "Java JDK Distribution:"
         type: string
@@ -67,7 +67,7 @@ jobs:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
     with:
-      java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
+      java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
       java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
       enable-unit-tests: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
@@ -84,7 +84,7 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
     with:
       custom-job-label: Source Code
-      java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
+      java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
       java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
       enable-snyk-scan: ${{ github.event_name == 'push' || github.event.inputs.enable-snyk-scan == 'true' }}

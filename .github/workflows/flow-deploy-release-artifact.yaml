@@ -32,7 +32,7 @@ on:
         description: "Java JDK Version:"
         type: string
         required: false
-        default: "17.0.7"
+        default: "21.0.1"
       gradle-version:
         description: "Gradle Version:"
         type: string
@@ -103,7 +103,7 @@ jobs:
       new-version: ${{ needs.prepare-release.outputs.version }}
       dry-run-enabled: ${{ github.event.inputs.dry-run-enabled == 'true' }}
       java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
-      java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
+      java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
     secrets:
       gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
@@ -179,7 +179,7 @@ jobs:
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
         with:
           distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
-          java-version: ${{ github.event.inputs.java-version || '17.0.7' }}
+          java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
