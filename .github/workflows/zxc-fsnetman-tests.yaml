@@ -133,3 +133,9 @@ jobs:
           fsnetman cluster setup
           fsnetman chart install
           npm run test-e2e
+      - name: Output logs
+        id: nodejs-test-e2e
+        working-directory: fullstack-network-manager
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() }}
+        run: |
+          cat ~/.fsnetman/logs/fst.log

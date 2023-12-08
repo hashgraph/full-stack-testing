@@ -50,9 +50,19 @@ export class NodeCommand extends BaseCommand {
           isActive = true
           break
         }
+
         this.logger.debug(`Node ${nodeId} is not ${status} yet. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+
+        // tail the log file for debugging
+        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `tail ${logfilePath}`)
       } catch (e) {
         this.logger.warn(`error in checking if node is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+
+        // ls the HAPI path for debugging
+        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+
+        // ls the logs directory for debugging
+        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
       }
       attempt += 1
       await sleep(1000)

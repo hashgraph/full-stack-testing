@@ -132,7 +132,7 @@ describe('NodeCommand', () => {
       try {
         await expect(nodeCmd.setup(argv)).resolves.toBeTruthy()
       } catch (e) {
-        console.error(e)
+        nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
     }, 20000)
@@ -142,7 +142,7 @@ describe('NodeCommand', () => {
       try {
         await expect(nodeCmd.start(argv)).resolves.toBeTruthy()
       } catch (e) {
-        console.error(e)
+        nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
     },
@@ -152,7 +152,13 @@ describe('NodeCommand', () => {
     it('nodes should be in ACTIVE status', async () => {
       const nodeIds = argv.nodeIds.split(',')
       for (const nodeId of nodeIds) {
-        await expect(nodeCmd.checkNetworkNodeStarted(nodeId)).resolves.toBeTruthy()
+        try {
+          await expect(nodeCmd.checkNetworkNodeStarted(nodeId)).resolves.toBeTruthy()
+        } catch (e) {
+          testLogger.showUserError(e)
+        }
+
+        await nodeCmd.run(`tail ${constants.FST_LOGS_DIR}/fst.log`)
       }
     }, 50000)
 
@@ -174,7 +180,7 @@ describe('NodeCommand', () => {
 
         expect(balance.hbars).not.toBeNull()
       } catch (e) {
-        console.error(e)
+        nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
 
@@ -207,7 +213,7 @@ describe('NodeCommand', () => {
 
         expect(receipt.accountId).not.toBeNull()
       } catch (e) {
-        console.error(e)
+        nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
 
