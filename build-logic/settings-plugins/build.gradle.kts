@@ -24,5 +24,5 @@ repositories {
 }
 
 dependencies {
-    implementation("com.gradle:gradle-enterprise-gradle-plugin:3.14.1")
+    implementation("com.gradle:gradle-enterprise-gradle-plugin:3.15.1")
 }
