@@ -56,6 +56,12 @@ on:
         description: "Release notes for the new release"
         value: ${{ jobs.release.outputs.notes }}
     secrets:
+      gradle-cache-username:
+        description: "The username used to authenticate with the Gradle Build Cache Node."
+        required: true
+      gradle-cache-password:
+        description: "The password used to authenticate with the Gradle Build Cache Node."
+        required: true
       gpg-key-contents:
         required: false
       gpg-key-passphrase:
@@ -76,6 +82,10 @@ defaults:
 permissions:
   id-token: write
   contents: write
+
+env:
+  GRADLE_CACHE_USERNAME: ${{ secrets.gradle-cache-username }}
+  GRADLE_CACHE_PASSWORD: ${{ secrets.gradle-cache-password }}
 
 jobs:
   release:

@@ -17,11 +17,11 @@
 plugins {
     `kotlin-dsl`
     id("java-gradle-plugin")
-    id("com.gradle.plugin-publish") version "1.2.1"
+    id("com.gradle.plugin-publish").version("1.2.1")
     id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.maven-publish")
-    kotlin("jvm") version "1.9.20"
+    kotlin("jvm").version("1.9.20")
 }
 
 dependencies {
@@ -48,6 +48,6 @@ gradlePlugin {
 
 repositories { mavenCentral() }
 
-kotlin { jvmToolchain(17) }
+kotlin { jvmToolchain(21) }
 
 tasks.test { useJUnitPlatform() }

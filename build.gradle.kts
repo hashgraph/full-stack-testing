@@ -17,7 +17,7 @@
 plugins { id("com.hedera.fullstack.root") }
 
 repositories {
-    // mavenLocal() // uncomment to use local maven repository
-    mavenCentral()
+    // Source Maven Central Artifacts from JFrog Artifactory
+    maven { url = uri("https://artifacts.swirldslabs.io/artifactory/central-maven-external/") }
     gradlePluginPortal()
 }
