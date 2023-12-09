@@ -94,7 +94,10 @@ export class ChartCommand extends BaseCommand {
           )
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -125,7 +128,10 @@ export class ChartCommand extends BaseCommand {
           await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -167,7 +173,10 @@ export class ChartCommand extends BaseCommand {
           )
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()

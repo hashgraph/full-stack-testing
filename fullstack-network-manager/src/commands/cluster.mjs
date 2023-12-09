@@ -161,7 +161,10 @@ export class ClusterCommand extends BaseCommand {
           self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -203,7 +206,10 @@ export class ClusterCommand extends BaseCommand {
         },
         skip: (ctx, _) => !ctx.clusters.includes(ctx.config.clusterName)
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -289,7 +295,10 @@ export class ClusterCommand extends BaseCommand {
         },
         skip: (ctx, _) => ctx.isChartInstalled
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -337,7 +346,10 @@ export class ClusterCommand extends BaseCommand {
         },
         skip: (ctx, _) => !ctx.isChartInstalled
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()

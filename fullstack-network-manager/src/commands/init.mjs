@@ -90,7 +90,10 @@ export class InitCommand extends BaseCommand {
           self.logger.showJSON('Cached Config', ctx.config)
         }
       }
-    ])
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
