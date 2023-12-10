@@ -56,10 +56,12 @@ abstract class HelmArtifactTask() : DefaultTask() {
         createWorkingDirectory()
 
         for (tuple in actualTuples!!) {
+            logger.info("HelmArtifactTask: Downloading helm executable for $tuple")
             download(tuple)
         }
 
         writeVersionFile(output.get().asFile.toPath())
+        logger.info("HelmArtifactTask: Successfully downloaded helm executable for version ${actualVersion!!.toString()}")
     }
 
     private fun validate() {

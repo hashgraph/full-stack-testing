@@ -35,6 +35,9 @@ jobs:
   build:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
+    secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
   spotless:
     name: Spotless
@@ -42,6 +45,9 @@ jobs:
     with:
       custom-job-label: "Check"
       enable-spotless-check: true
+    secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
   unit-tests:
     name: FST Java Unit Tests
@@ -49,6 +55,9 @@ jobs:
     with:
       custom-job-label: Standard
       enable-unit-tests: true
+    secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
   chart-tests:
     name: FS Helm Chart Tests
@@ -72,6 +81,8 @@ jobs:
       custom-job-label: Standard
       enable-codecov-analysis: true
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   sonar:
@@ -84,6 +95,8 @@ jobs:
       custom-job-label: Standard
       enable-sonar-analysis: true
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
 
   snyk:
@@ -96,4 +109,6 @@ jobs:
       custom-job-label: Standard
       enable-snyk-scan: true
     secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       snyk-token: ${{ secrets.SNYK_TOKEN }}

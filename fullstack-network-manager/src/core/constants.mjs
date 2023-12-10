@@ -1,4 +1,5 @@
 import { AccountId } from '@hashgraph/sdk'
+import { color, PRESET_TIMER } from 'listr2'
 import { dirname, normalize } from 'path'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
@@ -64,3 +65,20 @@ export const DEFAULT_CHART_REPO = new Map()
 // ------------------- Hedera Account related ---------------------------------------------------------------------------------
 export const OPERATOR_ID = process.env.FST_OPERATOR_ID || '0.0.2'
 export const OPERATOR_KEY = process.env.FST_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
+
+// Listr related
+export const LISTR_DEFAULT_RENDERER_TIMER_OPTION = {
+  ...PRESET_TIMER,
+  condition: (duration) => duration > 100,
+  format: (duration) => {
+    if (duration > 10000) {
+      return color.red
+    }
+
+    return color.green
+  }
+}
+
+export const LISTR_DEFAULT_RENDERER_OPTION = {
+  timer: LISTR_DEFAULT_RENDERER_TIMER_OPTION
+}

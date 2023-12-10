@@ -16,10 +16,7 @@
 
 pluginManagement { includeBuild("build-logic") }
 
-plugins {
-    id("com.gradle.enterprise").version("3.15.1")
-    id("com.hedera.fullstack.settings")
-}
+plugins { id("com.hedera.fullstack.settings") }
 
 rootProject.name = "full-stack-testing"
 

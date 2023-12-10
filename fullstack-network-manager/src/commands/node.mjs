@@ -31,7 +31,7 @@ export class NodeCommand extends BaseCommand {
         '--for=jsonpath=\'{.status.phase}\'=Running',
         '-l fullstack.hedera.com/type=network-node',
         `-l fullstack.hedera.com/node-name=${nodeId}`,
-        '--timeout=300s',
+        `--timeout=${timeout}`,
         `-n "${namespace}"`
       )
 
@@ -157,7 +157,7 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Prepare staging',
         task:
-            async (ctx, task) => {
+            async (ctx, _) => {
               const config = ctx.config
               return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
             }
@@ -190,10 +190,8 @@ export class NodeCommand extends BaseCommand {
     ],
     {
       concurrent: false,
-      showErrorMessage:
-          false
-    }
-    )
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -233,11 +231,12 @@ export class NodeCommand extends BaseCommand {
             })
           }
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
-              collapseSubtasks: false
+              collapseSubtasks: false,
+              timer: constants.LISTR_DEFAULT_RENDERER_TIMER_OPTION
             }
           })
         }
@@ -253,7 +252,7 @@ export class NodeCommand extends BaseCommand {
             })
           }
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
@@ -262,7 +261,10 @@ export class NodeCommand extends BaseCommand {
           })
         }
       }
-    ], { concurrent: false })
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()
@@ -302,16 +304,20 @@ export class NodeCommand extends BaseCommand {
             })
           }
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
-              collapseSubtasks: false
+              collapseSubtasks: false,
+              timer: constants.LISTR_DEFAULT_RENDERER_TIMER_OPTION
             }
           })
         }
       }
-    ], { concurrent: false })
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
 
     try {
       await tasks.run()

@@ -36,6 +36,7 @@ sonarqube {
         property("sonar.links.ci", "https://github.com/hashgraph/full-stack-testing/actions")
         property("sonar.links.issue", "https://github.com/hashgraph/full-stack-testing/issues")
         property("sonar.links.scm", "https://github.com/hashgraph/full-stack-testing.git")
+        property("sonar.gradle.skipCompile", "true")
     }
 }
 
