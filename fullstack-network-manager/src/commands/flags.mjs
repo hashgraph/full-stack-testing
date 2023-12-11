@@ -1,3 +1,4 @@
+import { constants } from './../core/index.mjs'
 import * as core from './../core/index.mjs'
 
 /**
@@ -196,7 +197,7 @@ export const operatorId = {
   name: 'operator-id',
   definition: {
     describe: 'Operator ID',
-    default: '0.0.2',
+    default: constants.OPERATOR_ID,
     type: 'string'
   }
 }
@@ -206,7 +207,7 @@ export const operatorKey = {
   name: 'operator-key',
   definition: {
     describe: 'Operator Key',
-    default: '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137',
+    default: constants.OPERATOR_KEY,
     type: 'string'
   }
 }

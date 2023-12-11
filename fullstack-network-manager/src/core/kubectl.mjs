@@ -159,4 +159,15 @@ export class Kubectl extends ShellRunner {
   async config (...args) {
     return this.run(this.prepareCommand('config', ...args))
   }
+
+  /**
+   * Invoke `kubectl port-forward svc/<svc name>` command
+   * @param resource name of the service or pod. Must be of the format pod/<pod name> or svc/<service name>
+   * @param localPort port of the host machine
+   * @param remotePort port to be forwarded from the service or pod
+   * @returns {Promise<Array>} console output as an array of strings
+   */
+  async portForward (resource, localPort, remotePort) {
+    return this.run(this.prepareCommand(`port-forward ${resource} ${localPort}:${remotePort} &`))
+  }
 }

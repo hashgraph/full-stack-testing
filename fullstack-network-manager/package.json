@@ -24,6 +24,7 @@
   "author": "Lenin Mehedy",
   "license": "Apache2.0",
   "dependencies": {
+    "@hashgraph/sdk": "^2.38.0",
     "@listr2/prompt-adapter-enquirer": "^1.0.2",
     "adm-zip": "^0.5.10",
     "chalk": "^5.3.0",

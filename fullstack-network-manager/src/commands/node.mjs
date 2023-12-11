@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import * as fs from 'fs'
 import { Listr } from 'listr2'
 import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
+import { sleep } from '../core/helpers.mjs'
 import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
@@ -30,7 +31,7 @@ export class NodeCommand extends BaseCommand {
         '--for=jsonpath=\'{.status.phase}\'=Running',
         '-l fullstack.hedera.com/type=network-node',
         `-l fullstack.hedera.com/node-name=${nodeId}`,
-        '--timeout=300s',
+        `--timeout=${timeout}`,
         `-n "${namespace}"`
       )
 
@@ -38,6 +39,47 @@ export class NodeCommand extends BaseCommand {
     } catch (e) {
       throw new FullstackTestingError(`no pod found for nodeId: ${nodeId}`, e)
     }
+  }
+
+  async checkNetworkNodeStarted (nodeId, maxAttempt = 50, status = 'ACTIVE') {
+    nodeId = nodeId.trim()
+    const podName = Templates.renderNetworkPodName(nodeId)
+    const logfilePath = `${constants.HEDERA_HAPI_PATH}/logs/hgcaa.log`
+    let attempt = 0
+    let isActive = false
+
+    while (attempt < maxAttempt) {
+      try {
+        const output = await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `cat ${logfilePath} | grep "status = ${status}"`)
+        if (output.length > 0) {
+          isActive = true
+          break
+        }
+
+        this.logger.debug(`Node ${nodeId} is not ${status} yet. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+
+        // tail the log file for debugging
+        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `tail ${logfilePath}`)
+      } catch (e) {
+        this.logger.warn(`error in checking if node is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+
+        // ls the HAPI path for debugging
+        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+
+        // ls the logs directory for debugging
+        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
+      }
+      attempt += 1
+      await sleep(1000)
+    }
+
+    if (!isActive) {
+      throw new FullstackTestingError(`node '${nodeId}' is not ${status} [ attempt = ${attempt}/${maxAttempt} ]`)
+    }
+
+    this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}] `)
+
+    return true
   }
 
   /**
@@ -60,7 +102,7 @@ export class NodeCommand extends BaseCommand {
       })
     }
 
-    // setup the sub-tasks
+    // set up the sub-tasks
     return task.newListr(subTasks, {
       concurrent: true,
       rendererOptions: {
@@ -87,7 +129,7 @@ export class NodeCommand extends BaseCommand {
 
           // compute other config parameters
           config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
-          config.buildZipFile = `${config.cacheDir}/${config.releasePrefix}/build-${config.releaseTag}.zip`
+          config.buildZipFile = `${config.cacheDir} /${config.releasePrefix}/build-${config.releaseTag}.zip`
           config.stagingDir = `${config.cacheDir}/${config.releasePrefix}/staging/${config.releaseTag}`
 
           // prepare staging directory
@@ -100,8 +142,9 @@ export class NodeCommand extends BaseCommand {
       },
       {
         title: 'Fetch platform',
-        task: async (ctx) => {
+        task: async (ctx, _) => {
           const config = ctx.config
+
           if (config.force || !fs.existsSync(config.buildZipFile)) {
             ctx.config.buildZipFile = await self.downloader.fetchPlatform(ctx.config.releaseTag, config.cacheDir)
           }
@@ -113,36 +156,39 @@ export class NodeCommand extends BaseCommand {
       },
       {
         title: 'Prepare staging',
-        task: async (ctx, task) => {
-          const config = ctx.config
-          return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
-        }
+        task:
+            async (ctx, _) => {
+              const config = ctx.config
+              return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
+            }
       },
       {
         title: 'Setup network nodes',
-        task: async (ctx, task) => {
-          const config = ctx.config
+        task:
+            async (ctx, task) => {
+              const config = ctx.config
 
-          const subTasks = []
-          for (const nodeId of ctx.config.nodeIds) {
-            const podName = ctx.config.podNames[nodeId]
-            subTasks.push({
-              title: `Setup node: ${chalk.yellow(nodeId)}`,
-              task: () =>
-                self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.force)
-            })
-          }
+              const subTasks = []
+              for (const nodeId of ctx.config.nodeIds) {
+                const podName = ctx.config.podNames[nodeId]
+                subTasks.push({
+                  title: `Setup node: ${chalk.yellow(nodeId)}`,
+                  task: () =>
+                    self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.force)
+                })
+              }
 
-          // setup the sub-tasks
-          return task.newListr(subTasks, {
-            concurrent: true,
-            rendererOptions: {
-              collapseSubtasks: false
+              // set up the sub-tasks
+              return task.newListr(subTasks, {
+                concurrent: true,
+                rendererOptions: {
+                  collapseSubtasks: false
+                }
+              })
             }
-          })
-        }
       }
-    ], {
+    ],
+    {
       concurrent: false,
       rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
     })
@@ -185,12 +231,32 @@ export class NodeCommand extends BaseCommand {
             })
           }
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
               collapseSubtasks: false,
               timer: constants.LISTR_DEFAULT_RENDERER_TIMER_OPTION
+            }
+          })
+        }
+      },
+      {
+        title: 'Check nodes are ACTIVE',
+        task: (ctx, task) => {
+          const subTasks = []
+          for (const nodeId of ctx.config.nodeIds) {
+            subTasks.push({
+              title: `Check node: ${chalk.yellow(nodeId)}`,
+              task: () => self.checkNetworkNodeStarted(nodeId)
+            })
+          }
+
+          // set up the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
             }
           })
         }
@@ -238,7 +304,7 @@ export class NodeCommand extends BaseCommand {
             })
           }
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
@@ -308,7 +374,7 @@ export class NodeCommand extends BaseCommand {
               nodeCmd.logger.debug(argv)
 
               nodeCmd.start(argv).then(r => {
-                nodeCmd.logger.debug('==== Finished running `node start`====')
+                nodeCmd.logger.debug('==== Finished running  node start`====')
                 if (!r) process.exit(1)
               }).catch(err => {
                 nodeCmd.logger.showUserError(err)
@@ -328,7 +394,7 @@ export class NodeCommand extends BaseCommand {
               nodeCmd.logger.debug(argv)
 
               nodeCmd.stop(argv).then(r => {
-                nodeCmd.logger.debug('==== Finished running `node stop`====')
+                nodeCmd.logger.debug('==== Finished running node stop`====')
                 if (!r) process.exit(1)
               }).catch(err => {
                 nodeCmd.logger.showUserError(err)

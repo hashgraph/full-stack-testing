@@ -12,7 +12,7 @@ export class ShellRunner {
      * @param cmd shell command string
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async run (cmd) {
+  async run (cmd, verbose = false) {
     const self = this
     const callStack = new Error().stack // capture the callstack to be included in error
     self.logger.debug(`Executing command: '${cmd}'`)
@@ -50,7 +50,10 @@ export class ShellRunner {
           // this is needed to ensure we capture the proper callstack for easier debugging.
           err.stack = callStack
 
-          errOutput.forEach(m => self.logger.showUser(chalk.red(m)))
+          if (verbose) {
+            errOutput.forEach(m => self.logger.showUser(chalk.red(m)))
+          }
+
           reject(err)
         }
 

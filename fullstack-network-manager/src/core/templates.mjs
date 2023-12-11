@@ -5,6 +5,10 @@ export class Templates {
     return `network-${nodeId}-0`
   }
 
+  static renderNodeSvcName (nodeId) {
+    return `network-${nodeId}-svc`
+  }
+
   static renderNetworkSvcName (nodeId) {
     return `network-${nodeId}-svc`
   }
