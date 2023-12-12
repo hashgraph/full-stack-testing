@@ -71,3 +71,13 @@ export const LISTR_DEFAULT_RENDERER_TIMER_OPTION = {
 export const LISTR_DEFAULT_RENDERER_OPTION = {
   timer: LISTR_DEFAULT_RENDERER_TIMER_OPTION
 }
+
+
+export const PFX_KEY_BITS = 3072
+export const PFX_DUMMY_PASSWORD = "password" // non empty dummy password
+
+export const PFX_MAC_ITERATION_COUNT = 10000
+
+export const PFX_MAC_SALT_SIZE = 20
+export const PFX_ENCRYPTION_ALGO='aes256'
+

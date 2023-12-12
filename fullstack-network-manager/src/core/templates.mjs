@@ -9,6 +9,14 @@ export class Templates {
     return `network-${nodeId}-svc`
   }
 
+  static renderSigningKeyFriendlyName(nodeId) {
+    return `s-${nodeId}`
+  }
+
+  static renderSigningKeyFileName(nodeId) {
+    return `s-private-${nodeId}.pfx`
+  }
+
   static extractNodeIdFromPodName (podName) {
     const parts = podName.split('-')
     if (parts.length !== 3) throw new DataValidationError(`pod name is malformed : ${podName}`, 3, parts.length)
