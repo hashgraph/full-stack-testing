@@ -14,5 +14,8 @@ dependencies:
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v1.13.2
-digest: sha256:aa4ed0bff248ee7e7ba0c0c0b8440e376b31368b05376900f4c5ef6eda7b6376
-generated: "2023-11-08T17:23:51.51522Z"
+- name: acme-cluster-issuer
+  repository: ""
+  version: 0.3.0
+digest: sha256:630e4c5a362a5d9a9c8ea6b10653d9b35eb91e93a14e19578e8ef75eeb4a49c6
+generated: "2023-11-10T14:03:37.262415Z"

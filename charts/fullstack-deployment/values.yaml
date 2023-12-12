@@ -42,6 +42,9 @@ gatewayApi:
   gateway:
     name: "fst"
     enabled: "true"
+    tlsEnabled: false
+    tlsClusterIssuerName: "" # for acme-cluster-setup: staging = letsencrypt-staging, prod = letsencrypt-prod
+    tlsClusterIssuerNamespace: "" # for acme-cluster-setup: cert-manager # TODO is this needed?
     listeners:
       gossip:
         port: 51000 # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
@@ -52,9 +55,11 @@ gatewayApi:
       grpcs: # tls-grpc-port
         port: 53000 # i.e. node0:53000 ... node999: 53999, points to 50212 port in haproxy or network-node
         enabled: "true"
+        tlsEnabled: false
       grpcWeb:
         port: 18000 # i.e. node0:18000 ... node999: 18999, points to 8080 port in envoy proxy
         enabled: "true"
+        tlsEnabled: false
       httpDebug: # this helps debugging gateway if needed by provisioning a mock http app
         port: 3100
         enabled: "true"
@@ -62,8 +67,9 @@ gatewayApi:
         port: 3101
         enabled: "true"
       hederaExplorer:
-        port: 8888 # points to 80 port on fst-hedera-explorer
+        port: 8888 # points to 80 port on fullstack-deployment-hedera-explorer
         enabled: "true"
+        tlsEnabled: false
   route:
     hostname: "{{ .node.name }}.fst.local"
 
@@ -220,8 +226,7 @@ minio-server:
         name: pool-1
         volumesPerServer: 1
         size: 10Gi
-        nodeSelector:
-          fullstack-scheduling.io/role: network
+        nodeSelector: {}
         labels:
           fullstack.hedera.com/testSuiteName: ""
           fullstack.hedera.com/testName: ""
@@ -267,8 +272,7 @@ hedera-mirror-node:
   # importer is a component of the hedera mirror node
   # config for subchart hedera-mirror/importer
   importer:
-    nodeSelector:
-      fullstack-scheduling.io/role: network
+    nodeSelector: {}
     tolerations:
       - key: "fullstack-scheduling.io/os"
         operator: "Equal"
@@ -313,8 +317,7 @@ hedera-mirror-node:
               readiness:
                 exclude: redis
   grpc:
-    nodeSelector:
-      fullstack-scheduling.io/role: network
+    nodeSelector: {}
     tolerations:
       - key: "fullstack-scheduling.io/os"
         operator: "Equal"
@@ -338,8 +341,7 @@ hedera-mirror-node:
                 exclude: redis
   postgresql:
     postgresql:
-      nodeSelector:
-        fullstack-scheduling.io/role: network
+      nodeSelector: {}
       tolerations:
         - key: "fullstack-scheduling.io/os"
           operator: "Equal"
@@ -352,8 +354,7 @@ hedera-mirror-node:
     pgpool:
       replicaCount: 0
   rest:
-    nodeSelector:
-      fullstack-scheduling.io/role: network
+    nodeSelector: {}
     tolerations:
       - key: "fullstack-scheduling.io/os"
         operator: "Equal"
@@ -366,8 +367,7 @@ hedera-mirror-node:
     monitor:
       enabled: false
   web3:
-    nodeSelector:
-      fullstack-scheduling.io/role: network
+    nodeSelector: {}
     tolerations:
       - key: "fullstack-scheduling.io/os"
         operator: "Equal"
@@ -388,8 +388,7 @@ hedera-explorer:
     fullstack.hedera.com/testCreationTimestamp: ""
     fullstack.hedera.com/testExpirationTimestamp: ""
     fullstack.hedera.com/testRequester: ""
-  nodeSelector:
-    fullstack-scheduling.io/role: network
+  nodeSelector: {}
   tolerations:
     - key: "fullstack-scheduling.io/os"
       operator: "Equal"
@@ -422,10 +421,11 @@ hedera-explorer:
 
 # common deployment configuration
 deployment:
+  hederaExplorer:
+    hostname: "explorer.fst.local"
   podAnnotations: {}
   podLabels: {}
-  nodeSelector:
-    fullstack-scheduling.io/role: network
+  nodeSelector: {}
   tolerations:
     - key: "fullstack-scheduling.io/os"
       operator: "Equal"

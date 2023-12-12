@@ -94,7 +94,7 @@ export const deployEnvoyGateway = {
 export const deployCertManager = {
   name: 'cert-manager',
   definition: {
-    describe: 'Deploy cert manager',
+    describe: 'Deploy cert manager, also deploys acme-cluster-issuer',
     default: false,
     type: 'boolean'
   }
@@ -104,7 +104,7 @@ export const deployCertManager = {
     Deploy cert manager CRDs separately from cert manager itself.  Cert manager
     CRDs are required for cert manager to deploy successfully.
  */
-export const deployCertManagerCRDs = {
+export const deployCertManagerCrds = {
   name: 'cert-manager-crds',
   definition: {
     describe: 'Deploy cert manager CRDs',
@@ -212,6 +212,42 @@ export const operatorKey = {
   }
 }
 
+export const enableTls = {
+  name: 'enable-tls',
+  definition: {
+    describe: 'Enables TLS for gateway ingress services [grpcs, grpcWeb, hederaExplorer]',
+    default: false,
+    type: 'boolean'
+  }
+}
+
+export const tlsClusterIssuerName = {
+  name: 'tls-cluster-issuer-name',
+  definition: {
+    describe: 'The name of the TLS cluster issuer to use for gateway services, defaults to "self-signed-ca", another option for the acme-cluster-issuer is "letsencrypt-staging" and "letsencrypt-prod"',
+    default: 'self-signed',
+    type: 'string'
+  }
+}
+
+export const tlsClusterIssuerNamespace = {
+  name: 'tls-cluster-issuer-namespace',
+  definition: {
+    describe: 'The namespace of the TLS cluster issuer to use for gateway services, defaults to "cert-manager"',
+    default: 'cert-manager',
+    type: 'string'
+  }
+}
+
+export const acmeClusterIssuer = {
+  name: 'acme-cluster-issuer',
+  definition: {
+    describe: 'The acme let\'s encrypt cert-manager cluster issuer, defaults to false',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const allFlags = [
   clusterName,
   namespace,
@@ -223,7 +259,8 @@ export const allFlags = [
   deployMinio,
   deployEnvoyGateway,
   deployCertManager,
-  deployCertManagerCRDs,
+  deployCertManagerCrds,
+  acmeClusterIssuer,
   releaseTag,
   cacheDir,
   nodeIDs,
@@ -232,5 +269,8 @@ export const allFlags = [
   replicaCount,
   chainId,
   operatorId,
-  operatorKey
+  operatorKey,
+  enableTls,
+  tlsClusterIssuerName,
+  tlsClusterIssuerNamespace
 ]
