@@ -102,13 +102,22 @@ describe('KeyManager', () => {
 
   it('should generate signing key', async () => {
     // const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
-    const keyFile = keyManager.SigningKey('node0', 'test/data/tmp' )
 
-    const pkcs12Der = fs.readFileSync(keyFile, {encoding: 'binary'})
-    var pkcs12Asn1 = forge.asn1.fromDer(pkcs12Der);
-    var pkcs12 = forge.pkcs12.pkcs12FromAsn1(pkcs12Asn1, false, constants.PFX_DUMMY_PASSWORD);
-    expect(pkcs12).not.toBeNull()
-    expect(pkcs12.safeContents.length).toBe(2)
+    const signingKey = keyManager.SigningKey('node0', 'test/data/tmp' )
+
+    // verify private key pfx
+    const privateKeyDer= fs.readFileSync(signingKey.privateKeyPfx, {encoding: 'binary'})
+    const privateKeyAsn1 = forge.asn1.fromDer(privateKeyDer);
+    const privateKeyPkcs12 = forge.pkcs12.pkcs12FromAsn1(privateKeyAsn1, false, constants.PFX_DUMMY_PASSWORD);
+    expect(privateKeyPkcs12).not.toBeNull()
+    expect(privateKeyPkcs12.safeContents.length).toBe(2)
+
+    // verify public key pfx
+    const publicKeyDer= fs.readFileSync(signingKey.publicKeyPfx, {encoding: 'binary'})
+    const publicKeyAsn1= forge.asn1.fromDer(publicKeyDer);
+    const publicKeyPkcs12= forge.pkcs12.pkcs12FromAsn1(publicKeyAsn1, false, constants.PFX_DUMMY_PASSWORD);
+    expect(publicKeyPkcs12).not.toBeNull()
+    expect(publicKeyPkcs12.safeContents.length).toBe(1)
 
     // fs.rmSync(tmpDir, { recursive: true })
   })

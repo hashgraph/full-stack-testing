@@ -1,6 +1,6 @@
-import { color, PRESET_TIMER } from 'listr2'
-import { dirname, normalize } from 'path'
-import { fileURLToPath } from 'url'
+import {color, PRESET_TIMER} from 'listr2'
+import {dirname, normalize} from 'path'
+import {fileURLToPath} from 'url'
 import chalk from 'chalk'
 
 // -------------------- fsnetman related constants ---------------------------------------------------------------------
@@ -79,5 +79,13 @@ export const PFX_DUMMY_PASSWORD = "password" // non empty dummy password
 export const PFX_MAC_ITERATION_COUNT = 10000
 
 export const PFX_MAC_SALT_SIZE = 20
-export const PFX_ENCRYPTION_ALGO='aes256'
+export const PFX_ENCRYPTION_ALGO = 'aes256'
 
+export const PFX_SIGNING_KEY_PREFIX = 's'
+export const PFX_AGREEMENT_KEY_PREFIX = 'a'
+
+export const PFX_ENCRYPTION_KEY_PREFIX = 'e'
+
+export const PFX_TYPE_PRIVATE = 'private'
+
+export const PFX_TYPE_PUBLIC = 'public'

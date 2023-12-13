@@ -50,16 +50,21 @@ for nm in "${names[@]}"; do
   keytool -genkeypair -alias "s-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -dname "cn=s-$n" -keyalg "rsa" -sigalg "SHA384withRSA" -keysize "3072" -validity "36524"
   keytool -genkeypair -alias "a-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -dname "cn=a-$n" -keyalg "ec" -sigalg "SHA384withECDSA" -groupname "secp384r1" -validity "36524"
   keytool -genkeypair -alias "e-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -dname "cn=e-$n" -keyalg "ec" -sigalg "SHA384withECDSA" -groupname "secp384r1" -validity "36524"
+
   keytool -certreq -alias "a-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" |
     keytool -gencert -alias "s-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -validity "36524" |
     keytool -importcert -alias "a-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password"
+
   keytool -certreq -alias "e-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" |
     keytool -gencert -alias "s-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -validity "36524" |
     keytool -importcert -alias "e-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password"
+
   keytool -exportcert -alias "s-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" |
     keytool -importcert -alias "s-$n" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt
+
   keytool -exportcert -alias "a-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" |
     keytool -importcert -alias "a-$n" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt
+
   keytool -exportcert -alias "e-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" |
     keytool -importcert -alias "e-$n" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt
 
