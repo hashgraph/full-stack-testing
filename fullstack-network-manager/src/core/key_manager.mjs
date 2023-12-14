@@ -1,37 +1,37 @@
-import fs from "fs";
-import forge from "node-forge"
-import path from "path";
-import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from "./errors.mjs";
-import {constants} from "./index.mjs";
-import {Logger} from "./logging.mjs";
-import {Templates} from "./templates.mjs";
+import fs from 'fs'
+import forge from 'node-forge'
+import path from 'path'
+import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
+import { constants } from './index.mjs'
+import { Logger } from './logging.mjs'
+import { Templates } from './templates.mjs'
 
 export class KeyManager {
-  constructor(logger) {
+  constructor (logger) {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
     this.logger = logger
   }
 
-  _pfxOptions(friendlyName) {
+  _pfxOptions (friendlyName) {
     return {
       count: constants.PFX_MAC_ITERATION_COUNT,
       saltSize: constants.PFX_MAC_SALT_SIZE,
       algorithm: constants.PFX_ENCRYPTION_ALGO, // encryption algorithm, not macAlgorithm
-      friendlyName: friendlyName,
+      friendlyName
     }
   }
 
-  _createPfx(p12Asn1, filePath) {
+  _createPfx (p12Asn1, filePath) {
     try {
-      const p12DerBytes = forge.asn1.toDer(p12Asn1).getBytes();
-      fs.writeFileSync(filePath, p12DerBytes, {encoding: 'binary'})
+      const p12DerBytes = forge.asn1.toDer(p12Asn1).getBytes()
+      fs.writeFileSync(filePath, p12DerBytes, { encoding: 'binary' })
       return filePath
     } catch (e) {
       throw new FullstackTestingError(`failed to create pfx file '${filePath}': ${e.message}`, e)
     }
   }
 
-  _createPrivateKeyPfx(nodeId, keyPrefix, pkcsAsn1, pfxDir) {
+  _createPrivateKeyPfx (nodeId, keyPrefix, pkcsAsn1, pfxDir) {
     try {
       const privateKeyFileName = Templates.renderPfxFileName(keyPrefix, constants.PFX_TYPE_PRIVATE, nodeId)
       const privateKeyPfx = path.join(pfxDir, privateKeyFileName)
@@ -41,7 +41,7 @@ export class KeyManager {
     }
   }
 
-  _createPublicKeyPfx(nodeId, keyPrefix, pkcs12Asn1, pfxDir) {
+  _createPublicKeyPfx (nodeId, keyPrefix, pkcs12Asn1, pfxDir) {
     try {
       const publicKeyFileName = Templates.renderPfxFileName(keyPrefix, constants.PFX_TYPE_PUBLIC, nodeId)
       const publicKeyPfx = path.join(pfxDir, publicKeyFileName)
@@ -57,25 +57,24 @@ export class KeyManager {
    * @param pfxFile full path to the pfx file
    * @returns {{cert: *, key}}
    */
-  readKeyAndCertFromPfx(friendlyName, pfxFile) {
+  readKeyAndCertFromPfx (friendlyName, pfxFile) {
     if (!fs.statSync(pfxFile).isFile()) {
       throw new FullstackTestingError(`pfx file not found at '${pfxFile}'`)
     }
 
     // parse pfx into pkcs12
-    const pfxDer = fs.readFileSync(pfxFile, {encoding: 'binary'})
-    const pfxAsn1 = forge.asn1.fromDer(pfxDer);
-    const pkcs12 = forge.pkcs12.pkcs12FromAsn1(pfxAsn1, true, constants.PFX_DUMMY_PASSWORD);
-
+    const pfxDer = fs.readFileSync(pfxFile, { encoding: 'binary' })
+    const pfxAsn1 = forge.asn1.fromDer(pfxDer)
+    const pkcs12 = forge.pkcs12.pkcs12FromAsn1(pfxAsn1, true, constants.PFX_DUMMY_PASSWORD)
 
     // prepare return object
     const ret = {
       key: null,
-      cert: null,
+      cert: null
     }
 
     // extract key
-    let bags = pkcs12.getBags({friendlyName: friendlyName, bagType: forge.pki.oids.pkcs8ShroudedKeyBag});
+    let bags = pkcs12.getBags({ friendlyName, bagType: forge.pki.oids.pkcs8ShroudedKeyBag })
     let bag = bags.friendlyName[0]
     if (!bag || !bag.key) {
       throw new FullstackTestingError(`no key found for friendlyName '${friendlyName}' in pfx file ${pfxFile}`)
@@ -83,7 +82,7 @@ export class KeyManager {
     ret.key = bag.key
 
     // extract cert
-    bags = pkcs12.getBags({friendlyName: friendlyName, bagType: forge.pki.oids.cert});
+    bags = pkcs12.getBags({ friendlyName, bagType: forge.pki.oids.cert })
     bag = bags.friendlyName[0]
     if (!bag || !bag.cert) {
       throw new FullstackTestingError(`no cert found in pfx file ${pfxFile}`)
@@ -99,7 +98,7 @@ export class KeyManager {
    * @param pfxDir a directory where pfx files are stored
    * @returns {{cert: *, key}}
    */
-  loadSigningKey(nodeId, pfxDir) {
+  loadSigningKey (nodeId, pfxDir) {
     const pfxFile = path.join(pfxDir,
       Templates.renderPfxFileName(constants.PFX_SIGNING_KEY_PREFIX, constants.PFX_TYPE_PRIVATE, nodeId))
     const signingKeyFriendlyName = Templates.renderNodeFriendlyName(constants.PFX_SIGNING_KEY_PREFIX, nodeId)
@@ -113,13 +112,13 @@ export class KeyManager {
    *
    * @returns an object with privateKey and publicKey properties
    */
-  keyPair() {
+  keyPair () {
     const keypair = forge.pki.rsa.generateKeyPair(constants.PFX_KEY_BITS)
 
     // construct our own object before returning
     return {
       privateKey: keypair.privateKey,
-      publicKey: keypair.publicKey,
+      publicKey: keypair.publicKey
     }
   }
 
@@ -130,11 +129,11 @@ export class KeyManager {
    * @param friendlyName node friendly name
    * @returns {{cert: *, key: *}}
    */
-  keyAndCert(keypair, nodeId, friendlyName) {
+  keyAndCert (keypair, nodeId, friendlyName) {
     const cert = this.certificate(nodeId, keypair.publicKey, keypair.privateKey, friendlyName)
     return {
       key: keypair.privateKey,
-      cert: cert,
+      cert
     }
   }
 
@@ -148,25 +147,25 @@ export class KeyManager {
    * @returns {*}
    * @constructor
    */
-  certificate(nodeId, publicKey, signingKey, friendlyName) {
+  certificate (nodeId, publicKey, signingKey, friendlyName) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
     if (!publicKey) throw new MissingArgumentError('publicKey is required')
     if (!signingKey) throw new MissingArgumentError('signingKey is required')
     if (!friendlyName) throw new MissingArgumentError('friendlyName is required')
 
     try {
-      const cert = forge.pki.createCertificate();
-      cert.publicKey = publicKey;
-      cert.serialNumber = '01';
-      cert.validity.notBefore = new Date();
-      cert.validity.notAfter = new Date();
-      cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+      const cert = forge.pki.createCertificate()
+      cert.publicKey = publicKey
+      cert.serialNumber = '01'
+      cert.validity.notBefore = new Date()
+      cert.validity.notAfter = new Date()
+      cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1)
       const attrs = [{
         shortName: 'CN',
-        value: friendlyName,
-      }];
-      cert.setSubject(attrs);
-      cert.setIssuer(attrs);
+        value: friendlyName
+      }]
+      cert.setSubject(attrs)
+      cert.setIssuer(attrs)
       cert.setExtensions([
         {
           name: 'keyUsage',
@@ -183,16 +182,16 @@ export class KeyManager {
           codeSigning: true,
           emailProtection: true,
           timeStamping: true
-        }]);
+        }])
 
-      cert.sign(signingKey);
+      cert.sign(signingKey)
       return cert
     } catch (e) {
       throw new FullstackTestingError(`failed to create certificate: ${e.message}`, e)
     }
   }
 
-  signingKeyPfx(nodeId, pfxDir) {
+  signingKeyPfx (nodeId, pfxDir) {
     const keyPrefix = constants.PFX_SIGNING_KEY_PREFIX
 
     try {
@@ -201,7 +200,7 @@ export class KeyManager {
       const cert = this.certificate(nodeId, keypair.publicKey, keypair.privateKey, friendlyName)
       const signingKey = {
         key: keypair.privateKey,
-        cert: cert,
+        cert
       }
       return this.generatePfxFiles(nodeId, keypair, keyPrefix, signingKey, pfxDir)
     } catch (e) {
@@ -216,7 +215,7 @@ export class KeyManager {
    * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
    * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
-  agreementKeyPfx(nodeId, pfxDir, signingKey = null) {
+  agreementKeyPfx (nodeId, pfxDir, signingKey = null) {
     const keyPrefix = constants.PFX_AGREEMENT_KEY_PREFIX
 
     if (!signingKey) {
@@ -241,7 +240,7 @@ export class KeyManager {
    * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
    * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
-  encryptionKeyPfx(nodeId, pfxDir, signingKey = null) {
+  encryptionKeyPfx (nodeId, pfxDir, signingKey = null) {
     const keyPrefix = constants.PFX_ENCRYPTION_KEY_PREFIX
 
     if (!signingKey) {
@@ -273,7 +272,7 @@ export class KeyManager {
    * @param pfxDir a directory where the pfx files need to be saved
    * @return {privateKeyPfx: string, publicKeyPfx: string} object with privateKeyPfx and publicKeyPfx denoting path to the generated pfx files
    */
-  generatePfxFiles(nodeId, keypair, keyPrefix, signingKey, pfxDir) {
+  generatePfxFiles (nodeId, keypair, keyPrefix, signingKey, pfxDir) {
     if (!nodeId) throw new MissingArgumentError('nodeID is required')
     if (!keypair) throw new MissingArgumentError('keypair is required')
     if (!signingKey || !signingKey.key) throw new MissingArgumentError('signingKey.key is required')
@@ -301,7 +300,7 @@ export class KeyManager {
 
       return {
         privateKeyPfx,
-        publicKeyPfx,
+        publicKeyPfx
       }
     } catch (e) {
       throw new FullstackTestingError(`failed to generate signing key for node '${nodeId}': ${e.message}`, e)

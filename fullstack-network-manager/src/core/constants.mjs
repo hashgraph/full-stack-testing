@@ -1,6 +1,6 @@
-import {color, PRESET_TIMER} from 'listr2'
-import {dirname, normalize} from 'path'
-import {fileURLToPath} from 'url'
+import { color, PRESET_TIMER } from 'listr2'
+import { dirname, normalize } from 'path'
+import { fileURLToPath } from 'url'
 import chalk from 'chalk'
 
 // -------------------- fsnetman related constants ---------------------------------------------------------------------
@@ -72,9 +72,8 @@ export const LISTR_DEFAULT_RENDERER_OPTION = {
   timer: LISTR_DEFAULT_RENDERER_TIMER_OPTION
 }
 
-
 export const PFX_KEY_BITS = 3072
-export const PFX_DUMMY_PASSWORD = "password" // non empty dummy password
+export const PFX_DUMMY_PASSWORD = 'password' // non empty dummy password
 
 export const PFX_MAC_ITERATION_COUNT = 10000
 
