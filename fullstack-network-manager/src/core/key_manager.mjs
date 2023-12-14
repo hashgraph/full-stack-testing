@@ -123,32 +123,15 @@ export class KeyManager {
   }
 
   /**
-   * Generate node key and cert
-   * @param keypair
-   * @param nodeId node ID
-   * @param friendlyName node friendly name
-   * @returns {{cert: *, key: *}}
-   */
-  keyAndCert (keypair, nodeId, friendlyName) {
-    const cert = this.certificate(nodeId, keypair.publicKey, keypair.privateKey, friendlyName)
-    return {
-      key: keypair.privateKey,
-      cert
-    }
-  }
-
-  /**
    * Generate a certificate
    *
-   * @param nodeId node ID
    * @param publicKey RSA publicKey to be used to generate the certificate
    * @param signingKey RSA privateKey to sign the certificate
    * @param friendlyName common name (CN) for the subject name
    * @returns {*}
    * @constructor
    */
-  certificate (nodeId, publicKey, signingKey, friendlyName) {
-    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+  certificate (publicKey, signingKey, friendlyName) {
     if (!publicKey) throw new MissingArgumentError('publicKey is required')
     if (!signingKey) throw new MissingArgumentError('signingKey is required')
     if (!friendlyName) throw new MissingArgumentError('friendlyName is required')
@@ -184,25 +167,28 @@ export class KeyManager {
           timeStamping: true
         }])
 
-      cert.sign(signingKey)
+      cert.sign(signingKey, forge.md.sha384.create())
       return cert
     } catch (e) {
       throw new FullstackTestingError(`failed to create certificate: ${e.message}`, e)
     }
   }
 
+  /**
+   * Generate signing key
+   * @param nodeId node ID
+   * @param pfxDir the directory where pfx files should be stored
+   * @returns {privateKeyPfx:string|publicKeyPfx:string}
+   */
   signingKeyPfx (nodeId, pfxDir) {
     const keyPrefix = constants.PFX_SIGNING_KEY_PREFIX
 
     try {
       const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
-      const keypair = this.keyPair()
-      const cert = this.certificate(nodeId, keypair.publicKey, keypair.privateKey, friendlyName)
-      const signingKey = {
-        key: keypair.privateKey,
-        cert
-      }
-      return this.generatePfxFiles(nodeId, keypair, keyPrefix, signingKey, pfxDir)
+      const keypair = forge.pki.rsa.generateKeyPair(3072)
+      const cert = this.certificate(keypair.publicKey, keypair.privateKey, friendlyName)
+      const certChain = [cert]
+      return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
     } catch (e) {
       throw new FullstackTestingError(`failed to generate signing key: ${e.message}`, e)
     }
@@ -216,18 +202,7 @@ export class KeyManager {
    * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
   agreementKeyPfx (nodeId, pfxDir, signingKey = null) {
-    const keyPrefix = constants.PFX_AGREEMENT_KEY_PREFIX
-
-    if (!signingKey) {
-      signingKey = this.loadSigningKey(nodeId, pfxDir)
-    }
-
-    try {
-      const keypair = this.keyPair()
-      return this.generatePfxFiles(nodeId, keypair, keyPrefix, signingKey, pfxDir)
-    } catch (e) {
-      throw new FullstackTestingError(`failed to generate agreement key: ${e.message}`, e)
-    }
+    return this.ed25519KeyPfx(nodeId, pfxDir, constants.PFX_AGREEMENT_KEY_PREFIX, signingKey)
   }
 
   /**
@@ -241,17 +216,35 @@ export class KeyManager {
    * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
   encryptionKeyPfx (nodeId, pfxDir, signingKey = null) {
-    const keyPrefix = constants.PFX_ENCRYPTION_KEY_PREFIX
+    return this.ed25519KeyPfx(nodeId, pfxDir, constants.PFX_ENCRYPTION_KEY_PREFIX, signingKey)
+  }
+
+  /**
+   * Generate ED25519 key
+   *
+   * @param nodeId node ID
+   * @param pfxDir the directory where pfx files should be stored
+   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
+   * @returns {privateKeyPfx:string|publicKeyPfx:string}
+   */
+  ed25519KeyPfx (nodeId, pfxDir, keyPrefix, signingKey = null) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!pfxDir) throw new MissingArgumentError('pfxDir is required')
+    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
 
     if (!signingKey) {
       signingKey = this.loadSigningKey(nodeId, pfxDir)
     }
 
     try {
-      const keypair = this.keyPair()
-      return this.generatePfxFiles(nodeId, keypair, keyPrefix, signingKey, pfxDir)
+      const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
+      const keypair = forge.pki.rsa.generateKeyPair(3072)
+      const cert = this.certificate(keypair.publicKey, signingKey.key, friendlyName)
+      const certChain = [signingKey.cert, cert]
+      return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
     } catch (e) {
-      throw new FullstackTestingError(`failed to generate agreement key: ${e.message}`, e)
+      throw new FullstackTestingError(`failed to generate ${keyPrefix}-key: ${e.message}`, e)
     }
   }
 
@@ -266,17 +259,15 @@ export class KeyManager {
    *  - pkcs12 MAC algo: SHA1 // default, we cannot change it yet since the node-forge library hardcoded it
    *
    * @param nodeId node id
-   * @param keypair object with privateKey and publicKey properties as generated by function KeyPair()
+   * @param privateKey privateKey of the node
+   * @param certChain certificate chain
    * @param keyPrefix key prefix such as constants.PFX_SIGNING_KEY_PREFIX
-   * @param signingKey signing key and cert
    * @param pfxDir a directory where the pfx files need to be saved
    * @return {privateKeyPfx: string, publicKeyPfx: string} object with privateKeyPfx and publicKeyPfx denoting path to the generated pfx files
    */
-  generatePfxFiles (nodeId, keypair, keyPrefix, signingKey, pfxDir) {
+  generatePfxFiles (nodeId, privateKey, certChain, keyPrefix, pfxDir) {
     if (!nodeId) throw new MissingArgumentError('nodeID is required')
-    if (!keypair) throw new MissingArgumentError('keypair is required')
-    if (!signingKey || !signingKey.key) throw new MissingArgumentError('signingKey.key is required')
-    if (!signingKey || !signingKey.cert) throw new MissingArgumentError('signingKey.cert is required')
+    if (!privateKey) throw new MissingArgumentError('keypair is required')
     if (!pfxDir) throw new MissingArgumentError('pfxDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
     if (!fs.statSync(pfxDir).isDirectory()) throw new IllegalArgumentError(`${pfxDir} is not a valid path`)
@@ -284,14 +275,12 @@ export class KeyManager {
     try {
       // generate cert
       const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
-      const cert = this.certificate(nodeId, keypair.publicKey, signingKey.key, friendlyName)
-      const certChain = [signingKey.cert, cert]
 
       // generate private.pfx
       // FIXME, forge uses SHA1 for MAC instead of SHA256 as in openssl or keytool
       // A fix is proposed: https://github.com/digitalbazaar/forge/pull/1062
       const pfxOptions = this._pfxOptions(friendlyName)
-      const privateKeyPkcs12Asn1 = forge.pkcs12.toPkcs12Asn1(keypair.privateKey, certChain, constants.PFX_DUMMY_PASSWORD, pfxOptions)
+      const privateKeyPkcs12Asn1 = forge.pkcs12.toPkcs12Asn1(privateKey, certChain, constants.PFX_DUMMY_PASSWORD, pfxOptions)
       const privateKeyPfx = this._createPrivateKeyPfx(nodeId, keyPrefix, privateKeyPkcs12Asn1, pfxDir)
 
       // generate public.pfx

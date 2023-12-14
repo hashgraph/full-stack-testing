@@ -30,21 +30,6 @@ describe('KeyManager', () => {
   const logger = logging.NewLogger('debug')
   const keyManager = new KeyManager(logger)
 
-  it('should generate SHA384withRSA keypair', async () => {
-    const keypair = keyManager.keyPair()
-    expect(keypair).not.toBeNull()
-    expect(keypair.privateKey).not.toBeNull()
-    expect(keypair.publicKey).not.toBeNull()
-  })
-
-  it('should generate Certificate', () => {
-    const nodeId = 'node0'
-    const friendlyName = Templates.renderNodeFriendlyName(nodeId)
-    const keypair = keyManager.keyPair()
-    const cert = keyManager.certificate(nodeId, keypair.publicKey, keypair.privateKey, friendlyName)
-    expect(cert).not.toBeNull()
-  })
-
   it('should generate signing key', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
