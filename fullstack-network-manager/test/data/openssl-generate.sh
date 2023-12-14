@@ -34,6 +34,7 @@ function backup() {
 # make a backup of old *.pem files
 backup "*.pem"
 
+# Generate RSA:3072 key to for signing
 function generate_signing_key() {
     local n="${1}"
     local key_file="${2}"
@@ -56,7 +57,8 @@ function generate_signing_key() {
     return 0
 }
 
-function generate_signed_key() {
+# Generate ECDSA key signed by the s-key
+function generate_signed_ecdsa_key() {
     local n="${1}"
     local key_file="${2}"
     local csr_file="${3}"
@@ -99,8 +101,8 @@ for nm in "${names[@]}"; do
     e_cert="e-${n}-cert.pem"
 
     generate_signing_key "${n}" "${s_key}" "${s_csr}" "${s_cert}" "/CN=s-${n}" || exit 1
-    generate_signed_key "${n}" "${a_key}" "${a_csr}" "${a_cert}" "${s_cert}" "${s_key}" "/CN=a-${n}" || exit 1
-    generate_signed_key "${n}" "${e_key}" "${e_csr}" "${e_cert}" "${s_cert}" "${s_key}" "/CN=e-${n}" || exit 1
+    generate_signed_ecdsa_key "${n}" "${a_key}" "${a_csr}" "${a_cert}" "${s_cert}" "${s_key}" "/CN=a-${n}" || exit 1
+    generate_signed_ecdsa_key "${n}" "${e_key}" "${e_csr}" "${e_cert}" "${s_cert}" "${s_key}" "/CN=e-${n}" || exit 1
 done
 
 # remove *csr files
