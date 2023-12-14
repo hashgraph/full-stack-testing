@@ -1,0 +1,69 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            fc:04:33:eb:b8:8b:d2:4d
+        Signature Algorithm: sha384WithRSAEncryption
+        Issuer: CN=s-alice
+        Validity
+            Not Before: Dec 11 00:35:02 2023 GMT
+            Not After : Dec 11 00:35:02 2123 GMT
+        Subject: CN=s-alice
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (3072 bit)
+                Modulus:
+                    00:f4:71:41:44:88:7f:78:17:3c:1b:09:3c:4a:df:
+                    2f:73:97:0b:52:9a:96:16:91:f2:f2:93:15:ef:cb:
+                    4b:7e:0c:32:80:0f:52:3c:77:9a:83:a3:26:56:da:
+                    94:d6:2f:d6:7f:80:bf:4f:8c:51:cd:bc:e1:7c:7f:
+                    f3:21:a3:24:a0:a5:20:ac:15:35:a2:67:8e:9a:78:
+                    29:50:9a:66:4f:a3:b1:6b:b5:a3:83:44:1c:29:a9:
+                    11:bc:1e:a6:f7:e6:50:27:e2:8f:a3:24:f2:53:c0:
+                    91:0c:64:2d:50:b8:9b:ba:43:4c:2d:45:ee:dc:b6:
+                    68:a0:1b:cd:33:e2:4e:75:2b:68:2e:e3:9b:d0:fb:
+                    95:e3:98:84:f4:cb:59:76:67:0a:d9:87:79:40:b7:
+                    24:a1:cb:57:53:1e:b7:dd:39:e2:b5:4a:47:58:19:
+                    1c:ba:76:2f:6b:e6:d8:26:98:40:09:79:60:7b:69:
+                    d5:cb:da:95:47:84:c5:84:47:fe:0c:97:9f:a2:2a:
+                    4c:c7:3c:77:3b:23:66:9d:41:e4:f1:d4:d4:17:88:
+                    e5:f7:53:65:2b:15:09:ad:41:b8:e3:1c:08:75:d7:
+                    34:b6:15:5f:8b:6e:09:58:77:b6:2f:42:76:9a:7c:
+                    b8:8c:62:e1:20:1e:2c:f5:d3:2e:26:16:64:c6:ae:
+                    57:0b:ab:08:dc:fb:9f:ff:66:78:bb:1f:7b:73:ab:
+                    f6:f1:45:c3:6d:53:d8:5e:45:74:17:cf:07:ec:26:
+                    e1:24:71:a1:68:31:94:e8:f9:55:b7:d3:b6:c4:b7:
+                    49:0c:17:72:a0:20:fe:18:0d:e0:84:0a:d0:69:39:
+                    d9:8c:8e:df:81:2d:27:86:66:96:6a:88:e0:d4:a9:
+                    4e:97:c0:b3:22:0e:9c:9a:35:b2:0e:14:2d:7c:47:
+                    ba:39:25:fa:41:ae:83:1c:ef:7d:55:5c:7c:26:9f:
+                    28:73:c7:81:ae:cc:52:59:fe:08:a4:23:cf:b1:90:
+                    05:f1:c9:69:58:62:db:d9:98:5b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                88:FD:2F:2C:95:23:E4:0D:B7:75:EE:ED:F2:49:48:93:7B:5B:25:2F
+    Signature Algorithm: sha384WithRSAEncryption
+    Signature Value:
+        aa:55:63:8c:19:d2:f6:cb:2f:45:91:8f:3e:b2:40:c8:ca:e3:
+        7f:98:61:fc:6b:a4:2e:d4:98:9c:1e:26:bb:a2:ee:89:4a:fb:
+        e6:45:a7:d4:da:3e:2a:ca:13:1c:30:5d:fb:81:1b:8c:d3:d6:
+        98:55:5a:79:50:07:ca:72:52:96:a9:1e:1f:8a:0a:8d:25:b4:
+        bc:e6:3c:73:02:1b:66:8a:ab:86:34:0f:9d:48:24:4d:d0:78:
+        f7:19:f9:0e:0a:18:4b:41:41:fe:d1:12:1b:6c:1a:8c:5c:0f:
+        20:fb:af:fe:30:16:a3:04:61:71:17:60:63:dd:cb:06:19:51:
+        a4:d6:44:62:4a:ac:9c:9b:3f:5d:c2:4c:b0:3a:37:fb:48:40:
+        39:ed:f3:4f:55:d6:2d:a6:3a:b0:bd:78:da:9e:75:2b:4f:97:
+        db:a3:d8:17:2d:62:6a:d1:e7:df:07:ac:73:21:3d:e9:de:91:
+        ff:29:6b:a8:a5:48:6c:1b:1b:b5:2a:1d:52:ed:74:e4:e8:6c:
+        58:18:6e:6a:86:12:5d:bf:9a:af:9d:8a:76:9f:00:69:07:3d:
+        a0:1d:d0:56:90:a7:46:b9:bc:70:4c:7e:9d:98:40:e8:e6:0f:
+        11:4c:79:a4:89:09:08:dd:31:a5:1b:16:36:b4:7a:ad:32:90:
+        38:0a:ce:a1:52:cc:67:dc:1f:eb:7e:64:65:b2:a1:ef:92:69:
+        7a:51:1c:a4:0e:e0:66:b7:2f:7e:a3:83:c6:0b:87:5c:6b:04:
+        57:81:1b:fa:c1:4b:e0:d1:09:c3:6f:1b:bd:ba:e8:39:cb:f6:
+        3c:c6:16:5f:d6:06:b3:2a:14:31:93:e3:a2:c6:90:47:9e:af:
+        83:db:d9:c7:1a:1d:1a:32:df:db:04:22:ec:01:a7:00:0e:c0:
+        9d:b4:9e:2a:c1:10:6d:0e:1b:60:9c:a7:3a:b6:25:a9:a8:2d:
+        9a:79:46:3d:77:da:83:75:e5:df:a7:30:07:52:02:2a:46:6b:
+        5c:23:c9:b5:f3:bc
