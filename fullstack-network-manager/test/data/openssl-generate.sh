@@ -54,6 +54,9 @@ function generate_signing_key() {
     echo "------------------------------------------------------------------------------------"
     openssl x509 -in "${s_cert}" -text -noout
 
+    # remove csr
+    rm "${csr_file}"
+
     return 0
 }
 
@@ -81,6 +84,9 @@ function generate_signed_ecdsa_key() {
     echo "------------------------------------------------------------------------------------"
     openssl x509 -in "${cert_file}" -text -noout
 
+    # remove csr
+    rm "${csr_file}"
+
     return 0
 }
 
@@ -105,9 +111,5 @@ for nm in "${names[@]}"; do
     generate_signed_ecdsa_key "${n}" "${e_key}" "${e_csr}" "${e_cert}" "${s_cert}" "${s_key}" "/CN=e-${n}" || exit 1
 done
 
-# remove *csr files
-rm -f *csr.pem
-
 # display backup dir
 echo "Backup dir: ${backupDir}"
-ls -la "${backupDir}"
