@@ -97,8 +97,8 @@ function generate_signing_key() {
     return 0
 }
 
-# Generate ECDSA key signed by the s-key
-function generate_signed_ecdsa_key() {
+# Generate keys signed by the s-key
+function generate_key() {
     local n="${1}"
     local prefix="${2}"
     local s_key="${3}"
@@ -113,7 +113,7 @@ function generate_signed_ecdsa_key() {
     local friendly_name="${prefix}-${n}"
 
     echo "------------------------------------------------------------------------------------"
-    echo "Generating ECDSA key and cert for node: ${n}" [ "${prefix}"-key ]
+    echo "Generating key and cert for node: ${n}" [ "${prefix}"-key ]
     echo "friendly_name: ${friendly_name}"
     echo "key_file: ${key_file}"
     echo "csr_file: ${csr_file}"
@@ -125,7 +125,9 @@ function generate_signed_ecdsa_key() {
     echo "------------------------------------------------------------------------------------"
 
     # generate key
-    openssl ecparam -genkey -name secp384r1 -noout -out "${key_file}" || return 1
+    #openssl ecparam -genkey -name secp384r1 -noout -out "${key_file}" || return 1
+    # Use ED25519 key instead of EC key: https://blog.pinterjann.is/ed25519-certificates.html
+    openssl genpkey -algorithm ED25519 -out "${key_file}" || return 1
 
     # generate csr
     openssl req -new -out "${csr_file}" -key "${key_file}" -subj "/CN=${friendly_name}" || return 1
@@ -170,8 +172,8 @@ for nm in "${names[@]}"; do
     s_cert="${s_key_prefix}-${n}-cert.pem"
 
     generate_signing_key "${n}" "${s_key_prefix}" || exit 1
-    generate_signed_ecdsa_key "${n}" "${a_key_prefix}" "${s_key}" "${s_cert}" || exit 1
-    generate_signed_ecdsa_key "${n}" "${e_key_prefix}" "${s_key}" "${s_cert}" || exit 1
+    generate_key "${n}" "${a_key_prefix}" "${s_key}" "${s_cert}" || exit 1
+    generate_key "${n}" "${e_key_prefix}" "${s_key}" "${s_cert}" || exit 1
 done
 
 # display backup dir
