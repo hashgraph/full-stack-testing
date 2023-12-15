@@ -10,12 +10,12 @@ dependencies:
   version: 0.27.1
 - name: gateway-helm
   repository: oci://docker.io/envoyproxy
-  version: v0.5.0
+  version: v0.6.0
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v1.13.2
 - name: acme-cluster-issuer
   repository: ""
   version: 0.3.0
-digest: sha256:630e4c5a362a5d9a9c8ea6b10653d9b35eb91e93a14e19578e8ef75eeb4a49c6
-generated: "2023-11-10T14:03:37.262415Z"
+digest: sha256:a88a20be4547bd0c95f56b3d92487082ec035d3793bdc11a442b2ae9e96dbe8f
+generated: "2023-12-14T17:02:29.665365Z"

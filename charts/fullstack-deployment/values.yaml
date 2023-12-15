@@ -45,6 +45,8 @@ gatewayApi:
     tlsEnabled: false
     tlsClusterIssuerName: "" # for acme-cluster-setup: staging = letsencrypt-staging, prod = letsencrypt-prod
     tlsClusterIssuerNamespace: "" # for acme-cluster-setup: cert-manager # TODO is this needed?
+    loadBalancerIP: ""
+    loadBalancerEnabled: false
     listeners:
       gossip:
         port: 51000 # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
