@@ -1,11 +1,19 @@
 # Generate node gossip key using openssl
 
-The script `openssl-generate.sh` helps to generate node gossip keys in `pkcs12` format (`*.pfx` files).
+There are two scripts to generate node gossip keys in `pkcs12` format (`*.pfx` files) as below: 
+- `keytool-generate.sh`: It generates keys using `keytool` in legacy format where each nodes keys are combined in a single `pfx` file.
+- `openssl-generate.sh`: It generates keys using `openssl` where each private and public keys are separate `pfx` files
 
-In order to generate keys for 3 nodes (`node0,node1,node3`), you need to run the script as below:
+In order to generate keys for 3 nodes (`node0,node1,node3`), you may run the script as below:
 
 ```
 ./openssl-generate.sh node0 node1 node3
+```
+
+Or,
+
+```
+./keytool-generate.sh node0 node1 node3
 ```
 
 ## Useful commands for reference
