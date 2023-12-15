@@ -516,3 +516,5 @@ charts/deleteme.yaml
 node_modules
 fullstack-network-manager/coverage
 dev/resources/nmt/version.properties
+fullstack-network-manager/test/data/keys/backup
+fullstack-network-manager/test/data/tmp
