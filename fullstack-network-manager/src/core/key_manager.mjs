@@ -175,6 +175,36 @@ export class KeyManager {
   }
 
   /**
+   * Generate a certificate signing request
+   *
+   * @param publicKey publicKey to be used to generate the CSR
+   * @param privateKey privateKey to sign the CSR
+   * @param friendlyName common name (CN) for the subject name
+   * @returns {*}
+   * @constructor
+   */
+  createCSR(publicKey, privateKey, friendlyName) {
+    if (!publicKey) throw new MissingArgumentError('publicKey is required')
+    if (!privateKey) throw new MissingArgumentError('privateKey is required')
+    if (!friendlyName) throw new MissingArgumentError('friendlyName is required')
+
+    try {
+      const csr = forge.pki.createCertificationRequest()
+      csr.publicKey = publicKey
+      csr.serialNumber = '01'
+      const attrs = [{
+        shortName: 'CN',
+        value: friendlyName
+      }]
+      csr.setSubject(attrs)
+      csr.sign(privateKey, forge.md.sha384.create())
+      return csr
+    } catch (e) {
+      throw new FullstackTestingError(`failed to create certificate signing request: ${e.message}`, e)
+    }
+  }
+
+  /**
    * Generate signing key
    * @param nodeId node ID
    * @param pfxDir the directory where pfx files should be stored
@@ -191,6 +221,36 @@ export class KeyManager {
       return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
     } catch (e) {
       throw new FullstackTestingError(`failed to generate signing key: ${e.message}`, e)
+    }
+  }
+
+  /**
+   * Generate ED25519 key
+   *
+   * @param nodeId node ID
+   * @param pfxDir the directory where pfx files should be stored
+   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
+   * @returns {privateKeyPfx:string|publicKeyPfx:string}
+   */
+  ed25519KeyPfx (nodeId, pfxDir, keyPrefix, signingKey = null) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!pfxDir) throw new MissingArgumentError('pfxDir is required')
+    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
+
+    if (!signingKey) {
+      signingKey = this.loadSigningKey(nodeId, pfxDir)
+    }
+
+    try {
+      const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
+      const keypair = forge.rsa.generateKeyPair()
+      const csr = this.createCSR(keypair.publicKey, keypair.privateKey, friendlyName)
+      const cert = this.certificate(csr, signingKey.key, friendlyName)
+      const certChain = [signingKey.cert, cert]
+      return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
+    } catch (e) {
+      throw new FullstackTestingError(`failed to generate ${keyPrefix}-key: ${e.message}`, e)
     }
   }
 
@@ -219,34 +279,6 @@ export class KeyManager {
     return this.ed25519KeyPfx(nodeId, pfxDir, constants.PFX_ENCRYPTION_KEY_PREFIX, signingKey)
   }
 
-  /**
-   * Generate ED25519 key
-   *
-   * @param nodeId node ID
-   * @param pfxDir the directory where pfx files should be stored
-   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
-   * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
-   * @returns {privateKeyPfx:string|publicKeyPfx:string}
-   */
-  ed25519KeyPfx (nodeId, pfxDir, keyPrefix, signingKey = null) {
-    if (!nodeId) throw new MissingArgumentError('nodeId is required')
-    if (!pfxDir) throw new MissingArgumentError('pfxDir is required')
-    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
-
-    if (!signingKey) {
-      signingKey = this.loadSigningKey(nodeId, pfxDir)
-    }
-
-    try {
-      const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
-      const keypair = forge.pki.rsa.generateKeyPair(3072)
-      const cert = this.certificate(keypair.publicKey, signingKey.key, friendlyName)
-      const certChain = [signingKey.cert, cert]
-      return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
-    } catch (e) {
-      throw new FullstackTestingError(`failed to generate ${keyPrefix}-key: ${e.message}`, e)
-    }
-  }
 
   /**
    * Generate PFX files
