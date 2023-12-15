@@ -2,6 +2,44 @@ apiVersion: v1
 entries:
   fullstack-cluster-setup:
   - apiVersion: v2
+    appVersion: 0.15.0
+    created: "2023-12-15T15:01:55.421250185Z"
+    dependencies:
+    - alias: minio-operator
+      condition: cloud.minio.enabled
+      name: operator
+      repository: https://operator.min.io/
+      version: 5.0.7
+    - alias: prometheus-stack
+      condition: cloud.prometheusStack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 52.0.1
+    - condition: cloud.grafanaAgent.enabled
+      name: grafana-agent
+      repository: https://grafana.github.io/helm-charts
+      version: 0.27.1
+    - alias: envoy-gateway
+      condition: cloud.envoyGateway.enabled
+      name: gateway-helm
+      repository: oci://docker.io/envoyproxy
+      version: v0.5.0
+    - condition: cloud.certManager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.13.2
+    - condition: cloud.acmeClusterIssuer.enabled
+      name: acme-cluster-issuer
+      repository: ""
+      version: 0.3.0
+    description: A Helm chart to setup shared resources for fullstack-testing
+    digest: 02109b086f5ca0083dd78b4fe52e8d97cf85b29097cbe2493b8c9aab82dec9f4
+    name: fullstack-cluster-setup
+    type: application
+    urls:
+    - https://hashgraph.github.io/full-stack-testing/charts/fullstack-cluster-setup-0.15.0.tgz
+    version: 0.15.0
+  - apiVersion: v2
     appVersion: 0.14.0
     created: "2023-12-06T00:02:19.876500699Z"
     dependencies:
@@ -96,6 +134,32 @@ entries:
     version: 0.12.0
   fullstack-deployment:
   - apiVersion: v2
+    appVersion: 0.15.0
+    created: "2023-12-15T15:01:55.454310486Z"
+    dependencies:
+    - condition: hedera-explorer.enabled
+      name: hedera-explorer
+      repository: ""
+      version: 0.2.0
+    - alias: hedera-mirror-node
+      condition: hedera-mirror-node.enabled
+      name: hedera-mirror
+      repository: https://hashgraph.github.io/hedera-mirror-node/charts
+      version: 0.86.0
+    - alias: minio-server
+      condition: cloud.minio.enabled
+      name: tenant
+      repository: https://operator.min.io/
+      version: 5.0.7
+    description: A Helm chart for the fullstack deployment
+    digest: c2b9adf9c6f263b7ea4ce44e7a93a8e0d532635b7b128d6440f1bc000179779b
+    kubeVersion: '>=1.25.0-0'
+    name: fullstack-deployment
+    type: application
+    urls:
+    - https://hashgraph.github.io/full-stack-testing/charts/fullstack-deployment-0.15.0.tgz
+    version: 0.15.0
+  - apiVersion: v2
     appVersion: 0.14.0
     created: "2023-12-06T00:02:19.91124068Z"
     dependencies:
@@ -173,4 +237,4 @@ entries:
     urls:
     - https://hashgraph.github.io/full-stack-testing/charts/fullstack-deployment-0.12.0.tgz
     version: 0.12.0
-generated: "2023-12-06T00:02:19.806234926Z"
+generated: "2023-12-15T15:01:55.370629967Z"
