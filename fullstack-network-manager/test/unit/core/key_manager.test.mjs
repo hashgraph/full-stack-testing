@@ -5,6 +5,7 @@ import os from 'os'
 import path from 'path'
 import { constants, logging, Templates } from '../../../src/core/index.mjs'
 import { KeyManager } from '../../../src/core/key_manager.mjs'
+import crypto from 'crypto'
 
 function getPrivateKeyBag (pfxKey, friendlyName) {
   const privateKeyDer = fs.readFileSync(pfxKey.privateKeyPfx, { encoding: 'binary' })
@@ -62,6 +63,13 @@ function verifyPfxKeyFile (pfxKey, friendlyName) {
   // TODO check cert format and attributes
 }
 
+/**
+ * Convert an ArrayBuffer into a string
+ * from https://developer.chrome.com/blog/how-to-convert-arraybuffer-to-and-from-string/
+ */
+function ab2str(buf) {
+  return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
 describe('KeyManager', () => {
   const logger = logging.NewLogger('debug')
   const keyManager = new KeyManager(logger)
@@ -89,7 +97,7 @@ describe('KeyManager', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
     const friendlyName = Templates.renderNodeFriendlyName(constants.PFX_SIGNING_KEY_PREFIX, nodeId)
-    const signingKeyPfx = keyManager.signingKeyPfx(nodeId, tmpDir)
+    const signingKeyPfx = await keyManager.signingKeyPfx(nodeId, tmpDir)
     verifySigningPfxKeyFile(signingKeyPfx, friendlyName)
     fs.rmSync(tmpDir, { recursive: true })
   })
@@ -97,9 +105,9 @@ describe('KeyManager', () => {
   it('should generate agreement key', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
-    const signingKey = keyManager.loadSigningKey(nodeId, 'test/data')
+    const signingKey = keyManager.loadSigningKeyPair(nodeId, 'test/data')
     const friendlyName = Templates.renderNodeFriendlyName(constants.PFX_AGREEMENT_KEY_PREFIX, nodeId)
-    const agreementKeyPfx = keyManager.agreementKeyPfx(nodeId, tmpDir, signingKey)
+    const agreementKeyPfx = await keyManager.agreementKeyPfx(nodeId, tmpDir, signingKey)
     verifyPfxKeyFile(agreementKeyPfx, friendlyName)
     fs.rmSync(tmpDir, { recursive: true })
   })
@@ -107,9 +115,68 @@ describe('KeyManager', () => {
   it('should generate encryption key', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
-    const signingKey = keyManager.loadSigningKey(nodeId, 'test/data')
+    const signingKey = keyManager.loadSigningKeyPair(nodeId, 'test/data')
     const friendlyName = Templates.renderNodeFriendlyName(constants.PFX_ENCRYPTION_KEY_PREFIX, nodeId)
     const encryptionKeyPfx = keyManager.encryptionKeyPfx(nodeId, tmpDir, signingKey)
+    verifyPfxKeyFile(encryptionKeyPfx, friendlyName)
+    fs.rmSync(tmpDir, { recursive: true })
+  })
+
+  it('should generate pfx file', async() => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
+    const nodeId = 'node0'
+    const friendlyName = Templates.renderNodeFriendlyName(constants.PFX_ENCRYPTION_KEY_PREFIX, nodeId)
+    const alg = {
+      name: "ECDSA",
+      namedCurve: "P-384",
+      hash: "SHA-384",
+    }
+
+    const rsaAlg = {
+      name: "RSA-PSS",
+        // Consider using a 4096-bit key for systems that require long-term security
+        modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: "SHA-256",
+    }
+
+    let privateKey = null
+    // var keys = forge.pki.rsa.generateKeyPair(3072);
+    // var pem = forge.pki.privateKeyToPem(keys.privateKey);
+    // privateKey = forge.pki.privateKeyFromPem(pem)
+
+    const rsaKeypair = await crypto.generateKeyPairSync('rsa', {
+      modulusLength: 3072,
+      publicKeyEncoding: {
+        type: 'spki',
+        format: 'pem',
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem',
+      },
+    });
+    let rsaPrivateKey = forge.pki.privateKeyFromPem(rsaKeypair.privateKey);
+    let rsaPubicKey = forge.pki.certificateFromPem(rsaKeypair.publicKey);
+
+    const ecKeypair = await crypto.generateKeyPairSync('ec', {
+      namedCurve: 'secp384r1',
+      publicKeyEncoding: {
+        type: 'spki',
+        format: 'pem',
+      },
+      privateKeyEncoding: {
+        type: 'pkcs8',
+        format: 'pem',
+      },
+    });
+    let ecPrivateKey = forge.pki.privateKeyFromPem(ecKeypair.privateKey);
+
+    // const pkcs8Key= await crypto.subtle.exportKey('pkcs8', keypair.privateKey)
+    // const pkcs8KeyStr= ab2str(pkcs8Key);
+    // const pkcs8KeyBase64= new Buffer(pkcs8KeyStr).toString('base64');
+    // const pemKey= `-----BEGIN PRIVATE KEY-----\n${pkcs8KeyBase64}\n-----END PRIVATE KEY-----`;
+    const encryptionKeyPfx = keyManager.generatePfxFiles(nodeId, tmpDir, signingKey)
     verifyPfxKeyFile(encryptionKeyPfx, friendlyName)
     fs.rmSync(tmpDir, { recursive: true })
   })

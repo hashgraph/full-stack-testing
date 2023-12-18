@@ -25,6 +25,7 @@
   "license": "Apache2.0",
   "dependencies": {
     "@listr2/prompt-adapter-enquirer": "^1.0.2",
+    "@peculiar/x509": "^1.9.5",
     "adm-zip": "^0.5.10",
     "chalk": "^5.3.0",
     "dotenv": "^16.3.1",
