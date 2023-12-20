@@ -1,12 +1,13 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { flags } from './commands/index.mjs'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
 import { ChartManager, ConfigManager, DependencyManager } from './core/index.mjs'
 import 'dotenv/config'
 
 export function main (argv) {
-  const logger = core.logging.NewLogger('debug')
+  const logger = core.logging.NewLogger()
   const kind = new core.Kind(logger)
   const helm = new core.Helm(logger)
   const kubectl = new core.Kubectl(logger)
@@ -36,6 +37,7 @@ export function main (argv) {
     .alias('v', 'version')
     .command(commands.Initialize(opts))
     .strict()
+    .option(flags.devMode.name, flags.devMode.definition)
     .wrap(120)
     .demand(1, 'Select a command')
     .parse()

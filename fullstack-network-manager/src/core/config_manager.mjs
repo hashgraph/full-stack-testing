@@ -106,6 +106,9 @@ export class ConfigManager {
         config = JSON.parse(configJSON.toString())
       }
 
+      this.logger.debug('Setup cached config', { cachedConfig: config })
+
+      this.logger.setDevMode(this.flagValue(config, flags.devMode))
       return config
     } catch (e) {
       throw new FullstackTestingError(`failed to load config: ${e.message}`, e)
