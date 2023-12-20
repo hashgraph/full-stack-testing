@@ -1,4 +1,4 @@
-import {describe, expect, it, jest} from '@jest/globals'
+import { describe, expect, it, jest } from '@jest/globals'
 import { Kind, logging } from '../../../src/core/index.mjs'
 import { ShellRunner } from '../../../src/core/shell_runner.mjs'
 

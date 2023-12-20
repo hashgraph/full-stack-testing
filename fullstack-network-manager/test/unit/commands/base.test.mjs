@@ -30,7 +30,7 @@ describe('BaseCommand', () => {
     chartManager,
     configManager,
     depManager,
-    clusterManager,
+    clusterManager
   })
 
   describe('runShell', () => {

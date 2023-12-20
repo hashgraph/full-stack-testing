@@ -29,7 +29,7 @@ describe('InitCommand', () => {
     chartManager,
     configManager,
     depManager,
-    clusterManager,
+    clusterManager
   })
 
   describe('commands', () => {
