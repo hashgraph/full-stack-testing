@@ -61,7 +61,6 @@ export class InitCommand extends BaseCommand {
         task: async (_, task) => {
           const deps = [
             core.constants.HELM,
-            core.constants.KIND,
             core.constants.KUBECTL
           ]
 

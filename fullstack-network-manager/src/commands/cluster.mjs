@@ -1,6 +1,5 @@
 import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
-import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import { BaseCommand } from './base.mjs'
 import chalk from 'chalk'
@@ -15,19 +14,8 @@ export class ClusterCommand extends BaseCommand {
    * List available clusters
    * @returns {Promise<string[]>}
    */
-  async getClusters () {
-    try {
-      return await this.kind.getClusters('-q')
-    } catch (e) {
-      this.logger.showUserError(e)
-    }
-
-    return []
-  }
-
   async showClusterList () {
-    this.logger.showList('Clusters', await this.getClusters())
-    return true
+    this.logger.showList('Clusters', await this.clusterManager.getClusters())
   }
 
   /**
@@ -52,8 +40,7 @@ export class ClusterCommand extends BaseCommand {
   async getClusterInfo (argv) {
     try {
       const clusterName = argv.clusterName
-      const cmd = `kubectl cluster-info --context kind-${clusterName}`
-      const output = await this.run(cmd)
+      const output = await this.clusterManager.getClusterInfo(clusterName)
 
       this.logger.showUser(chalk.green(`\nCluster information (${clusterName})\n---------------------------------------`))
       output.forEach(line => this.logger.showUser(line))
@@ -114,7 +101,7 @@ export class ClusterCommand extends BaseCommand {
           const cachedConfig = await self.configManager.setupConfig(argv)
 
           // get existing choices
-          ctx.clusters = await self.kind.getClusters('-q')
+          ctx.clusters = await self.clusterManager.getClusters()
 
           // extract config values
           const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
@@ -130,13 +117,9 @@ export class ClusterCommand extends BaseCommand {
         title: 'Create cluster',
         task: async (ctx, _) => {
           const clusterName = ctx.config.clusterName
-          ctx.clusters = await self.getClusters()
+          ctx.clusters = await self.clusterManager.getClusters()
           if (!ctx.clusters.includes(clusterName)) {
-            await self.kind.createCluster(
-              `-n ${clusterName}`,
-              `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
-            )
-
+            await self.clusterManager.createCluster(clusterName)
             await self.kubectl.get('--raw=\'/healthz?verbose\'')
           }
         }
@@ -155,7 +138,7 @@ export class ClusterCommand extends BaseCommand {
           // display info
           ctx.namespaces = await self.getNameSpaces()
           ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
-          ctx.clusters = await self.getClusters()
+          ctx.clusters = await self.clusterManager.getClusters()
           self.logger.showList('Namespaces', await ctx.namespaces)
           self.logger.showList('Clusters', await ctx.clusters)
           self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
@@ -191,7 +174,7 @@ export class ClusterCommand extends BaseCommand {
           const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
 
           // get existing choices
-          ctx.clusters = await self.kind.getClusters('-q')
+          ctx.clusters = await self.clusterManager.getClusters()
 
           ctx.config = {
             clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, ctx.clusters)
@@ -201,8 +184,8 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Delete cluster',
         task: async (ctx, _) => {
-          await this.kind.deleteCluster(ctx.config.clusterName)
-          self.logger.showList('Clusters', await self.getClusters())
+          await this.clusterManager.deleteCluster(ctx.config.clusterName)
+          self.logger.showList('Clusters', await self.clusterManager.getClusters())
         },
         skip: (ctx, _) => !ctx.clusters.includes(ctx.config.clusterName)
       }
@@ -247,7 +230,7 @@ export class ClusterCommand extends BaseCommand {
           const acmeClusterIssuer = self.configManager.flagValue(cachedConfig, flags.acmeClusterIssuer)
 
           // get existing choices
-          const clusters = await self.kind.getClusters('-q')
+          const clusters = await self.clusterManager.getClusters()
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
 
           // prompt if inputs are empty and set it in the context
@@ -329,7 +312,7 @@ export class ClusterCommand extends BaseCommand {
           const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
 
           // get existing choices
-          const clusters = await self.kind.getClusters('-q')
+          const clusters = await self.clusterManager.getClusters()
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
 
           ctx.config = {
@@ -522,7 +505,7 @@ export class ClusterCommand extends BaseCommand {
     valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
     // automatically install the acme cluster issuer if cert-manager is enabled
     if (certManagerEnabled || acmeClusterIssuer) {
-      valuesArg += ` --set cloud.acmeClusterIssuer.enabled=true`
+      valuesArg += ' --set cloud.acmeClusterIssuer.enabled=true'
     }
     valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
 

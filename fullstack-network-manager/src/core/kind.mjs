@@ -33,12 +33,13 @@ export class Kind extends ShellRunner {
   }
 
   /**
-     * Invoke `kind create cluster` command
-     * @param args args of the command
-     * @returns {Promise<Array>} console output as an array of strings
-     */
-  async createCluster (...args) {
-    return this.create('cluster', ...args)
+   * Invoke `kind create cluster` command
+   * @param name cluster name
+   * @param args args of the command
+   * @returns {Promise<Array>} console output as an array of strings
+   */
+  async createCluster (name, ...args) {
+    return this.create(`cluster -n ${name}`, ...args)
   }
 
   /**

@@ -286,7 +286,7 @@ export async function promptDeployCertManagerCrds (task, input) {
   }
 }
 
-export async function promptAcmeClusterIssuer(task, input) {
+export async function promptAcmeClusterIssuer (task, input) {
   try {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -334,7 +334,7 @@ export async function promptDeployHederaExplorer (task, input) {
   }
 }
 
-export async function promptEnableTls(task, input) {
+export async function promptEnableTls (task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -350,7 +350,7 @@ export async function promptEnableTls(task, input) {
   }
 }
 
-export async function promptTlsClusterIssuerName(task, input) {
+export async function promptTlsClusterIssuerName (task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -366,7 +366,7 @@ export async function promptTlsClusterIssuerName(task, input) {
   }
 }
 
-export async function promptTlsClusterIssuerNamespace(task, input) {
+export async function promptTlsClusterIssuerNamespace (task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({

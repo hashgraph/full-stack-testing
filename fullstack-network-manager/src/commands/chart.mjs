@@ -7,19 +7,18 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
-  getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace) {
+  getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace) {
+    const gatewayPrefix = 'gatewayApi.gateway'
+    let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
+    valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
+    valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerNamespace=${tlsClusterIssuerNamespace}`
 
-      const gatewayPrefix = 'gatewayApi.gateway'
-      let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
-      valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
-      valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerNamespace=${tlsClusterIssuerNamespace}`
+    const listenerPrefix = `${gatewayPrefix}.listeners`
+    valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
+    valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
+    valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=${enableTls}`
 
-      const listenerPrefix = `${gatewayPrefix}.listeners`
-      valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
-      valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
-      valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=${enableTls}`
-
-      return valuesArg
+    return valuesArg
   }
 
   prepareValuesFiles (valuesFile) {
