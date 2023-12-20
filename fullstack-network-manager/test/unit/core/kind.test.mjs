@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from '@jest/globals'
+import {describe, expect, it, jest} from '@jest/globals'
 import { Kind, logging } from '../../../src/core/index.mjs'
 import { ShellRunner } from '../../../src/core/shell_runner.mjs'
 
@@ -6,10 +6,6 @@ describe('Kind', () => {
   const logger = logging.NewLogger('debug')
   const kind = new Kind(logger)
   const shellSpy = jest.spyOn(ShellRunner.prototype, 'run').mockImplementation()
-
-  it('should run kind create', async () => {
-    expect(shellSpy).toHaveBeenCalledWith('kind create resource arg')
-  })
 
   it('should run kind create cluster', async () => {
     await kind.createCluster('test', 'arg')
