@@ -130,7 +130,7 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@982da8e78c05368c70dac0351bb82647a9e9a5d2 # v2.11.1
         with:
           gradle-version: ${{ inputs.gradle-version }}
           gradle-home-cache-includes: |
@@ -140,7 +140,7 @@ jobs:
 
       # This step is used to update the version number in the build.properties file.
       - name: Apply Version Number Update (Explicit)
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@982da8e78c05368c70dac0351bb82647a9e9a5d2 # v2.11.1
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: versionAsSpecified --scan -PnewVersion=${{ inputs.new-version }}
@@ -148,7 +148,7 @@ jobs:
       # Technically, this step is not required but is executed to provide the end users with a summary of the version
       # numbers assigned to each published artifact.
       - name: Version Report
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@982da8e78c05368c70dac0351bb82647a9e9a5d2 # v2.11.1
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: githubVersionSummary --scan
@@ -159,7 +159,7 @@ jobs:
       # components fail to build.
       - name: Gradle Assemble
         id: gradle-build
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@982da8e78c05368c70dac0351bb82647a9e9a5d2 # v2.11.1
         if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -168,7 +168,7 @@ jobs:
       # Publishes the artifacts to the Maven Central Nexus staging repository. A manual step is required to release
       # the artifacts from the staging repository to Maven Central.
       - name: Gradle Publish to Maven Central
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@982da8e78c05368c70dac0351bb82647a9e9a5d2 # v2.11.1
         if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         env:
           OSSRH_USERNAME: ${{ secrets.ossrh-user-name }}
