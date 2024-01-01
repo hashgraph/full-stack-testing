@@ -44,7 +44,7 @@ export class KeyManager {
 
   /**
    * Convert PEM private key into CryptoKey
-   * @param pemStr PEM data
+   * @param pemStr PEM string
    * @param algo key algorithm
    * @param keyUsages key usages
    * @returns {Promise<CryptoKey>}
@@ -62,7 +62,7 @@ export class KeyManager {
    * @param keyDir directory where keys and certs are stored
    * @returns {{privateKeyFile: string, certificateFile: string}}
    */
-  prepareNodeKeyFiles (nodeId, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+  prepareNodeKeyFilePaths (nodeId, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
     if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
@@ -90,7 +90,7 @@ export class KeyManager {
     if (!nodeKey || !nodeKey.privateKey) throw new MissingArgumentError('nodeKey.privateKey is required')
     if (!nodeKey || !nodeKey.certificateChain) throw new MissingArgumentError('nodeKey.certificateChain is required')
 
-    const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, keyPrefix)
+    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, keyPrefix)
     const keyPem = await this.convertPrivateKeyToPem(nodeKey.privateKey)
     const certPems = []
     nodeKey.certificateChain.forEach(cert => {
@@ -113,10 +113,17 @@ export class KeyManager {
     })
   }
 
+  /**
+   * Load node keys and certs from PEM files
+   * @param nodeId node ID
+   * @param keyDir directory where keys and certs are stored
+   * @param algo algorithm used for key
+   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   */
   async loadNodeKey (nodeId, keyDir, algo, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
     if (!algo) throw new MissingArgumentError('algo is required')
 
-    const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, keyPrefix)
+    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, keyPrefix)
 
     const keyBytes = await fs.readFileSync(nodeKeyFiles.privateKeyFile)
     const keyPem = keyBytes.toString()
@@ -181,7 +188,7 @@ export class KeyManager {
   }
 
   /**
-   * Load PEM formatted signing key and certificate fom a directory path
+   * Load signing key and certificate
    * @param nodeId node ID
    * @param keyDir directory path where pem files are stored
    * @returns CryptoKeyPair
@@ -191,7 +198,7 @@ export class KeyManager {
   }
 
   /**
-   * Generate and store EC key and cert in PEM format
+   * Generate EC key and cert
    *
    * @param nodeId node ID
    * @param keyDir the directory where pem files should be stored
