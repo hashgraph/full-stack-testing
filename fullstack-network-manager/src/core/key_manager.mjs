@@ -156,10 +156,9 @@ export class KeyManager {
 
       const cert = await x509.X509CertificateGenerator.createSelfSigned({
         serialNumber: '01',
-        name: friendlyName,
+        name: `CN=${friendlyName}`,
         notBefore: curDate,
         notAfter: new Date().setFullYear(curDate.getFullYear() + 10),
-        signingAlgorithm: KeyManager.SigningKeyAlgo,
         keys: keypair,
         extensions: [
           new x509.BasicConstraintsExtension(true, 1, true),

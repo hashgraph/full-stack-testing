@@ -25,6 +25,12 @@ describe('KeyManager', () => {
     expect(nodeKey.certificatePem).toStrictEqual(signingKey.certificatePem)
     expect(nodeKey.privateKey.algorithm).toStrictEqual(signingKey.privateKey.algorithm)
     expect(nodeKey.privateKey.type).toStrictEqual(signingKey.privateKey.type)
+
+    await expect(signingKey.certificate.verify({
+      publicKey: signingKey.certificate.publicKey,
+      signatureOnly: true
+    })).resolves.toBeTruthy()
+
     fs.rmSync(tmpDir, { recursive: true })
   })
 
