@@ -10,6 +10,8 @@ import { Templates } from './templates.mjs'
 x509.cryptoProvider.set(crypto)
 
 export class KeyManager {
+  static CertificateExpiryYears = 10
+
   static SigningKeyAlgo = {
     name: 'RSASSA-PKCS1-v1_5',
     hash: 'SHA-384',
@@ -48,8 +50,9 @@ export class KeyManager {
    * @returns {Promise<CryptoKey>}
    */
   async convertPemToPrivateKey (pemStr, algo = KeyManager.SigningKeyAlgo, keyUsages = ['sign']) {
-    const ab = x509.PemConverter.decode(pemStr)
-    return await crypto.subtle.importKey('pkcs8', ab[0], algo, false, keyUsages)
+    const items = x509.PemConverter.decode(pemStr)
+    const lastItem = items[items.length - 1] // if there were a chain of items (similar to cert chains), we take the last.
+    return await crypto.subtle.importKey('pkcs8', lastItem, algo, false, keyUsages)
   }
 
   /**
@@ -64,8 +67,8 @@ export class KeyManager {
     if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
 
-    const keyFile = path.join(keyDir, Templates.renderKeyFileName(constants.PFX_SIGNING_KEY_PREFIX, nodeId))
-    const certFile = path.join(keyDir, Templates.renderCertFileName(constants.PFX_SIGNING_KEY_PREFIX, nodeId))
+    const keyFile = path.join(keyDir, Templates.renderKeyFileName(keyPrefix, nodeId))
+    const certFile = path.join(keyDir, Templates.renderCertFileName(keyPrefix, nodeId))
 
     return {
       privateKeyFile: keyFile,
@@ -84,15 +87,25 @@ export class KeyManager {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
     if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
-    if (!nodeKey || !nodeKey.privateKeyPem) throw new MissingArgumentError('nodeKey.privateKeyPem is required')
-    if (!nodeKey || !nodeKey.certificatePem) throw new MissingArgumentError('nodeKey.certificatePem is required')
+    if (!nodeKey || !nodeKey.privateKey) throw new MissingArgumentError('nodeKey.privateKey is required')
+    if (!nodeKey || !nodeKey.certificateChain) throw new MissingArgumentError('nodeKey.certificateChain is required')
 
-    const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, constants.PFX_SIGNING_KEY_PREFIX)
+    const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, keyPrefix)
+    const keyPem = await this.convertPrivateKeyToPem(nodeKey.privateKey)
+    const certPems = []
+    nodeKey.certificateChain.forEach(cert => {
+      certPems.push(cert.toString('pem'))
+    })
 
     return new Promise((resolve, reject) => {
       try {
-        fs.writeFileSync(nodeKeyFiles.privateKeyFile, nodeKey.privateKeyPem)
-        fs.writeFileSync(nodeKeyFiles.certificateFile, nodeKey.certificatePem)
+        fs.writeFileSync(nodeKeyFiles.privateKeyFile, keyPem)
+
+        // we need to write the PEM in reverse order
+        // this is because certChain contains the certs in reverse order (issuer certificate comes last)
+        certPems.reverse().forEach(certPem => {
+          fs.writeFileSync(nodeKeyFiles.certificateFile, certPem + '\n', { flag: 'a' })
+        })
         resolve(nodeKeyFiles)
       } catch (e) {
         reject(e)
@@ -106,18 +119,24 @@ export class KeyManager {
     const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, keyPrefix)
 
     const keyBytes = await fs.readFileSync(nodeKeyFiles.privateKeyFile)
-    const certBytes = await fs.readFileSync(nodeKeyFiles.certificateFile)
     const keyPem = keyBytes.toString()
-    const certPem = certBytes.toString()
-
     const key = await this.convertPemToPrivateKey(keyPem, algo)
-    const cert = new x509.X509Certificate(certPem)
+
+    const certBytes = await fs.readFileSync(nodeKeyFiles.certificateFile)
+    const certPems = x509.PemConverter.decode(certBytes.toString()).reverse() // reverse to revert the sequence
+
+    const certs = []
+    certPems.forEach(certPem => {
+      const cert = new x509.X509Certificate(certPem)
+      certs.push(cert)
+    })
+
+    const certChain = await new x509.X509ChainBuilder({ certificates: certs.slice(1) }).build(certs[0])
 
     return {
       privateKey: key,
-      privateKeyPem: keyPem,
-      certificate: cert,
-      certificatePem: certPem
+      certificate: certs[0],
+      certificateChain: certChain
     }
   }
 
@@ -150,14 +169,12 @@ export class KeyManager {
         ]
       })
 
-      const keyPem = await this.convertPrivateKeyToPem(keypair.privateKey)
-      const certPem = cert.toString('pem')
+      const certChain = await new x509.X509ChainBuilder().build(cert)
 
       return {
         privateKey: keypair.privateKey,
-        privateKeyPem: keyPem,
         certificate: cert,
-        certificatePem: certPem
+        certificateChain: certChain
       }
     } catch (e) {
       throw new FullstackTestingError(`failed to generate signing key: ${e.message}`, e)
@@ -191,6 +208,7 @@ export class KeyManager {
 
     try {
       const curDate = new Date()
+      const notAfter = new Date().setFullYear(curDate.getFullYear() + KeyManager.CertificateExpiryYears)
       const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
       const keypair = await crypto.subtle.generateKey(KeyManager.ECKeyAlgo, true, ['sign', 'verify'])
 
@@ -201,8 +219,7 @@ export class KeyManager {
         issuer: signingKey.certificate.subject,
         serialNumber: '01',
         notBefore: curDate,
-        notAfter: new Date().setFullYear(curDate.getFullYear() + 10),
-        signingAlgorithm: KeyManager.SigningKeyAlgo,
+        notAfter,
         extensions: [
           new x509.KeyUsagesExtension(
             x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment)
@@ -212,20 +229,20 @@ export class KeyManager {
         ]
       })
 
-      // if (!await cert.verify({signatureOnly: true})) {
-      //   throw new FullstackTestingError(`failed to verify certificate for '${friendlyName}'`)
-      // }
+      if (!await cert.verify({
+        date: new Date(notAfter),
+        publicKey: signingKey.certificate.publicKey,
+        signatureOnly: true
+      })) {
+        throw new FullstackTestingError(`failed to verify generated certificate for '${friendlyName}'`)
+      }
 
-      // const certChain = [signingKey.certificate, cert]
-
-      const keyPem = await this.convertPrivateKeyToPem(keypair.privateKey)
-      const certPem = cert.toString('pem')
+      const certChain = await new x509.X509ChainBuilder({ certificates: [signingKey.certificate] }).build(cert)
 
       return {
         privateKey: keypair.privateKey,
-        privateKeyPem: keyPem,
         certificate: cert,
-        certificatePem: certPem
+        certificateChain: certChain
       }
     } catch (e) {
       throw new FullstackTestingError(`failed to generate ${keyPrefix}-key: ${e.message}`, e)

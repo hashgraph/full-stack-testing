@@ -41,10 +41,13 @@ describe('KeyManager', () => {
 
     const nodeKey = await keyManager.loadNodeKey(nodeId, tmpDir, KeyManager.ECKeyAlgo, constants.PFX_AGREEMENT_KEY_PREFIX)
     expect(nodeKey.certificate).toStrictEqual(agreementKey.certificate)
-    expect(nodeKey.privateKeyPem).toStrictEqual(agreementKey.privateKeyPem)
-    expect(nodeKey.certificatePem).toStrictEqual(agreementKey.certificatePem)
     expect(nodeKey.privateKey.algorithm).toStrictEqual(agreementKey.privateKey.algorithm)
     expect(nodeKey.privateKey.type).toStrictEqual(agreementKey.privateKey.type)
+
+    await expect(agreementKey.certificate.verify({
+      publicKey: signignKey.certificate.publicKey,
+      signatureOnly: true
+    })).resolves.toBeTruthy()
 
     fs.rmSync(tmpDir, { recursive: true })
   })

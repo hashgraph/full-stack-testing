@@ -131,6 +131,10 @@ function generate_key() {
 
     # generate csr
     openssl req -new -out "${csr_file}" -key "${key_file}" -subj "/CN=${friendly_name}" || return 1
+    echo "------------------------------------------------------------------------------------"
+    echo "Generated: ${csr_file}"
+    echo "------------------------------------------------------------------------------------"
+    openssl req -text -in "${csr_file}"
 
     # generate cert and verify
     openssl x509 -req -in "${csr_file}" -out  "${cert_file}.tmp" -CA "${s_cert}" -CAkey "${s_key}" -days 36524 -sha384 || return 1
@@ -139,9 +143,9 @@ function generate_key() {
     rm "${cert_file}.tmp" # remove tmp file
 
     echo "------------------------------------------------------------------------------------"
-    echo "Generated: ${cert_file}"
+    echo "Generated: ${cert_file}" [ including certificate chain ]
     echo "------------------------------------------------------------------------------------"
-    openssl x509 -in "${cert_file}" -text -noout
+    openssl storeutl -noout -text -certs a-node0-cert.pem
 
     # generate private.pfx
     openssl pkcs12 -export -out "${key_pfx}" -inkey "${key_file}" -in "${cert_file}" -iter 10000 \
