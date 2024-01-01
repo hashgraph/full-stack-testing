@@ -53,7 +53,13 @@ export class KeyManager {
     if (!algo) throw new MissingArgumentError('algo is required')
 
     const items = x509.PemConverter.decode(pemStr)
-    const lastItem = items[items.length - 1] // if there were a chain of items (similar to cert chains), we take the last.
+
+    // Since pem file may include multiple PEM data, the decoder returns an array
+    // However for private key there should be a single item.
+    // So, we just being careful here to pick the last item (similar to how last PEM data represents the actual cert in
+    // a certificate bundle)
+    const lastItem = items[items.length - 1]
+
     return await crypto.subtle.importKey('pkcs8', lastItem, algo, false, keyUsages)
   }
 
