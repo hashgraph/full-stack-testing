@@ -13,6 +13,28 @@ export class Templates {
     return `${prefix}-${type}-${nodeId}.pfx`
   }
 
+  /**
+   * Generate node key file name
+   * @param prefix short from of key name such as 's' for signing key
+   * @param nodeId node ID
+   * @returns {string}
+   */
+  static renderKeyFileName (prefix, nodeId) {
+    // s-node0-key.pem
+    return `${prefix}-${nodeId}-key.pem`
+  }
+
+  /**
+   * Generate node cert file name
+   * @param prefix short from of key name such as 's' for signing key
+   * @param nodeId node ID
+   * @returns {string}
+   */
+  static renderCertFileName (prefix, nodeId) {
+    // s-node0-cert.pem
+    return `${prefix}-${nodeId}-cert.pem`
+  }
+
   static renderNodeFriendlyName (prefix, nodeId, suffix = '') {
     const parts = [prefix, nodeId]
     if (suffix) parts.push(suffix)

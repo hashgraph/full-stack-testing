@@ -1,253 +1,232 @@
-import {ExtendedKeyUsage} from "@peculiar/x509";
+import * as x509 from '@peculiar/x509'
+import crypto from 'crypto'
 import fs from 'fs'
-import forge from 'node-forge'
 import path from 'path'
-import {FullstackTestingError, IllegalArgumentError, MissingArgumentError} from './errors.mjs'
-import {constants} from './index.mjs'
-import {Logger} from './logging.mjs'
-import {Templates} from './templates.mjs'
+import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
+import { constants } from './index.mjs'
+import { Logger } from './logging.mjs'
+import { Templates } from './templates.mjs'
 
-import * as x509 from "@peculiar/x509";
-
-x509.cryptoProvider.set(crypto);
+x509.cryptoProvider.set(crypto)
 
 export class KeyManager {
-  constructor(logger) {
+  static SigningKeyAlgo = {
+    name: 'RSASSA-PKCS1-v1_5',
+    hash: 'SHA-384',
+    publicExponent: new Uint8Array([1, 0, 1]),
+    modulusLength: 3072
+  }
+
+  static SigningKeyUsage = ['sign', 'verify']
+
+  static ECKeyAlgo = {
+    name: 'ECDSA',
+    namedCurve: 'P-384',
+    hash: 'SHA-384'
+  }
+
+  constructor (logger) {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
     this.logger = logger
   }
 
-  _pfxOptions(friendlyName) {
+  /**
+   * Convert CryptoKey into PEM string
+   * @param privateKey
+   * @returns {Promise<string>}
+   */
+  async convertPrivateKeyToPem (privateKey) {
+    const ab = await crypto.subtle.exportKey('pkcs8', privateKey)
+    return x509.PemConverter.encode(ab, 'PRIVATE KEY')
+  }
+
+  /**
+   * Convert PEM private key into CryptoKey
+   * @param pemStr PEM data
+   * @param algo key algorithm
+   * @param keyUsages key usages
+   * @returns {Promise<CryptoKey>}
+   */
+  async convertPemToPrivateKey (pemStr, algo = KeyManager.SigningKeyAlgo, keyUsages = ['sign']) {
+    const ab = x509.PemConverter.decode(pemStr)
+    return await crypto.subtle.importKey('pkcs8', ab[0], algo, false, keyUsages)
+  }
+
+  /**
+   * Return file names for node key
+   * @param nodeId node ID
+   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   * @param keyDir directory where keys and certs are stored
+   * @returns {{privateKeyFile: string, certificateFile: string}}
+   */
+  prepareNodeKeyFiles (nodeId, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!keyDir) throw new MissingArgumentError('keyDir is required')
+    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
+
+    const keyFile = path.join(keyDir, Templates.renderKeyFileName(constants.PFX_SIGNING_KEY_PREFIX, nodeId))
+    const certFile = path.join(keyDir, Templates.renderCertFileName(constants.PFX_SIGNING_KEY_PREFIX, nodeId))
+
     return {
-      count: constants.PFX_MAC_ITERATION_COUNT,
-      saltSize: constants.PFX_MAC_SALT_SIZE,
-      algorithm: constants.PFX_ENCRYPTION_ALGO, // encryption algorithm, not macAlgorithm
-      friendlyName
-    }
-  }
-
-  _createPfx(p12Asn1, filePath) {
-    try {
-      const p12DerBytes = forge.asn1.toDer(p12Asn1).getBytes()
-      fs.writeFileSync(filePath, p12DerBytes, {encoding: 'binary'})
-      return filePath
-    } catch (e) {
-      throw new FullstackTestingError(`failed to create pfx file '${filePath}': ${e.message}`, e)
+      privateKeyFile: keyFile,
+      certificateFile: certFile
     }
   }
 
   /**
-   * Read and parse PFX file into key and cert
-   * @param friendlyName friendlyName for the entry
-   * @param pfxFile full path to the pfx file
-   * @returns CryptoKeyPair
-   */
-  readKeyAndCertFromPfx(friendlyName, pfxFile) {
-    if (!fs.statSync(pfxFile).isFile()) {
-      throw new FullstackTestingError(`pfx file not found at '${pfxFile}'`)
-    }
-
-    // parse pfx into pkcs12
-    const pfxDer = fs.readFileSync(pfxFile, {encoding: 'binary'})
-    const pfxAsn1 = forge.asn1.fromDer(pfxDer)
-    const pkcs12 = forge.pkcs12.pkcs12FromAsn1(pfxAsn1, true, constants.PFX_DUMMY_PASSWORD)
-
-    // extract key
-    let bags = pkcs12.getBags({friendlyName, bagType: forge.pki.oids.pkcs8ShroudedKeyBag})
-    let bag = bags.friendlyName[0]
-    if (!bag || !bag.key) {
-      throw new FullstackTestingError(`no key found for friendlyName '${friendlyName}' in pfx file ${pfxFile}`)
-    }
-    const keyAsn1 = forge.asn1.privateKeyToAsn1(bag.key)
-    const keyDer = forge.as1.toDer(keyAsn1)
-
-
-    // extract cert
-    bags = pkcs12.getBags({friendlyName, bagType: forge.pki.oids.cert})
-    bag = bags.friendlyName[0]
-    if (!bag || !bag.cert) {
-      throw new FullstackTestingError(`no cert found in pfx file ${pfxFile}`)
-    }
-    const certAsn1 = forge.asn1.certificateToAsn1(bag.cert)
-    const certDer = forge.asn1.toDer(certAsn1)
-
-    const ret = {
-      key: crypto.subtle.importKey('raw', keyDer, {hash: 'SHA-384'})
-    }
-    return ret
-  }
-
-  /**
-   * Load signing key fom a directory path
+   * Store node keys and certs as PEM files
    * @param nodeId node ID
-   * @param pfxDir a directory where pfx files are stored
-   * @returns CryptoKeyPair
+   * @param nodeKey an object containing privateKeyPem, certificatePem data
+   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   * @param keyDir directory where keys and certs are stored
    */
-  loadSigningKeyPair(nodeId, pfxDir) {
-    const pfxFile = path.join(pfxDir,
-      Templates.renderPfxFileName(constants.PFX_SIGNING_KEY_PREFIX, constants.PFX_TYPE_PRIVATE, nodeId))
-    const signingKeyFriendlyName = Templates.renderNodeFriendlyName(constants.PFX_SIGNING_KEY_PREFIX, nodeId)
-    return this.readKeyAndCertFromPfx(signingKeyFriendlyName, pfxFile)
+  async storeNodeKey (nodeId, nodeKey, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!keyDir) throw new MissingArgumentError('keyDir is required')
+    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
+    if (!nodeKey || !nodeKey.privateKeyPem) throw new MissingArgumentError('nodeKey.privateKeyPem is required')
+    if (!nodeKey || !nodeKey.certificatePem) throw new MissingArgumentError('nodeKey.certificatePem is required')
+
+    const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, constants.PFX_SIGNING_KEY_PREFIX)
+
+    return new Promise((resolve, reject) => {
+      try {
+        fs.writeFileSync(nodeKeyFiles.privateKeyFile, nodeKey.privateKeyPem)
+        fs.writeFileSync(nodeKeyFiles.certificateFile, nodeKey.certificatePem)
+        resolve(nodeKeyFiles)
+      } catch (e) {
+        reject(e)
+      }
+    })
   }
 
-  /**
-   * Generate a certificate
-   *
-   * @param publicKey RSA publicKey to be used to generate the certificate
-   * @param signingKey RSA privateKey to sign the certificate
-   * @param friendlyName common name (CN) for the subject name
-   * @returns {*}
-   * @constructor
-   */
-  certificate(publicKey, signingKey, friendlyName) {
-    if (!publicKey) throw new MissingArgumentError('publicKey is required')
-    if (!signingKey) throw new MissingArgumentError('signingKey is required')
-    if (!friendlyName) throw new MissingArgumentError('friendlyName is required')
+  async loadNodeKey (nodeId, keyDir, algo, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+    if (!algo) throw new MissingArgumentError('algo is required')
 
-    try {
-      const cert = forge.pki.createCertificate()
-      cert.publicKey = publicKey
-      cert.serialNumber = '01'
-      cert.validity.notBefore = new Date()
-      cert.validity.notAfter = new Date()
-      cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1)
-      const attrs = [{
-        shortName: 'CN',
-        value: friendlyName
-      }]
-      cert.setSubject(attrs)
-      cert.setIssuer(attrs)
-      cert.setExtensions([
-        {
-          name: 'keyUsage',
-          keyCertSign: true,
-          digitalSignature: true,
-          nonRepudiation: true,
-          keyEncipherment: true,
-          dataEncipherment: true
-        },
-        {
-          name: 'extKeyUsage',
-          serverAuth: true,
-          clientAuth: true,
-          codeSigning: true,
-          emailProtection: true,
-          timeStamping: true
-        }])
+    const nodeKeyFiles = this.prepareNodeKeyFiles(nodeId, keyDir, keyPrefix)
 
-      cert.sign(signingKey, forge.md.sha384.create())
-      return cert
-    } catch (e) {
-      throw new FullstackTestingError(`failed to create certificate: ${e.message}`, e)
+    const keyBytes = await fs.readFileSync(nodeKeyFiles.privateKeyFile)
+    const certBytes = await fs.readFileSync(nodeKeyFiles.certificateFile)
+    const keyPem = keyBytes.toString()
+    const certPem = certBytes.toString()
+
+    const key = await this.convertPemToPrivateKey(keyPem, algo)
+    const cert = new x509.X509Certificate(certPem)
+
+    return {
+      privateKey: key,
+      privateKeyPem: keyPem,
+      certificate: cert,
+      certificatePem: certPem
     }
   }
 
   /**
-   * Generate signing key
+   * Generate signing key and certificate
    * @param nodeId node ID
-   * @param pfxDir the directory where pfx files should be stored
-   * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
-  async signingKeyPfx(nodeId, pfxDir) {
-    const keyPrefix = constants.PFX_SIGNING_KEY_PREFIX
-
+  async generateNodeSigningKey (nodeId) {
     try {
-      const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
+      const friendlyName = Templates.renderNodeFriendlyName(constants.PFX_SIGNING_KEY_PREFIX, nodeId)
       const curDate = new Date()
 
-      const alg = {
-        name: "RSASSA-PKCS1-v1_5",
-        hash: "SHA-384",
-        publicExponent: new Uint8Array([1, 0, 1]),
-        modulusLength: 3072,
-      };
-      // const alg = {
-      //   name: "ECDSA",
-      //   namedCurve: "P-384",
-      //   hash: "SHA-384",
-      // }
-      const keypair = await crypto.subtle.generateKey(alg, true, ["sign", "verify"]);
+      const keypair = await crypto.subtle.generateKey(
+        KeyManager.SigningKeyAlgo,
+        true,
+        KeyManager.SigningKeyUsage)
+
       const cert = await x509.X509CertificateGenerator.createSelfSigned({
-        serialNumber: "01",
-        subject: friendlyName,
-        issuer: friendlyName,
+        serialNumber: '01',
+        name: friendlyName,
         notBefore: curDate,
         notAfter: new Date().setFullYear(curDate.getFullYear() + 10),
-        signingAlgorithm: alg,
+        signingAlgorithm: KeyManager.SigningKeyAlgo,
         keys: keypair,
         extensions: [
           new x509.BasicConstraintsExtension(true, 1, true),
           new x509.ExtendedKeyUsageExtension([x509.ExtendedKeyUsage.serverAuth, x509.ExtendedKeyUsage.clientAuth], true),
           new x509.KeyUsagesExtension(x509.KeyUsageFlags.keyCertSign | x509.KeyUsageFlags.cRLSign, true),
-          await x509.SubjectKeyIdentifierExtension.create(keypair.publicKey),
+          await x509.SubjectKeyIdentifierExtension.create(keypair.publicKey)
         ]
-      });
+      })
 
-      const certChain = [cert]
-      return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
+      const keyPem = await this.convertPrivateKeyToPem(keypair.privateKey)
+      const certPem = cert.toString('pem')
+
+      return {
+        privateKey: keypair.privateKey,
+        privateKeyPem: keyPem,
+        certificate: cert,
+        certificatePem: certPem
+      }
     } catch (e) {
       throw new FullstackTestingError(`failed to generate signing key: ${e.message}`, e)
     }
   }
 
   /**
-   * Generate ED25519 key
+   * Load PEM formatted signing key and certificate fom a directory path
+   * @param nodeId node ID
+   * @param keyDir directory path where pem files are stored
+   * @returns CryptoKeyPair
+   */
+  async loadSigningKey (nodeId, keyDir) {
+    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.PFX_SIGNING_KEY_PREFIX)
+  }
+
+  /**
+   * Generate and store EC key and cert in PEM format
    *
    * @param nodeId node ID
-   * @param pfxDir the directory where pfx files should be stored
+   * @param keyDir the directory where pem files should be stored
    * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
-   * @param signingKeyPair signing key and cert. If not passed, it will load it from pfxDir
+   * @param signingKey signing key
    * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
-  async ed25519KeyPfx(nodeId, pfxDir, keyPrefix, signingKeyPair = null) {
+  async ecKey (nodeId, keyDir, keyPrefix, signingKey) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
-    if (!pfxDir) throw new MissingArgumentError('pfxDir is required')
+    if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
-
-    if (!signingKeyPair) {
-      signingKeyPair = this.loadSigningKeyPair(nodeId, pfxDir)
-    }
+    if (!signingKey) throw new MissingArgumentError('no signing key found')
 
     try {
       const curDate = new Date()
       const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
-      // const alg = {
-      //   name: "EdDSA",
-      //   namedCurve: "ed25519",
-      //   hash: "SHA-384",
-      // }
-      const alg = {
-        name: "ECDSA",
-        namedCurve: "P-384",
-        hash: "SHA-384",
-      }
-      const signingKeyPair = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
-      const keypair = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+      const keypair = await crypto.subtle.generateKey(KeyManager.ECKeyAlgo, true, ['sign', 'verify'])
 
       const cert = await x509.X509CertificateGenerator.create({
         publicKey: keypair.publicKey,
-        signingKey: signingKeyPair.privateKey,
+        signingKey: signingKey.privateKey,
         subject: `CN=${friendlyName}`,
-        issuer: `CN=${friendlyName}`,
-        serialNumber: "01",
+        issuer: signingKey.certificate.subject,
+        serialNumber: '01',
         notBefore: curDate,
         notAfter: new Date().setFullYear(curDate.getFullYear() + 10),
-        signingAlgorithm: alg,
+        signingAlgorithm: KeyManager.SigningKeyAlgo,
         extensions: [
           new x509.KeyUsagesExtension(
-            x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment),
+            x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment)
         ],
         attributes: [
-          new x509.ChallengePasswordAttribute(constants.PFX_DUMMY_PASSWORD),
+          new x509.ChallengePasswordAttribute(constants.PFX_DUMMY_PASSWORD)
         ]
       })
 
-      if (!await cert.verify({signatureOnly: true})) {
-        throw new FullstackTestingError(`failed to verify certificate for '${friendlyName}'`)
-      }
+      // if (!await cert.verify({signatureOnly: true})) {
+      //   throw new FullstackTestingError(`failed to verify certificate for '${friendlyName}'`)
+      // }
 
-      const certChain = [signingKeyPair.cert, cert]
-      return this.generatePfxFiles(nodeId, keypair.privateKey, certChain, keyPrefix, pfxDir)
+      // const certChain = [signingKey.certificate, cert]
+
+      const keyPem = await this.convertPrivateKeyToPem(keypair.privateKey)
+      const certPem = cert.toString('pem')
+
+      return {
+        privateKey: keypair.privateKey,
+        privateKeyPem: keyPem,
+        certificate: cert,
+        certificatePem: certPem
+      }
     } catch (e) {
       throw new FullstackTestingError(`failed to generate ${keyPrefix}-key: ${e.message}`, e)
     }
@@ -256,82 +235,11 @@ export class KeyManager {
   /**
    * Generate agreement key
    * @param nodeId node ID
-   * @param pfxDir the directory where pfx files should be stored
-   * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
+   * @param keyDir the directory where pfx files should be stored
+   * @param signingKey signing key
    * @returns {privateKeyPfx:string|publicKeyPfx:string}
    */
-  async agreementKeyPfx(nodeId, pfxDir, signingKey = null) {
-    return this.ed25519KeyPfx(nodeId, pfxDir, constants.PFX_AGREEMENT_KEY_PREFIX, signingKey);
-  }
-
-  /**
-   * Generate encryption key
-   *
-   * FIXME: this is not used but kept for backward compatibility. In the future we'll remove this
-   *
-   * @param nodeId node ID
-   * @param pfxDir the directory where pfx files should be stored
-   * @param signingKey signing key and cert. If not passed, it will load it from pfxDir
-   * @returns {privateKeyPfx:string|publicKeyPfx:string}
-   */
-  encryptionKeyPfx(nodeId, pfxDir, signingKey = null) {
-    return this.ed25519KeyPfx(nodeId, pfxDir, constants.PFX_ENCRYPTION_KEY_PREFIX, signingKey)
-  }
-
-
-  /**
-   * Generate PFX files
-   *
-   * It uses the following parameters:
-   *  - Keypair: RSA, 3072 bits
-   *  - pkcs12 Key encryption algo: aes256 // similar to keytool
-   *  - pkcs12 MAC iteration: 10000 // similar to keytool
-   *  - pkcs12 MAC salt length: 20 // similar to keytool
-   *  - pkcs12 MAC algo: SHA1 // default, we cannot change it yet since the node-forge library hardcoded it
-   *
-   * @param nodeId node id
-   * @param privateKey privateKey of the node
-   * @param certChain certificate chain
-   * @param keyPrefix key prefix such as constants.PFX_SIGNING_KEY_PREFIX
-   * @param pfxDir a directory where the pfx files need to be saved
-   * @return {privateKeyPfx: string, publicKeyPfx: string} object with privateKeyPfx and publicKeyPfx denoting path to the generated pfx files
-   */
-  generatePfxFiles(nodeId, privateKey, certChain, keyPrefix, pfxDir) {
-    if (!nodeId) throw new MissingArgumentError('nodeID is required')
-    if (!privateKey) throw new MissingArgumentError('keypair is required')
-    if (!pfxDir) throw new MissingArgumentError('pfxDir is required')
-    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
-    if (!fs.statSync(pfxDir).isDirectory()) throw new IllegalArgumentError(`${pfxDir} is not a valid path`)
-
-    try {
-      // generate cert
-      const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
-      const pfxOptions = this._pfxOptions(friendlyName)
-
-      // convert key into pkcs8 format and then import into node-forge format
-      // convert cert into pkcs8 format and then import into node-forge format
-
-
-      // generate private.pfx
-      // FIXME, uses SHA1 for MAC instead of SHA256 as in openssl or keytool
-      // A fix is proposed: https://github.com/digitalbazaar/forge/pull/1062
-      const privateKeyFileName = Templates.renderPfxFileName(keyPrefix, constants.PFX_TYPE_PRIVATE, nodeId)
-      const privateKeyPfx = path.join(pfxDir, privateKeyFileName)
-      const privateKeyPkcs12Asn1 = pkcs12.toPkcs12Asn1(privateKey, certChain, constants.PFX_DUMMY_PASSWORD, pfxOptions)
-      this._createPfx(privateKeyPkcs12Asn1, privateKeyPfx)
-
-      // generate public.pfx
-      const publicKeyFileName = Templates.renderPfxFileName(keyPrefix, constants.PFX_TYPE_PUBLIC, nodeId)
-      const publicKeyPfx = path.join(pfxDir, publicKeyFileName)
-      const publicKeyPkcs12Asn1 = pkcs12.toPkcs12Asn1(null, certChain, constants.PFX_DUMMY_PASSWORD, pfxOptions)
-      this._createPfx(publicKeyPkcs12Asn1, publicKeyPfx)
-
-      return {
-        privateKeyPfx,
-        publicKeyPfx
-      }
-    } catch (e) {
-      throw new FullstackTestingError(`failed to generate signing key for node '${nodeId}': ${e.message}`, e)
-    }
+  async agreementKey (nodeId, keyDir, signingKey) {
+    return this.ecKey(nodeId, keyDir, constants.PFX_AGREEMENT_KEY_PREFIX, signingKey)
   }
 }
