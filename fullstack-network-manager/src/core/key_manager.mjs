@@ -100,8 +100,11 @@ export class KeyManager {
       certPems.push(cert.toString('pem'))
     })
 
+    const self = this
     return new Promise((resolve, reject) => {
       try {
+        this.logger.debug(`Storing ${keyPrefix}-keys for node: ${nodeId}`, { nodeKeyFiles })
+
         fs.writeFileSync(nodeKeyFiles.privateKeyFile, keyPem)
 
         // we need to write the PEM in reverse order
@@ -109,6 +112,8 @@ export class KeyManager {
         certPems.reverse().forEach(certPem => {
           fs.writeFileSync(nodeKeyFiles.certificateFile, certPem + '\n', { flag: 'a' })
         })
+
+        self.logger.debug(`Stored ${keyPrefix}-key for node: ${nodeId}`, { nodeKeyFiles, cert: certPems[0] })
         resolve(nodeKeyFiles)
       } catch (e) {
         reject(e)
@@ -129,6 +134,8 @@ export class KeyManager {
 
     const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, keyPrefix)
 
+    this.logger.debug(`Loading ${keyPrefix}-keys for node: ${nodeId}`, { nodeKeyFiles })
+
     const keyBytes = await fs.readFileSync(nodeKeyFiles.privateKeyFile)
     const keyPem = keyBytes.toString()
     const key = await this.convertPemToPrivateKey(keyPem, algo)
@@ -144,6 +151,7 @@ export class KeyManager {
 
     const certChain = await new x509.X509ChainBuilder({ certificates: certs.slice(1) }).build(certs[0])
 
+    this.logger.debug(`Loaded ${keyPrefix}-key for node: ${nodeId}`, { nodeKeyFiles, cert: certs[0].toString('pem') })
     return {
       privateKey: key,
       certificate: certs[0],
@@ -158,8 +166,11 @@ export class KeyManager {
    */
   async generateNodeSigningKey (nodeId) {
     try {
-      const friendlyName = Templates.renderNodeFriendlyName(constants.PFX_SIGNING_KEY_PREFIX, nodeId)
+      const keyPrefix = constants.PFX_SIGNING_KEY_PREFIX
       const curDate = new Date()
+      const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
+
+      this.logger.debug(`generating ${keyPrefix}-key for node: ${nodeId}`, { friendlyName })
 
       const keypair = await crypto.subtle.generateKey(
         KeyManager.SigningKeyAlgo,
@@ -181,6 +192,8 @@ export class KeyManager {
       })
 
       const certChain = await new x509.X509ChainBuilder().build(cert)
+
+      this.logger.debug(`generated ${keyPrefix}-key for node: ${nodeId}`, { cert: cert.toString('pem') })
 
       return {
         privateKey: keypair.privateKey,
@@ -221,6 +234,9 @@ export class KeyManager {
       const curDate = new Date()
       const notAfter = new Date().setFullYear(curDate.getFullYear() + KeyManager.CertificateExpiryYears)
       const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
+
+      this.logger.debug(`generating ${keyPrefix}-key for node: ${nodeId}`, { friendlyName })
+
       const keypair = await crypto.subtle.generateKey(KeyManager.ECKeyAlgo, true, ['sign', 'verify'])
 
       const cert = await x509.X509CertificateGenerator.create({
@@ -250,6 +266,7 @@ export class KeyManager {
 
       const certChain = await new x509.X509ChainBuilder({ certificates: [signingKey.certificate] }).build(cert)
 
+      this.logger.debug(`generated ${keyPrefix}-key for node: ${nodeId}`, { cert: cert.toString('pem') })
       return {
         privateKey: keypair.privateKey,
         certificate: cert,
