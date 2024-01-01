@@ -84,6 +84,7 @@ export class KeyManager {
    * @param nodeKey an object containing privateKeyPem, certificatePem data
    * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
    * @param keyDir directory where keys and certs are stored
+   * @return {privateKeyFile: string, certificateFile: string}
    */
   async storeNodeKey (nodeId, nodeKey, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
@@ -121,6 +122,7 @@ export class KeyManager {
    * @param keyDir directory where keys and certs are stored
    * @param algo algorithm used for key
    * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async loadNodeKey (nodeId, keyDir, algo, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
     if (!algo) throw new MissingArgumentError('algo is required')
@@ -152,6 +154,7 @@ export class KeyManager {
   /**
    * Generate signing key and certificate
    * @param nodeId node ID
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async generateNodeSigningKey (nodeId) {
     try {
@@ -193,7 +196,7 @@ export class KeyManager {
    * Load signing key and certificate
    * @param nodeId node ID
    * @param keyDir directory path where pem files are stored
-   * @returns CryptoKeyPair
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async loadSigningKey (nodeId, keyDir) {
     return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.PFX_SIGNING_KEY_PREFIX)
@@ -206,7 +209,7 @@ export class KeyManager {
    * @param keyDir the directory where pem files should be stored
    * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
    * @param signingKey signing key
-   * @returns {privateKeyPfx:string|publicKeyPfx:string}
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async ecKey (nodeId, keyDir, keyPrefix, signingKey) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
@@ -260,9 +263,9 @@ export class KeyManager {
   /**
    * Generate agreement key
    * @param nodeId node ID
-   * @param keyDir the directory where pfx files should be stored
+   * @param keyDir the directory where pem files should be stored
    * @param signingKey signing key
-   * @returns {privateKeyPfx:string|publicKeyPfx:string}
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async agreementKey (nodeId, keyDir, signingKey) {
     return this.ecKey(nodeId, keyDir, constants.PFX_AGREEMENT_KEY_PREFIX, signingKey)
