@@ -49,7 +49,9 @@ export class KeyManager {
    * @param keyUsages key usages
    * @returns {Promise<CryptoKey>}
    */
-  async convertPemToPrivateKey (pemStr, algo = KeyManager.SigningKeyAlgo, keyUsages = ['sign']) {
+  async convertPemToPrivateKey (pemStr, algo, keyUsages = ['sign']) {
+    if (!algo) throw new MissingArgumentError('algo is required')
+
     const items = x509.PemConverter.decode(pemStr)
     const lastItem = items[items.length - 1] // if there were a chain of items (similar to cert chains), we take the last.
     return await crypto.subtle.importKey('pkcs8', lastItem, algo, false, keyUsages)
