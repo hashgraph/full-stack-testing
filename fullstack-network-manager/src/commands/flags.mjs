@@ -135,7 +135,7 @@ export const releaseTag = {
 export const cacheDir = {
   name: 'cache-dir',
   definition: {
-    describe: 'Local cache directory containing platform release artifacts',
+    describe: 'Local cache directory',
     alias: 'd',
     default: core.constants.FST_CACHE_DIR,
     type: 'string'
@@ -211,6 +211,16 @@ export const operatorKey = {
   }
 }
 
+export const keyType = {
+  name: 'key-type',
+  definition: {
+    describe: `Node key type ( ${core.constants.KEY_TYPE_GOSSIP} | ${core.constants.KEY_TYPE_TLS} )`,
+    default: 'gossip',
+    alias: 't',
+    type: 'string'
+  }
+}
+
 export const allFlags = [
   clusterName,
   namespace,
@@ -231,5 +241,6 @@ export const allFlags = [
   replicaCount,
   chainId,
   operatorId,
-  operatorKey
+  operatorKey,
+  keyType
 ]

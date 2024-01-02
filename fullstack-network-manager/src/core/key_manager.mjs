@@ -113,6 +113,11 @@ export class KeyManager {
 
         fs.writeFileSync(nodeKeyFiles.privateKeyFile, keyPem)
 
+        // remove if the certificate file exists already as otherwise we'll keep appending to the last
+        if (fs.existsSync(nodeKeyFiles.certificateFile)) {
+          fs.rmSync(nodeKeyFiles.certificateFile)
+        }
+
         // we need to write the PEM in reverse order
         // this is because certChain contains the certs in reverse order (issuer certificate comes last)
         certPems.reverse().forEach(certPem => {
@@ -212,6 +217,17 @@ export class KeyManager {
   }
 
   /**
+   * Store signing key and certificate
+   * @param nodeId node ID
+   * @param nodeKey an object containing privateKeyPem, certificatePem data
+   * @param keyDir directory where keys and certs are stored
+   * @return {privateKeyFile: string, certificateFile: string}
+   */
+  async storeSigningKey (nodeId, nodeKey, keyDir) {
+    return this.storeNodeKey(nodeId, nodeKey, keyDir, constants.SIGNING_KEY_PREFIX)
+  }
+
+  /**
    * Load signing key and certificate
    * @param nodeId node ID
    * @param keyDir directory path where pem files are stored
@@ -230,9 +246,8 @@ export class KeyManager {
    * @param signingKey signing key
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
-  async ecKey (nodeId, keyDir, keyPrefix, signingKey) {
+  async ecKey (nodeId, keyPrefix, signingKey) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
-    if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
     if (!signingKey) throw new MissingArgumentError('no signing key found')
 
@@ -283,11 +298,31 @@ export class KeyManager {
   /**
    * Generate agreement key
    * @param nodeId node ID
-   * @param keyDir the directory where pem files should be stored
    * @param signingKey signing key
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
-  async agreementKey (nodeId, keyDir, signingKey) {
-    return this.ecKey(nodeId, keyDir, constants.AGREEMENT_KEY_PREFIX, signingKey)
+  async generateAgreementKey (nodeId, signingKey) {
+    return this.ecKey(nodeId, constants.AGREEMENT_KEY_PREFIX, signingKey)
+  }
+
+  /**
+   * Store agreement key and certificate
+   * @param nodeId node ID
+   * @param nodeKey an object containing privateKeyPem, certificatePem data
+   * @param keyDir directory where keys and certs are stored
+   * @return {privateKeyFile: string, certificateFile: string}
+   */
+  async storeAgreementKey (nodeId, nodeKey, keyDir) {
+    return this.storeNodeKey(nodeId, nodeKey, keyDir, constants.AGREEMENT_KEY_PREFIX)
+  }
+
+  /**
+   * Load agreement key and certificate
+   * @param nodeId node ID
+   * @param keyDir directory path where pem files are stored
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
+   */
+  async loadAgreementKey (nodeId, keyDir) {
+    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.AGREEMENT_KEY_PREFIX)
   }
 }

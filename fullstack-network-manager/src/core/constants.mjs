@@ -72,5 +72,8 @@ export const LISTR_DEFAULT_RENDERER_OPTION = {
   timer: LISTR_DEFAULT_RENDERER_TIMER_OPTION
 }
 
+export const KEY_TYPE_GOSSIP = 'gossip'
+
+export const KEY_TYPE_TLS = 'tls'
 export const SIGNING_KEY_PREFIX = 's'
 export const AGREEMENT_KEY_PREFIX = 'a'

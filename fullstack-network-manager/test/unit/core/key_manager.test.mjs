@@ -41,7 +41,7 @@ describe('KeyManager', () => {
     const keyPrefix = constants.AGREEMENT_KEY_PREFIX
     const signignKey = await keyManager.loadNodeKey(nodeId, 'test/data', KeyManager.SigningKeyAlgo, constants.SIGNING_KEY_PREFIX)
 
-    const agreementKey = await keyManager.agreementKey(nodeId, tmpDir, signignKey)
+    const agreementKey = await keyManager.generateAgreementKey(nodeId, signignKey)
 
     const files = await keyManager.storeNodeKey(nodeId, agreementKey, tmpDir, keyPrefix)
     expect(files.privateKeyFile).not.toBeNull()

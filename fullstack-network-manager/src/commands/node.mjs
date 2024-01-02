@@ -1,6 +1,7 @@
 import chalk from 'chalk'
 import * as fs from 'fs'
 import { Listr } from 'listr2'
+import path from 'path'
 import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
 import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
@@ -16,9 +17,11 @@ export class NodeCommand extends BaseCommand {
 
     if (!opts || !opts.downloader) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
     if (!opts || !opts.platformInstaller) throw new IllegalArgumentError('An instance of core/PlatformInstaller is required', opts.platformInstaller)
+    if (!opts || !opts.keyManager) throw new IllegalArgumentError('An instance of core/KeyManager is required', opts.keyManager)
 
     this.downloader = opts.downloader
     this.plaformInstaller = opts.platformInstaller
+    this.keyManager = opts.keyManager
   }
 
   async checkNetworkNodePod (namespace, nodeId, timeout = '300s') {
@@ -262,6 +265,71 @@ export class NodeCommand extends BaseCommand {
     return true
   }
 
+  async keys (argv) {
+    const self = this
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          ctx.config = {
+            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
+            cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
+            keyType: await prompts.promptKeyType(task, argv.keyType)
+          }
+        }
+      },
+      {
+        title: 'Generate keys',
+        task: async (ctx, task) => {
+          const keyDir = path.join(ctx.config.cacheDir, 'keys')
+          if (!fs.existsSync(keyDir)) {
+            fs.mkdirSync(keyDir)
+          }
+
+          const nodeKeyFiles = new Map()
+          if (ctx.config.keyType === constants.KEY_TYPE_GOSSIP) {
+            for (const nodeId of ctx.config.nodeIds) {
+              const signingKey = await this.keyManager.generateNodeSigningKey(nodeId)
+              const signingKeyFiles = await this.keyManager.storeSigningKey(nodeId, signingKey, keyDir)
+              const agreementKeys = await this.keyManager.generateAgreementKey(nodeId, signingKey)
+              const agreementKeyFiles = await this.keyManager.storeAgreementKey(nodeId, agreementKeys, keyDir)
+              nodeKeyFiles.set(nodeId, {
+                signingKeyFiles,
+                agreementKeyFiles
+              })
+            }
+
+            self.logger.showUser(chalk.green('*** Generated Node Gossip Keys ***'))
+            for (const entry of nodeKeyFiles.entries()) {
+              const nodeId = entry[0]
+              const fileList = entry[1]
+              self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
+              self.logger.showUser(chalk.cyan(`Node ID: ${nodeId}`))
+              self.logger.showUser(chalk.cyan('==========================='))
+              self.logger.showUser(chalk.green('Signing key\t\t:'), chalk.yellow(fileList.signingKeyFiles.privateKeyFile))
+              self.logger.showUser(chalk.green('Signing certificate\t:'), chalk.yellow(fileList.signingKeyFiles.certificateFile))
+              self.logger.showUser(chalk.green('Agreement key\t\t:'), chalk.yellow(fileList.agreementKeyFiles.privateKeyFile))
+              self.logger.showUser(chalk.green('Agreement certificate\t:'), chalk.yellow(fileList.agreementKeyFiles.certificateFile))
+              self.logger.showUser(chalk.blue('Inspect certificate\t: '), chalk.yellow(`openssl storeutl -noout -text -certs ${fileList.agreementKeyFiles.certificateFile}`))
+              self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.signingKeyFiles.certificateFile} ${fileList.agreementKeyFiles.certificateFile}`))
+            }
+            self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
+          } else {
+            throw new FullstackTestingError(`unsupported key type: ${ctx.config.keyType}`)
+          }
+        }
+      }
+    ])
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError(`Error generating keys: ${e.message}`, e)
+    }
+
+    return true
+  }
+
   /**
    * Return Yargs command definition for 'node' command
    * @param nodeCmd an instance of NodeCommand
@@ -318,7 +386,7 @@ export class NodeCommand extends BaseCommand {
           })
           .command({
             command: 'stop',
-            desc: 'stop a node running Hedera platform',
+            desc: 'Stop a node running Hedera platform',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.nodeIDs
@@ -329,6 +397,27 @@ export class NodeCommand extends BaseCommand {
 
               nodeCmd.stop(argv).then(r => {
                 nodeCmd.logger.debug('==== Finished running `node stop`====')
+                if (!r) process.exit(1)
+              }).catch(err => {
+                nodeCmd.logger.showUserError(err)
+                process.exit(1)
+              })
+            }
+          })
+          .command({
+            command: 'keys',
+            desc: 'Generate node keys',
+            builder: y => flags.setCommandFlags(y,
+              flags.keyType,
+              flags.nodeIDs,
+              flags.cacheDir
+            ),
+            handler: argv => {
+              nodeCmd.logger.debug("==== Running 'node keys' ===")
+              nodeCmd.logger.debug(argv)
+
+              nodeCmd.keys(argv).then(r => {
+                nodeCmd.logger.debug('==== Finished running `node keys`====')
                 if (!r) process.exit(1)
               }).catch(err => {
                 nodeCmd.logger.showUserError(err)

@@ -2,7 +2,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
-import { ChartManager, ConfigManager, DependencyManager } from './core/index.mjs'
+import { ChartManager, ConfigManager, DependencyManager, KeyManager } from './core/index.mjs'
 import 'dotenv/config'
 
 export function main (argv) {
@@ -15,6 +15,7 @@ export function main (argv) {
   const chartManager = new ChartManager(helm, logger)
   const configManager = new ConfigManager(logger)
   const depManager = new DependencyManager(logger)
+  const keyManager = new KeyManager(logger)
 
   const opts = {
     logger,
@@ -25,7 +26,8 @@ export function main (argv) {
     platformInstaller,
     chartManager,
     configManager,
-    depManager
+    depManager,
+    keyManager
   }
 
   logger.debug('Constants: %s', JSON.stringify(core.constants))

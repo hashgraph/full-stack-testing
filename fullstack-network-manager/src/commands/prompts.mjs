@@ -365,3 +365,22 @@ export async function promptReplicaCount (task, input) {
     throw new FullstackTestingError(`input failed: ${flags.replicaCount.name}`, e)
   }
 }
+
+export async function promptKeyType (task, input) {
+  try {
+    const initial = 0
+    const choices = [constants.KEY_TYPE_GOSSIP, constants.KEY_TYPE_TLS]
+    if (!input || !choices.includes(input)) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'select',
+        initial,
+        message: 'Select key type',
+        choices
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
+  }
+}
