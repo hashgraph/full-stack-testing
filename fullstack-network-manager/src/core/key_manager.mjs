@@ -70,7 +70,7 @@ export class KeyManager {
    * @param keyDir directory where keys and certs are stored
    * @returns {{privateKeyFile: string, certificateFile: string}}
    */
-  prepareNodeKeyFilePaths (nodeId, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+  prepareNodeKeyFilePaths (nodeId, keyDir, keyPrefix = constants.SIGNING_KEY_PREFIX) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
     if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
@@ -92,7 +92,7 @@ export class KeyManager {
    * @param keyDir directory where keys and certs are stored
    * @return {privateKeyFile: string, certificateFile: string}
    */
-  async storeNodeKey (nodeId, nodeKey, keyDir, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+  async storeNodeKey (nodeId, nodeKey, keyDir, keyPrefix = constants.SIGNING_KEY_PREFIX) {
     if (!nodeId) throw new MissingArgumentError('nodeId is required')
     if (!keyDir) throw new MissingArgumentError('keyDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
@@ -135,7 +135,7 @@ export class KeyManager {
    * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
-  async loadNodeKey (nodeId, keyDir, algo, keyPrefix = constants.PFX_SIGNING_KEY_PREFIX) {
+  async loadNodeKey (nodeId, keyDir, algo, keyPrefix = constants.SIGNING_KEY_PREFIX) {
     if (!algo) throw new MissingArgumentError('algo is required')
 
     const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, keyPrefix)
@@ -172,7 +172,7 @@ export class KeyManager {
    */
   async generateNodeSigningKey (nodeId) {
     try {
-      const keyPrefix = constants.PFX_SIGNING_KEY_PREFIX
+      const keyPrefix = constants.SIGNING_KEY_PREFIX
       const curDate = new Date()
       const friendlyName = Templates.renderNodeFriendlyName(keyPrefix, nodeId)
 
@@ -218,7 +218,7 @@ export class KeyManager {
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async loadSigningKey (nodeId, keyDir) {
-    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.PFX_SIGNING_KEY_PREFIX)
+    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.SIGNING_KEY_PREFIX)
   }
 
   /**
@@ -256,9 +256,6 @@ export class KeyManager {
         extensions: [
           new x509.KeyUsagesExtension(
             x509.KeyUsageFlags.digitalSignature | x509.KeyUsageFlags.keyEncipherment)
-        ],
-        attributes: [
-          new x509.ChallengePasswordAttribute(constants.PFX_DUMMY_PASSWORD)
         ]
       })
 
@@ -291,6 +288,6 @@ export class KeyManager {
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async agreementKey (nodeId, keyDir, signingKey) {
-    return this.ecKey(nodeId, keyDir, constants.PFX_AGREEMENT_KEY_PREFIX, signingKey)
+    return this.ecKey(nodeId, keyDir, constants.AGREEMENT_KEY_PREFIX, signingKey)
   }
 }

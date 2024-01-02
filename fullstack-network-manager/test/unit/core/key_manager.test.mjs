@@ -12,14 +12,15 @@ describe('KeyManager', () => {
   it('should generate signing key', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
+    const keyPrefix = constants.SIGNING_KEY_PREFIX
 
     const signingKey = await keyManager.generateNodeSigningKey(nodeId)
 
-    const files = await keyManager.storeNodeKey(nodeId, signingKey, tmpDir, constants.PFX_SIGNING_KEY_PREFIX)
+    const files = await keyManager.storeNodeKey(nodeId, signingKey, tmpDir, keyPrefix)
     expect(files.privateKeyFile).not.toBeNull()
     expect(files.certificateFile).not.toBeNull()
 
-    const nodeKey = await keyManager.loadSigningKey(nodeId, tmpDir, KeyManager.SigningKeyAlgo)
+    const nodeKey = await keyManager.loadSigningKey(nodeId, tmpDir, KeyManager.SigningKeyAlgo, keyPrefix)
     expect(nodeKey.certificate).toStrictEqual(signingKey.certificate)
     expect(nodeKey.privateKeyPem).toStrictEqual(signingKey.privateKeyPem)
     expect(nodeKey.certificatePem).toStrictEqual(signingKey.certificatePem)
@@ -37,15 +38,16 @@ describe('KeyManager', () => {
   it('should generate agreement key', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
-    const signignKey = await keyManager.loadNodeKey(nodeId, 'test/data', KeyManager.SigningKeyAlgo, constants.PFX_SIGNING_KEY_PREFIX)
+    const keyPrefix = constants.AGREEMENT_KEY_PREFIX
+    const signignKey = await keyManager.loadNodeKey(nodeId, 'test/data', KeyManager.SigningKeyAlgo, constants.SIGNING_KEY_PREFIX)
 
     const agreementKey = await keyManager.agreementKey(nodeId, tmpDir, signignKey)
 
-    const files = await keyManager.storeNodeKey(nodeId, agreementKey, tmpDir, constants.PFX_AGREEMENT_KEY_PREFIX)
+    const files = await keyManager.storeNodeKey(nodeId, agreementKey, tmpDir, keyPrefix)
     expect(files.privateKeyFile).not.toBeNull()
     expect(files.certificateFile).not.toBeNull()
 
-    const nodeKey = await keyManager.loadNodeKey(nodeId, tmpDir, KeyManager.ECKeyAlgo, constants.PFX_AGREEMENT_KEY_PREFIX)
+    const nodeKey = await keyManager.loadNodeKey(nodeId, tmpDir, KeyManager.ECKeyAlgo, keyPrefix)
     expect(nodeKey.certificate).toStrictEqual(agreementKey.certificate)
     expect(nodeKey.privateKey.algorithm).toStrictEqual(agreementKey.privateKey.algorithm)
     expect(nodeKey.privateKey.type).toStrictEqual(agreementKey.privateKey.type)
