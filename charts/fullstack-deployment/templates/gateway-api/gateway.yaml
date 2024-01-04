@@ -8,10 +8,6 @@ metadata:
     fullstack.hedera.com/type: gateway
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
-  {{- if  $.Values.gatewayApi.gateway.loadBalancerEnabled }}
-  addresses:
-    - value: {{ $.Values.gatewayApi.gateway.loadBalancerIP }}
-  {{- end }}
   gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
   listeners:
   {{- $gossip_start_port   := $.Values.gatewayApi.gateway.listeners.gossip.port }} # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
