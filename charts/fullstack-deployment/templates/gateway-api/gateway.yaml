@@ -9,6 +9,10 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   gatewayClassName: {{ $.Values.gatewayApi.gatewayClass.name }}
+  {{- if  $.Values.gatewayApi.gateway.loadBalancerEnabled }}
+  addresses:
+    - value: {{ $.Values.gatewayApi.gateway.loadBalancerIP }}
+  {{- end }}
   listeners:
   {{- $gossip_start_port   := $.Values.gatewayApi.gateway.listeners.gossip.port }} # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
   {{- $grpc_start_port     := $.Values.gatewayApi.gateway.listeners.grpc.port }} # i.e. node0:52000 ... node999: 52999, points to 50211 port in haproxy or network-node

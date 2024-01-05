@@ -6,8 +6,3 @@ metadata:
     fullstack.hedera.com/type: gateway-class
 spec:
   controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
-  parametersRef:
-    group: gateway.envoyproxy.io
-    kind: EnvoyProxy
-    name: envoy-proxy-config
-    namespace: fst-user
