@@ -7,6 +7,8 @@ metadata:
 spec:
   isCA: false
   commonName: {{ $.Values.deployment.hederaExplorer.hostname }}
+  dnsNames:
+    - {{ $.Values.deployment.hederaExplorer.hostname }}
   secretName: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-hedera-explorer
   privateKey:
     algorithm: RSA
