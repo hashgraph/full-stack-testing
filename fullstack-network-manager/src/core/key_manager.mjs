@@ -21,6 +21,24 @@ export class KeyManager {
 
   static SigningKeyUsage = ['sign', 'verify']
 
+  static TLSKeyAlgo = {
+    name: 'RSASSA-PKCS1-v1_5',
+    hash: 'SHA-384',
+    publicExponent: new Uint8Array([1, 0, 1]),
+    modulusLength: 4096
+  }
+
+  static TLSKeyUsage = ['sign', 'verify']
+  static TLSCertKeyUsages =
+    x509.KeyUsageFlags.digitalSignature |
+    x509.KeyUsageFlags.keyEncipherment |
+    x509.KeyUsageFlags.dataEncipherment
+
+  static TLSCertKeyExtendedUsages = [
+    x509.ExtendedKeyUsage.serverAuth,
+    x509.ExtendedKeyUsage.clientAuth
+  ]
+
   static ECKeyAlgo = {
     name: 'ECDSA',
     namedCurve: 'P-384',
@@ -85,21 +103,58 @@ export class KeyManager {
   }
 
   /**
+   * Return file names for TLS key
+   * @param nodeId node ID
+   * @param keyDir directory where keys and certs are stored
+   * @returns {{privateKeyFile: string, certificateFile: string}}
+   */
+  prepareTLSKeyFilePaths (nodeId, keyDir) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!keyDir) throw new MissingArgumentError('keyDir is required')
+
+    const keyFile = path.join(keyDir, 'hedera.key')
+    const certFile = path.join(keyDir, 'hedera.crt')
+
+    return {
+      privateKeyFile: keyFile,
+      certificateFile: certFile
+    }
+  }
+
+  /**
    * Store node keys and certs as PEM files
    * @param nodeId node ID
    * @param nodeKey an object containing privateKeyPem, certificatePem data
-   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
    * @param keyDir directory where keys and certs are stored
+   * @param nodeKeyFiles an object {privateKeyFile: string, certificateFile: string}
+   * @param keyName optional key type name for logging
    * @return {privateKeyFile: string, certificateFile: string}
    */
-  async storeNodeKey (nodeId, nodeKey, keyDir, keyPrefix = constants.SIGNING_KEY_PREFIX) {
-    if (!nodeId) throw new MissingArgumentError('nodeId is required')
-    if (!keyDir) throw new MissingArgumentError('keyDir is required')
-    if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
-    if (!nodeKey || !nodeKey.privateKey) throw new MissingArgumentError('nodeKey.privateKey is required')
-    if (!nodeKey || !nodeKey.certificateChain) throw new MissingArgumentError('nodeKey.certificateChain is required')
+  async storeNodeKey (nodeId, nodeKey, keyDir, nodeKeyFiles, keyName = '') {
+    if (!nodeId) {
+      throw new MissingArgumentError('nodeId is required')
+    }
 
-    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, keyPrefix)
+    if (!nodeKey || !nodeKey.privateKey) {
+      throw new MissingArgumentError('nodeKey.privateKey is required')
+    }
+
+    if (!nodeKey || !nodeKey.certificateChain) {
+      throw new MissingArgumentError('nodeKey.certificateChain is required')
+    }
+
+    if (!keyDir) {
+      throw new MissingArgumentError('keyDir is required')
+    }
+
+    if (!nodeKeyFiles || !nodeKeyFiles.privateKeyFile) {
+      throw new MissingArgumentError('nodeKeyFiles.privateKeyFile is required')
+    }
+
+    if (!nodeKeyFiles || !nodeKeyFiles.certificateFile) {
+      throw new MissingArgumentError('nodeKeyFiles.certificateFile is required')
+    }
+
     const keyPem = await this.convertPrivateKeyToPem(nodeKey.privateKey)
     const certPems = []
     nodeKey.certificateChain.forEach(cert => {
@@ -109,7 +164,7 @@ export class KeyManager {
     const self = this
     return new Promise((resolve, reject) => {
       try {
-        this.logger.debug(`Storing ${keyPrefix}-keys for node: ${nodeId}`, { nodeKeyFiles })
+        this.logger.debug(`Storing ${keyName} key for node: ${nodeId}`, { nodeKeyFiles })
 
         fs.writeFileSync(nodeKeyFiles.privateKeyFile, keyPem)
 
@@ -122,7 +177,8 @@ export class KeyManager {
           fs.writeFileSync(nodeKeyFiles.certificateFile, certPem + '\n', { flag: 'a' })
         })
 
-        self.logger.debug(`Stored ${keyPrefix}-key for node: ${nodeId}`, { nodeKeyFiles, cert: certPems[0] })
+        self.logger.debug(`Stored ${keyName} key for node: ${nodeId}`, { nodeKeyFiles, cert: certPems[0] })
+
         resolve(nodeKeyFiles)
       } catch (e) {
         reject(e)
@@ -135,15 +191,32 @@ export class KeyManager {
    * @param nodeId node ID
    * @param keyDir directory where keys and certs are stored
    * @param algo algorithm used for key
-   * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
+   * @param nodeKeyFiles an object {privateKeyFile: string, certificateFile: string}
+   * @param keyName optional key type name for logging
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
-  async loadNodeKey (nodeId, keyDir, algo, keyPrefix = constants.SIGNING_KEY_PREFIX) {
-    if (!algo) throw new MissingArgumentError('algo is required')
+  async loadNodeKey (nodeId, keyDir, algo, nodeKeyFiles, keyName = '') {
+    if (!nodeId) {
+      throw new MissingArgumentError('nodeId is required')
+    }
 
-    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, keyPrefix)
+    if (!keyDir) {
+      throw new MissingArgumentError('keyDir is required')
+    }
 
-    this.logger.debug(`Loading ${keyPrefix}-keys for node: ${nodeId}`, { nodeKeyFiles })
+    if (!algo) {
+      throw new MissingArgumentError('algo is required')
+    }
+
+    if (!nodeKeyFiles || !nodeKeyFiles.privateKeyFile) {
+      throw new MissingArgumentError('nodeKeyFiles.privateKeyFile is required')
+    }
+
+    if (!nodeKeyFiles || !nodeKeyFiles.certificateFile) {
+      throw new MissingArgumentError('nodeKeyFiles.certificateFile is required')
+    }
+
+    this.logger.debug(`Loading ${keyName}-keys for node: ${nodeId}`, { nodeKeyFiles })
 
     const keyBytes = await fs.readFileSync(nodeKeyFiles.privateKeyFile)
     const keyPem = keyBytes.toString()
@@ -160,7 +233,7 @@ export class KeyManager {
 
     const certChain = await new x509.X509ChainBuilder({ certificates: certs.slice(1) }).build(certs[0])
 
-    this.logger.debug(`Loaded ${keyPrefix}-key for node: ${nodeId}`, { nodeKeyFiles, cert: certs[0].toString('pem') })
+    this.logger.debug(`Loaded ${keyName}-key for node: ${nodeId}`, { nodeKeyFiles, cert: certs[0].toString('pem') })
     return {
       privateKey: key,
       certificate: certs[0],
@@ -190,7 +263,7 @@ export class KeyManager {
         serialNumber: '01',
         name: `CN=${friendlyName}`,
         notBefore: curDate,
-        notAfter: new Date().setFullYear(curDate.getFullYear() + 10),
+        notAfter: new Date().setFullYear(curDate.getFullYear() + KeyManager.CertificateExpiryYears),
         keys: keypair,
         extensions: [
           new x509.BasicConstraintsExtension(true, 1, true),
@@ -222,7 +295,8 @@ export class KeyManager {
    * @return {privateKeyFile: string, certificateFile: string}
    */
   async storeSigningKey (nodeId, nodeKey, keyDir) {
-    return this.storeNodeKey(nodeId, nodeKey, keyDir, constants.SIGNING_KEY_PREFIX)
+    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, constants.SIGNING_KEY_PREFIX)
+    return this.storeNodeKey(nodeId, nodeKey, keyDir, nodeKeyFiles, 'signing')
   }
 
   /**
@@ -232,14 +306,14 @@ export class KeyManager {
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async loadSigningKey (nodeId, keyDir) {
-    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.SIGNING_KEY_PREFIX)
+    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, constants.SIGNING_KEY_PREFIX)
+    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, nodeKeyFiles, 'signing')
   }
 
   /**
    * Generate EC key and cert
    *
    * @param nodeId node ID
-   * @param keyDir the directory where pem files should be stored
    * @param keyPrefix key prefix such as constants.PFX_AGREEMENT_KEY_PREFIX
    * @param signingKey signing key
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
@@ -311,7 +385,8 @@ export class KeyManager {
    * @return {privateKeyFile: string, certificateFile: string}
    */
   async storeAgreementKey (nodeId, nodeKey, keyDir) {
-    return this.storeNodeKey(nodeId, nodeKey, keyDir, constants.AGREEMENT_KEY_PREFIX)
+    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, constants.AGREEMENT_KEY_PREFIX)
+    return this.storeNodeKey(nodeId, nodeKey, keyDir, nodeKeyFiles, 'agreement')
   }
 
   /**
@@ -321,6 +396,116 @@ export class KeyManager {
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
   async loadAgreementKey (nodeId, keyDir) {
-    return this.loadNodeKey(nodeId, keyDir, KeyManager.SigningKeyAlgo, constants.AGREEMENT_KEY_PREFIX)
+    const nodeKeyFiles = this.prepareNodeKeyFilePaths(nodeId, keyDir, constants.AGREEMENT_KEY_PREFIX)
+    return this.loadNodeKey(nodeId, keyDir, KeyManager.ECKeyAlgo, nodeKeyFiles, 'agreement')
+  }
+
+  /**
+   * Generate Gossip keys returns the file paths
+   *
+   * It generates signing and agreement keys in PEM format such as below:
+   *  s-<nodeID>.key
+   *  s-<nodeID>.crt
+   *  a-<nodeID>.key
+   *  a-<nodeID>.cert
+   *
+   * @param nodeId
+   * @param keyDir
+   */
+  async generateGossipKeys (nodeId, keyDir) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!keyDir) throw new MissingArgumentError('keyDir is required')
+
+    const signingKey = await this.generateNodeSigningKey(nodeId)
+    const signingKeyFiles = await this.storeSigningKey(nodeId, signingKey, keyDir)
+    const agreementKey = await this.generateAgreementKey(nodeId, signingKey)
+    const agreementKeyFiles = await this.storeAgreementKey(nodeId, agreementKey, keyDir)
+    return {
+      signingKey,
+      agreementKey,
+      signingKeyFiles,
+      agreementKeyFiles
+    }
+  }
+
+  /**
+   * Generate gRPC TLS key
+   *
+   * It generates TLS keys in PEM format such as below:
+   *  hedera.key
+   *  hedera.crt
+   *
+   * @param nodeId
+   * @param keyDir
+   * @param distinguishedName distinguished name as: new x509.Name(`CN=${nodeId},ST=${state},L=${locality},O=${org},OU=${orgUnit},C=${country}`)
+   * @return {Promise<privateKeyFile:string|certificateFile:string>}
+   */
+  async generateGrpcTLSKey (nodeId,
+    distinguishedName = new x509.Name(`CN=${nodeId}`)
+  ) {
+    if (!nodeId) throw new MissingArgumentError('nodeId is required')
+    if (!distinguishedName) throw new MissingArgumentError('distinguishedName is required')
+
+    try {
+      const curDate = new Date()
+
+      this.logger.debug(`generating gRPC TLS for node: ${nodeId}`, { distinguishedName })
+
+      const keypair = await crypto.subtle.generateKey(
+        KeyManager.TLSKeyAlgo,
+        true,
+        KeyManager.TLSKeyUsage)
+
+      const cert = await x509.X509CertificateGenerator.createSelfSigned({
+        serialNumber: '01',
+        name: distinguishedName,
+        notBefore: curDate,
+        notAfter: new Date().setFullYear(curDate.getFullYear() + KeyManager.CertificateExpiryYears),
+        keys: keypair,
+        extensions:
+          [
+            new x509.BasicConstraintsExtension(false, 0, true),
+            new x509.KeyUsagesExtension(KeyManager.TLSCertKeyUsages, true),
+            new x509.ExtendedKeyUsageExtension(KeyManager.TLSCertKeyExtendedUsages, true),
+            await x509.SubjectKeyIdentifierExtension.create(keypair.publicKey, false),
+            await x509.AuthorityKeyIdentifierExtension.create(keypair.publicKey, false)
+          ]
+      })
+
+      const certChain = await new x509.X509ChainBuilder().build(cert)
+
+      this.logger.debug(`generated gRPC TLS for node: ${nodeId}`, { cert: cert.toString('pem') })
+
+      return {
+        privateKey: keypair.privateKey,
+        certificate: cert,
+        certificateChain: certChain
+      }
+    } catch (e) {
+      throw new FullstackTestingError(`failed to generate gRPC TLS key: ${e.message}`, e)
+    }
+  }
+
+  /**
+   * Store TLS key and certificate
+   * @param nodeId node ID
+   * @param nodeKey an object containing privateKeyPem, certificatePem data
+   * @param keyDir directory where keys and certs are stored
+   * @return {privateKeyFile: string, certificateFile: string}
+   */
+  async storeTLSKey (nodeId, nodeKey, keyDir) {
+    const nodeKeyFiles = this.prepareTLSKeyFilePaths(nodeId, keyDir)
+    return this.storeNodeKey(nodeId, nodeKey, keyDir, nodeKeyFiles, 'gRPC TLS')
+  }
+
+  /**
+   * Load TLS key and certificate
+   * @param nodeId node ID
+   * @param keyDir directory path where pem files are stored
+   * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
+   */
+  async loadTLSKey (nodeId, keyDir) {
+    const nodeKeyFiles = this.prepareTLSKeyFilePaths(nodeId, keyDir)
+    return this.loadNodeKey(nodeId, keyDir, KeyManager.TLSKeyAlgo, nodeKeyFiles, 'gRPC TLS')
   }
 }

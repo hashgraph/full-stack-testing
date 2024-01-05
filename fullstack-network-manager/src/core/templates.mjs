@@ -1,3 +1,4 @@
+import * as x509 from '@peculiar/x509'
 import { DataValidationError, MissingArgumentError } from './errors.mjs'
 
 export class Templates {
@@ -9,10 +10,6 @@ export class Templates {
     return `network-${nodeId}-svc`
   }
 
-  static renderPfxFileName (prefix, type, nodeId) {
-    return `${prefix}-${type}-${nodeId}.pfx`
-  }
-
   /**
    * Generate node key file name
    * @param prefix short from of key name such as 's' for signing key
@@ -21,7 +18,7 @@ export class Templates {
    */
   static renderKeyFileName (prefix, nodeId) {
     // s-node0-key.pem
-    return `${prefix}-${nodeId}-key.pem`
+    return `${prefix}-${nodeId}.key`
   }
 
   /**
@@ -32,7 +29,7 @@ export class Templates {
    */
   static renderCertFileName (prefix, nodeId) {
     // s-node0-cert.pem
-    return `${prefix}-${nodeId}-cert.pem`
+    return `${prefix}-${nodeId}.crt`
   }
 
   static renderNodeFriendlyName (prefix, nodeId, suffix = '') {
@@ -53,5 +50,15 @@ export class Templates {
     const parsed = tag.split('.')
     if (parsed.length < 3) throw new Error(`tag (${tag}) must include major, minor and patch fields (e.g. v0.40.4)`)
     return `${parsed[0]}.${parsed[1]}`
+  }
+
+  static renderDistinguishedName (nodeId,
+    state = 'TX',
+    locality = 'Richardson',
+    org = 'Hedera',
+    orgUnit = 'Hedera',
+    country = 'US'
+  ) {
+    return new x509.Name(`CN=${nodeId},ST=${state},L=${locality},O=${org},OU=${orgUnit},C=${country}`)
   }
 }

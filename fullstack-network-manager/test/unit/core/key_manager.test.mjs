@@ -16,7 +16,8 @@ describe('KeyManager', () => {
 
     const signingKey = await keyManager.generateNodeSigningKey(nodeId)
 
-    const files = await keyManager.storeNodeKey(nodeId, signingKey, tmpDir, keyPrefix)
+    const nodeKeyFiles = keyManager.prepareNodeKeyFilePaths(nodeId, tmpDir, constants.SIGNING_KEY_PREFIX)
+    const files = await keyManager.storeNodeKey(nodeId, signingKey, tmpDir, nodeKeyFiles, keyPrefix)
     expect(files.privateKeyFile).not.toBeNull()
     expect(files.certificateFile).not.toBeNull()
 
@@ -38,22 +39,48 @@ describe('KeyManager', () => {
   it('should generate agreement key', async () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
     const nodeId = 'node0'
-    const keyPrefix = constants.AGREEMENT_KEY_PREFIX
-    const signignKey = await keyManager.loadNodeKey(nodeId, 'test/data', KeyManager.SigningKeyAlgo, constants.SIGNING_KEY_PREFIX)
 
+    const signingKeyFiles = keyManager.prepareNodeKeyFilePaths(nodeId, 'test/data', constants.SIGNING_KEY_PREFIX)
+    const signignKey = await keyManager.loadNodeKey(nodeId, 'test/data', KeyManager.SigningKeyAlgo, signingKeyFiles)
     const agreementKey = await keyManager.generateAgreementKey(nodeId, signignKey)
 
-    const files = await keyManager.storeNodeKey(nodeId, agreementKey, tmpDir, keyPrefix)
+    const files = await keyManager.storeAgreementKey(nodeId, agreementKey, tmpDir)
     expect(files.privateKeyFile).not.toBeNull()
     expect(files.certificateFile).not.toBeNull()
 
-    const nodeKey = await keyManager.loadNodeKey(nodeId, tmpDir, KeyManager.ECKeyAlgo, keyPrefix)
+    const nodeKey = await keyManager.loadAgreementKey(nodeId, tmpDir)
     expect(nodeKey.certificate).toStrictEqual(agreementKey.certificate)
     expect(nodeKey.privateKey.algorithm).toStrictEqual(agreementKey.privateKey.algorithm)
     expect(nodeKey.privateKey.type).toStrictEqual(agreementKey.privateKey.type)
 
     await expect(agreementKey.certificate.verify({
       publicKey: signignKey.certificate.publicKey,
+      signatureOnly: true
+    })).resolves.toBeTruthy()
+
+    fs.rmSync(tmpDir, { recursive: true })
+  })
+
+  it('should generate TLS key', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'keys-'))
+    const nodeId = 'node0'
+    const keyName = 'TLS'
+
+    const tlsKey = await keyManager.generateGrpcTLSKey(nodeId)
+
+    const files = await keyManager.storeTLSKey(nodeId, tlsKey, tmpDir)
+    expect(files.privateKeyFile).not.toBeNull()
+    expect(files.certificateFile).not.toBeNull()
+
+    const nodeKey = await keyManager.loadTLSKey(nodeId, tmpDir, KeyManager.TLSKeyAlgo, keyName)
+    expect(nodeKey.certificate).toStrictEqual(tlsKey.certificate)
+    expect(nodeKey.privateKeyPem).toStrictEqual(tlsKey.privateKeyPem)
+    expect(nodeKey.certificatePem).toStrictEqual(tlsKey.certificatePem)
+    expect(nodeKey.privateKey.algorithm).toStrictEqual(tlsKey.privateKey.algorithm)
+    expect(nodeKey.privateKey.type).toStrictEqual(tlsKey.privateKey.type)
+
+    await expect(tlsKey.certificate.verify({
+      publicKey: tlsKey.certificate.publicKey,
       signatureOnly: true
     })).resolves.toBeTruthy()
 

@@ -276,28 +276,27 @@ export class NodeCommand extends BaseCommand {
             cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
             keyType: await prompts.promptKeyType(task, argv.keyType)
           }
-        }
-      },
-      {
-        title: 'Generate keys',
-        task: async (ctx, task) => {
+
           const keyDir = path.join(ctx.config.cacheDir, 'keys')
           if (!fs.existsSync(keyDir)) {
             fs.mkdirSync(keyDir)
           }
 
+          ctx.config.keysDir = keyDir
+        }
+      },
+      {
+        title: 'Generate gossip keys',
+        task: async (ctx, task) => {
+          const keysDir = ctx.config.keysDir
           const nodeKeyFiles = new Map()
           if (ctx.config.keyType === constants.KEY_TYPE_GOSSIP) {
             for (const nodeId of ctx.config.nodeIds) {
-              const signingKey = await this.keyManager.generateNodeSigningKey(nodeId)
-              const signingKeyFiles = await this.keyManager.storeSigningKey(nodeId, signingKey, keyDir)
-              const agreementKeys = await this.keyManager.generateAgreementKey(nodeId, signingKey)
-              const agreementKeyFiles = await this.keyManager.storeAgreementKey(nodeId, agreementKeys, keyDir)
-              nodeKeyFiles.set(nodeId, {
-                signingKeyFiles,
-                agreementKeyFiles
-              })
+              const keyFiles = await this.keyManager.generateGossipKeys(nodeId, keysDir)
+              nodeKeyFiles.set(nodeId, keyFiles)
             }
+
+            console.log(nodeKeyFiles)
 
             self.logger.showUser(chalk.green('*** Generated Node Gossip Keys ***'))
             for (const entry of nodeKeyFiles.entries()) {
@@ -317,7 +316,41 @@ export class NodeCommand extends BaseCommand {
           } else {
             throw new FullstackTestingError(`unsupported key type: ${ctx.config.keyType}`)
           }
-        }
+        },
+        skip: (ctx, _) => ctx.config.keyType === constants.KEY_TYPE_TLS
+      },
+      {
+        title: 'Generate gRPC TLS keys',
+        task: async (ctx, task) => {
+          const keysDir = ctx.config.keysDir
+          const nodeKeyFiles = new Map()
+          if (ctx.config.keyType === constants.KEY_TYPE_TLS) {
+            for (const nodeId of ctx.config.nodeIds) {
+              const tlsKey = await this.keyManager.generateGrpcTLSKey(nodeId)
+              const tlsKeyFiles = await this.keyManager.storeTLSKey(nodeId, tlsKey, keysDir)
+              nodeKeyFiles.set(nodeId, {
+                tlsKeyFiles
+              })
+            }
+
+            self.logger.showUser(chalk.green('*** Generated Node TLS Keys ***'))
+            for (const entry of nodeKeyFiles.entries()) {
+              const nodeId = entry[0]
+              const fileList = entry[1]
+              self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
+              self.logger.showUser(chalk.cyan(`Node ID: ${nodeId}`))
+              self.logger.showUser(chalk.cyan('==========================='))
+              self.logger.showUser(chalk.green('TLS key\t\t:'), chalk.yellow(fileList.tlsKeyFiles.privateKeyFile))
+              self.logger.showUser(chalk.green('TLS certificate\t:'), chalk.yellow(fileList.tlsKeyFiles.certificateFile))
+              self.logger.showUser(chalk.blue('Inspect certificate\t: '), chalk.yellow(`openssl storeutl -noout -text -certs ${fileList.tlsKeyFiles.certificateFile}`))
+              self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.tlsKeyFiles.certificateFile} ${fileList.tlsKeyFiles.certificateFile}`))
+            }
+            self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
+          } else {
+            throw new FullstackTestingError(`expected '${constants.KEY_TYPE_TLS}' key type, found '${ctx.config.keyType}'`)
+          }
+        },
+        skip: (ctx, _) => ctx.config.keyType === constants.KEY_TYPE_GOSSIP
       }
     ])
 
@@ -347,9 +380,11 @@ export class NodeCommand extends BaseCommand {
               flags.namespace,
               flags.nodeIDs,
               flags.releaseTag,
+              flags.generateGossipKeys,
+              flags.generateTlsKeys,
               flags.cacheDir,
-              flags.force,
-              flags.chainId
+              flags.chainId,
+              flags.force
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node setup' ===")
@@ -366,7 +401,7 @@ export class NodeCommand extends BaseCommand {
           })
           .command({
             command: 'start',
-            desc: 'Start a node running Hedera platform',
+            desc: 'Start a node',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.nodeIDs
@@ -386,7 +421,7 @@ export class NodeCommand extends BaseCommand {
           })
           .command({
             command: 'stop',
-            desc: 'Stop a node running Hedera platform',
+            desc: 'Stop a node',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.nodeIDs

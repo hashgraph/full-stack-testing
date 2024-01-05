@@ -183,10 +183,11 @@ export const replicaCount = {
 }
 
 export const chainId = {
-  name: 'chain-id',
+  name: 'ledger-id',
   definition: {
-    describe: 'Chain ID',
+    describe: 'Ledger ID (a.k.a. Chain ID)',
     default: '298', // Ref: https://github.com/hashgraph/hedera-json-rpc-relay#configuration
+    alias: 'l',
     type: 'string'
   }
 }
@@ -215,9 +216,29 @@ export const keyType = {
   name: 'key-type',
   definition: {
     describe: `Node key type ( ${core.constants.KEY_TYPE_GOSSIP} | ${core.constants.KEY_TYPE_TLS} )`,
-    default: 'gossip',
+    default: '',
     alias: 't',
     type: 'string'
+  }
+}
+
+export const generateGossipKeys = {
+  name: 'gossip-keys',
+  definition: {
+    describe: 'Generate gossip keys for nodes',
+    default: false,
+    alias: 'g',
+    type: 'boolean'
+  }
+}
+
+export const generateTlsKeys = {
+  name: 'tls-keys',
+  definition: {
+    describe: 'Generate gRPC TLS keys for nodes',
+    default: false,
+    alias: 't',
+    type: 'boolean'
   }
 }
 
