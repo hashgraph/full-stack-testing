@@ -22,7 +22,7 @@ cloud:
   acmeClusterIssuer:
     enabled: false
   selfSignedClusterIssuer:
-    enabled: true
+    enabled: false
 
 cert-manager:
   namespace: cert-manager
