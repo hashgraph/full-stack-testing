@@ -2,8 +2,7 @@
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
-  name: load-balancer-ip-override
-  namespace: envoy-gateway-system
+  name: envoy-proxy-config
 spec:
   {{- if  $.Values.gatewayApi.gateway.loadBalancerEnabled }}
   provider:

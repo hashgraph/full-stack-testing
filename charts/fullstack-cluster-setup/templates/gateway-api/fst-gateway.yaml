@@ -2,7 +2,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
   name: fst-gateway-class
-  namespace: envoy-gateway-system
   labels:
     fullstack.hedera.com/type: gateway-class
 spec:
@@ -10,5 +9,5 @@ spec:
   parametersRef:
     group: gateway.envoyproxy.io
     kind: EnvoyProxy
-    name: load-balancer-ip-override
+    name: envoy-proxy-config
     namespace: envoy-gateway-system
