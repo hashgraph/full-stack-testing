@@ -118,9 +118,7 @@ export class KeyManager {
           fs.rmSync(nodeKeyFiles.certificateFile)
         }
 
-        // we need to write the PEM in reverse order
-        // this is because certChain contains the certs in reverse order (issuer certificate comes last)
-        certPems.reverse().forEach(certPem => {
+        certPems.forEach(certPem => {
           fs.writeFileSync(nodeKeyFiles.certificateFile, certPem + '\n', { flag: 'a' })
         })
 
@@ -152,7 +150,7 @@ export class KeyManager {
     const key = await this.convertPemToPrivateKey(keyPem, algo)
 
     const certBytes = await fs.readFileSync(nodeKeyFiles.certificateFile)
-    const certPems = x509.PemConverter.decode(certBytes.toString()).reverse() // reverse to revert the sequence
+    const certPems = x509.PemConverter.decode(certBytes.toString())
 
     const certs = []
     certPems.forEach(certPem => {
