@@ -29,7 +29,7 @@ spec:
             {{- with .Values.solvers.http01.gatewayHTTPRoute }}
             parentRefs:
               - name: {{ .name }}
-                namespace: {{ .namespace }}
+                namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
                 kind: Gateway
             {{- end }}
           {{- end }}

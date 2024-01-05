@@ -14,8 +14,6 @@ cloud:
     enabled: "true"
   minio:
     enabled: true
-  acmeClusterIssuer:
-    enabled: false
 
 # telemetry configurations
 telemetry:
@@ -53,7 +51,7 @@ acme-cluster-issuer:
     http01:
       solverType: "gatewayHTTPRoute"
       gatewayHTTPRoute:
-        name: "{{ tpl (.Values.gatewayApi.gateway.name | toString) }}"
+        name: "fst" # needs to match gatewayApi.gateway.name in this values.yaml file
         namespace: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
 
 # gateway-api configuration
