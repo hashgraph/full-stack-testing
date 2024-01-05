@@ -10,4 +10,4 @@ spec:
     group: gateway.envoyproxy.io
     kind: EnvoyProxy
     name: envoy-proxy-config
-    namespace: envoy-gateway-system
+    namespace: fst-user
