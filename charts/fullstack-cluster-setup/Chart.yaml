@@ -48,7 +48,7 @@ dependencies:
     condition: cloud.envoyGateway.enabled
 
   - name: cert-manager
-    version: v1.13.2
+    version: v1.13.3
     repository: https://charts.jetstack.io
     condition: cloud.certManager.enabled
 
