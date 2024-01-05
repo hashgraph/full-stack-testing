@@ -10,8 +10,11 @@ issuers:
 solvers:
   http01:
     enabled: true
+    solverType: "ingress" # "ingress" or "gatewayHTTPRoute"
     ingress:
       name: ""
       class: ""
       serviceType: "NodePort"
-
+    gatewayHTTPRoute:
+      name: ""
+      namespace: ""

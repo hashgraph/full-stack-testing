@@ -16,10 +16,21 @@ spec:
     solvers:
       {{- if .Values.solvers.http01.enabled }}
       - http01:
+          {{- if .Values.solvers.http01.solverType | eq "ingress" }}
           ingress:
             {{- with .Values.solvers.http01.ingress }}
             name: {{ .name }}
             class: {{ .class }}
             serviceType: {{ .serviceType }}
             {{- end }}
+          {{- end }}
+          {{- if .Values.solvers.http01.solverType | eq "gatewayHTTPRoute" }}
+          gatewayHTTPRoute:
+            {{- with .Values.solvers.http01.gatewayHTTPRoute }}
+            parentRefs:
+              - name: {{ .name }}
+                namespace: {{ .namespace }}
+                kind: Gateway
+            {{- end }}
+          {{- end }}
       {{- end }}

@@ -51,8 +51,3 @@ dependencies:
     version: v1.13.3
     repository: https://charts.jetstack.io
     condition: cloud.certManager.enabled
-
-  - name: acme-cluster-issuer
-    version: 0.3.0
-    # TODO: uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
-    condition: cloud.acmeClusterIssuer.enabled

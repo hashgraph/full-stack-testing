@@ -8,5 +8,8 @@ dependencies:
 - name: tenant
   repository: https://operator.min.io/
   version: 5.0.7
-digest: sha256:07f6ea06b7748b59dd24b34f2e742222ca2718592efc66d6fc55f78b628d4366
-generated: "2023-11-03T13:52:20.781862Z"
+- name: acme-cluster-issuer
+  repository: ""
+  version: 0.3.0
+digest: sha256:65f708d654ba6d14c7b193cc833f132f6133cca53850bcd37cf27809246df0f6
+generated: "2024-01-05T21:23:17.852519Z"

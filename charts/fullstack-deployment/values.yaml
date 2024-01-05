@@ -14,6 +14,8 @@ cloud:
     enabled: "true"
   minio:
     enabled: true
+  acmeClusterIssuer:
+    enabled: false
 
 # telemetry configurations
 telemetry:
@@ -34,6 +36,25 @@ tester:
     tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
     pullPolicy: "IfNotPresent"
   resources: {}
+
+# lets encrypt acme cluster issuer configuration
+acme-cluster-issuer:
+  issuers:
+    annotations:
+      helm.sh/hook: post-install
+      helm.sh/hook-weight: "2"
+    staging:
+      email: ""
+      name: fst-letsencrypt-staging
+    production:
+      email: ""
+      name: fst-letsencrypt-prod
+  solvers:
+    http01:
+      solverType: "gatewayHTTPRoute"
+      gatewayHTTPRoute:
+        name: "{{ tpl (.Values.gatewayApi.gateway.name | toString) }}"
+        namespace: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
 
 # gateway-api configuration
 gatewayApi:
