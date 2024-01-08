@@ -14,6 +14,8 @@ cloud:
     enabled: "true"
   minio:
     enabled: true
+  acmeClusterIssuer:
+    enabled: false
 
 # telemetry configurations
 telemetry:
