@@ -72,6 +72,17 @@ export class NodeCommand extends BaseCommand {
     })
   }
 
+  async _copyNodeKeys (nodeKey, destDir) {
+    for (const keyFile of [nodeKey.privateKeyFile, nodeKey.certificateFile]) {
+      if (!fs.existsSync(keyFile)) {
+        throw new FullstackTestingError(`file (${keyFile}) is missing`)
+      }
+
+      const fileName = path.basename(keyFile)
+      fs.cpSync(keyFile, `${destDir}/${fileName}`)
+    }
+  }
+
   async setup (argv) {
     const self = this
 
@@ -169,7 +180,7 @@ export class NodeCommand extends BaseCommand {
             {
               title: 'Copy default files and templates',
               task: () => {
-                for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.xml']) {
+                for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.txt']) {
                   fs.cpSync(`${constants.RESOURCES_DIR}/templates/${item}`, `${config.stagingDir}/templates/${item}`, { recursive: true })
                 }
               }
@@ -182,21 +193,11 @@ export class NodeCommand extends BaseCommand {
                 // copy gossip keys to the staging
                 for (const nodeId of ctx.config.nodeIds) {
                   const signingKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.SIGNING_KEY_PREFIX)
-                  for (const keyFile of signingKeyFiles) {
-                    if (!fs.existsSync(keyFile)) {
-                      throw new FullstackTestingError(`Gossip signing key file (${keyFile}) is missing for node '${nodeId}'.`)
-                    }
-                    fs.cpSync(keyFile, `${config.stagingKeysDir}/`)
-                  }
+                  await self._copyNodeKeys(signingKeyFiles, config.stagingDir)
 
                   // generate missing agreement keys
                   const agreementKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.AGREEMENT_KEY_PREFIX)
-                  for (const keyFile of agreementKeyFiles) {
-                    if (!fs.existsSync(keyFile)) {
-                      throw new FullstackTestingError(`Gossip agreement key file (${keyFile}) is missing for node '${nodeId}'.`)
-                    }
-                    fs.cpSync(keyFile, `${config.stagingKeysDir}/`)
-                  }
+                  await self._copyNodeKeys(agreementKeyFiles, config.stagingDir)
                 }
               }
             },
@@ -204,24 +205,19 @@ export class NodeCommand extends BaseCommand {
               title: 'Copy gRPC TLS keys to staging',
               task: async (ctx, _) => {
                 const config = ctx.config
-                const keyFiles = self.keyManager.prepareTLSKeyFilePaths(config.keysDir)
-
-                // copy TLS keys to the staging
-                for (const keyFile of keyFiles) {
-                  if (!fs.existsSync(keyFile)) {
-                    throw new FullstackTestingError(`TLS key file (${keyFile}) is missing.`)
-                  }
-                  fs.cpSync(keyFile, `${config.stagingKeysDir}/`)
+                for (const nodeId of ctx.config.nodeIds) {
+                  const tlsKeyFiles = self.keyManager.prepareTLSKeyFilePaths(nodeId, config.keysDir)
+                  await self._copyNodeKeys(tlsKeyFiles, config.stagingDir)
                 }
               }
             },
             {
               title: 'Prepare config.txt for the network',
-              task: (ctx, _) => {
+              task: async (ctx, _) => {
                 const config = ctx.config
                 const configTxtPath = `${config.stagingDir}/config.txt`
-                const template = `${config.stagingDir}/config.template`
-                self.prepareConfigTxt(config.nodeIds, configTxtPath, config.releaseTag, config.chainId, template)
+                const template = `${config.stagingDir}/templates/config.template`
+                await self.plaformInstaller.prepareConfigTxt(config.nodeIds, configTxtPath, config.releaseTag, config.chainId, template)
               }
             }
           ]

@@ -46,9 +46,9 @@ function generate_signing_key() {
     local n="${1}"
     local prefix="${2}"
 
-    local s_key="${prefix}-${n}-key.pem"
-    local s_csr="${prefix}-${n}-csr.pem"
-    local s_cert="${prefix}-${n}-cert.pem"
+    local s_key="${prefix}-${n}.key"
+    local s_csr="${prefix}-${n}.csr"
+    local s_cert="${prefix}-${n}.crt"
     local s_key_pfx="${prefix}-private-${n}.pfx"
     local s_cert_pfx="${prefix}-public-${n}.pfx"
     local s_friendly_name="${prefix}-${n}"
@@ -105,9 +105,9 @@ function generate_key() {
     local s_cert="${4}"
 
 
-    local key_file="${prefix}-${n}-key.pem"
-    local csr_file="${prefix}-${n}-csr.pem"
-    local cert_file="${prefix}-${n}-cert.pem"
+    local key_file="${prefix}-${n}.key"
+    local csr_file="${prefix}-${n}.csr"
+    local cert_file="${prefix}-${n}.crt"
     local key_pfx="${prefix}-private-${n}.pfx"
     local cert_pfx="${prefix}-public-${n}.pfx"
     local friendly_name="${prefix}-${n}"
@@ -145,7 +145,7 @@ function generate_key() {
     echo "------------------------------------------------------------------------------------"
     echo "Generated: ${cert_file}" [ including certificate chain ]
     echo "------------------------------------------------------------------------------------"
-    openssl storeutl -noout -text -certs a-node0-cert.pem
+    openssl storeutl -noout -text -certs "${cert_file}"
 
     # generate private.pfx
     openssl pkcs12 -export -out "${key_pfx}" -inkey "${key_file}" -in "${cert_file}" -iter 10000 \
@@ -172,8 +172,8 @@ function generate_key() {
 
 for nm in "${names[@]}"; do
     n="$(echo $nm | tr '[A-Z]' '[a-z]')"
-    s_key="${s_key_prefix}-${n}-key.pem"
-    s_cert="${s_key_prefix}-${n}-cert.pem"
+    s_key="${s_key_prefix}-${n}.key"
+    s_cert="${s_key_prefix}-${n}.crt"
 
     generate_signing_key "${n}" "${s_key_prefix}" || exit 1
     generate_key "${n}" "${a_key_prefix}" "${s_key}" "${s_cert}" || exit 1

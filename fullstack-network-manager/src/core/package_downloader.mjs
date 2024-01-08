@@ -77,7 +77,7 @@ export class PackageDownloader {
    */
   async fetchFile (url, destPath) {
     if (!url) {
-      throw new IllegalArgumentError('source file URL is required', url)
+      throw new IllegalArgumentError('package URL is required', url)
     }
 
     if (!destPath) {
@@ -85,11 +85,11 @@ export class PackageDownloader {
     }
 
     if (!this.isValidURL(url)) {
-      throw new IllegalArgumentError(`source URL '${url}' is invalid`, url)
+      throw new IllegalArgumentError(`package URL '${url}' is invalid`, url)
     }
 
     if (!await this.urlExists(url)) {
-      throw new ResourceNotFoundError('source URL does not exist', url)
+      throw new ResourceNotFoundError(`package URL '${url}' does not exist`, url)
     }
 
     try {

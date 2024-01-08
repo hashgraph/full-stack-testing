@@ -75,11 +75,13 @@ export async function promptReleaseTag (task, input) {
         default: flags.releaseTag.definition.default,
         message: 'Enter release version:'
       })
+
+      if (!input) throw new IllegalArgumentError('release tag cannot be empty')
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.releaseTag.name}`, e)
+    throw new FullstackTestingError(`input failed for '${flags.releaseTag.name}': ${e.message}`, e)
   }
 }
 

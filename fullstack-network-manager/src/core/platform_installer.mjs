@@ -94,27 +94,64 @@ export class PlatformInstaller {
     }
   }
 
+  /**
+   * Copy a list of files to a directory in the container
+   *
+   * @param podName pod name
+   * @param srcFiles list of source files
+   * @param destDir destination directory
+   * @param container name of the container
+   *
+   * @return {Promise<string[]>} list of pathso of the copied files insider the container
+   */
   async copyFiles (podName, srcFiles, destDir, container = constants.ROOT_CONTAINER) {
-    const self = this
     try {
+      const fileMap = new Map()
+
+      // prepare the file mapping
       for (const srcPath of srcFiles) {
-        self.logger.debug(`Copying files into ${podName}: ${srcPath} -> ${destDir}`)
-        await this.kubectl.copy(
-          srcPath,
-          `${podName}:${destDir}`,
-          `-c ${container}`
-        )
+        const fileName = path.basename(srcPath)
+        fileMap.set(srcPath, path.join(destDir, fileName))
       }
 
-      const fileList = await this.kubectl.execContainer(podName, container, `ls ${destDir}`)
-
-      // create full path
-      const fullPaths = []
-      fileList.forEach(filePath => fullPaths.push(`${destDir}/${filePath}`))
-
-      return fullPaths
+      return this.copyFileMap(podName, fileMap, container)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy files to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to copy files to pod '${podName}': ${e.message}`, e)
+    }
+  }
+
+  /**
+   * Copy a list of file into pod
+   * @param podName pod name
+   * @param fileMap a map containing srcPath and dstPath
+   * @param container name of the container
+   * @return {Promise<*[]>}
+   */
+  async copyFileMap (podName, fileMap, container = constants.ROOT_CONTAINER) {
+    const self = this
+    const copiedFiles = []
+    try {
+      for (const fileEntry of fileMap.entries()) {
+        const srcPath = fileEntry[0]
+        const dstPath = fileEntry[1]
+
+        if (!fs.existsSync(srcPath)) {
+          throw new FullstackTestingError(`file does not exist: ${srcPath}`)
+        }
+
+        self.logger.debug(`Copying files into ${podName}: ${srcPath} -> ${dstPath}`)
+        await this.kubectl.copy(
+          srcPath,
+          `${podName}:${dstPath}`,
+          `-c ${container}`
+        )
+
+        copiedFiles.push(dstPath)
+      }
+
+      return copiedFiles
+    } catch (e) {
+      throw new FullstackTestingError(`failed to copy files to pod '${podName}': ${e.message}`, e)
     }
   }
 
@@ -128,13 +165,15 @@ export class PlatformInstaller {
       const keysDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
       const nodeId = Templates.extractNodeIdFromPodName(podName)
       const srcFiles = [
-        `${stagingDir}/templates/node-keys/private-${nodeId}.pfx`,
-        `${stagingDir}/templates/node-keys/public.pfx`
+        `${stagingDir}/keys/${Templates.renderKeyFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`,
+        `${stagingDir}/keys/${Templates.renderCertFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`,
+        `${stagingDir}/keys/${Templates.renderKeyFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`,
+        `${stagingDir}/keys/${Templates.renderCertFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`
       ]
 
       return await self.copyFiles(podName, srcFiles, keysDir)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy gossip keys to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to copy gossip keys to pod '${podName}': ${e.message}`, e)
     }
   }
 
@@ -174,13 +213,19 @@ export class PlatformInstaller {
     if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
 
     try {
-      const destDir = constants.HEDERA_HAPI_PATH
-      const srcFiles = [
-        `${stagingDir}/templates/hedera.key`,
-        `${stagingDir}/templates/hedera.crt`
-      ]
+      const nodeId = Templates.extractNodeIdFromPodName(podName)
 
-      return await self.copyFiles(podName, srcFiles, destDir)
+      const fileMap = new Map()
+
+      fileMap.set(
+        `${stagingDir}/keys/${Templates.renderKeyFileName('hedera', nodeId)}`,
+        `${constants.HEDERA_HAPI_PATH}/hedera.key`)
+
+      fileMap.set(
+        `${stagingDir}/keys/${Templates.renderCertFileName('hedera', nodeId)}`,
+        `${constants.HEDERA_HAPI_PATH}/hedera.crt`)
+
+      return await self.copyFileMap(podName, fileMap)
     } catch (e) {
       throw new FullstackTestingError(`failed to copy TLS keys to pod '${podName}'`, e)
     }
@@ -292,45 +337,20 @@ export class PlatformInstaller {
   }
 
   /**
-   * Return a lit of task to prepare the staging directory
-   * @param nodeIDs list of node IDs
-   * @param stagingDir full path to the staging directory
-   * @param releaseTag release version
-   * @param force force flag
-   * @param chainId chain ID
-   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
-   */
-  taskPrepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
-    const self = this
-    const configTxtPath = `${stagingDir}/config.txt`
-
-    return new Listr([
-      {
-        title: 'Copy templates',
-        task: () => {
-          if (!fs.existsSync(stagingDir)) {
-            fs.mkdirSync(stagingDir, { recursive: true })
-          }
-
-          fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
-        }
-      },
-      {
-        title: 'Prepare config.txt',
-        task: () => self.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
-      }
-    ],
-    {
-      concurrent: false,
-      rendererOptions: {
-        collapseSubtasks: false
-      }
-    }
-    )
-  }
-
-  /**
    * Return a list of task to perform node installation
+   *
+   * It assumes the staging directory has the following files and resources:
+   *   ${staging}/keys/s-<nodeId>.key: signing key for a node
+   *   ${staging}/keys/s-<nodeId>.crt: signing cert for a node
+   *   ${staging}/keys/a-<nodeId>.key: agreement key for a node
+   *   ${staging}/keys/a-<nodeId>.crt: agreement cert for a node
+   *   ${staging}/keys/hedera-<nodeId>.key: gRPC TLS key for a node
+   *   ${staging}/keys/hedera-<nodeId>.crt: gRPC TSL cert for a node
+   *   ${staging}/properties: contains all properties files
+   *   ${staging}/log4j2.xml: LOG4J file
+   *   ${staging}/settings.txt: settings.txt file for the network
+   *   ${staging}/config.txt: config.txt file for the network
+   *
    * @param podName name of the pod
    * @param buildZipFile path to the platform build.zip file
    * @param stagingDir staging directory path

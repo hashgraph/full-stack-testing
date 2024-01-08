@@ -87,69 +87,65 @@ describe('PackageInstallerE2E', () => {
     })
   })
 
-  describe('prepareStaging', () => {
-    it('should succeed in preparing staging area', async () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
-      const configPath = `${tmpDir}/config.txt`
-      const nodeIDs = ['node0', 'node1', 'node2']
-      const releaseTag = 'v0.42.0'
-
-      await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
-
-      // verify the config.txt exists
-      expect(fs.existsSync(configPath)).toBeTruthy()
-
-      // verify copy of local-node data is at staging area
-      expect(fs.existsSync(`${tmpDir}/templates`)).toBeTruthy()
-
-      fs.rmSync(tmpDir, { recursive: true })
-    })
-  })
-
   describe('copyGossipKeys', () => {
     it('should succeed to copy gossip keys for node0', async () => {
-      const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+      const stagingDir = 'test/data'
       const podName = 'network-node0-0'
+      const nodeId = 'node0'
+
       await installer.setupHapiDirectories(podName)
 
       const fileList = await installer.copyGossipKeys(podName, stagingDir)
-      expect(fileList.length).toBe(2)
-      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/private-node0.pfx`)
-      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/public.pfx`)
+
+      const destDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
+      expect(fileList.length).toBe(4)
+      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
     })
 
     it('should succeed to copy gossip keys for node1', async () => {
-      const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+      const stagingDir = 'test/data'
       const podName = 'network-node1-0'
+      const nodeId = 'node1'
+
       await installer.setupHapiDirectories(podName)
 
       const fileList = await installer.copyGossipKeys(podName, stagingDir)
-      expect(fileList.length).toBe(2)
-      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/private-node1.pfx`)
-      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/data/keys/public.pfx`)
+
+      const destDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
+      expect(fileList.length).toBe(4)
+      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
     })
   })
 
   describe('copyTLSKeys', () => {
     it('should succeed to copy TLS keys for node0', async () => {
-      const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+      const stagingDir = 'test/data'
       const podName = 'network-node0-0'
       await installer.setupHapiDirectories(podName)
 
       const fileList = await installer.copyTLSKeys(podName, stagingDir)
-      expect(fileList.length).toBe(3) // [data , hedera.crt, hedera.key]
+
+      expect(fileList.length).toBe(2) // [data , hedera.crt, hedera.key]
       expect(fileList.length).toBeGreaterThanOrEqual(2)
       expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.crt`)
       expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.key`)
     })
 
     it('should succeed to copy TLS keys for node1', async () => {
-      const stagingDir = `${constants.RESOURCES_DIR}` // just use the resource directory rather than creating staging area
+      const stagingDir = 'test/data'
       const podName = 'network-node1-0'
       await installer.setupHapiDirectories(podName)
 
       const fileList = await installer.copyTLSKeys(podName, stagingDir)
-      expect(fileList.length).toBe(3) // [data , hedera.crt, hedera.key]
+
+      expect(fileList.length).toBe(2) // [data , hedera.crt, hedera.key]
+      expect(fileList.length).toBeGreaterThanOrEqual(2)
       expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.crt`)
       expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.key`)
     })
@@ -164,7 +160,8 @@ describe('PackageInstallerE2E', () => {
       const nodeIDs = ['node0']
       const releaseTag = 'v0.42.0'
 
-      await installer.taskPrepareStaging(nodeIDs, tmpDir, releaseTag).run()
+      fs.cpSync(`${constants.RESOURCES_DIR}/templates`, `${tmpDir}/templates`, { recursive: true })
+      await installer.prepareConfigTxt(nodeIDs, `${tmpDir}/config.txt`, releaseTag, constants.HEDERA_CHAIN_ID, `${tmpDir}/templates/config.template`)
 
       const fileList = await installer.copyPlatformConfigFiles(podName, tmpDir)
       expect(fileList.length).toBeGreaterThanOrEqual(6)
