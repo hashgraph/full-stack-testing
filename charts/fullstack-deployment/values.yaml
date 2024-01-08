@@ -42,9 +42,6 @@ tester:
 # lets encrypt acme cluster issuer configuration
 acme-cluster-issuer:
   issuers:
-#    annotations:
-#      helm.sh/hook: post-install
-#      helm.sh/hook-weight: "2"
     staging:
       email: ""
       name: fst-letsencrypt-staging
