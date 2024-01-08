@@ -5,7 +5,6 @@ import * as flags from './flags.mjs'
 import * as paths from 'path'
 import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
-import {enableHederaExplorerTls} from "./flags.mjs";
 
 export class ChartCommand extends BaseCommand {
   getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
