@@ -401,9 +401,9 @@ export async function promptTlsClusterIssuerNamespace(task, input) {
 
 export async function promptEnableHederaExplorerTls(task, input) {
   try {
-    if (!input) {
+    if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'boolean',
+        type: 'toggle',
         default: flags.enableHederaExplorerTls.definition.default,
         message: 'Would you like to enable the Hedera Explorer TLS?'
       })
