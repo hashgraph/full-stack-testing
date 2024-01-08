@@ -9,7 +9,7 @@ describe('Helm', () => {
 
   it('should run helm install', async () => {
     await helm.install('arg')
-    expect(shellSpy).toHaveBeenCalledWith('helm install arg')
+    expect(shellSpy).toHaveBeenCalledWith('helm install arg', true)
   })
 
   it('should run helm uninstall', async () => {
