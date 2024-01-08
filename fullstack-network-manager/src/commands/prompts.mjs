@@ -350,6 +350,23 @@ export async function promptEnableTls(task, input) {
   }
 }
 
+export async function promptSelfSignedClusterIssuer(task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.selfSignedClusterIssuer.definition.default,
+        message: 'Would you like to enable the self signed cluster issuer?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.selfSignedClusterIssuer.name}`, e)
+  }
+
+}
+
 export async function promptTlsClusterIssuerName(task, input) {
   try {
     if (!input) {
@@ -373,6 +390,22 @@ export async function promptTlsClusterIssuerNamespace(task, input) {
         type: 'text',
         default: flags.tlsClusterIssuerNamespace.definition.default,
         message: 'Enter TLS cluster issuer namespace:'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerNamespace.name}`, e)
+  }
+}
+
+export async function promptEnableHederaExplorerTls(task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'boolean',
+        default: flags.enableHederaExplorerTls.definition.default,
+        message: 'Would you like to enable the Hedera Explorer TLS?'
       })
     }
 

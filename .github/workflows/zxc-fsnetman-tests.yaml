@@ -133,6 +133,18 @@ jobs:
           fsnetman cluster setup -d ../charts
           fsnetman chart install -d ../charts
           npm run test-e2e
+          kind delete clusters fst
+          fsnetman init -d ../charts
+          fsnetman cluster create
+          fsnetman cluster setup -d ../charts \
+            --cert-manager \
+            --cert-manager-crds
+          fsnetman chart install -d ../charts \
+            --enable-tls \
+            --self-signed \
+            --tls-cluster-issuer-name self-signed \
+            --enable-hedera-explorer-tls
+
       - name: Output logs
         id: nodejs-test-e2e-logs
         working-directory: fullstack-network-manager

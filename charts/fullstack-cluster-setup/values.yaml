@@ -19,8 +19,6 @@ cloud:
     enabled: false
   certManager:
     enabled: false
-  selfSignedClusterIssuer:
-    enabled: false
 
 cert-manager:
   namespace: cert-manager

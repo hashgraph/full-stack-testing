@@ -16,6 +16,8 @@ cloud:
     enabled: true
   acmeClusterIssuer:
     enabled: false
+  selfSignedClusterIssuer:
+    enabled: false
 
 # telemetry configurations
 telemetry:

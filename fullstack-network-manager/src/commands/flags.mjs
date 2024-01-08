@@ -230,6 +230,15 @@ export const tlsClusterIssuerName = {
   }
 }
 
+export const selfSignedClusterIssuer = {
+  name: 'self-signed',
+  definition: {
+    describe: 'Enable the self signed cluster issuer',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const tlsClusterIssuerNamespace = {
   name: 'tls-cluster-issuer-namespace',
   definition: {
@@ -243,6 +252,15 @@ export const acmeClusterIssuer = {
   name: 'acme-cluster-issuer',
   definition: {
     describe: 'The acme let\'s encrypt cert-manager cluster issuer, defaults to false',
+    default: false,
+    type: 'boolean'
+  }
+}
+
+export const enableHederaExplorerTls = {
+  name: 'enable-hedera-explorer-tls',
+  definition: {
+    describe: 'Enable the Hedera Explorer TLS, defaults to false',
     default: false,
     type: 'boolean'
   }
@@ -272,5 +290,7 @@ export const allFlags = [
   operatorKey,
   enableTls,
   tlsClusterIssuerName,
-  tlsClusterIssuerNamespace
+  tlsClusterIssuerNamespace,
+  enableHederaExplorerTls,
+  selfSignedClusterIssuer
 ]
