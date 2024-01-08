@@ -142,7 +142,6 @@ jobs:
           fsnetman chart install -d ../charts \
             --enable-tls \
             --self-signed \
-            --tls-cluster-issuer-name=self-signed \
             --enable-hedera-explorer-tls
 
       - name: Output logs

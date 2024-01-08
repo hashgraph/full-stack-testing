@@ -411,7 +411,7 @@ export async function promptEnableHederaExplorerTls(task, input) {
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerNamespace.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.enableHederaExplorerTls.name}`, e)
   }
 }
 
