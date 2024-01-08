@@ -130,8 +130,8 @@ jobs:
           npm link
           fsnetman init -d ../charts
           fsnetman cluster create
-          fsnetman cluster setup
-          fsnetman chart install
+          fsnetman cluster setup -d ../charts
+          fsnetman chart install -d ../charts
           npm run test-e2e
       - name: Output logs
         id: nodejs-test-e2e-logs
