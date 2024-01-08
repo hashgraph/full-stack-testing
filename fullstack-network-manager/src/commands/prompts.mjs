@@ -384,3 +384,35 @@ export async function promptKeyType (task, input) {
     throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
   }
 }
+
+export async function promptGenerateGossipKeys (task, input) {
+  try {
+    if (typeof input !== 'boolean') {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.generateGossipKeys.definition.default,
+        message: 'Would you like to generate gossip keys?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
+  }
+}
+
+export async function promptGenerateTLSKeys (task, input) {
+  try {
+    if (typeof input !== 'boolean') {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.generateTlsKeys.definition.default,
+        message: 'Would you like to generate TLS keys?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
+  }
+}

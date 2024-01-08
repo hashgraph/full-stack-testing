@@ -212,16 +212,6 @@ export const operatorKey = {
   }
 }
 
-export const keyType = {
-  name: 'key-type',
-  definition: {
-    describe: `Node key type ( ${core.constants.KEY_TYPE_GOSSIP} | ${core.constants.KEY_TYPE_TLS} )`,
-    default: '',
-    alias: 't',
-    type: 'string'
-  }
-}
-
 export const generateGossipKeys = {
   name: 'gossip-keys',
   definition: {
@@ -237,7 +227,7 @@ export const generateTlsKeys = {
   definition: {
     describe: 'Generate gRPC TLS keys for nodes',
     default: false,
-    alias: 't',
+    alias: 'k',
     type: 'boolean'
   }
 }
@@ -263,5 +253,6 @@ export const allFlags = [
   chainId,
   operatorId,
   operatorKey,
-  keyType
+  generateGossipKeys,
+  generateTlsKeys
 ]

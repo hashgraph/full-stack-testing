@@ -79,27 +79,43 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
           const config = {
-            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            namespace: await prompts.promptNamespaceArg(task, self.configManager.flagValue(cachedConfig, flags.namespace)),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
-            releaseTag: await prompts.promptReleaseTag(task, argv.releaseTag),
+            releaseTag: await prompts.promptReleaseTag(task, self.configManager.flagValue(cachedConfig, flags.releaseTag)),
             cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
             force: await prompts.promptForce(task, argv.force),
-            chainId: await prompts.promptChainId(task, argv.chainId)
+            chainId: await prompts.promptChainId(task, argv.chainId),
+            generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv.generateGossipKeys),
+            generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv.generateTlsKeys)
           }
 
           // compute other config parameters
           config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
           config.buildZipFile = `${config.cacheDir}/${config.releasePrefix}/build-${config.releaseTag}.zip`
+          config.keysDir = path.join(config.cacheDir, 'keys')
           config.stagingDir = `${config.cacheDir}/${config.releasePrefix}/staging/${config.releaseTag}`
+          config.stagingKeysDir = path.join(config.stagingDir, 'keys')
 
-          // prepare staging directory
-          fs.mkdirSync(config.stagingDir, { recursive: true })
+          // prepare staging keys directory
+          if (!fs.existsSync(config.stagingKeysDir)) {
+            fs.mkdirSync(config.stagingKeysDir, { recursive: true })
+          }
+
+          // create cached keys dir if it does not exist yet
+          if (!fs.existsSync(config.keysDir)) {
+            fs.mkdirSync(config.keysDir)
+          }
 
           // set config in the context for later tasks to use
           ctx.config = config
           self.logger.debug('Initialized config', { config })
         }
+      },
+      {
+        title: 'Identify network pods',
+        task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
       },
       {
         title: 'Fetch platform',
@@ -111,19 +127,114 @@ export class NodeCommand extends BaseCommand {
         }
       },
       {
-        title: 'Identify network pods',
-        task: (ctx, task) => self.taskCheckNetworkNodePods(ctx, task)
+        title: 'Generate Gossip keys',
+        task: async (ctx, _) => {
+          const config = ctx.config
+
+          // generate gossip keys if required
+          if (config.generateGossipKeys) {
+            for (const nodeId of ctx.config.nodeIds) {
+              const signingKey = await self.keyManager.generateNodeSigningKey(nodeId)
+              const signingKeyFiles = await self.keyManager.storeSigningKey(nodeId, signingKey, config.keysDir)
+              self.logger.debug(`generated Gossip signing keys for node ${nodeId}`, { keyFiles: signingKeyFiles })
+
+              const agreementKey = await self.keyManager.generateAgreementKey(nodeId, signingKey)
+              const agreementKeyFiles = await self.keyManager.storeAgreementKey(nodeId, agreementKey, config.keysDir)
+              self.logger.debug(`generated Gossip agreement keys for node ${nodeId}`, { keyFiles: agreementKeyFiles })
+            }
+          }
+        },
+        skip: (ctx, _) => !ctx.config.generateGossipKeys
       },
       {
-        title: 'Prepare staging',
-        task: async (ctx, task) => {
+        title: 'Generate gRPC TLS keys',
+        task: async (ctx, _) => {
           const config = ctx.config
-          return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
+          // generate TLS keys if required
+          if (config.generateTlsKeys) {
+            for (const nodeId of ctx.config.nodeIds) {
+              const tlsKeys = await self.keyManager.generateGrpcTLSKey(nodeId, config.keysDir)
+              const tlsKeyFiles = await self.keyManager.storeTLSKey(nodeId, tlsKeys, config.keysDir)
+              self.logger.debug(`generated TLS keys for node: ${nodeId}`, { keyFiles: tlsKeyFiles })
+            }
+          }
+        },
+        skip: (ctx, _) => !ctx.config.generateTlsKeys
+      },
+      {
+        title: 'Prepare staging directory',
+        task: async (ctx, parentTask) => {
+          const config = ctx.config
+          const subTasks = [
+            {
+              title: 'Copy default files and templates',
+              task: () => {
+                for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.xml']) {
+                  fs.cpSync(`${constants.RESOURCES_DIR}/templates/${item}`, `${config.stagingDir}/templates/${item}`, { recursive: true })
+                }
+              }
+            },
+            {
+              title: 'Copy Gossip keys to staging',
+              task: async (ctx, _) => {
+                const config = ctx.config
+
+                // copy gossip keys to the staging
+                for (const nodeId of ctx.config.nodeIds) {
+                  const signingKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.SIGNING_KEY_PREFIX)
+                  for (const keyFile of signingKeyFiles) {
+                    if (!fs.existsSync(keyFile)) {
+                      throw new FullstackTestingError(`Gossip signing key file (${keyFile}) is missing for node '${nodeId}'.`)
+                    }
+                    fs.cpSync(keyFile, `${config.stagingKeysDir}/`)
+                  }
+
+                  // generate missing agreement keys
+                  const agreementKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.AGREEMENT_KEY_PREFIX)
+                  for (const keyFile of agreementKeyFiles) {
+                    if (!fs.existsSync(keyFile)) {
+                      throw new FullstackTestingError(`Gossip agreement key file (${keyFile}) is missing for node '${nodeId}'.`)
+                    }
+                    fs.cpSync(keyFile, `${config.stagingKeysDir}/`)
+                  }
+                }
+              }
+            },
+            {
+              title: 'Copy gRPC TLS keys to staging',
+              task: async (ctx, _) => {
+                const config = ctx.config
+                const keyFiles = self.keyManager.prepareTLSKeyFilePaths(config.keysDir)
+
+                // copy TLS keys to the staging
+                for (const keyFile of keyFiles) {
+                  if (!fs.existsSync(keyFile)) {
+                    throw new FullstackTestingError(`TLS key file (${keyFile}) is missing.`)
+                  }
+                  fs.cpSync(keyFile, `${config.stagingKeysDir}/`)
+                }
+              }
+            },
+            {
+              title: 'Prepare config.txt for the network',
+              task: (ctx, _) => {
+                const config = ctx.config
+                const configTxtPath = `${config.stagingDir}/config.txt`
+                const template = `${config.stagingDir}/config.template`
+                self.prepareConfigTxt(config.nodeIds, configTxtPath, config.releaseTag, config.chainId, template)
+              }
+            }
+          ]
+
+          return parentTask.newListr(subTasks, {
+            concurrent: false,
+            rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+          })
         }
       },
       {
         title: 'Setup network nodes',
-        task: async (ctx, task) => {
+        task: async (ctx, parentTask) => {
           const config = ctx.config
 
           const subTasks = []
@@ -136,12 +247,10 @@ export class NodeCommand extends BaseCommand {
             })
           }
 
-          // setup the sub-tasks
-          return task.newListr(subTasks, {
+          // set up the sub-tasks
+          return parentTask.newListr(subTasks, {
             concurrent: true,
-            rendererOptions: {
-              collapseSubtasks: false
-            }
+            rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
           })
         }
       }
@@ -274,15 +383,16 @@ export class NodeCommand extends BaseCommand {
           ctx.config = {
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
             cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
-            keyType: await prompts.promptKeyType(task, argv.keyType)
+            generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv.generateGossipKeys),
+            generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv.generateTlsKeys)
           }
 
-          const keyDir = path.join(ctx.config.cacheDir, 'keys')
-          if (!fs.existsSync(keyDir)) {
-            fs.mkdirSync(keyDir)
+          const keysDir = path.join(ctx.config.cacheDir, 'keys')
+          if (!fs.existsSync(keysDir)) {
+            fs.mkdirSync(keysDir)
           }
 
-          ctx.config.keysDir = keyDir
+          ctx.config.keysDir = keysDir
         }
       },
       {
@@ -290,13 +400,19 @@ export class NodeCommand extends BaseCommand {
         task: async (ctx, task) => {
           const keysDir = ctx.config.keysDir
           const nodeKeyFiles = new Map()
-          if (ctx.config.keyType === constants.KEY_TYPE_GOSSIP) {
+          if (ctx.config.generateGossipKeys) {
             for (const nodeId of ctx.config.nodeIds) {
-              const keyFiles = await this.keyManager.generateGossipKeys(nodeId, keysDir)
-              nodeKeyFiles.set(nodeId, keyFiles)
+              const signingKey = await self.keyManager.generateNodeSigningKey(nodeId)
+              const signingKeyFiles = await self.keyManager.storeSigningKey(nodeId, signingKey, keysDir)
+              const agreementKey = await self.keyManager.generateAgreementKey(nodeId, signingKey)
+              const agreementKeyFiles = await self.keyManager.storeAgreementKey(nodeId, agreementKey, keysDir)
+              nodeKeyFiles.set(nodeId, {
+                signingKey,
+                agreementKey,
+                signingKeyFiles,
+                agreementKeyFiles
+              })
             }
-
-            console.log(nodeKeyFiles)
 
             self.logger.showUser(chalk.green('*** Generated Node Gossip Keys ***'))
             for (const entry of nodeKeyFiles.entries()) {
@@ -317,17 +433,17 @@ export class NodeCommand extends BaseCommand {
             throw new FullstackTestingError(`unsupported key type: ${ctx.config.keyType}`)
           }
         },
-        skip: (ctx, _) => ctx.config.keyType === constants.KEY_TYPE_TLS
+        skip: (ctx, _) => !ctx.config.generateGossipKeys
       },
       {
         title: 'Generate gRPC TLS keys',
         task: async (ctx, task) => {
           const keysDir = ctx.config.keysDir
           const nodeKeyFiles = new Map()
-          if (ctx.config.keyType === constants.KEY_TYPE_TLS) {
+          if (ctx.config.generateTlsKeys) {
             for (const nodeId of ctx.config.nodeIds) {
-              const tlsKey = await this.keyManager.generateGrpcTLSKey(nodeId)
-              const tlsKeyFiles = await this.keyManager.storeTLSKey(nodeId, tlsKey, keysDir)
+              const tlsKey = await self.keyManager.generateGrpcTLSKey(nodeId)
+              const tlsKeyFiles = await self.keyManager.storeTLSKey(nodeId, tlsKey, keysDir)
               nodeKeyFiles.set(nodeId, {
                 tlsKeyFiles
               })
@@ -350,7 +466,7 @@ export class NodeCommand extends BaseCommand {
             throw new FullstackTestingError(`expected '${constants.KEY_TYPE_TLS}' key type, found '${ctx.config.keyType}'`)
           }
         },
-        skip: (ctx, _) => ctx.config.keyType === constants.KEY_TYPE_GOSSIP
+        skip: (ctx, _) => !ctx.config.generateTlsKeys
       }
     ])
 
@@ -443,9 +559,10 @@ export class NodeCommand extends BaseCommand {
             command: 'keys',
             desc: 'Generate node keys',
             builder: y => flags.setCommandFlags(y,
-              flags.keyType,
               flags.nodeIDs,
-              flags.cacheDir
+              flags.cacheDir,
+              flags.generateGossipKeys,
+              flags.generateTlsKeys
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node keys' ===")
