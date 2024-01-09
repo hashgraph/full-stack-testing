@@ -45,3 +45,7 @@ dependencies:
     repository: https://operator.min.io/
     condition: cloud.minio.enabled
 
+  - name: acme-cluster-issuer
+    version: 0.3.0
+    # TODO: uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
+    condition: cloud.acmeClusterIssuer.enabled

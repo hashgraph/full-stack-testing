@@ -7,7 +7,7 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
-  getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace) {
+  getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
     const gatewayPrefix = 'gatewayApi.gateway'
     let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
     valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
@@ -16,7 +16,10 @@ export class ChartCommand extends BaseCommand {
     const listenerPrefix = `${gatewayPrefix}.listeners`
     valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
     valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
-    valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=${enableTls}`
+
+    if (enableTls || enableHederaExplorerTls) {
+      valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=true`
+    }
 
     return valuesArg
   }
@@ -34,7 +37,8 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace) {
+  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName,
+    tlsClusterIssuerNamespace, enableHederaExplorerTls, acmeClusterIssuer, selfSignedClusterIssuer) {
     let valuesArg = ''
     if (chartDir) {
       valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
@@ -43,9 +47,11 @@ export class ChartCommand extends BaseCommand {
     valuesArg += this.prepareValuesFiles(valuesFile)
 
     valuesArg += ` --set hedera-mirror-node.enabled=${deployMirrorNode} --set hedera-explorer.enabled=${deployHederaExplorer}`
+    valuesArg += ` --set cloud.acmeClusterIssuer.enabled=${acmeClusterIssuer}`
+    valuesArg += ` --set cloud.selfSignedClusterIssuer.enabled=${selfSignedClusterIssuer}`
 
     if (enableTls) {
-      valuesArg += this.getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace)
+      valuesArg += this.getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls)
     }
 
     return valuesArg
@@ -61,6 +67,9 @@ export class ChartCommand extends BaseCommand {
     const enableTls = this.configManager.flagValue(cachedConfig, flags.enableTls)
     const tlsClusterIssuerName = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerName)
     const tlsClusterIssuerNamespace = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerNamespace)
+    const enableHederaExplorerTls = this.configManager.flagValue(cachedConfig, flags.enableHederaExplorerTls)
+    const acmeClusterIssuer = this.configManager.flagValue(cachedConfig, flags.acmeClusterIssuer)
+    const selfSignedClusterIssuer = this.configManager.flagValue(cachedConfig, flags.selfSignedClusterIssuer)
 
     // prompt if values are missing and create a config object
     const config = {
@@ -72,6 +81,9 @@ export class ChartCommand extends BaseCommand {
       enableTls: await prompts.promptEnableTls(task, enableTls),
       tlsClusterIssuerName: await prompts.promptTlsClusterIssuerName(task, tlsClusterIssuerName),
       tlsClusterIssuerNamespace: await prompts.promptTlsClusterIssuerNamespace(task, tlsClusterIssuerNamespace),
+      enableHederaExplorerTls: await prompts.promptEnableHederaExplorerTls(task, enableHederaExplorerTls),
+      acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer),
+      selfSignedClusterIssuer: await prompts.promptSelfSignedClusterIssuer(task, selfSignedClusterIssuer),
       timeout: '900s',
       version: cachedConfig.version
     }
@@ -82,7 +94,8 @@ export class ChartCommand extends BaseCommand {
 
     config.valuesArg = this.prepareValuesArg(config.chartDir,
       config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer,
-      config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace)
+      config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace, config.enableHederaExplorerTls,
+      config.acmeClusterIssuer, config.selfSignedClusterIssuer)
 
     return config
   }
@@ -231,7 +244,10 @@ export class ChartCommand extends BaseCommand {
                 flags.chartDirectory,
                 flags.enableTls,
                 flags.tlsClusterIssuerName,
-                flags.tlsClusterIssuerNamespace
+                flags.tlsClusterIssuerNamespace,
+                flags.enableHederaExplorerTls,
+                flags.acmeClusterIssuer,
+                flags.selfSignedClusterIssuer
               )
             },
             handler: argv => {
@@ -277,7 +293,10 @@ export class ChartCommand extends BaseCommand {
               flags.chartDirectory,
               flags.enableTls,
               flags.tlsClusterIssuerName,
-              flags.tlsClusterIssuerNamespace
+              flags.tlsClusterIssuerNamespace,
+              flags.enableHederaExplorerTls,
+              flags.acmeClusterIssuer,
+              flags.selfSignedClusterIssuer
             ),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart upgrade' ===")

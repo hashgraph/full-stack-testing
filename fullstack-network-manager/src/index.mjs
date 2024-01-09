@@ -1,5 +1,6 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { flags } from './commands/index.mjs'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
 import {
@@ -49,6 +50,7 @@ export function main (argv) {
     .alias('v', 'version')
     .command(commands.Initialize(opts))
     .strict()
+    .option(flags.devMode.name, flags.devMode.definition)
     .wrap(120)
     .demand(1, 'Select a command')
     .parse()

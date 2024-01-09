@@ -13,6 +13,15 @@ export function setCommandFlags (y, ...commandFlags) {
   })
 }
 
+export const devMode = {
+  name: 'dev',
+  definition: {
+    describe: 'Enable developer mode',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 // list of common flags across commands. command specific flags are defined in the command's module.
 export const clusterName = {
   name: 'cluster-name',
@@ -230,6 +239,15 @@ export const tlsClusterIssuerName = {
   }
 }
 
+export const selfSignedClusterIssuer = {
+  name: 'self-signed',
+  definition: {
+    describe: 'Enable the self signed cluster issuer',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const tlsClusterIssuerNamespace = {
   name: 'tls-cluster-issuer-namespace',
   definition: {
@@ -248,7 +266,17 @@ export const acmeClusterIssuer = {
   }
 }
 
+export const enableHederaExplorerTls = {
+  name: 'enable-hedera-explorer-tls',
+  definition: {
+    describe: 'Enable the Hedera Explorer TLS, defaults to false',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const allFlags = [
+  devMode,
   clusterName,
   namespace,
   deployMirrorNode,
@@ -272,5 +300,7 @@ export const allFlags = [
   operatorKey,
   enableTls,
   tlsClusterIssuerName,
-  tlsClusterIssuerNamespace
+  tlsClusterIssuerNamespace,
+  enableHederaExplorerTls,
+  selfSignedClusterIssuer
 ]

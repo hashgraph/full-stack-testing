@@ -118,8 +118,14 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+
+          // get existing choices
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+
           const config = {
-            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
             releaseTag: await prompts.promptReleaseTag(task, argv.releaseTag),
             cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
@@ -209,8 +215,14 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+
+          // get existing choices
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+
           ctx.config = {
-            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
           }
         }
@@ -282,8 +294,14 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          const cachedConfig = await self.configManager.setupConfig(argv)
+          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+
+          // get existing choices
+          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+
           ctx.config = {
-            namespace: await prompts.promptNamespaceArg(task, argv.namespace),
+            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
           }
         }

@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2023 Hedera Hashgraph, LLC
+# Copyright (C) 2023-2024 Hedera Hashgraph, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ permissions:
 jobs:
   test:
     name: ${{ inputs.custom-job-label || 'fsnetman Test' }}
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Get related changed files
         id: changed-files
@@ -125,14 +125,18 @@ jobs:
         working-directory: fullstack-network-manager
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          export DEV_MODE=true
           npm i
           npm link
           fsnetman init -d ../charts
           fsnetman cluster create
-          fsnetman cluster setup
-          fsnetman chart install
-          npm run test-e2e
+          fsnetman cluster setup -d ../charts \
+            --cert-manager \
+            --cert-manager-crds
+          fsnetman chart install -d ../charts \
+            --enable-tls \
+            --self-signed \
+            --enable-hedera-explorer-tls
+
       - name: Output logs
         id: nodejs-test-e2e-logs
         working-directory: fullstack-network-manager
