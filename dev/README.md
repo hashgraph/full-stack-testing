@@ -9,8 +9,18 @@ Below are few helper commands to start the hedera network in the local kubernete
 - `make destroy-network`: uninstalls the helm chart
 - `make reset`: destroy the network, setup and start all nodes
 ## Prerequisite
+
+Before you can run the commands above, you will need to have the following installed locally:
+- make
+- helm
+- kubectl
+- kind
+  - using the link https://kind.sigs.k8s.io/docs/user/quick-start/#installing-from-release-binaries
+- docker
+
 Some resources are stored in the bucket(SwirldsRegression org): `fst-resources`. 
 You will need access to it and have `gsutil` installed locally
+
 
 ## Typical workflow
 
