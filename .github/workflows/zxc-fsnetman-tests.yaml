@@ -130,12 +130,6 @@ jobs:
           npm link
           fsnetman init -d ../charts
           fsnetman cluster create
-          fsnetman cluster setup -d ../charts
-          fsnetman chart install -d ../charts
-          npm run test-e2e
-          kind delete clusters fst
-          fsnetman init -d ../charts
-          fsnetman cluster create
           fsnetman cluster setup -d ../charts \
             --cert-manager \
             --cert-manager-crds
