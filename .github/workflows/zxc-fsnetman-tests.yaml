@@ -48,7 +48,7 @@ permissions:
 jobs:
   test:
     name: ${{ inputs.custom-job-label || 'fsnetman Test' }}
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Get related changed files
         id: changed-files
@@ -125,7 +125,6 @@ jobs:
         working-directory: fullstack-network-manager
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          export DEV_MODE=true
           npm i
           npm link
           fsnetman init -d ../charts
