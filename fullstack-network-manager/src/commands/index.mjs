@@ -3,6 +3,7 @@ import { InitCommand } from './init.mjs'
 import { ChartCommand } from './chart.mjs'
 import { NodeCommand } from './node.mjs'
 import { RelayCommand } from './relay.mjs'
+import * as flags from './flags.mjs'
 
 /*
  * Return a list of Yargs command builder to be exposed through CLI
@@ -25,4 +26,4 @@ function Initialize (opts) {
 }
 
 // Expose components from the command module
-export { Initialize }
+export { Initialize, flags }

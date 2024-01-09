@@ -54,10 +54,23 @@ export class ShellRunner {
             errOutput.forEach(m => self.logger.showUser(chalk.red(m)))
           }
 
+          self.logger.error(`Error executing: '${cmd}'`, {
+            commandExitCode: code,
+            commandExitSignal: signal,
+            commandOutput: output,
+            errOutput,
+            error: { message: err.message, stack: err.stack }
+          })
+
           reject(err)
         }
 
-        self.logger.debug(`Finished executing: '${cmd}'`, { commandExitCode: code, commandExitSignal: signal, commandOutput: output })
+        self.logger.debug(`Finished executing: '${cmd}'`, {
+          commandExitCode: code,
+          commandExitSignal: signal,
+          commandOutput: output,
+          errOutput
+        })
         resolve(output)
       })
     })

@@ -13,6 +13,15 @@ export function setCommandFlags (y, ...commandFlags) {
   })
 }
 
+export const devMode = {
+  name: 'dev',
+  definition: {
+    describe: 'Enable developer mode',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 // list of common flags across commands. command specific flags are defined in the command's module.
 export const clusterName = {
   name: 'cluster-name',
@@ -267,6 +276,7 @@ export const enableHederaExplorerTls = {
 }
 
 export const allFlags = [
+  devMode,
   clusterName,
   namespace,
   deployMirrorNode,
