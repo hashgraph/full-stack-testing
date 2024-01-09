@@ -43,16 +43,11 @@ dependencies:
 
   - name: gateway-helm
     alias: envoy-gateway
-    version: v0.5.0
+    version: v0.6.0
     repository: oci://docker.io/envoyproxy
     condition: cloud.envoyGateway.enabled
 
   - name: cert-manager
-    version: v1.13.2
+    version: v1.13.3
     repository: https://charts.jetstack.io
     condition: cloud.certManager.enabled
-
-  - name: acme-cluster-issuer
-    version: 0.3.0
-    # TODO: uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
-    condition: cloud.acmeClusterIssuer.enabled
