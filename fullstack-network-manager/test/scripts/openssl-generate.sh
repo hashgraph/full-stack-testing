@@ -171,7 +171,7 @@ function generate_key() {
 }
 
 for nm in "${names[@]}"; do
-    n="$(echo $nm | tr '[A-Z]' '[a-z]')"
+    n="$(echo "${nm}" | tr '[A-Z]' '[a-z]')"
     s_key="${s_key_prefix}-${n}.key"
     s_cert="${s_key_prefix}-${n}.crt"
 
