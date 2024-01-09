@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2023 Hedera Hashgraph, LLC
+# Copyright (C) 2023-2024 Hedera Hashgraph, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -130,9 +130,14 @@ jobs:
           npm link
           fsnetman init -d ../charts
           fsnetman cluster create
-          fsnetman cluster setup
-          fsnetman chart install
-          npm run test-e2e
+          fsnetman cluster setup -d ../charts \
+            --cert-manager \
+            --cert-manager-crds
+          fsnetman chart install -d ../charts \
+            --enable-tls \
+            --self-signed \
+            --enable-hedera-explorer-tls
+
       - name: Output logs
         id: nodejs-test-e2e-logs
         working-directory: fullstack-network-manager

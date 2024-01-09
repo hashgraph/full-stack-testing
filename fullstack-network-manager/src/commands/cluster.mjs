@@ -244,7 +244,6 @@ export class ClusterCommand extends BaseCommand {
           const deployEnvoyGateway = self.configManager.flagValue(cachedConfig, flags.deployEnvoyGateway)
           const deployCertManager = self.configManager.flagValue(cachedConfig, flags.deployCertManager)
           const deployCertManagerCrds = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCrds)
-          const acmeClusterIssuer = self.configManager.flagValue(cachedConfig, flags.acmeClusterIssuer)
 
           // get existing choices
           const clusters = await self.kind.getClusters('-q')
@@ -260,7 +259,6 @@ export class ClusterCommand extends BaseCommand {
             deployEnvoyGateway: await prompts.promptDeployEnvoyGateway(task, deployEnvoyGateway),
             deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager),
             deployCertManagerCrds: await prompts.promptDeployCertManagerCrds(task, deployCertManagerCrds),
-            acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer)
           }
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
@@ -278,8 +276,7 @@ export class ClusterCommand extends BaseCommand {
             ctx.config.deployMinio,
             ctx.config.deployEnvoyGateway,
             ctx.config.deployCertManager,
-            ctx.config.deployCertManagerCrds,
-            ctx.config.acmeClusterIssuer
+            ctx.config.deployCertManagerCrds
           )
         },
         skip: (ctx, _) => ctx.isChartInstalled
@@ -450,8 +447,7 @@ export class ClusterCommand extends BaseCommand {
               flags.deployMinio,
               flags.deployEnvoyGateway,
               flags.deployCertManager,
-              flags.deployCertManagerCrds,
-              flags.acmeClusterIssuer
+              flags.deployCertManagerCrds
             ),
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster setup' ===", { argv })
@@ -500,7 +496,6 @@ export class ClusterCommand extends BaseCommand {
    * @param envoyGatewayEnabled a bool to denote whether to install envoy-gateway
    * @param certManagerEnabled a bool to denote whether to install cert manager
    * @param certManagerCrdsEnabled a bool to denote whether to install cert manager CRDs
-   * @param acmeClusterIssuer a bool to denote whether to install the acme certificate issuers
    * @returns {string}
    */
   prepareValuesArg (chartDir = flags.chartDirectory.definition.default,
@@ -508,8 +503,7 @@ export class ClusterCommand extends BaseCommand {
     minioEnabled = flags.deployMinio.definition.default,
     envoyGatewayEnabled = flags.deployEnvoyGateway.definition.default,
     certManagerEnabled = flags.deployCertManager.definition.default,
-    certManagerCrdsEnabled = flags.deployCertManagerCrds.definition.default,
-    acmeClusterIssuer = flags.acmeClusterIssuer.definition.default
+    certManagerCrdsEnabled = flags.deployCertManagerCrds.definition.default
   ) {
     let valuesArg = ''
     if (chartDir) {
@@ -520,10 +514,6 @@ export class ClusterCommand extends BaseCommand {
     valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
     valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
     valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
-    // automatically install the acme cluster issuer if cert-manager is enabled
-    if (certManagerEnabled || acmeClusterIssuer) {
-      valuesArg += ` --set cloud.acmeClusterIssuer.enabled=true`
-    }
     valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
 
     if (certManagerEnabled && !certManagerCrdsEnabled) {
