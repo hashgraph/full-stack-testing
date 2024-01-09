@@ -42,11 +42,11 @@ fi
 # it have one member named "Alice" and another named "--alice--".
 
 mkdir unused 2>/dev/null
-mv *.pfx unused 2>/dev/null
+mv ./*.pfx unused 2>/dev/null
 rmdir unused 2>/dev/null
 
 for nm in "${names[@]}"; do
-  n="$(echo $nm | tr '[A-Z]' '[a-z]')"
+  n="$(echo "${nm}" | tr '[A-Z]' '[a-z]')"
   keytool -genkeypair -alias "s-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -dname "cn=s-$n" -keyalg "rsa" -sigalg "SHA384withRSA" -keysize "3072" -validity "36524"
   keytool -genkeypair -alias "a-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -dname "cn=a-$n" -keyalg "ec" -sigalg "SHA384withECDSA" -groupname "secp384r1" -validity "36524"
   keytool -genkeypair -alias "e-$n" -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password" -dname "cn=e-$n" -keyalg "ec" -sigalg "SHA384withECDSA" -groupname "secp384r1" -validity "36524"

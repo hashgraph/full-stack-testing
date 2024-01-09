@@ -34,7 +34,7 @@ e_key_prefix="e" # encryption key
 function backup() {
     local pattern="${1}"
     mkdir -p "${backup_dir}"
-    mv $pattern $backup_dir
+    mv "${pattern}" "${backup_dir}"
 }
 
 # make a backup of old *.pem files
@@ -81,7 +81,7 @@ function generate_signing_key() {
     echo "------------------------------------------------------------------------------------"
     echo "Generated: ${s_key_pfx}"
     echo "------------------------------------------------------------------------------------"
-    openssl pkcs12 -info -nokeys -in ${s_key_pfx} -passin pass:"${dummy_password}"
+    openssl pkcs12 -info -nokeys -in "${s_key_pfx}" -passin pass:"${dummy_password}"
 
     # genereate s-public.pfx
     openssl pkcs12 -export -nokeys -out "${s_cert_pfx}" -in "${s_cert}" -iter 10000 \
@@ -89,7 +89,7 @@ function generate_signing_key() {
     echo "------------------------------------------------------------------------------------"
     echo "Generated: ${s_cert_pfx}"
     echo "------------------------------------------------------------------------------------"
-    openssl pkcs12 -info -nokeys -in ${s_cert_pfx} -passin pass:"${dummy_password}"
+    openssl pkcs12 -info -nokeys -in "${s_cert_pfx}" -passin pass:"${dummy_password}"
 
     # remove csr
     rm "${s_csr}"
@@ -153,7 +153,7 @@ function generate_key() {
     echo "------------------------------------------------------------------------------------"
     echo "Generated: ${key_pfx}"
     echo "------------------------------------------------------------------------------------"
-    openssl pkcs12 -info -in ${key_pfx} -passin pass:"${dummy_password}" -passout pass:"${dummy_password}" -nokeys # do not output private key
+    openssl pkcs12 -info -in "${key_pfx}" -passin pass:"${dummy_password}" -passout pass:"${dummy_password}" -nokeys # do not output private key
 
     # generate public.pfx
     openssl pkcs12 -export -nokeys -out "${cert_pfx}" -in "${cert_file}" -iter 10000 \
@@ -162,7 +162,7 @@ function generate_key() {
     echo "Generated: ${cert_pfx}"
     echo "------------------------------------------------------------------------------------"
     #openssl pkcs12 -info -in a-public-node0.pfx -passin pass:password -passout pass:password -nokeys
-    openssl pkcs12 -info -in ${cert_pfx} -passin pass:"${dummy_password}" -passout pass:"${dummy_password}" -nokeys
+    openssl pkcs12 -info -in "${cert_pfx}" -passin pass:"${dummy_password}" -passout pass:"${dummy_password}" -nokeys
 
     # remove csr
     rm "${csr_file}"
