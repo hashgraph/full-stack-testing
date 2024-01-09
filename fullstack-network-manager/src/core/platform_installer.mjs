@@ -284,13 +284,13 @@ export class PlatformInstaller {
     if (!fs.existsSync(path.dirname(destPath))) throw new IllegalArgumentError(`destPath does not exist: ${destPath}`, destPath)
     if (!fs.existsSync(template)) throw new IllegalArgumentError(`config templatePath does not exist: ${template}`, destPath)
 
-    const accountIdPrefix = process.env.FST_NODE_ACCOUNT_ID_PREFIX || '0.0'
-    const accountIdStart = process.env.FST_NODE_ACCOUNT_ID_START || '3'
-    const internalPort = process.env.FST_NODE_INTERNAL_GOSSIP_PORT || '50111'
-    const externalPort = process.env.FST_NODE_EXTERNAL_GOSSIP_PORT || '50111'
-    const ledgerId = process.env.FST_CHAIN_ID || chainId
-    const appName = process.env.FST_HEDERA_APP_NAME || constants.HEDERA_APP_JAR
-    const nodeStakeAmount = process.env.FST_NODE_DEFAULT_STAKE_AMOUNT || constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
+    // init variables
+    const startAccountId = constants.HEDERA_NODE_ACCOUNT_ID_START
+    const accountIdPrefix = `${startAccountId.realm}.${startAccountId.shard}`
+    const internalPort = constants.HEDERA_NODE_INTERNAL_GOSSIP_PORT
+    const externalPort = constants.HEDERA_NODE_EXTERNAL_GOSSIP_PORT
+    const appName = constants.HEDERA_APP_NAME
+    const nodeStakeAmount = constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 
     const releaseTagParts = releaseTag.split('.')
     if (releaseTagParts.length !== 3) throw new FullstackTestingError(`release tag must have form v<major>.<minior>.<patch>, found ${releaseTagParts}`, 'v<major>.<minor>.<patch>', releaseTag)
@@ -298,11 +298,11 @@ export class PlatformInstaller {
 
     try {
       const configLines = []
-      configLines.push(`swirld, ${ledgerId}`)
+      configLines.push(`swirld, ${chainId}`)
       configLines.push(`app, ${appName}`)
 
       let nodeSeq = 0
-      let accountIdSeq = parseInt(accountIdStart, 10)
+      let accountIdSeq = parseInt(startAccountId.num.toString(), 10)
       for (const nodeId of nodeIDs) {
         const podName = Templates.renderNetworkPodName(nodeId)
         const svcName = Templates.renderNetworkSvcName(nodeId)

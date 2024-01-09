@@ -36,23 +36,51 @@ spec:
     {{- if $.Values.gatewayApi.gateway.listeners.grpcs.enabled | eq "true" }}
     {{- $grpcs_port := add $index $grpcs_start_port }}
     - name: grpcs-{{ $node.name }} # for exposing grpc port 50212 from haproxy or network-node
-      protocol: TCP
+      protocol: {{ $.Values.gatewayApi.gateway.listeners.grpcs.tlsEnabled | ternary "TLS" "TCP" }}
       port: {{ $grpcs_port }}
+      {{- if $.Values.gatewayApi.gateway.listeners.grpcs.tlsEnabled }}
+      hostname: {{ tpl $.Values.gatewayApi.route.hostname (dict "node" $node "Template" $.Template) }}
+      {{- end }}
       allowedRoutes:
         kinds:
-          - kind: TCPRoute
+          - kind: "TCPRoute"
+      {{- if $.Values.gatewayApi.gateway.listeners.grpcs.tlsEnabled }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-{{ $node.name }}
+            kind: Secret
+      {{- end }}
     {{- end }}
     {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.enabled | eq "true" }}
     {{- $grpc_web_port := add $index $grpc_web_start_port }}
     - name: grpc-web-{{ $node.name }} # for exposing grpc-web port 8080 from envoy-proxy
-      protocol: HTTP
+      protocol: {{ $.Values.gatewayApi.gateway.listeners.grpcWeb.tlsEnabled | ternary "HTTPS" "HTTP" }}
       port: {{ $grpc_web_port }}
+      {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.tlsEnabled }}
+      hostname: {{ tpl $.Values.gatewayApi.route.hostname (dict "node" $node "Template" $.Template) }}
+      {{- end }}
+      {{- if $.Values.gatewayApi.gateway.listeners.grpcWeb.tlsEnabled }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-{{ $node.name }}
+            kind: Secret
+      {{- end }}
     {{- end }}
   {{- end }}
     {{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.enabled | eq "true" }}
-    - name: hedera-explorer # for exposing fst-hedera-explorer port 80
-      protocol: HTTP
+    - name: hedera-explorer # for exposing fullstack-deployment-hedera-explorer port 80
+      protocol: {{ $.Values.gatewayApi.gateway.listeners.hederaExplorer.tlsEnabled | ternary "HTTPS" "HTTP" }}
       port: {{ $.Values.gatewayApi.gateway.listeners.hederaExplorer.port }}
+      hostname: {{ $.Values.deployment.hederaExplorer.hostname }}
+      {{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.tlsEnabled }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-hedera-explorer
+            kind: Secret
+      {{- end }}
     {{- end }}
    # Debug ports
     {{- if $.Values.gatewayApi.gateway.listeners.httpDebug.enabled | eq "true" }}
@@ -69,3 +97,4 @@ spec:
           - kind: TCPRoute
     {{- end }}
 {{- end }}
+

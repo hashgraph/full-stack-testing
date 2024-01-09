@@ -1,3 +1,4 @@
+import {constants} from './../core/index.mjs'
 import * as core from './../core/index.mjs'
 
 /**
@@ -6,7 +7,7 @@ import * as core from './../core/index.mjs'
  * @param commandFlags a set of command flags
  *
  */
-export function setCommandFlags (y, ...commandFlags) {
+export function setCommandFlags(y, ...commandFlags) {
   commandFlags.forEach(flag => {
     y.option(flag.name, flag.definition)
   })
@@ -93,7 +94,7 @@ export const deployEnvoyGateway = {
 export const deployCertManager = {
   name: 'cert-manager',
   definition: {
-    describe: 'Deploy cert manager',
+    describe: 'Deploy cert manager, also deploys acme-cluster-issuer',
     default: false,
     type: 'boolean'
   }
@@ -103,7 +104,7 @@ export const deployCertManager = {
     Deploy cert manager CRDs separately from cert manager itself.  Cert manager
     CRDs are required for cert manager to deploy successfully.
  */
-export const deployCertManagerCRDs = {
+export const deployCertManagerCrds = {
   name: 'cert-manager-crds',
   definition: {
     describe: 'Deploy cert manager CRDs',
@@ -197,7 +198,7 @@ export const operatorId = {
   name: 'operator-id',
   definition: {
     describe: 'Operator ID',
-    default: '0.0.2',
+    default: constants.OPERATOR_ID,
     type: 'string'
   }
 }
@@ -207,7 +208,7 @@ export const operatorKey = {
   name: 'operator-key',
   definition: {
     describe: 'Operator Key',
-    default: '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137',
+    default: constants.OPERATOR_KEY,
     type: 'string'
   }
 }
@@ -218,6 +219,13 @@ export const generateGossipKeys = {
     describe: 'Generate gossip keys for nodes',
     default: false,
     alias: 'g',
+  }
+}
+export const enableTls = {
+  name: 'enable-tls',
+  definition: {
+    describe: 'Enables TLS for gateway ingress services [grpcs, grpcWeb, hederaExplorer]',
+    default: false,
     type: 'boolean'
   }
 }
@@ -228,6 +236,32 @@ export const generateTlsKeys = {
     describe: 'Generate gRPC TLS keys for nodes',
     default: false,
     alias: 'k',
+  }
+}
+
+export const tlsClusterIssuerName = {
+  name: 'tls-cluster-issuer-name',
+  definition: {
+    describe: 'The name of the TLS cluster issuer to use for gateway services, defaults to "self-signed-ca", another option for the acme-cluster-issuer is "letsencrypt-staging" and "letsencrypt-prod"',
+    default: 'self-signed',
+    type: 'string'
+  }
+}
+
+export const tlsClusterIssuerNamespace = {
+  name: 'tls-cluster-issuer-namespace',
+  definition: {
+    describe: 'The namespace of the TLS cluster issuer to use for gateway services, defaults to "cert-manager"',
+    default: 'cert-manager',
+    type: 'string'
+  }
+}
+
+export const acmeClusterIssuer = {
+  name: 'acme-cluster-issuer',
+  definition: {
+    describe: 'The acme let\'s encrypt cert-manager cluster issuer, defaults to false',
+    default: false,
     type: 'boolean'
   }
 }
@@ -243,7 +277,8 @@ export const allFlags = [
   deployMinio,
   deployEnvoyGateway,
   deployCertManager,
-  deployCertManagerCRDs,
+  deployCertManagerCrds,
+  acmeClusterIssuer,
   releaseTag,
   cacheDir,
   nodeIDs,
@@ -254,5 +289,8 @@ export const allFlags = [
   operatorId,
   operatorKey,
   generateGossipKeys,
-  generateTlsKeys
+  generateTlsKeys,
+  enableTls,
+  tlsClusterIssuerName,
+  tlsClusterIssuerNamespace
 ]

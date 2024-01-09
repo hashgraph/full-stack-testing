@@ -1,6 +1,6 @@
 {
   "name": "@hashgraph/fullstack-network-manager",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Fullstack-Network-Manager is a CLI tool to manage and deploy a Hedera Network using Helm chart for local testing.",
   "main": "src/index.mjs",
   "type": "module",
@@ -24,6 +24,7 @@
   "author": "Lenin Mehedy",
   "license": "Apache2.0",
   "dependencies": {
+    "@hashgraph/sdk": "^2.38.0",
     "@listr2/prompt-adapter-enquirer": "^1.0.2",
     "@peculiar/x509": "^1.9.5",
     "adm-zip": "^0.5.10",
