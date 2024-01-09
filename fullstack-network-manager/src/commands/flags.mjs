@@ -1,4 +1,4 @@
-import {constants} from './../core/index.mjs'
+import { constants } from './../core/index.mjs'
 import * as core from './../core/index.mjs'
 
 /**
@@ -7,7 +7,7 @@ import * as core from './../core/index.mjs'
  * @param commandFlags a set of command flags
  *
  */
-export function setCommandFlags(y, ...commandFlags) {
+export function setCommandFlags (y, ...commandFlags) {
   commandFlags.forEach(flag => {
     y.option(flag.name, flag.definition)
   })
@@ -218,7 +218,7 @@ export const generateGossipKeys = {
   definition: {
     describe: 'Generate gossip keys for nodes',
     default: false,
-    alias: 'g',
+    alias: 'g'
   }
 }
 export const enableTls = {
@@ -235,7 +235,7 @@ export const generateTlsKeys = {
   definition: {
     describe: 'Generate gRPC TLS keys for nodes',
     default: false,
-    alias: 'k',
+    alias: 'k'
   }
 }
 

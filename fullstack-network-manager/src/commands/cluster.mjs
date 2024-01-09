@@ -522,7 +522,7 @@ export class ClusterCommand extends BaseCommand {
     valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
     // automatically install the acme cluster issuer if cert-manager is enabled
     if (certManagerEnabled || acmeClusterIssuer) {
-      valuesArg += ` --set cloud.acmeClusterIssuer.enabled=true`
+      valuesArg += ' --set cloud.acmeClusterIssuer.enabled=true'
     }
     valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
 
