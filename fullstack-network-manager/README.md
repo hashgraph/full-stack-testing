@@ -11,7 +11,9 @@ Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Heder
 @hashgraph:registry=https://npm.pkg.github.com
 ```
 
-* Get your [Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic) and setup an environment variable GITHUB\_TOKEN.
+* Get
+  your [Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
+  and setup an environment variable GITHUB\_TOKEN.
 
 * Run `npm install -g @hashgraph/fullstack-network-manager`
 
@@ -36,9 +38,12 @@ Select a command
 
 ## Develop
 
-* In order to support ES6 modules with `jest`, set an env variable `export NODE_OPTIONS=--experimental-vm-modules >> ~/.zshrc`
-  * If you are using Intellij and would like to use debugger tools, you will need to enable `--experimental-vm-modules` for `Jest`.
-    * `Run->Edit Configurations->Edit Configuration Templates->Jest` and then set `--experimental-vm-modules` in `Node Options`.
+* In order to support ES6 modules with `jest`, set an env
+  variable `export NODE_OPTIONS=--experimental-vm-modules >> ~/.zshrc`
+  * If you are using Intellij and would like to use debugger tools, you will need to
+    enable `--experimental-vm-modules` for `Jest`.
+    * `Run->Edit Configurations->Edit Configuration Templates->Jest` and then set `--experimental-vm-modules`
+      in `Node Options`.
 * Run `npm i` to install the required packages
 * Run `npm link` to install `fsnetman` as the CLI
   * Note: you need to do it once. If `fsnetman` already exists in your path, you will need to remove it first.
@@ -54,9 +59,9 @@ Select a command
 * In order to run E2E test, we need to set up cluster and install the chart.
 
 ```
-  fsnetman init -d ../charts # use the charts directory
+  fsnetman init -d ../charts # use the charts directory for all subsequent commands
   fsnetman cluster create
-  fsnetman cluster setup
-  fsnetman chart install
+  fsnetman cluster setup --cert-manager --cert-manager-crds
+  fsnetman chart install --enable-tls --self-signed --enable-hedera-explorer-tls
   npm run test-e2e 
 ```
