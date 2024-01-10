@@ -104,7 +104,7 @@ describe('NodeCommand', () => {
   const packageDownloader = new PackageDownloader(testLogger)
   const platformInstaller = new PlatformInstaller(testLogger, kubectl)
   const depManager = new DependencyManager(testLogger)
-  const clusterManager = new ClusterManager(kind)
+  const clusterManager = new ClusterManager(kind, kubectl)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
