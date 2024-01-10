@@ -136,6 +136,7 @@ jobs:
             --enable-tls \
             --self-signed \
             --enable-hedera-explorer-tls
+          npm run test-e2e
 
       - name: Output logs
         id: nodejs-test-e2e-logs
