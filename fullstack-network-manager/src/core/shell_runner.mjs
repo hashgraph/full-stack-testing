@@ -27,7 +27,7 @@ export class ShellRunner {
         const items = d.toString().split(/\r?\n/)
         items.forEach(item => {
           if (item) {
-            output.push(item.trim())
+            output.push(item)
           }
         })
       })

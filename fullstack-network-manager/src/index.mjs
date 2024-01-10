@@ -27,7 +27,7 @@ export function main (argv) {
   const chartManager = new ChartManager(helm, logger)
   const configManager = new ConfigManager(logger)
   const depManager = new DependencyManager(logger)
-  const clusterManager = new ClusterManager(kind)
+  const clusterManager = new ClusterManager(kind, kubectl)
 
   const opts = {
     logger,

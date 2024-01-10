@@ -212,10 +212,9 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          try {
-            await self.kubectl.config('current-context')
-          } catch (e) {
-            throw new FullstackTestingError('kubectl context is not set, set context by running: kubectl use-context <context-name>', e)
+          const kubeConfig = await self.clusterManager.getKubeConfig()
+          if (!kubeConfig['current-context']) {
+            throw new FullstackTestingError('kubectl context is not set, set context by running: kubectl config use-context <context-name>')
           }
 
           const cachedConfig = await self.configManager.setupConfig(argv)
@@ -233,7 +232,6 @@ export class ClusterCommand extends BaseCommand {
 
           // get existing choices
           const clusters = await self.clusterManager.getClusters()
-
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
 
           // prompt if inputs are empty and set it in the context
@@ -250,6 +248,8 @@ export class ClusterCommand extends BaseCommand {
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
 
+          // set current context based on cluster and namespace
+          await self.clusterManager.setContext(ctx.config.clusterName, ctx.config.namespace)
           ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
         }
       },
