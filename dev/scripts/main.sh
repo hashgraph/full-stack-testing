@@ -27,8 +27,8 @@ function destroy_cluster() {
   [[ -z "${CLUSTER_NAME}" ]] && echo "ERROR: [destroy_cluster] Cluster name is required" && return 1
   [[ -z "${NAMESPACE}" ]] && echo "ERROR: [destroy_cluster] Namespace name is required" && return 1
 
-	kind delete cluster -n "${CLUSTER_NAME}" || true
 	kubectl delete ns "${NAMESPACE}" || true
+	kind delete cluster -n "${CLUSTER_NAME}" || true
 }
 
 function deploy_shared() {
