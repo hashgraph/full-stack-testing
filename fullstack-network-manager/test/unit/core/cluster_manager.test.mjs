@@ -73,7 +73,7 @@ describe('ClusterManager', () => {
 
   it('should strip kind name', async () => {
     expect(clusterCmd.sanitizeClusterName('kind-fst')).toBe('fst')
-    expect(clusterCmd.sanitizeClusterName('kind-kind-test')).toBe('test')
+    expect(clusterCmd.sanitizeClusterName('kind-kind-test')).toBe('kind-test')
     expect(clusterCmd.sanitizeClusterName('test')).toBe('test')
     expect(clusterCmd.sanitizeClusterName("test!!! '`")).toBe('test')
     expect(clusterCmd.sanitizeClusterName('test cluster')).toBe('test-cluster')

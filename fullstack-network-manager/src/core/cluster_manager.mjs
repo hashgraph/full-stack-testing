@@ -12,7 +12,7 @@ export class ClusterManager {
   }
 
   sanitizeClusterName (clusterName) {
-    const name = clusterName.replaceAll('kind-', '') // remove any prefix such as kind-
+    const name = clusterName.replace(/^kind-/g, '') // remove any prefix such as kind-
     return name.replace(/[\W_]+/g, '-') // separate words with dash
       .replace(/-$/, '') // trim last -
   }
