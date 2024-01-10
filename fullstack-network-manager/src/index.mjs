@@ -3,19 +3,31 @@ import { hideBin } from 'yargs/helpers'
 import { flags } from './commands/index.mjs'
 import * as commands from './commands/index.mjs'
 import * as core from './core/index.mjs'
-import { ChartManager, ConfigManager, DependencyManager } from './core/index.mjs'
+import {
+  ChartManager,
+  ClusterManager,
+  ConfigManager,
+  DependencyManager,
+  PackageDownloader,
+  PlatformInstaller,
+  Helm,
+  Kind,
+  Kubectl,
+  logging
+} from './core/index.mjs'
 import 'dotenv/config'
 
 export function main (argv) {
-  const logger = core.logging.NewLogger()
-  const kind = new core.Kind(logger)
-  const helm = new core.Helm(logger)
-  const kubectl = new core.Kubectl(logger)
-  const downloader = new core.PackageDownloader(logger)
-  const platformInstaller = new core.PlatformInstaller(logger, kubectl)
+  const logger = logging.NewLogger('debug')
+  const kind = new Kind(logger)
+  const helm = new Helm(logger)
+  const kubectl = new Kubectl(logger)
+  const downloader = new PackageDownloader(logger)
+  const platformInstaller = new PlatformInstaller(logger, kubectl)
   const chartManager = new ChartManager(helm, logger)
   const configManager = new ConfigManager(logger)
   const depManager = new DependencyManager(logger)
+  const clusterManager = new ClusterManager(kind, kubectl)
 
   const opts = {
     logger,
@@ -26,7 +38,8 @@ export function main (argv) {
     platformInstaller,
     chartManager,
     configManager,
-    depManager
+    depManager,
+    clusterManager
   }
 
   logger.debug('Constants: %s', JSON.stringify(core.constants))

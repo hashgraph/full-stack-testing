@@ -7,22 +7,21 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
-  getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
+  getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
+    const gatewayPrefix = 'gatewayApi.gateway'
+    let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
+    valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
+    valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerNamespace=${tlsClusterIssuerNamespace}`
 
-      const gatewayPrefix = 'gatewayApi.gateway'
-      let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
-      valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
-      valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerNamespace=${tlsClusterIssuerNamespace}`
+    const listenerPrefix = `${gatewayPrefix}.listeners`
+    valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
+    valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
 
-      const listenerPrefix = `${gatewayPrefix}.listeners`
-      valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
-      valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
+    if (enableTls || enableHederaExplorerTls) {
+      valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=true`
+    }
 
-      if (enableTls || enableHederaExplorerTls) {
-        valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=true`
-      }
-
-      return valuesArg
+    return valuesArg
   }
 
   prepareValuesFiles (valuesFile) {
@@ -39,7 +38,7 @@ export class ChartCommand extends BaseCommand {
   }
 
   prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName,
-      tlsClusterIssuerNamespace, enableHederaExplorerTls, acmeClusterIssuer, selfSignedClusterIssuer) {
+    tlsClusterIssuerNamespace, enableHederaExplorerTls, acmeClusterIssuer, selfSignedClusterIssuer) {
     let valuesArg = ''
     if (chartDir) {
       valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`

@@ -8,10 +8,10 @@ export class ShellRunner {
   }
 
   /**
-     * Returns a promise that invokes the shell command
-     * @param cmd shell command string
-     * @returns {Promise<Array>} console output as an array of strings
-     */
+   * Returns a promise that invokes the shell command
+   * @param cmd shell command string
+   * @returns {Promise<Array>} console output as an array of strings
+   */
   async run (cmd, verbose = false) {
     const self = this
     const callStack = new Error().stack // capture the callstack to be included in error
@@ -27,7 +27,7 @@ export class ShellRunner {
         const items = d.toString().split(/\r?\n/)
         items.forEach(item => {
           if (item) {
-            output.push(item.trim())
+            output.push(item)
           }
         })
       })
@@ -44,7 +44,7 @@ export class ShellRunner {
 
       child.on('exit', (code, signal) => {
         if (code) {
-          const err = new Error(`Command exit with error code: ${code}`)
+          const err = new Error(`Command exit with error code ${code}: ${cmd}`)
 
           // include the callStack to the parent run() instead of from inside this handler.
           // this is needed to ensure we capture the proper callstack for easier debugging.

@@ -8,7 +8,6 @@ export class DependencyManager extends ShellRunner {
 
     // map of dependency checks
     this.checks = new Map()
-      .set(core.constants.KIND, () => this.checkKind())
       .set(core.constants.HELM, () => this.checkHelm())
       .set(core.constants.KUBECTL, () => this.checkKubectl())
   }

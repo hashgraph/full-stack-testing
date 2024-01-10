@@ -7,14 +7,9 @@ describe('Kind', () => {
   const kind = new Kind(logger)
   const shellSpy = jest.spyOn(ShellRunner.prototype, 'run').mockImplementation()
 
-  it('should run kind create', async () => {
-    await kind.create('resource', 'arg')
-    expect(shellSpy).toHaveBeenCalledWith('kind create resource arg')
-  })
-
   it('should run kind create cluster', async () => {
-    await kind.createCluster('arg')
-    expect(shellSpy).toHaveBeenCalledWith('kind create cluster arg')
+    await kind.createCluster('test', 'arg')
+    expect(shellSpy).toHaveBeenCalledWith('kind create cluster -n test arg')
   })
 
   it('should run kind delete', async () => {

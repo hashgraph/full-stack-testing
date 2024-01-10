@@ -3,6 +3,7 @@ import fs from 'fs'
 import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
 import { constants } from '../core/index.mjs'
 import * as flags from './flags.mjs'
+import * as helpers from '../core/helpers.mjs'
 
 export async function promptNamespaceArg (task, input) {
   try {
@@ -27,11 +28,11 @@ export async function promptSelectNamespaceArg (task, input, choices = []) {
       const input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'select',
         initial,
-        message: 'Which namespace do you wish to use?',
-        choices
+        message: 'Select namespace',
+        choices: helpers.cloneArray(choices)
       })
 
-      return input.replace('namespace/', '')
+      return input.replaceAll('namespace/', '')
     }
 
     return input
@@ -195,9 +196,9 @@ export async function promptSelectClusterNameArg (task, input, choices = []) {
         type: 'select',
         initial,
         message: 'Select cluster',
-        choices
+        choices: helpers.cloneArray(choices)
       })
-      return input.replace('namespace/', '')
+      return input
     }
 
     return input
@@ -286,7 +287,7 @@ export async function promptDeployCertManagerCrds (task, input) {
   }
 }
 
-export async function promptAcmeClusterIssuer(task, input) {
+export async function promptAcmeClusterIssuer (task, input) {
   try {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -334,7 +335,7 @@ export async function promptDeployHederaExplorer (task, input) {
   }
 }
 
-export async function promptEnableTls(task, input) {
+export async function promptEnableTls (task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -350,7 +351,7 @@ export async function promptEnableTls(task, input) {
   }
 }
 
-export async function promptSelfSignedClusterIssuer(task, input) {
+export async function promptSelfSignedClusterIssuer (task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -364,10 +365,9 @@ export async function promptSelfSignedClusterIssuer(task, input) {
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.selfSignedClusterIssuer.name}`, e)
   }
-
 }
 
-export async function promptTlsClusterIssuerName(task, input) {
+export async function promptTlsClusterIssuerName (task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -383,7 +383,7 @@ export async function promptTlsClusterIssuerName(task, input) {
   }
 }
 
-export async function promptTlsClusterIssuerNamespace(task, input) {
+export async function promptTlsClusterIssuerNamespace (task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -399,7 +399,7 @@ export async function promptTlsClusterIssuerNamespace(task, input) {
   }
 }
 
-export async function promptEnableHederaExplorerTls(task, input) {
+export async function promptEnableHederaExplorerTls (task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({

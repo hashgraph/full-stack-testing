@@ -170,4 +170,13 @@ export class Kubectl extends ShellRunner {
   async portForward (resource, localPort, remotePort) {
     return this.run(this.prepareCommand(`port-forward ${resource} ${localPort}:${remotePort} &`))
   }
+
+  /**
+   * Invoke `kubectl cluster-info` command
+   * @param args list of args for cluster-info command
+   * @returns {Promise<Array>}
+   */
+  async clusterInfo (...args) {
+    return this.run(this.prepareCommand('cluster-info', ...args))
+  }
 }

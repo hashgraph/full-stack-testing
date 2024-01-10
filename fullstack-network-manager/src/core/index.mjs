@@ -10,6 +10,7 @@ import { Templates } from './templates.mjs'
 import { ChartManager } from './chart_manager.mjs'
 import { ConfigManager } from './config_manager.mjs'
 import { DependencyManager } from './dependency_manager.mjs'
+import { ClusterManager } from './cluster_manager.mjs'
 
 // Expose components from the core module
 export {
@@ -24,5 +25,6 @@ export {
   Templates,
   ChartManager,
   ConfigManager,
-  DependencyManager
+  DependencyManager,
+  ClusterManager
 }

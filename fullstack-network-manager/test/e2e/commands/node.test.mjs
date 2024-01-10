@@ -19,7 +19,10 @@ import {
   Kubectl,
   PackageDownloader,
   PlatformInstaller,
-  constants, DependencyManager, Templates
+  constants,
+  DependencyManager,
+  Templates,
+  ClusterManager
 } from '../../../src/core/index.mjs'
 import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
 
@@ -101,6 +104,7 @@ describe('NodeCommand', () => {
   const packageDownloader = new PackageDownloader(testLogger)
   const platformInstaller = new PlatformInstaller(testLogger, kubectl)
   const depManager = new DependencyManager(testLogger)
+  const clusterManager = new ClusterManager(kind, kubectl)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
@@ -111,7 +115,8 @@ describe('NodeCommand', () => {
     configManager,
     downloader: packageDownloader,
     platformInstaller,
-    depManager
+    depManager,
+    clusterManager
   })
 
   const argv = {
