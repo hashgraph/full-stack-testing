@@ -11,8 +11,10 @@ export class ClusterManager {
     this.kubectl = kubectl
   }
 
-  parseKindClusterName (clusterName) {
-    return clusterName.replaceAll('kind-', '')
+  sanitizeClusterName (clusterName) {
+    const name = clusterName.replaceAll('kind-', '') // remove any prefix such as kind-
+    return name.replace(/[\W_]+/g, '-') // separate words with dash
+      .replace(/-$/, '') // trim last -
   }
 
   async getKubeConfig () {
@@ -33,15 +35,18 @@ export class ClusterManager {
   }
 
   async createCluster (clusterName) {
-    return this.kind.createCluster(clusterName, `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`)
+    const name = this.sanitizeClusterName(clusterName)
+    return this.kind.createCluster(name, `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`)
   }
 
   async deleteCluster (clusterName) {
-    return this.kind.deleteCluster(this.parseKindClusterName(clusterName))
+    const name = this.sanitizeClusterName(clusterName)
+    return this.kind.deleteCluster(name)
   }
 
   async getClusterInfo (clusterName) {
-    return this.kind.get(`kubeconfig -n ${this.parseKindClusterName(clusterName)}`)
+    const name = this.sanitizeClusterName(clusterName)
+    return this.kind.get(`kubeconfig -n ${name}`)
   }
 
   async setContext (clusterName, namespace) {

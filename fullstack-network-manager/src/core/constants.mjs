@@ -1,7 +1,7 @@
-import { AccountId } from '@hashgraph/sdk'
-import { color, PRESET_TIMER } from 'listr2'
-import { dirname, normalize } from 'path'
-import { fileURLToPath } from 'url'
+import {AccountId} from '@hashgraph/sdk'
+import {color, PRESET_TIMER} from 'listr2'
+import {dirname, normalize} from 'path'
+import {fileURLToPath} from 'url'
 import chalk from 'chalk'
 
 // -------------------- fsnetman related constants ---------------------------------------------------------------------
@@ -11,7 +11,7 @@ export const USER_SANITIZED = USER.replace(/[\W_]+/g, '-')
 export const FST_HOME_DIR = `${process.env.HOME}/.fsnetman`
 export const FST_LOGS_DIR = `${FST_HOME_DIR}/logs`
 export const FST_CACHE_DIR = `${FST_HOME_DIR}/cache`
-export const CLUSTER_NAME = 'kind-fst'
+export const CLUSTER_NAME = 'kind-fst' // since by default we use kind to create cluster we use 'kind-' prefix
 export const RELEASE_NAME = 'fst'
 export const NAMESPACE_NAME = `fst-${USER_SANITIZED}`
 export const HELM = 'helm'

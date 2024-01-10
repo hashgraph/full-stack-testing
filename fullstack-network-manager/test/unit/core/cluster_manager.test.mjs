@@ -70,8 +70,12 @@ describe('ClusterManager', () => {
     await expect(clusterCmd.deleteCluster('test')).rejects.toThrowError(FullstackTestingError)
     expect(getClusterMock).toHaveBeenCalledWith('test')
   })
+
   it('should strip kind name', async () => {
-    expect(clusterCmd.parseKindClusterName('kind-kind-test')).toBe('test')
-    expect(clusterCmd.parseKindClusterName('test')).toBe('test')
+    expect(clusterCmd.sanitizeClusterName('kind-fst')).toBe('fst')
+    expect(clusterCmd.sanitizeClusterName('kind-kind-test')).toBe('test')
+    expect(clusterCmd.sanitizeClusterName('test')).toBe('test')
+    expect(clusterCmd.sanitizeClusterName("test!!! '`")).toBe('test')
+    expect(clusterCmd.sanitizeClusterName('test cluster')).toBe('test-cluster')
   })
 })
