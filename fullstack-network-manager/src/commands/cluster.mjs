@@ -1,6 +1,5 @@
 import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
-import * as core from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import { BaseCommand } from './base.mjs'
 import chalk from 'chalk'
@@ -11,22 +10,8 @@ import * as prompts from './prompts.mjs'
  * Define the core functionalities of 'cluster' command
  */
 export class ClusterCommand extends BaseCommand {
-  /**
-   * List available clusters
-   * @returns {Promise<string[]>}
-   */
-  async getClusters () {
-    try {
-      return await this.kind.getClusters('-q')
-    } catch (e) {
-      this.logger.showUserError(e)
-    }
-
-    return []
-  }
-
   async showClusterList () {
-    this.logger.showList('Clusters', await this.getClusters())
+    this.logger.showList('Clusters', await this.clusterManager.getClusters())
     return true
   }
 
@@ -52,8 +37,7 @@ export class ClusterCommand extends BaseCommand {
   async getClusterInfo (argv) {
     try {
       const clusterName = argv.clusterName
-      const cmd = `kubectl cluster-info --context kind-${clusterName}`
-      const output = await this.run(cmd)
+      const output = await this.clusterManager.getClusterInfo(clusterName)
 
       this.logger.showUser(chalk.green(`\nCluster information (${clusterName})\n---------------------------------------`))
       output.forEach(line => this.logger.showUser(line))
@@ -114,7 +98,7 @@ export class ClusterCommand extends BaseCommand {
           const cachedConfig = await self.configManager.setupConfig(argv)
 
           // get existing choices
-          ctx.clusters = await self.kind.getClusters('-q')
+          ctx.clusters = await self.clusterManager.getClusters()
 
           // extract config values
           const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
@@ -130,13 +114,9 @@ export class ClusterCommand extends BaseCommand {
         title: 'Create cluster',
         task: async (ctx, _) => {
           const clusterName = ctx.config.clusterName
-          ctx.clusters = await self.getClusters()
+          ctx.clusters = await self.clusterManager.getClusters()
           if (!ctx.clusters.includes(clusterName)) {
-            await self.kind.createCluster(
-              `-n ${clusterName}`,
-              `--config ${core.constants.RESOURCES_DIR}/dev-cluster.yaml`
-            )
-
+            await self.clusterManager.createCluster(clusterName)
             await self.kubectl.get('--raw=\'/healthz?verbose\'')
           }
         }
@@ -155,7 +135,7 @@ export class ClusterCommand extends BaseCommand {
           // display info
           ctx.namespaces = await self.getNameSpaces()
           ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
-          ctx.clusters = await self.getClusters()
+          ctx.clusters = await self.clusterManager.getClusters()
           self.logger.showList('Namespaces', await ctx.namespaces)
           self.logger.showList('Clusters', await ctx.clusters)
           self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
@@ -191,7 +171,7 @@ export class ClusterCommand extends BaseCommand {
           const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
 
           // get existing choices
-          ctx.clusters = await self.kind.getClusters('-q')
+          ctx.clusters = await self.clusterManager.getClusters()
 
           ctx.config = {
             clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, ctx.clusters)
@@ -201,8 +181,8 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Delete cluster',
         task: async (ctx, _) => {
-          await this.kind.deleteCluster(ctx.config.clusterName)
-          self.logger.showList('Clusters', await self.getClusters())
+          await this.clusterManager.deleteCluster(ctx.config.clusterName)
+          self.logger.showList('Clusters', await self.clusterManager.getClusters())
         },
         skip: (ctx, _) => !ctx.clusters.includes(ctx.config.clusterName)
       }
@@ -232,6 +212,12 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          try {
+            await self.kubectl.config('current-context')
+          } catch (e) {
+            throw new FullstackTestingError('kubectl context is not set, set context by running: kubectl use-context <context-name>', e)
+          }
+
           const cachedConfig = await self.configManager.setupConfig(argv)
           self.logger.debug('Setup cached config', { cachedConfig, argv })
 
@@ -246,7 +232,8 @@ export class ClusterCommand extends BaseCommand {
           const deployCertManagerCrds = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCrds)
 
           // get existing choices
-          const clusters = await self.kind.getClusters('-q')
+          const clusters = await self.clusterManager.getClusters()
+
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
 
           // prompt if inputs are empty and set it in the context
@@ -290,7 +277,20 @@ export class ClusterCommand extends BaseCommand {
           const chartPath = ctx.chartPath
           const valuesArg = ctx.valuesArg
 
-          await self.chartManager.install(namespace, constants.CHART_FST_SETUP_NAME, chartPath, version, valuesArg)
+          try {
+            await self.chartManager.install(namespace, constants.CHART_FST_SETUP_NAME, chartPath, version, valuesArg)
+          } catch (e) {
+            // if error, uninstall the chart and rethrow the error
+            self.logger.debug(`Error on installing ${constants.CHART_FST_SETUP_NAME}. attempting to rollback by uninstalling the chart`, e)
+            try {
+              await self.chartManager.uninstall(namespace, constants.CHART_FST_SETUP_NAME)
+            } catch (ex) {
+              // ignore error during uninstall since we are doing the best-effort uninstall here
+            }
+
+            throw e
+          }
+
           await self.showInstalledChartList(namespace)
         },
         skip: (ctx, _) => ctx.isChartInstalled
@@ -326,7 +326,7 @@ export class ClusterCommand extends BaseCommand {
           const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
 
           // get existing choices
-          const clusters = await self.kind.getClusters('-q')
+          const clusters = await self.clusterManager.getClusters()
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
 
           ctx.config = {
@@ -334,7 +334,7 @@ export class ClusterCommand extends BaseCommand {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces)
           }
 
-          ctx.isChartInstalled = await this.chartManager.isChartInstalled(namespace, constants.CHART_FST_SETUP_NAME)
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
         }
       },
       {
