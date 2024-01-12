@@ -41,12 +41,6 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
     condition: cloud.grafanaAgent.enabled
 
-  - name: gateway-helm
-    alias: envoy-gateway
-    version: v0.6.0
-    repository: oci://docker.io/envoyproxy
-    condition: cloud.envoyGateway.enabled
-
   - name: cert-manager
     version: v1.13.3
     repository: https://charts.jetstack.io

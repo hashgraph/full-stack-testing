@@ -55,7 +55,7 @@ acme-cluster-issuer:
         name: "fst" # needs to match gatewayApi.gateway.name in this values.yaml file
         namespace: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
 
-# gateway-api configuration
+# gateway-api configuration #needs to change....
 gatewayApi:
   gatewayClass:
     name: "fst-gateway-class" # this is a shared gateway class for all namespaces
