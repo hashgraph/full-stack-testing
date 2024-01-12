@@ -2,6 +2,40 @@ apiVersion: v1
 entries:
   fullstack-cluster-setup:
   - apiVersion: v2
+    appVersion: 0.17.0
+    created: "2024-01-12T15:53:12.836599638Z"
+    dependencies:
+    - alias: minio-operator
+      condition: cloud.minio.enabled
+      name: operator
+      repository: https://operator.min.io/
+      version: 5.0.7
+    - alias: prometheus-stack
+      condition: cloud.prometheusStack.enabled
+      name: kube-prometheus-stack
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 52.0.1
+    - condition: cloud.grafanaAgent.enabled
+      name: grafana-agent
+      repository: https://grafana.github.io/helm-charts
+      version: 0.27.1
+    - alias: envoy-gateway
+      condition: cloud.envoyGateway.enabled
+      name: gateway-helm
+      repository: oci://docker.io/envoyproxy
+      version: v0.6.0
+    - condition: cloud.certManager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: v1.13.3
+    description: A Helm chart to setup shared resources for fullstack-testing
+    digest: b9addaea5d5f52f7b141d052bd8b6b4602c73f69278ebc92d80571b6e1d18149
+    name: fullstack-cluster-setup
+    type: application
+    urls:
+    - https://hashgraph.github.io/full-stack-testing/charts/fullstack-cluster-setup-0.17.0.tgz
+    version: 0.17.0
+  - apiVersion: v2
     appVersion: 0.16.1
     created: "2024-01-12T15:26:18.265068263Z"
     dependencies:
@@ -202,6 +236,36 @@ entries:
     version: 0.12.0
   fullstack-deployment:
   - apiVersion: v2
+    appVersion: 0.17.0
+    created: "2024-01-12T15:53:12.868787834Z"
+    dependencies:
+    - condition: hedera-explorer.enabled
+      name: hedera-explorer
+      repository: ""
+      version: 0.2.0
+    - alias: hedera-mirror-node
+      condition: hedera-mirror-node.enabled
+      name: hedera-mirror
+      repository: https://hashgraph.github.io/hedera-mirror-node/charts
+      version: 0.86.0
+    - alias: minio-server
+      condition: cloud.minio.enabled
+      name: tenant
+      repository: https://operator.min.io/
+      version: 5.0.7
+    - condition: cloud.acmeClusterIssuer.enabled
+      name: acme-cluster-issuer
+      repository: ""
+      version: 0.3.0
+    description: A Helm chart for the fullstack deployment
+    digest: 9eeb31599db610e1b216d1d143fe9802eee22e332ec81a52ccb9cf5c3202dd29
+    kubeVersion: '>=1.25.0-0'
+    name: fullstack-deployment
+    type: application
+    urls:
+    - https://hashgraph.github.io/full-stack-testing/charts/fullstack-deployment-0.17.0.tgz
+    version: 0.17.0
+  - apiVersion: v2
     appVersion: 0.16.1
     created: "2024-01-12T15:26:18.296138835Z"
     dependencies:
@@ -365,4 +429,4 @@ entries:
     urls:
     - https://hashgraph.github.io/full-stack-testing/charts/fullstack-deployment-0.12.0.tgz
     version: 0.12.0
-generated: "2024-01-12T15:26:18.207996979Z"
+generated: "2024-01-12T15:53:12.787376009Z"
