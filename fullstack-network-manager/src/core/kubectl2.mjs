@@ -291,7 +291,7 @@ export class Kubectl2 {
    * @param destPath path inside the container
    * @return {Promise<{}>}
    */
-  async listDir (podName, containerName, destPath, timoutMs = 5000, delayMs = 100) {
+  async listDir (podName, containerName, destPath) {
     try {
       // verify that file is copied correctly
       const self = this
