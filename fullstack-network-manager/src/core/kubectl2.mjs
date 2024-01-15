@@ -300,25 +300,42 @@ export class Kubectl2 {
       const writerStream = new sb.WritableStreamBuffer()
       const errStream = new sb.WritableStreamBuffer()
 
-      return new Promise(async (resolve, reject) => {
-        await execInstance.exec(
-          this.getCurrentNamespace(),
-          podName,
-          containerName,
-          command,
-          writerStream,
-          errStream,
-          null,
-          false,
-          ({ status }) => {
-            if (status === 'Failure' || errStream.size()) {
-              reject(new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`))
-            }
+      let output = ''
+      await execInstance.exec(
+        this.getCurrentNamespace(),
+        podName,
+        containerName,
+        command,
+        writerStream,
+        errStream,
+        null,
+        false,
+        ({ status }) => {
+          if (status === 'Failure' || errStream.size()) {
+            throw new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`)
+          }
 
-            const output = writerStream.getContentsAsString()
+          output = writerStream.getContentsAsString()
+        }
+      )
+
+      return new Promise((resolve, reject) => {
+        // we need to poll to see if the websocket finished writing to the stream
+        let timerId = setInterval(() => {
+          if (output) {
+            clearInterval(timerId)
+            timerId = -1 // reset timer
             resolve(self.parseLsOutput(output))
           }
-        )
+        }, 100)
+
+        // timout polling and throw error
+        setTimeout(() => {
+          if (timerId > 0) {
+            clearInterval(timerId)
+            reject(new FullstackTestingError(`timeout occurred while checking path: ${destPath}`))
+          }
+        }, 5000)
       })
     } catch (e) {
 
