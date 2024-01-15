@@ -310,7 +310,7 @@ export class Kubectl2 {
           errStream,
           null,
           false,
-          ({status}) => {
+          ({ status }) => {
             if (status === 'Failure' || errStream.size()) {
               reject(new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`))
             }
@@ -326,17 +326,39 @@ export class Kubectl2 {
   }
 
   /**
-   * Check if a file path exists in the container
+   * Check if a filepath exists in the container
    * @param podName pod name
    * @param containerName container name
    * @param destPath path inside the container
    * @return {Promise<boolean>}
    */
-  async hasPath (podName, containerName, destPath) {
-    const entries = await this.listDir(podName, containerName, destPath)
+  async hasFile (podName, containerName, destPath) {
+    const parentDir = path.dirname(destPath)
+    const fileName = path.basename(destPath)
+    const entries = await this.listDir(podName, containerName, parentDir)
 
     for (const item of entries) {
-      if (item.name === destPath) {
+      if (item.name === fileName && !item.directory) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  /**
+   * Check if a directory path exists in the container
+   * @param podName pod name
+   * @param containerName container name
+   * @param destPath path inside the container
+   * @return {Promise<boolean>}
+   */
+  async hasDir (podName, containerName, destPath) {
+    const parentDir = path.dirname(destPath)
+    const dirName = path.basename(destPath)
+    const entries = await this.listDir(podName, containerName, parentDir)
+    for (const item of entries) {
+      if (item.name === dirName && item.directory) {
         return true
       }
     }

@@ -2,10 +2,10 @@ import { describe, expect, it } from '@jest/globals'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
+import { v4 as uuidv4 } from 'uuid'
 import { FullstackTestingError } from '../../../src/core/errors.mjs'
 import { constants, Templates } from '../../../src/core/index.mjs'
 import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
-import { v4 as uuidv4 } from 'uuid'
 
 describe('Kubectl', () => {
   const kubectl = new Kubectl2()
@@ -48,6 +48,11 @@ describe('Kubectl', () => {
     await expect(kubectl.getClusterIP('INVALID')).rejects.toThrow(FullstackTestingError)
   })
 
+  it('should be able to check if a path is directory inside a container', async () => {
+    const podName = Templates.renderNetworkPodName('node0')
+    await expect(kubectl.hasDir(podName, constants.ROOT_CONTAINER, constants.HEDERA_HAPI_PATH)).resolves.toBeTruthy()
+  })
+
   it('should be able to copy a file to and from a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
     const containerName = constants.ROOT_CONTAINER
@@ -60,7 +65,7 @@ describe('Kubectl', () => {
     fs.writeFileSync(tmpFile, 'TEST')
 
     await expect(kubectl.copyTo(podName, containerName, tmpFile, destDir)).resolves.toBeTruthy()
-    await expect(kubectl.hasPath(podName, containerName, destPath)).resolves.toBeTruthy()
+    await expect(kubectl.hasFile(podName, containerName, destPath)).resolves.toBeTruthy()
 
     await expect(kubectl.copyFrom(podName, containerName, destPath, tmpDir2)).resolves.toBeTruthy()
     expect(fs.existsSync(`${tmpDir2}/${testFileName}`))
