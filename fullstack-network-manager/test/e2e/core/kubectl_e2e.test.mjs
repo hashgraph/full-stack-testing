@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuid4 } from 'uuid'
 import { FullstackTestingError } from '../../../src/core/errors.mjs'
 import { constants, Templates } from '../../../src/core/index.mjs'
 import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
@@ -31,7 +31,7 @@ describe('Kubectl', () => {
   })
 
   it('should be able to create and delete a namespaces', async () => {
-    const name = uuidv4()
+    const name = uuid4()
     await expect(kubectl.createNamespace(name)).resolves.toBeTruthy()
     await expect(kubectl.deleteNamespace(name)).resolves.toBeTruthy()
   })

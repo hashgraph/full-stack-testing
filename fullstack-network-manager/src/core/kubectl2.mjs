@@ -245,35 +245,6 @@ export class Kubectl2 {
     return contexts
   }
 
-  parseLsOutput (output) {
-    if (!output) return []
-
-    const items = []
-    const lines = output.split('\n')
-    for (let line of lines) {
-      line = line.replace(/\s+/g, '|')
-      const parts = line.split('|')
-      if (parts.length === 9) {
-        const name = parts[parts.length - 1]
-        if (name !== '.' && name !== '..') {
-          const permission = parts[0]
-          const item = {
-            directory: permission[0] === 'd',
-            owner: parts[2],
-            group: parts[3],
-            size: parts[4],
-            modifiedAt: `${parts[5]} ${parts[6]} ${parts[7]}`,
-            name
-          }
-
-          items.push(item)
-        }
-      }
-    }
-
-    return items
-  }
-
   /**
    * List files and directories in a container
    *
@@ -296,52 +267,36 @@ export class Kubectl2 {
    */
   async listDir (podName, containerName, destPath, timeout = 5000) {
     try {
-      // verify that file is copied correctly
-      const self = this
-      const execInstance = new k8s.Exec(this._kubeConfig)
-      const command = ['ls', '-la', destPath]
-      const writerStream = new sb.WritableStreamBuffer()
-      const errStream = new sb.WritableStreamBuffer()
+      const output = await this.getExecOutput(podName, containerName, ['ls', '-la', destPath])
+      if (!output) return []
 
-      let output = ''
-      await execInstance.exec(
-        this.getCurrentNamespace(),
-        podName,
-        containerName,
-        command,
-        writerStream,
-        errStream,
-        null,
-        false,
-        ({ status }) => {
-          if (status === 'Failure' || errStream.size()) {
-            throw new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`)
+      // parse the output and return the entries
+      const items = []
+      const lines = output.split('\n')
+      for (let line of lines) {
+        line = line.replace(/\s+/g, '|')
+        const parts = line.split('|')
+        if (parts.length === 9) {
+          const name = parts[parts.length - 1]
+          if (name !== '.' && name !== '..') {
+            const permission = parts[0]
+            const item = {
+              directory: permission[0] === 'd',
+              owner: parts[2],
+              group: parts[3],
+              size: parts[4],
+              modifiedAt: `${parts[5]} ${parts[6]} ${parts[7]}`,
+              name
+            }
+
+            items.push(item)
           }
-
-          output = writerStream.getContentsAsString()
         }
-      )
+      }
 
-      return new Promise((resolve, reject) => {
-        // we need to poll to see if the websocket finished writing to the stream
-        let timerId = setInterval(() => {
-          if (output) {
-            clearInterval(timerId)
-            timerId = -1 // reset timer
-            resolve(self.parseLsOutput(output))
-          }
-        }, 100)
-
-        // timout polling and throw error
-        setTimeout(() => {
-          if (timerId > 0) {
-            clearInterval(timerId)
-            reject(new FullstackTestingError(`timeout occurred while checking path: ${destPath}`))
-          }
-        }, timeout)
-      })
+      return items
     } catch (e) {
-
+      throw new FullstackTestingError(`error occurred during listDir operation for path: ${destPath}: ${e.message}`, e)
     }
   }
 
@@ -431,6 +386,65 @@ export class Kubectl2 {
   }
 
   /**
+   * Invoke bash command within a container and return the console output as string
+   *
+   * @param podName pod name
+   * @param containerName container name
+   * @param command bash commands as an array to be run within the containerName (e.g 'ls -la /opt/hgcapp')
+   * @param timeoutMs timout in milliseconds
+   * @returns {Promise<string>} console output as string
+   */
+  async getExecOutput (podName, containerName, command = [], timeoutMs = 5000) {
+    try {
+      if (!command) return ''
+
+      const execInstance = new k8s.Exec(this._kubeConfig)
+      const outStream = new sb.WritableStreamBuffer()
+      const errStream = new sb.WritableStreamBuffer()
+      let execStatus = 'Failure'
+
+      await execInstance.exec(
+        this.getCurrentNamespace(),
+        podName,
+        containerName,
+        command,
+        outStream,
+        errStream,
+        null,
+        false,
+        ({ status }) => {
+          execStatus = status
+          if (status === 'Failure' || errStream.size()) {
+            throw new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`)
+          }
+        }
+      )
+
+      // we need to poll to get the output contents
+      const pollingDelay = 100
+      return new Promise((resolve, reject) => {
+        let resolved = false
+        const timerId = setInterval(() => {
+          if (execStatus === 'Success') {
+            clearInterval(timerId)
+            resolved = true
+            resolve(outStream.getContentsAsString())
+          }
+        }, pollingDelay)
+
+        setTimeout(() => {
+          if (!resolved) {
+            clearInterval(timerId)
+            reject(new FullstackTestingError(`timeout occurred during exec in '${podName}:${containerName}': ${command.join[' ']}`))
+          }
+        }, timeoutMs)
+      })
+    } catch (e) {
+      throw new FullstackTestingError(`error occurred during exec in '${podName}:${containerName}': ${command.join[' ']}`)
+    }
+  }
+
+  /**
    * Invoke `kubectl port-forward svc/<svc name>` command
    * @param resource name of the service or podName. Must be of the format podName/<podName name> or svc/<service name>
    * @param localPort port of the host machine
@@ -496,14 +510,4 @@ export class Kubectl2 {
   //   clearTimeout(timerId)
   //   return true
   // }
-
-  /**
-   * Invoke bash command within a containerName
-   * @param podName a kubernetes podName name
-   * @param containerName name of the containerName within the podName
-   * @param bashScript bash script to be run within the containerName (e.g 'ls -la /opt/hgcapp')
-   * @returns {Promise<Array>} console output as an array of strings
-   */
-  async execContainer (podName, containerName, bashScript) {
-  }
 }
