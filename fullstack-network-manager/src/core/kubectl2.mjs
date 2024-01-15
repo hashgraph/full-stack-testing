@@ -391,8 +391,6 @@ export class Kubectl2 {
    *
    * It overwrites any existing file inside the container at the destination directory
    *
-   * FIXME: currently it fails to catch error if incorrect containerName or invalid destination path is specified
-   *
    * @param podName podName name
    * @param containerName container name
    * @param srcPath source file path in the local
@@ -414,8 +412,6 @@ export class Kubectl2 {
    * Copy a file from a container
    *
    * It overwrites any existing file at the destination directory
-   *
-   * FIXME: currently it fails to catch error if incorrect containerName or invalid destination path is specified
    *
    * @param podName podName name
    * @param containerName container name
