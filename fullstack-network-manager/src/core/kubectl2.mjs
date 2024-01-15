@@ -1,15 +1,13 @@
-import {expect} from "@jest/globals";
 import * as k8s from '@kubernetes/client-node'
-import fs from "fs";
-import path from "path";
-import {FullstackTestingError, MissingArgumentError, ResourceNotFoundError} from "./errors.mjs";
-import * as stream_buffer from 'stream-buffers'
+import path from 'path'
+import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
+import * as sb from 'stream-buffers'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
  */
 export class Kubectl2 {
-  constructor() {
+  constructor () {
     this._kubeConfig = new k8s.KubeConfig()
     this._kubeConfig.loadFromDefault()
   }
@@ -17,7 +15,7 @@ export class Kubectl2 {
   /**
    * Get current context object
    */
-  getCurrentContext() {
+  getCurrentContext () {
     const name = this._kubeConfig.getCurrentContext()
     return this._kubeConfig.getContextObject(name)
   }
@@ -26,7 +24,7 @@ export class Kubectl2 {
    * Set current context
    * @param contextName context name
    */
-  setCurrentContext(contextName) {
+  setCurrentContext (contextName) {
     if (!this._kubeConfig.getContextObject(contextName)) throw new FullstackTestingError(`context not found with name: ${name}`)
 
     // set current context
@@ -35,20 +33,20 @@ export class Kubectl2 {
     this.kubeClient = null // reset client
   }
 
-  setCurrentNamespace(namespace) {
+  setCurrentNamespace (namespace) {
     this._namespace = namespace
   }
 
-  getCurrentNamespace() {
+  getCurrentNamespace () {
     return this._namespace
   }
 
-  _initChecks() {
+  _initChecks () {
     if (!this._kubeConfig.getCurrentContext()) throw new FullstackTestingError('context is not set')
     if (!this._namespace) throw new FullstackTestingError('namespace is not set')
   }
 
-  _initKubeClient() {
+  _initKubeClient () {
     this._initChecks()
     if (!this._kubeClient) {
       this._kubeClient = this._kubeConfig.makeApiClient(k8s.CoreV1Api)
@@ -57,7 +55,7 @@ export class Kubectl2 {
     return this._kubeClient
   }
 
-  _initKubeCopy() {
+  _initKubeCopy () {
     this._initChecks()
     if (!this._kubeCopy) {
       this._kubeCopy = new k8s.Cp(this._kubeConfig)
@@ -72,7 +70,7 @@ export class Kubectl2 {
    * @param filters an object with metadata fields and value
    * @return {*[]}
    */
-  applyMetadataFilter(items, filters = {}) {
+  applyMetadataFilter (items, filters = {}) {
     if (!filters) throw new MissingArgumentError('filters are required')
 
     const matched = []
@@ -104,10 +102,10 @@ export class Kubectl2 {
    * @param filters an object with metadata fields and value
    * @return {*}
    */
-  filterItem(items, filters = {}) {
+  filterItem (items, filters = {}) {
     const filtered = this.applyMetadataFilter(items, filters)
-    if (filtered.length > 1) throw new FullstackTestingError('multiple items found with filters', {filters})
-    if (filtered.length !== 1) throw new FullstackTestingError('item not found with filters', {filters})
+    if (filtered.length > 1) throw new FullstackTestingError('multiple items found with filters', { filters })
+    if (filtered.length !== 1) throw new FullstackTestingError('item not found with filters', { filters })
     return filtered[0]
   }
 
@@ -116,10 +114,10 @@ export class Kubectl2 {
    * @param name name of the namespace
    * @return {Promise<boolean>}
    */
-  async createNamespace(name) {
+  async createNamespace (name) {
     const payload = {
       metadata: {
-        name: name,
+        name
       }
     }
 
@@ -132,16 +130,16 @@ export class Kubectl2 {
    * @param name name of the namespace
    * @return {Promise<boolean>}
    */
-  async deleteNamespace(name) {
+  async deleteNamespace (name) {
     const resp = await this._initKubeClient().deleteNamespace(name)
-    return resp.response.statusCode === 200.
+    return resp.response.statusCode === 200.0
   }
 
   /**
    * Get a list of namespaces
    * @return {Promise<[string]>} list of namespaces
    */
-  async getNamespaces() {
+  async getNamespaces () {
     const resp = await this._initKubeClient().listNamespace()
     if (resp.body && resp.body.items) {
       const namespaces = []
@@ -160,17 +158,17 @@ export class Kubectl2 {
    * @param name podName name
    * @return {Promise<{}>} k8s.V1Pod object
    */
-  async getPodByName(name) {
+  async getPodByName (name) {
     const fieldSelector = `metadata.name=${name}`
     const resp = await this._initKubeClient().listNamespacedPod(
       this.getCurrentNamespace(),
       undefined,
       undefined,
       undefined,
-      fieldSelector,
+      fieldSelector
     )
 
-    return this.filterItem(resp.body.items, {name})
+    return this.filterItem(resp.body.items, { name })
   }
 
   /**
@@ -178,7 +176,7 @@ export class Kubectl2 {
    * @param podNameName name of the podName
    * @returns {Promise<string>} podName IP
    */
-  async getPodIP(podNameName) {
+  async getPodIP (podNameName) {
     const podName = await this.getPodByName(podNameName)
     if (podName && podName.status && podName.status.hostIP) {
       return podName.status.hostIP
@@ -187,23 +185,22 @@ export class Kubectl2 {
     throw new FullstackTestingError(`unable to find host IP of podName: ${podNameName}`)
   }
 
-
   /**
    * Get a svc by name
    * @param name svc name
    * @return {Promise<{}>} k8s.V1Service object
    */
-  async getSvcByName(name) {
+  async getSvcByName (name) {
     const fieldSelector = `metadata.name=${name}`
     const resp = await this._initKubeClient().listNamespacedService(
       this.getCurrentNamespace(),
       undefined,
       undefined,
       undefined,
-      fieldSelector,
+      fieldSelector
     )
 
-    return this.filterItem(resp.body.items, {name})
+    return this.filterItem(resp.body.items, { name })
   }
 
   /**
@@ -211,7 +208,7 @@ export class Kubectl2 {
    * @param svcName name of the service
    * @returns {Promise<string>} cluster IP
    */
-  async getClusterIP(svcName) {
+  async getClusterIP (svcName) {
     const svc = await this.getSvcByName(svcName)
     if (svc && svc.spec && svc.spec.clusterIP) {
       return svc.spec.clusterIP
@@ -224,7 +221,7 @@ export class Kubectl2 {
    * Get a list of clusters
    * @return {Promise<[string]>} list of clusters
    */
-  async getClusters() {
+  async getClusters () {
     const clusters = []
     for (const cluster of this._kubeConfig.getClusters()) {
       clusters.push(cluster.name)
@@ -237,23 +234,22 @@ export class Kubectl2 {
    * Get a list of contexts
    * @return {Promise<[string]>} list of contexts
    */
-  async getContexts() {
+  async getContexts () {
     const contexts = []
     for (const context of this._kubeConfig.getContexts()) {
       contexts.push(context.name)
     }
 
     return contexts
-
   }
 
-  parseLsOutput(output) {
+  parseLsOutput (output) {
     if (!output) return []
 
     const items = []
-    const lines = output.split("\n")
+    const lines = output.split('\n')
     for (let line of lines) {
-      line = line.replace(/\s+/g, "|");
+      line = line.replace(/\s+/g, '|')
       const parts = line.split('|')
       if (parts.length === 9) {
         const name = parts[parts.length - 1]
@@ -265,7 +261,7 @@ export class Kubectl2 {
             group: parts[3],
             size: parts[4],
             modifiedAt: `${parts[5]} ${parts[6]} ${parts[7]}`,
-            name: name
+            name
           }
 
           items.push(item)
@@ -295,14 +291,15 @@ export class Kubectl2 {
    * @param destPath path inside the container
    * @return {Promise<{}>}
    */
-  async listDir(podName, containerName, destPath) {
+  async listDir (podName, containerName, destPath, timoutMs = 5000, delayMs = 100) {
     try {
       // verify that file is copied correctly
       const self = this
       const execInstance = new k8s.Exec(this._kubeConfig)
       const command = ['ls', '-la', destPath]
-      const writerStream = new stream_buffer.WritableStreamBuffer()
-      const errStream = new stream_buffer.WritableStreamBuffer()
+      const writerStream = new sb.WritableStreamBuffer()
+      const errStream = new sb.WritableStreamBuffer()
+
       return new Promise(async (resolve, reject) => {
         await execInstance.exec(
           this.getCurrentNamespace(),
@@ -313,15 +310,15 @@ export class Kubectl2 {
           errStream,
           null,
           false,
-          async ({status}) => {
-            const items = []
+          ({status}) => {
             if (status === 'Failure' || errStream.size()) {
               reject(new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`))
             }
 
             const output = writerStream.getContentsAsString()
             resolve(self.parseLsOutput(output))
-          });
+          }
+        )
       })
     } catch (e) {
 
@@ -335,7 +332,7 @@ export class Kubectl2 {
    * @param destPath path inside the container
    * @return {Promise<boolean>}
    */
-  async hasPath(podName, containerName, destPath) {
+  async hasPath (podName, containerName, destPath) {
     const entries = await this.listDir(podName, containerName, destPath)
 
     for (const item of entries) {
@@ -360,7 +357,7 @@ export class Kubectl2 {
    * @param destDir destination directory in the container
    * @returns {Promise<boolean>}
    */
-  async copyTo(podName, containerName, srcPath, destDir) {
+  async copyTo (podName, containerName, srcPath, destDir) {
     try {
       const srcFile = path.basename(srcPath)
       const srcDir = path.dirname(srcPath)
@@ -384,11 +381,10 @@ export class Kubectl2 {
    * @param destDir destination directory in the local
    * @returns {Promise<boolean>}
    */
-  async copyFrom(podName, containerName, srcPath, destDir) {
+  async copyFrom (podName, containerName, srcPath, destDir) {
     try {
       const srcFile = path.basename(srcPath)
       const srcDir = path.dirname(srcPath)
-      const destPath = `${destDir}/${srcFile}`
       await this._initKubeCopy().cpFromPod(this.getCurrentNamespace(), podName, containerName, srcFile, destDir, srcDir)
       return true
     } catch (e) {
@@ -403,7 +399,7 @@ export class Kubectl2 {
    * @param remotePort port to be forwarded from the service or podName
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async portForward(resource, localPort, remotePort) {
+  async portForward (resource, localPort, remotePort) {
     // return this.run(this.prepareCommand(`port-forward ${resource} ${localPort}:${remotePort} &`))
   }
 
@@ -470,8 +466,6 @@ export class Kubectl2 {
    * @param bashScript bash script to be run within the containerName (e.g 'ls -la /opt/hgcapp')
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async execContainer(podName, containerName, bashScript) {
+  async execContainer (podName, containerName, bashScript) {
   }
-
-
 }

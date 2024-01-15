@@ -1,7 +1,7 @@
-import {AccountId} from '@hashgraph/sdk'
-import {color, PRESET_TIMER} from 'listr2'
-import {dirname, normalize} from 'path'
-import {fileURLToPath} from 'url'
+import { AccountId } from '@hashgraph/sdk'
+import { color, PRESET_TIMER } from 'listr2'
+import { dirname, normalize } from 'path'
+import { fileURLToPath } from 'url'
 import chalk from 'chalk'
 
 // -------------------- fsnetman related constants ---------------------------------------------------------------------

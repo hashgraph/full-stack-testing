@@ -1,11 +1,11 @@
-import {describe, expect, it} from "@jest/globals";
-import fs from "fs";
-import os from "os";
-import path from "path";
-import {FullstackTestingError} from "../../../src/core/errors.mjs";
-import {constants, Templates} from "../../../src/core/index.mjs";
-import {Kubectl2} from "../../../src/core/kubectl2.mjs";
-import {v4 as uuidv4} from 'uuid'
+import { describe, expect, it } from '@jest/globals'
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
+import { FullstackTestingError } from '../../../src/core/errors.mjs'
+import { constants, Templates } from '../../../src/core/index.mjs'
+import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
+import { v4 as uuidv4 } from 'uuid'
 
 describe('Kubectl', () => {
   const kubectl = new Kubectl2()
@@ -51,20 +51,21 @@ describe('Kubectl', () => {
   it('should be able to copy a file to and from a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
     const containerName = constants.ROOT_CONTAINER
+    const testFileName = 'test.txt'
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
     const tmpDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
-    const tmpFile = path.join(tmpDir, 'test.txt')
+    const tmpFile = path.join(tmpDir, testFileName)
     const destDir = constants.HEDERA_HAPI_PATH
-    const destPath = `${destDir}/test.txt`
-    fs.writeFileSync(tmpFile, "TEST")
+    const destPath = `${destDir}/${testFileName}`
+    fs.writeFileSync(tmpFile, 'TEST')
 
     await expect(kubectl.copyTo(podName, containerName, tmpFile, destDir)).resolves.toBeTruthy()
     await expect(kubectl.hasPath(podName, containerName, destPath)).resolves.toBeTruthy()
 
     await expect(kubectl.copyFrom(podName, containerName, destPath, tmpDir2)).resolves.toBeTruthy()
-    expect(fs.existsSync(`${tmpDir2}/test.txt`))
+    expect(fs.existsSync(`${tmpDir2}/${testFileName}`))
 
-    fs.rmdirSync(tmpDir, {recursive: true})
-    fs.rmdirSync(tmpDir2, {recursive: true})
-  })
+    fs.rmdirSync(tmpDir, { recursive: true })
+    fs.rmdirSync(tmpDir2, { recursive: true })
+  }, 10000)
 })
