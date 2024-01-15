@@ -5,6 +5,8 @@ import * as sb from 'stream-buffers'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
+ *
+ * This class isn't threadsafe
  */
 export class Kubectl2 {
   constructor () {
@@ -289,9 +291,10 @@ export class Kubectl2 {
    * @param podName pod name
    * @param containerName container name
    * @param destPath path inside the container
+   * @param timeout timeout in ms
    * @return {Promise<{}>}
    */
-  async listDir (podName, containerName, destPath) {
+  async listDir (podName, containerName, destPath, timeout = 5000) {
     try {
       // verify that file is copied correctly
       const self = this
@@ -335,7 +338,7 @@ export class Kubectl2 {
             clearInterval(timerId)
             reject(new FullstackTestingError(`timeout occurred while checking path: ${destPath}`))
           }
-        }, 5000)
+        }, timeout)
       })
     } catch (e) {
 
