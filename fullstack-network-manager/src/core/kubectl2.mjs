@@ -1,5 +1,9 @@
+import {expect} from "@jest/globals";
 import * as k8s from '@kubernetes/client-node'
+import fs from "fs";
+import path from "path";
 import {FullstackTestingError, MissingArgumentError, ResourceNotFoundError} from "./errors.mjs";
+import * as stream_buffer from 'stream-buffers'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
@@ -240,25 +244,156 @@ export class Kubectl2 {
     }
 
     return contexts
+
+  }
+
+  parseLsOutput(output) {
+    if (!output) return []
+
+    const items = []
+    const lines = output.split("\n")
+    for (let line of lines) {
+      line = line.replace(/\s+/g, "|");
+      const parts = line.split('|')
+      if (parts.length === 9) {
+        const name = parts[parts.length - 1]
+        if (name !== '.' && name !== '..') {
+          const permission = parts[0]
+          const item = {
+            directory: permission[0] === 'd',
+            owner: parts[2],
+            group: parts[3],
+            size: parts[4],
+            modifiedAt: `${parts[5]} ${parts[6]} ${parts[7]}`,
+            name: name
+          }
+
+          items.push(item)
+        }
+      }
+    }
+
+    return items
   }
 
   /**
-   * Copy file into a containerName
-   * @param podName podName name
+   * List files and directories in a container
+   *
+   * It runs ls -la on the specified path and returns a list of object containing the entries.
+   * For example:
+   * [{
+   *    directory: false,
+   *    owner: hedera,
+   *    group: hedera,
+   *    size: 121,
+   *    modifiedAt: Jan 15 13:50
+   *    name: config.txt
+   * }]
+   *
+   * @param podName pod name
    * @param containerName container name
-   * @param srcPath
-   * @param destPath
-   * @param tmpDir temp directory to be used
-   * @returns {Promise<boolean>}
+   * @param destPath path inside the container
+   * @return {Promise<{}>}
    */
-  async copy(podName, containerName, srcPath, destPath, tmpDir = undefined) {
+  async listDir(podName, containerName, destPath) {
     try {
-      await this._initKubeCopy().cpToPod(this.getCurrentNamespace(), podName, containerName, srcPath, destPath, tmpDir)
+      // verify that file is copied correctly
+      const self = this
+      const execInstance = new k8s.Exec(this._kubeConfig)
+      const command = ['ls', '-la', destPath]
+      const writerStream = new stream_buffer.WritableStreamBuffer()
+      const errStream = new stream_buffer.WritableStreamBuffer()
+      return new Promise(async (resolve, reject) => {
+        await execInstance.exec(
+          this.getCurrentNamespace(),
+          podName,
+          containerName,
+          command,
+          writerStream,
+          errStream,
+          null,
+          false,
+          async ({status}) => {
+            const items = []
+            if (status === 'Failure' || errStream.size()) {
+              reject(new FullstackTestingError(`Error - details: \n ${errStream.getContentsAsString()}`))
+            }
+
+            const output = writerStream.getContentsAsString()
+            resolve(self.parseLsOutput(output))
+          });
+      })
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy file: ${podName} -c ${containerName} ${srcPath}:${destPath}: ${e.message}`, e)
+
+    }
+  }
+
+  /**
+   * Check if a file path exists in the container
+   * @param podName pod name
+   * @param containerName container name
+   * @param destPath path inside the container
+   * @return {Promise<boolean>}
+   */
+  async hasPath(podName, containerName, destPath) {
+    const entries = await this.listDir(podName, containerName, destPath)
+
+    for (const item of entries) {
+      if (item.name === destPath) {
+        return true
+      }
     }
 
-    return true
+    return false
+  }
+
+  /**
+   * Copy a file into a container
+   *
+   * It overwrites any existing file inside the container at the destination directory
+   *
+   * FIXME: currently it fails to catch error if incorrect containerName or invalid destination path is specified
+   *
+   * @param podName podName name
+   * @param containerName container name
+   * @param srcPath source file path in the local
+   * @param destDir destination directory in the container
+   * @returns {Promise<boolean>}
+   */
+  async copyTo(podName, containerName, srcPath, destDir) {
+    try {
+      const srcFile = path.basename(srcPath)
+      const srcDir = path.dirname(srcPath)
+      await this._initKubeCopy().cpToPod(this.getCurrentNamespace(), podName, containerName, srcFile, destDir, srcDir)
+      return true
+    } catch (e) {
+      throw new FullstackTestingError(`failed to copy file to container [pod: ${podName} container:${containerName}]: ${srcPath} -> ${destDir}: ${e.message}`, e)
+    }
+  }
+
+  /**
+   * Copy a file from a container
+   *
+   * It overwrites any existing file at the destination directory
+   *
+   * FIXME: currently it fails to catch error if incorrect containerName or invalid destination path is specified
+   *
+   * @param podName podName name
+   * @param containerName container name
+   * @param srcPath source file path in the container
+   * @param destDir destination directory in the local
+   * @returns {Promise<boolean>}
+   */
+  async copyFrom(podName, containerName, srcPath, destDir) {
+    try {
+      const srcFile = path.basename(srcPath)
+      const srcDir = path.dirname(srcPath)
+      const destPath = `${destDir}/${srcFile}`
+      await this._initKubeCopy().cpFromPod(this.getCurrentNamespace(), podName, containerName, srcFile, destDir, srcDir)
+      return true
+    } catch (e) {
+      throw new FullstackTestingError(`failed to copy file from container [pod: ${podName} container:${containerName}]: ${srcPath} -> ${destDir}: ${e.message}`, e)
+    }
   }
 
   /**

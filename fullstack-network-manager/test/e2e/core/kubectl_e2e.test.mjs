@@ -48,15 +48,23 @@ describe('Kubectl', () => {
     await expect(kubectl.getClusterIP('INVALID')).rejects.toThrow(FullstackTestingError)
   })
 
-  it('should be able to copy a file into a container', async () => {
+  it('should be able to copy a file to and from a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
     const containerName = constants.ROOT_CONTAINER
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
+    const tmpDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
     const tmpFile = path.join(tmpDir, 'test.txt')
+    const destDir = constants.HEDERA_HAPI_PATH
+    const destPath = `${destDir}/test.txt`
     fs.writeFileSync(tmpFile, "TEST")
 
-    await expect(kubectl.copy(podName, containerName, tmpFile, `/tmp/dummy.txt`, tmpDir)).resolves.toBeTruthy()
+    await expect(kubectl.copyTo(podName, containerName, tmpFile, destDir)).resolves.toBeTruthy()
+    await expect(kubectl.hasPath(podName, containerName, destPath)).resolves.toBeTruthy()
+
+    await expect(kubectl.copyFrom(podName, containerName, destPath, tmpDir2)).resolves.toBeTruthy()
+    expect(fs.existsSync(`${tmpDir2}/test.txt`))
 
     fs.rmdirSync(tmpDir, {recursive: true})
+    fs.rmdirSync(tmpDir2, {recursive: true})
   })
 })
