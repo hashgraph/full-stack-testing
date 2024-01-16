@@ -1,9 +1,11 @@
 import { describe, expect, it } from '@jest/globals'
 import fs from 'fs'
+import net from 'net'
 import os from 'os'
 import path from 'path'
 import { v4 as uuid4 } from 'uuid'
 import { FullstackTestingError } from '../../../src/core/errors.mjs'
+import * as helpers from '../../../src/core/helpers.mjs'
 import { constants, Templates } from '../../../src/core/index.mjs'
 import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
 
@@ -73,4 +75,37 @@ describe('Kubectl', () => {
     fs.rmdirSync(tmpDir, { recursive: true })
     fs.rmdirSync(tmpDir2, { recursive: true })
   }, 10000)
+
+  it('should be able to port forward gossip port', async () => {
+    const podName = Templates.renderNetworkPodName('node0')
+    const localPort = constants.HEDERA_NODE_INTERNAL_GOSSIP_PORT
+    const server = await kubectl.portForward(podName, localPort, constants.HEDERA_NODE_INTERNAL_GOSSIP_PORT)
+    expect(server).not.toBeNull()
+
+    // client
+    const client = new net.Socket()
+    let connected = false
+    client.connect(localPort).on('connection', () => {
+      connected = true
+    })
+
+    const pollFunc = () => {
+      if (connected) {
+        client.end()
+        server.close()
+      }
+
+      return connected // if connected return true to stop polling
+    }
+    const timeoutFunc = () => {
+      if (!connected) {
+        client.end()
+        server.close()
+      }
+
+      expect(connected).toBeTruthy()
+    }
+
+    helpers.poll(pollFunc, timeoutFunc, 100, 1000)
+  })
 })

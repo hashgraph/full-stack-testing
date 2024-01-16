@@ -1,7 +1,9 @@
 import * as k8s from '@kubernetes/client-node'
+import net from 'net'
 import path from 'path'
 import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
 import * as sb from 'stream-buffers'
+import * as helpers from './helpers.mjs'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
@@ -394,9 +396,10 @@ export class Kubectl2 {
    * @param timeoutMs timout in milliseconds
    * @returns {Promise<string>} console output as string
    */
-  async getExecOutput (podName, containerName, command = [], timeoutMs = 5000) {
+  async getExecOutput (podName, containerName, command = [], timeoutMs = 1000) {
     try {
       if (!command) return ''
+      if (timeoutMs < 0 || timeoutMs === 0) throw MissingArgumentError('timeout cannot be negative or zero')
 
       const execInstance = new k8s.Exec(this._kubeConfig)
       const outStream = new sb.WritableStreamBuffer()
@@ -421,23 +424,26 @@ export class Kubectl2 {
       )
 
       // we need to poll to get the output contents
-      const pollingDelay = 100
       return new Promise((resolve, reject) => {
         let resolved = false
-        const timerId = setInterval(() => {
+
+        const pollFunc = () => {
           if (execStatus === 'Success') {
-            clearInterval(timerId)
             resolved = true
             resolve(outStream.getContentsAsString())
+            return true
           }
-        }, pollingDelay)
 
-        setTimeout(() => {
+          return false
+        }
+
+        const timeoutFunc = () => {
           if (!resolved) {
-            clearInterval(timerId)
             reject(new FullstackTestingError(`timeout occurred during exec in '${podName}:${containerName}': ${command.join[' ']}`))
           }
-        }, timeoutMs)
+        }
+
+        helpers.poll(pollFunc, timeoutFunc, 100, timeoutMs)
       })
     } catch (e) {
       throw new FullstackTestingError(`error occurred during exec in '${podName}:${containerName}': ${command.join[' ']}`)
@@ -445,14 +451,23 @@ export class Kubectl2 {
   }
 
   /**
-   * Invoke `kubectl port-forward svc/<svc name>` command
-   * @param resource name of the service or podName. Must be of the format podName/<podName name> or svc/<service name>
-   * @param localPort port of the host machine
-   * @param remotePort port to be forwarded from the service or podName
-   * @returns {Promise<Array>} console output as an array of strings
+   * Port forward a port from a pod to localhost
+   *
+   * This simple server just forwards traffic from itself to a service running in kubernetes
+   * -> localhost:localPort -> port-forward-tunnel -> kubernetes-pod:targetPort
+   *
+   * @param podName pod name
+   * @param localPort local port
+   * @param podPort port of the pod
+   * @returns {Promise<net.Server>} return the instance of the server that caller must close
    */
-  async portForward (resource, localPort, remotePort) {
-    // return this.run(this.prepareCommand(`port-forward ${resource} ${localPort}:${remotePort} &`))
+  async portForward (podName, localPort, podPort) {
+    const forwarder = new k8s.PortForward(this._kubeConfig, true)
+    const server = net.createServer((socket) => {
+      forwarder.portForward(this.getCurrentNamespace(), podName, [podPort], socket, null, socket)
+    })
+
+    return server.listen(localPort, '127.0.0.1')
   }
 
   /**
