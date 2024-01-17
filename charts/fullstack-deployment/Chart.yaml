@@ -31,7 +31,6 @@ kubeVersion: ">=1.25.0-0"
 dependencies:
   # hedera-mirror-node-explorer (dependent on hedera-mirror-node)
   - name: hedera-explorer
-    alias: hedera-mirror-node-explorer
     version: 0.2.0
     condition: hedera-explorer.enabled
 

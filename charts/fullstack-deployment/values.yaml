@@ -401,8 +401,22 @@ hedera-mirror-node:
         effect: "NoSchedule"
 
 # hedera-mirror-node-explorer configuration
-hedera-mirror-node-explorer:
+hedera-explorer:
   enabled: true
+#  service:
+#    type: LoadBalancer
+#    port: 8888
+#  ingress:
+#    enabled: true
+#    hosts:
+#      - host: "explorer.fst.local"
+#        paths:
+#          - path: /
+#            pathType: ImplementationSpecific
+#    tls:
+#      - secretName: self-signed-ca-secret-hedera-explorer # TODO update
+#        hosts:
+#          - "explorer.fst.local"
   labels:
     fullstack.hedera.com/testSuiteName: ""
     fullstack.hedera.com/testName: ""
@@ -444,7 +458,7 @@ hedera-mirror-node-explorer:
 # common deployment configuration
 deployment:
   hederaExplorer:
-    hostname: "explorer.fst.local"
+    hostname: "explorer.fst.local" # TODO remove duplication
   podAnnotations: {}
   podLabels: {}
   nodeSelector: {}
