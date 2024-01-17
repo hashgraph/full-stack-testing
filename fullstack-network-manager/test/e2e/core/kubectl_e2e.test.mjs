@@ -52,7 +52,7 @@ describe('Kubectl', () => {
 
   it('should be able to check if a path is directory inside a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
-    await expect(kubectl.hasDir(podName, constants.ROOT_CONTAINER, constants.HEDERA_HAPI_PATH)).resolves.toBeTruthy()
+    await expect(kubectl.hasDir(podName, constants.ROOT_CONTAINER, constants.HEDERA_USER_HOME_DIR)).resolves.toBeTruthy()
   })
 
   it('should be able to copy a file to and from a container', async () => {
@@ -62,18 +62,18 @@ describe('Kubectl', () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
     const tmpDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
     const tmpFile = path.join(tmpDir, testFileName)
-    const destDir = constants.HEDERA_HAPI_PATH
+    const destDir = constants.HEDERA_USER_HOME_DIR
     const destPath = `${destDir}/${testFileName}`
     fs.writeFileSync(tmpFile, 'TEST')
 
     await expect(kubectl.copyTo(podName, containerName, tmpFile, destDir)).resolves.toBeTruthy()
-    await expect(kubectl.hasFile(podName, containerName, destPath)).resolves.toBeTruthy()
+    fs.rmdirSync(tmpDir, { recursive: true })
 
     await expect(kubectl.copyFrom(podName, containerName, destPath, tmpDir2)).resolves.toBeTruthy()
-    expect(fs.existsSync(`${tmpDir2}/${testFileName}`))
-
-    fs.rmdirSync(tmpDir, { recursive: true })
     fs.rmdirSync(tmpDir2, { recursive: true })
+
+    // rm file inside the container
+    await expect(kubectl.getExecOutput(podName, containerName, ['rm', '-f', destPath])).resolves
   }, 10000)
 
   it('should be able to port forward gossip port', (done) => {
@@ -98,5 +98,15 @@ describe('Kubectl', () => {
 
       client.connect(localPort)
     })
+  })
+
+  it('should be able to run watch for pod', async () => {
+    const nodeId = 'node0'
+    const labels = [
+      'fullstack.hedera.com/type=network-node',
+      `fullstack.hedera.com/node-name=${nodeId}`
+    ]
+
+    await expect(kubectl.waitForPod(constants.POD_STATUS_RUNNING, labels)).resolves.toBeTruthy()
   })
 })

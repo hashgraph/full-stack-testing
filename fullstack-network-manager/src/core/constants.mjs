@@ -68,6 +68,8 @@ export const DEFAULT_CHART_REPO = new Map()
 export const OPERATOR_ID = process.env.FST_OPERATOR_ID || '0.0.2'
 export const OPERATOR_KEY = process.env.FST_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
 
+export const POD_STATUS_RUNNING = 'Running'
+
 // Listr related
 export const LISTR_DEFAULT_RENDERER_TIMER_OPTION = {
   ...PRESET_TIMER,

@@ -1,9 +1,12 @@
 import * as k8s from '@kubernetes/client-node'
+import fs from 'fs'
 import net from 'net'
 import path from 'path'
 import { flags } from '../commands/index.mjs'
 import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
 import * as sb from 'stream-buffers'
+import { sleep } from './helpers.mjs'
+import * as helpers from './helpers.mjs'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
@@ -121,9 +124,7 @@ export class Kubectl2 {
    * @return {Promise<{}>} k8s.V1Pod object
    */
   async getPodByName (name) {
-    const ns = this.configManager.flagValue(flags.namespace)
-    if (!ns) throw new MissingArgumentError('namespace is not set')
-
+    const ns = this._getNamespace()
     const fieldSelector = `metadata.name=${name}`
     const resp = await this.kubeClient.listNamespacedPod(
       ns,
@@ -156,9 +157,7 @@ export class Kubectl2 {
    * @return {Promise<{}>} k8s.V1Service object
    */
   async getSvcByName (name) {
-    const ns = this.configManager.flagValue(flags.namespace)
-    if (!ns) throw new MissingArgumentError('namespace is not set')
-
+    const ns = this._getNamespace()
     const fieldSelector = `metadata.name=${name}`
     const resp = await this.kubeClient.listNamespacedService(
       ns,
@@ -316,19 +315,29 @@ export class Kubectl2 {
    * @param containerName container name
    * @param srcPath source file path in the local
    * @param destDir destination directory in the container
-   * @returns {Promise<boolean>}
+   * @returns {Promise<>}
    */
   async copyTo (podName, containerName, srcPath, destDir) {
-    const srcFile = path.basename(srcPath)
-    const srcDir = path.dirname(srcPath)
-    const ns = this.configManager.flagValue(flags.namespace)
-    if (!ns) throw new MissingArgumentError('namespace is not set')
+    const ns = this._getNamespace()
 
     try {
+      const srcFile = path.basename(srcPath)
+      const srcDir = path.dirname(srcPath)
+      const destPath = `${destDir}/${srcFile}`
+
       await this.kubeCopy.cpToPod(ns, podName, containerName, srcFile, destDir, srcDir)
-      return true
+
+      // check if the file is copied successfully or not
+      for (let attempt = 0; attempt < 10; attempt++) {
+        if (await this.hasFile(podName, containerName, destPath)) {
+          return true
+        }
+        await sleep(200)
+      }
+
+      throw new FullstackTestingError(`failed to find file after invoking copy: ${destPath}`)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy file to container [pod: ${podName} container:${containerName}]: ${srcPath} -> ${destDir}: ${e.message}`, e)
+      throw new FullstackTestingError(`failed to copy file to ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
     }
   }
 
@@ -344,17 +353,27 @@ export class Kubectl2 {
    * @returns {Promise<boolean>}
    */
   async copyFrom (podName, containerName, srcPath, destDir) {
-    const ns = this.configManager.flagValue(flags.namespace)
-    if (!ns) throw new MissingArgumentError('namespace is not set')
-
-    const srcFile = path.basename(srcPath)
-    const srcDir = path.dirname(srcPath)
+    const ns = this._getNamespace()
 
     try {
+      const srcFile = path.basename(srcPath)
+      const srcDir = path.dirname(srcPath)
+      const destPath = `${destDir}/${srcFile}`
+      if (!fs.existsSync(destDir)) throw new Error(`invalid destination dir: ${destDir}`)
+
       await this.kubeCopy.cpFromPod(ns, podName, containerName, srcFile, destDir, srcDir)
-      return true
+
+      // check if the file is copied successfully or not
+      for (let attempt = 0; attempt < 10; attempt++) {
+        if (fs.existsSync(destPath)) {
+          return true
+        }
+        await sleep(200)
+      }
+
+      throw new FullstackTestingError(`failed to find file after invoking copy: ${destPath}`)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy file from container [pod: ${podName} container:${containerName}]: ${srcPath} -> ${destDir}: ${e.message}`, e)
+      throw new FullstackTestingError(`failed to copy file from ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
     }
   }
 
@@ -367,11 +386,10 @@ export class Kubectl2 {
    * @param timeoutMs timout in milliseconds
    * @returns {Promise<string>} console output as string
    */
-  async getExecOutput (podName, containerName, command = [], timeoutMs = 1000) {
-    const ns = this.configManager.flagValue(flags.namespace)
-    if (!ns) throw new MissingArgumentError('namespace is not set')
-    if (!command) return ''
+  async getExecOutput (podName, containerName, command, timeoutMs = 1000) {
+    const ns = this._getNamespace()
     if (timeoutMs < 0 || timeoutMs === 0) throw MissingArgumentError('timeout cannot be negative or zero')
+    if (!command || !Array.isArray(command)) throw MissingArgumentError('command cannot be empty')
 
     return new Promise((resolve, reject) => {
       const execInstance = new k8s.Exec(this.kubeConfig)
@@ -410,9 +428,7 @@ export class Kubectl2 {
    * @param podPort port of the pod
    */
   async portForward (podName, localPort, podPort) {
-    const ns = this.configManager.flagValue(flags.namespace)
-    if (!ns) throw new MissingArgumentError('namespace is not set')
-
+    const ns = this._getNamespace()
     const forwarder = new k8s.PortForward(this.kubeConfig, true)
     const server = net.createServer((socket) => {
       forwarder.portForward(ns, podName, [podPort], socket, null, socket)
@@ -422,58 +438,48 @@ export class Kubectl2 {
   }
 
   /**
-   * Invoke `kubectl wait` command
-   * @param resource a kubernetes resource type (e.g. podName | svc etc.)
-   * @param args args of the command
-   * @returns {Promise<Array>} console output as an array of strings
+   * Wait for pod
+   * @param status phase of the pod
+   * @param labels pod labels
+   * @param timeoutSeconds timeout in seconds
+   * @return {Promise<boolean>}
    */
-  // async waitForPod(namespace, phase = 'Running', labels = [], timeoutSeconds = 0.3) {
-  //   // await this.kubectl.wait('podName',
-  //   //   '--for=jsonpath=\'{.status.phase}\'=Running',
-  //   //   '-l fullstack.hedera.com/type=network-node',
-  //   //   `-l fullstack.hedera.com/node-name=${nodeId}`,
-  //   //   `--timeout=${timeout}`,
-  //   //   `-n "${namespace}"`
-  //   // )
-  //   const self = this
-  //   const delay = 100
-  //   let status = false
-  //
-  //   const fieldSelector = `status.phase=${phase}`
-  //   const labelSelector = labels.join(',')
-  //
-  //   const podNames = await self.kubeClient.listPodForAllNamespaces(
-  //     false,
-  //     false,
-  //     fieldSelector,
-  //     labelSelector,
-  //   )
-  //
-  //   const check = function () {
-  //     console.log(new Date())
-  //     const podNames = self.kubeClient.listPodForAllNamespaces(
-  //       false,
-  //       false,
-  //       fieldSelector,
-  //       labelSelector,
-  //       )
-  //     return false
-  //   }
-  //
-  //   let timerId = setTimeout( () => {
-  //     status = check()
-  //     if (status) {
-  //       clearTimeout(timerId)
-  //     } else {
-  //       timerId = setTimeout(check, delay)
-  //     }
-  //   }, timeout)
-  //
-  //   if (!status) {
-  //     throw new FullstackTestingError(`timeout occurred during waiting for podName`)
-  //   }
-  //
-  //   clearTimeout(timerId)
-  //   return true
-  // }
+  async waitForPod (status = 'Running', labels = [], timeoutSeconds = 1) {
+    const ns = this._getNamespace()
+    const fieldSelector = `status.phase=${status}`
+    const labelSelector = labels.join(',')
+
+    const delay = 200
+    const maxAttempts = Math.round(timeoutSeconds * 1000 / delay)
+    if (maxAttempts <= 0) {
+      throw new FullstackTestingError(`invalid timeoutSeconds '${timeoutSeconds}'. maxAttempts calculated to be negative or zero`)
+    }
+
+    // wait for the pod to be available with the given status and labels
+    for (let attempts = 0; attempts < maxAttempts; attempts++) {
+      const resp = await this.kubeClient.listNamespacedPod(
+        ns,
+        false,
+        false,
+        undefined,
+        fieldSelector,
+        labelSelector
+      )
+
+      const found = resp.body && resp.body.items && resp.body.items.length
+      if (found) {
+        return true
+      }
+
+      await sleep(delay)
+    }
+
+    throw new FullstackTestingError('pod not found')
+  }
+
+  _getNamespace () {
+    const ns = this.configManager.flagValue(flags.namespace)
+    if (!ns) throw new MissingArgumentError('namespace is not set')
+    return ns
+  }
 }
