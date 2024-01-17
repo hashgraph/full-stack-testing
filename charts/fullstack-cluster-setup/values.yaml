@@ -21,3 +21,7 @@ cloud:
 cert-manager:
   namespace: cert-manager
   installCRDs: false
+
+minio-operator:
+  operator:
+    replicaCount: 1
