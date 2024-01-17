@@ -51,7 +51,7 @@ image:
 
 ingress:
   annotations: {}
-  className: ""
+  className: "" # need to set a classname to make it unique for deployment because it is cluster wide and FST can have multiple deployments, use the helm release name as a prefix
   enabled: false
   hosts:
     - host: chart-example.local

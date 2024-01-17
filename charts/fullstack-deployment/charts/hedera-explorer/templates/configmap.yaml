@@ -5,7 +5,7 @@ metadata:
   annotations: {{ toYaml .Values.annotations | nindent 4 }}
   labels: {{ include "hedera-explorer.labels" . | nindent 4 }}
   namespace: {{ include "hedera-explorer.namespace" . }}
-data:
+data: # add 443 port block section and mount to secret to pull certificate
   nginx.conf: |
     worker_processes  1;
     error_log         stderr  warn;
