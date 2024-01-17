@@ -5,14 +5,14 @@ import os from 'os'
 import path from 'path'
 import { v4 as uuid4 } from 'uuid'
 import { FullstackTestingError } from '../../../src/core/errors.mjs'
-import * as helpers from '../../../src/core/helpers.mjs'
-import { constants, Templates } from '../../../src/core/index.mjs'
+import { ConfigManager, constants, logging, Templates } from '../../../src/core/index.mjs'
 import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
 
 describe('Kubectl', () => {
-  const kubectl = new Kubectl2()
-  // kubectl.setCurrentContext(constants.CONTEXT_NAME)
-  kubectl.setCurrentNamespace(constants.NAMESPACE_NAME)
+  const testLogger = logging.NewLogger('debug')
+  const configManager = new ConfigManager(testLogger)
+  const kubectl = new Kubectl2(configManager, testLogger)
+  // configManager.load({namespace: constants.NAMESPACE_NAME})
 
   it('should be able to list clusters', async () => {
     const clusters = await kubectl.getClusters()
@@ -76,36 +76,27 @@ describe('Kubectl', () => {
     fs.rmdirSync(tmpDir2, { recursive: true })
   }, 10000)
 
-  it('should be able to port forward gossip port', async () => {
+  it('should be able to port forward gossip port', (done) => {
     const podName = Templates.renderNetworkPodName('node0')
     const localPort = constants.HEDERA_NODE_INTERNAL_GOSSIP_PORT
-    const server = await kubectl.portForward(podName, localPort, constants.HEDERA_NODE_INTERNAL_GOSSIP_PORT)
-    expect(server).not.toBeNull()
+    kubectl.portForward(podName, localPort, constants.HEDERA_NODE_INTERNAL_GOSSIP_PORT).then((server) => {
+      expect(server).not.toBeNull()
 
-    // client
-    const client = new net.Socket()
-    let connected = false
-    client.connect(localPort).on('connection', () => {
-      connected = true
+      // client
+      const client = new net.Socket()
+      client.on('ready', () => {
+        client.destroy()
+        server.close()
+        done()
+      })
+
+      client.on('error', (e) => {
+        client.destroy()
+        server.close()
+        done(new FullstackTestingError(`could not connect to local port '${localPort}': ${e.message}`, e))
+      })
+
+      client.connect(localPort)
     })
-
-    const pollFunc = () => {
-      if (connected) {
-        client.end()
-        server.close()
-      }
-
-      return connected // if connected return true to stop polling
-    }
-    const timeoutFunc = () => {
-      if (!connected) {
-        client.end()
-        server.close()
-      }
-
-      expect(connected).toBeTruthy()
-    }
-
-    helpers.poll(pollFunc, timeoutFunc, 100, 1000)
   })
 })
