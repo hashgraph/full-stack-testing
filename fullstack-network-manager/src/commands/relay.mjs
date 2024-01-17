@@ -70,20 +70,19 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          self.logger.debug('Setup cached config', { cachedConfig, argv })
+          self.configManager.load(argv)
 
           // extract config values
-          const valuesFile = self.configManager.flagValue(cachedConfig, flags.valuesFile)
-          const nodeIds = self.configManager.flagValue(cachedConfig, flags.nodeIDs)
-          const chainId = self.configManager.flagValue(cachedConfig, flags.chainId)
-          const releaseTag = self.configManager.flagValue(cachedConfig, flags.releaseTag)
-          const replicaCount = self.configManager.flagValue(cachedConfig, flags.replicaCount)
-          const operatorId = self.configManager.flagValue(cachedConfig, flags.operatorId)
-          const operatorKey = self.configManager.flagValue(cachedConfig, flags.operatorKey)
+          const valuesFile = self.configManager.flagValue(flags.valuesFile)
+          const nodeIds = self.configManager.flagValue(flags.nodeIDs)
+          const chainId = self.configManager.flagValue(flags.chainId)
+          const releaseTag = self.configManager.flagValue(flags.releaseTag)
+          const replicaCount = self.configManager.flagValue(flags.replicaCount)
+          const operatorId = self.configManager.flagValue(flags.operatorId)
+          const operatorKey = self.configManager.flagValue(flags.operatorKey)
 
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-          const chartDir = self.configManager.flagValue(cachedConfig, flags.chartDirectory)
+          const namespace = self.configManager.flagValue(flags.namespace)
+          const chartDir = self.configManager.flagValue(flags.chartDirectory)
 
           // prompt if inputs are empty and set it in the context
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
@@ -164,12 +163,11 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          self.logger.debug('Setup cached config', { cachedConfig, argv })
+          self.configManager.load(argv)
 
           // extract config values
-          const nodeIds = self.configManager.flagValue(cachedConfig, flags.nodeIDs)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          const nodeIds = self.configManager.flagValue(flags.nodeIDs)
+          const namespace = self.configManager.flagValue(flags.namespace)
 
           // prompt if inputs are empty and set it in the context
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')

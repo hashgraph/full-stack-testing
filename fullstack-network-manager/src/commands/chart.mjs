@@ -58,18 +58,18 @@ export class ChartCommand extends BaseCommand {
   }
 
   async prepareConfig (task, argv) {
-    const cachedConfig = await this.configManager.setupConfig(argv)
-    const namespace = this.configManager.flagValue(cachedConfig, flags.namespace)
-    const chartDir = this.configManager.flagValue(cachedConfig, flags.chartDirectory)
-    const valuesFile = this.configManager.flagValue(cachedConfig, flags.valuesFile)
-    const deployMirrorNode = this.configManager.flagValue(cachedConfig, flags.deployMirrorNode)
-    const deployExplorer = this.configManager.flagValue(cachedConfig, flags.deployHederaExplorer)
-    const enableTls = this.configManager.flagValue(cachedConfig, flags.enableTls)
-    const tlsClusterIssuerName = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerName)
-    const tlsClusterIssuerNamespace = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerNamespace)
-    const enableHederaExplorerTls = this.configManager.flagValue(cachedConfig, flags.enableHederaExplorerTls)
-    const acmeClusterIssuer = this.configManager.flagValue(cachedConfig, flags.acmeClusterIssuer)
-    const selfSignedClusterIssuer = this.configManager.flagValue(cachedConfig, flags.selfSignedClusterIssuer)
+    this.configManager.load(argv)
+    const namespace = this.configManager.flagValue(flags.namespace)
+    const chartDir = this.configManager.flagValue(flags.chartDirectory)
+    const valuesFile = this.configManager.flagValue(flags.valuesFile)
+    const deployMirrorNode = this.configManager.flagValue(flags.deployMirrorNode)
+    const deployExplorer = this.configManager.flagValue(flags.deployHederaExplorer)
+    const enableTls = this.configManager.flagValue(flags.enableTls)
+    const tlsClusterIssuerName = this.configManager.flagValue(flags.tlsClusterIssuerName)
+    const tlsClusterIssuerNamespace = this.configManager.flagValue(flags.tlsClusterIssuerNamespace)
+    const enableHederaExplorerTls = this.configManager.flagValue(flags.enableHederaExplorerTls)
+    const acmeClusterIssuer = this.configManager.flagValue(flags.acmeClusterIssuer)
+    const selfSignedClusterIssuer = this.configManager.flagValue(flags.selfSignedClusterIssuer)
 
     // prompt if values are missing and create a config object
     const config = {
@@ -85,7 +85,7 @@ export class ChartCommand extends BaseCommand {
       acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer),
       selfSignedClusterIssuer: await prompts.promptSelfSignedClusterIssuer(task, selfSignedClusterIssuer),
       timeout: '900s',
-      version: cachedConfig.version
+      version: this.configManager.getVersion()
     }
 
     // compute values
@@ -153,8 +153,8 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const namespace = self.configManager.flagValue(flags.namespace)
           ctx.config = {
             namespace: await prompts.promptNamespaceArg(task, namespace)
           }

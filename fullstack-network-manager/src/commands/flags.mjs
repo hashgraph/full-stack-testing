@@ -43,6 +43,15 @@ export const namespace = {
   }
 }
 
+export const kubeContext = {
+  name: 'kube-context',
+  definition: {
+    describe: 'Kube context',
+    default: '',
+    type: 'string'
+  }
+}
+
 export const deployMirrorNode = {
   name: 'mirror-node',
   definition: {
@@ -279,6 +288,7 @@ export const allFlags = [
   devMode,
   clusterName,
   namespace,
+  kubeContext,
   deployMirrorNode,
   deployHederaExplorer,
   deployJsonRpcRelay,

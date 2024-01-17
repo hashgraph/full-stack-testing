@@ -95,14 +95,14 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
+          self.configManager.load(argv)
 
           // get existing choices
           ctx.clusters = await self.clusterManager.getClusters()
 
           // extract config values
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          const clusterName = self.configManager.flagValue(flags.clusterName)
+          const namespace = self.configManager.flagValue(flags.namespace)
 
           ctx.config = {
             clusterName: await prompts.promptClusterNameArg(task, clusterName),
@@ -167,8 +167,8 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
+          self.configManager.load(argv)
+          const clusterName = self.configManager.flagValue(flags.clusterName)
 
           // get existing choices
           ctx.clusters = await self.clusterManager.getClusters()
@@ -217,18 +217,17 @@ export class ClusterCommand extends BaseCommand {
             throw new FullstackTestingError('kubectl context is not set, set context by running: kubectl config use-context <context-name>')
           }
 
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          self.logger.debug('Setup cached config', { cachedConfig, argv })
+          self.configManager.load(argv)
 
           // extract config values
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-          const chartDir = self.configManager.flagValue(cachedConfig, flags.chartDirectory)
-          const deployPrometheusStack = self.configManager.flagValue(cachedConfig, flags.deployPrometheusStack)
-          const deployMinio = self.configManager.flagValue(cachedConfig, flags.deployMinio)
-          const deployEnvoyGateway = self.configManager.flagValue(cachedConfig, flags.deployEnvoyGateway)
-          const deployCertManager = self.configManager.flagValue(cachedConfig, flags.deployCertManager)
-          const deployCertManagerCrds = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCrds)
+          const clusterName = self.configManager.flagValue(flags.clusterName)
+          const namespace = self.configManager.flagValue(flags.namespace)
+          const chartDir = self.configManager.flagValue(flags.chartDirectory)
+          const deployPrometheusStack = self.configManager.flagValue(flags.deployPrometheusStack)
+          const deployMinio = self.configManager.flagValue(flags.deployMinio)
+          const deployEnvoyGateway = self.configManager.flagValue(flags.deployEnvoyGateway)
+          const deployCertManager = self.configManager.flagValue(flags.deployCertManager)
+          const deployCertManagerCrds = self.configManager.flagValue(flags.deployCertManagerCrds)
 
           // get existing choices
           const clusters = await self.clusterManager.getClusters()
@@ -321,9 +320,9 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const clusterName = self.configManager.flagValue(flags.clusterName)
+          const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
           const clusters = await self.clusterManager.getClusters()

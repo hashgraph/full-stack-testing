@@ -53,7 +53,7 @@ export class InitCommand extends BaseCommand {
       {
         title: 'Setup config manager',
         task: async (ctx, _) => {
-          ctx.config = await this.configManager.setupConfig(argv, true)
+          ctx.config = this.configManager.load(argv, true)
         }
       },
       {

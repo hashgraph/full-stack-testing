@@ -118,8 +118,8 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
@@ -215,8 +215,8 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
@@ -294,8 +294,8 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')

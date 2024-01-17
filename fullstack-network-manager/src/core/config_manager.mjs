@@ -14,44 +14,20 @@ export class ConfigManager {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
 
     this.logger = logger
+    this.config = this.load()
   }
 
   /**
-   * load package.json
-   * @returns {any}
-   */
-  loadPackageJSON () {
-    try {
-      const raw = fs.readFileSync(`${CUR_FILE_DIR}/../../package.json`)
-      return JSON.parse(raw.toString())
-    } catch (e) {
-      throw new FullstackTestingError('failed to load package.json', e)
-    }
-  }
-
-  hasFlag (config, flag) {
-    return config.flags[flag.name] !== undefined
-  }
-
-  flagValue (config, flag) {
-    if (this.hasFlag(config, flag)) {
-      return config.flags[flag.name]
-    }
-
-    return ''
-  }
-
-  /**
-   * Load and store config
+   * Load and cache config on disk
    *
-   * It overwrites previous config values using opts and store in the config file if any value has been changed.
+   * It overwrites previous config values using argv and store in the cached config file if any value has been changed.
    *
-   * @param opts object containing various config related fields (e.g. argv)
+   * @param argv object containing various config related fields (e.g. argv)
    * @param reset if we should reset old values
    * @param flagList list of flags to be processed
-   * @returns {Promise<unknown>}
+   * @returns {*} config object
    */
-  async setupConfig (opts, reset = false, flagList = flags.allFlags) {
+  load (argv = {}, reset = false, flagList = flags.allFlags) {
     const self = this
 
     try {
@@ -73,10 +49,10 @@ export class ConfigManager {
       config.version = packageJSON.version
 
       // extract flags from argv
-      if (opts) {
+      if (argv) {
         flagList.forEach(flag => {
-          if (opts && opts[flag.name] !== undefined) {
-            let val = opts[flag.name]
+          if (argv && argv[flag.name] !== undefined) {
+            let val = argv[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
               val = paths.resolve(val)
             }
@@ -91,8 +67,8 @@ export class ConfigManager {
         })
 
         // store last command that was run
-        if (opts._) {
-          config.lastCommand = opts._
+        if (argv._) {
+          config.lastCommand = argv._
         }
       }
 
@@ -106,12 +82,66 @@ export class ConfigManager {
         config = JSON.parse(configJSON.toString())
       }
 
+      this.config = config
       this.logger.debug('Setup cached config', { cachedConfig: config })
 
-      this.logger.setDevMode(this.flagValue(config, flags.devMode))
-      return config
+      // set dev mode for logger if necessary
+      this.logger.setDevMode(this.flagValue(flags.devMode))
+
+      return this.config
     } catch (e) {
       throw new FullstackTestingError(`failed to load config: ${e.message}`, e)
     }
+  }
+
+  /**
+   * load package.json
+   * @returns {any}
+   */
+  loadPackageJSON () {
+    try {
+      const raw = fs.readFileSync(`${CUR_FILE_DIR}/../../package.json`)
+      return JSON.parse(raw.toString())
+    } catch (e) {
+      throw new FullstackTestingError('failed to load package.json', e)
+    }
+  }
+
+  /**
+   * Return the value of the given flag
+   *
+   * @param flag flag object
+   * @return {*|string}
+   */
+  flagValue (flag) {
+    if (this.config.flags[flag.name] !== undefined) {
+      return this.config.flags[flag.name]
+    }
+
+    return ''
+  }
+
+  /**
+   * Get package version
+   * @return {*}
+   */
+  getVersion () {
+    return this.config.version
+  }
+
+  /**
+   * Get last updated at timestamp
+   * @return {string}
+   */
+  getUpdatedAt () {
+    return this.config.updatedAt
+  }
+
+  /**
+   * Get last command
+   * @return {*}
+   */
+  getLastCommand () {
+    return this.config.lastCommand
   }
 }
