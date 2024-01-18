@@ -403,16 +403,21 @@ hedera-mirror-node:
         value: "network"
         effect: "NoSchedule"
 
+haproxy-ingress:
+  controller:
+    service:
+      loadBalancerIP: "34.41.195.144"
 # hedera-mirror-node-explorer configuration
 hedera-explorer:
   enabled: true
 #  service:
-#    port: 8888
+#    type: LoadBalancer
+#    loadBalancerIP: "34.41.195.144"
   ingress:
     enabled: true
     className: ""
-    annotations:
-      kubernetes.io/ingress.global-static-ip-name: "fullstack-test-edge-gateway-ip-1"
+#    annotations:
+#      kubernetes.io/ingress.regional-static-ip-name: "fullstack-test-edge-gateway-ip-1"
     hosts:
       - host: "explorer.fst.local"
         paths:
