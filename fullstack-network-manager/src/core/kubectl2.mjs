@@ -6,7 +6,6 @@ import { flags } from '../commands/index.mjs'
 import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
 import * as sb from 'stream-buffers'
 import { sleep } from './helpers.mjs'
-import * as helpers from './helpers.mjs'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
