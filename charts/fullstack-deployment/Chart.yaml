@@ -52,5 +52,7 @@ dependencies:
     # TODO: uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
     condition: cloud.acmeClusterIssuer.enabled
 
-# add haproxy ingress controller
-# check for name and namespace used in the ingress controller
+  - name: haproxy-ingress
+    version: 0.14.5
+    repository: https://haproxy-ingress.github.io/charts
+    condition: cloud.haproxyIngressController.enabled

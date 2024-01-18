@@ -2,6 +2,8 @@
 
 global:
   namespaceOverride: ""
+  ingressClassName: ""
+  explorerHostName: &explorerHostName "explorer.fst.local"
 
 # cloud configuration
 cloud:
@@ -17,6 +19,8 @@ cloud:
   acmeClusterIssuer:
     enabled: false
   selfSignedClusterIssuer:
+    enabled: false
+  haproxyIngressController:
     enabled: false
 
 # telemetry configurations
@@ -404,19 +408,21 @@ hedera-mirror-node:
 hedera-explorer:
   enabled: true
 #  service:
-#    type: LoadBalancer
 #    port: 8888
-#  ingress:
-#    enabled: true
-#    hosts:
-#      - host: "explorer.fst.local"
-#        paths:
-#          - path: /
-#            pathType: ImplementationSpecific
-#    tls:
-#      - secretName: self-signed-ca-secret-hedera-explorer # TODO update
-#        hosts:
-#          - "explorer.fst.local"
+  ingress:
+    enabled: true
+    className: ""
+    annotations:
+      kubernetes.io/ingress.global-static-ip-name: "fullstack-test-edge-gateway-ip-1"
+    hosts:
+      - host: "explorer.fst.local"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: self-signed-ca-secret-hedera-explorer # TODO update
+        hosts:
+          - "explorer.fst.local"
   labels:
     fullstack.hedera.com/testSuiteName: ""
     fullstack.hedera.com/testName: ""
