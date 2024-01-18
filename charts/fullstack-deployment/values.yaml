@@ -2,8 +2,7 @@
 
 global:
   namespaceOverride: ""
-  ingressClassName: ""
-  explorerHostName: &explorerHostName "explorer.fst.local"
+  ingressClassName: "" # TODO still needed?
 
 # cloud configuration
 cloud:
