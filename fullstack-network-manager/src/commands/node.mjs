@@ -27,13 +27,10 @@ export class NodeCommand extends BaseCommand {
     const podName = Templates.renderNetworkPodName(nodeId)
 
     try {
-      await this.kubectl.wait('pod',
-        '--for=jsonpath=\'{.status.phase}\'=Running',
-        '-l fullstack.hedera.com/type=network-node',
-        `-l fullstack.hedera.com/node-name=${nodeId}`,
-        `--timeout=${timeout}`,
-        `-n "${namespace}"`
-      )
+      await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+        'fullstack.hedera.com/type=network-node',
+        `fullstack.hedera.com/node-name=${nodeId}`
+      ], 1)
 
       return podName
     } catch (e) {
@@ -50,24 +47,21 @@ export class NodeCommand extends BaseCommand {
 
     while (attempt < maxAttempt) {
       try {
-        const output = await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `cat ${logfilePath} | grep "status = ${status}"`)
-        if (output.length > 0) {
+        const output = await this.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
+        if (output.indexOf(`Now current platform status = ${status}`) > 0) {
+          this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}]`)
           isActive = true
           break
         }
-
         this.logger.debug(`Node ${nodeId} is not ${status} yet. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
-
-        // tail the log file for debugging
-        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `tail ${logfilePath}`)
       } catch (e) {
-        this.logger.warn(`error in checking if node is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+        this.logger.warn(`error in checking if node ${nodeId} is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
 
         // ls the HAPI path for debugging
-        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+        await this.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
 
         // ls the logs directory for debugging
-        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
+        await this.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
       }
       attempt += 1
       await sleep(1000)
@@ -76,8 +70,6 @@ export class NodeCommand extends BaseCommand {
     if (!isActive) {
       throw new FullstackTestingError(`node '${nodeId}' is not ${status} [ attempt = ${attempt}/${maxAttempt} ]`)
     }
-
-    this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}] `)
 
     return true
   }
@@ -122,7 +114,7 @@ export class NodeCommand extends BaseCommand {
           const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.kubectl2.getNamespaces()
 
           const config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
@@ -143,6 +135,7 @@ export class NodeCommand extends BaseCommand {
 
           // set config in the context for later tasks to use
           ctx.config = config
+
           self.logger.debug('Initialized config', { config })
         }
       },
@@ -219,7 +212,7 @@ export class NodeCommand extends BaseCommand {
           const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.kubectl2.getNamespaces()
 
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
@@ -239,7 +232,7 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Start node: ${chalk.yellow(nodeId)}`,
-              task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
+              task: () => self.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
             })
           }
 
@@ -298,7 +291,7 @@ export class NodeCommand extends BaseCommand {
           const namespace = self.configManager.flagValue(flags.namespace)
 
           // get existing choices
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.kubectl2.getNamespaces()
 
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
@@ -318,7 +311,7 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Stop node: ${chalk.yellow(nodeId)}`,
-              task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
+              task: () => self.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
             })
           }
 

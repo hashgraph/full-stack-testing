@@ -235,7 +235,7 @@ export class Kubectl2 {
    */
   async listDir (podName, containerName, destPath, timeout = 5000) {
     try {
-      const output = await this.getExecOutput(podName, containerName, ['ls', '-la', destPath])
+      const output = await this.execContainer(podName, containerName, ['ls', '-la', destPath])
       if (!output) return []
 
       // parse the output and return the entries
@@ -273,16 +273,29 @@ export class Kubectl2 {
    * @param podName pod name
    * @param containerName container name
    * @param destPath path inside the container
+   * @param filters an object with metadata fields and value
    * @return {Promise<boolean>}
    */
-  async hasFile (podName, containerName, destPath) {
+  async hasFile (podName, containerName, destPath, filters = {}) {
     const parentDir = path.dirname(destPath)
     const fileName = path.basename(destPath)
+    const filterMap = new Map(Object.entries(filters))
     const entries = await this.listDir(podName, containerName, parentDir)
 
     for (const item of entries) {
       if (item.name === fileName && !item.directory) {
-        return true
+        let found = true
+
+        for (const entry of filterMap.entries()) {
+          const field = entry[0]
+          const value = entry[1]
+          if (`${value}` !== `${item[field]}`) {
+            found = false
+            break
+          }
+        }
+
+        if (found) return true
       }
     }
 
@@ -331,8 +344,9 @@ export class Kubectl2 {
       await this.kubeCopy.cpToPod(ns, podName, containerName, srcFile, destDir, srcDir)
 
       // check if the file is copied successfully or not
+      const fileStat = fs.statSync(srcPath)
       for (let attempt = 0; attempt < 10; attempt++) {
-        if (await this.hasFile(podName, containerName, destPath)) {
+        if (await this.hasFile(podName, containerName, destPath, { size: fileStat.size })) {
           return true
         }
         await sleep(200)
@@ -367,9 +381,16 @@ export class Kubectl2 {
       await this.kubeCopy.cpFromPod(ns, podName, containerName, srcFile, destDir, srcDir)
 
       // check if the file is copied successfully or not
+      const entries = await this.listDir(podName, containerName, srcPath)
+      if (entries.length !== 1) throw new FullstackTestingError(`exepected 1 entry, found ${entries.length}`, { entries })
+      const srcFileDesc = entries[0]
+
       for (let attempt = 0; attempt < 10; attempt++) {
         if (fs.existsSync(destPath)) {
-          return true
+          const stat = fs.statSync(destPath)
+          if (stat && `${stat.size}` === `${srcFileDesc.size}`) {
+            return true
+          }
         }
         await sleep(200)
       }
@@ -389,16 +410,21 @@ export class Kubectl2 {
    * @param timeoutMs timout in milliseconds
    * @returns {Promise<string>} console output as string
    */
-  async getExecOutput (podName, containerName, command, timeoutMs = 1000) {
+  async execContainer (podName, containerName, command, timeoutMs = 1000) {
     const ns = this._getNamespace()
-    if (timeoutMs < 0 || timeoutMs === 0) throw MissingArgumentError('timeout cannot be negative or zero')
-    if (!command || !Array.isArray(command)) throw MissingArgumentError('command cannot be empty')
+    if (timeoutMs < 0 || timeoutMs === 0) throw new MissingArgumentError('timeout cannot be negative or zero')
+    if (!command) throw new MissingArgumentError('command cannot be empty')
+    if (!Array.isArray(command)) {
+      command = command.split(' ')
+    }
 
+    const self = this
     return new Promise((resolve, reject) => {
       const execInstance = new k8s.Exec(this.kubeConfig)
       const outStream = new sb.WritableStreamBuffer()
       const errStream = new sb.WritableStreamBuffer()
 
+      self.logger.debug(`Running exec ${podName} -c ${containerName} -- ${command.join(' ')}`)
       execInstance.exec(
         ns,
         podName,
@@ -411,10 +437,15 @@ export class Kubectl2 {
         ({ status }) => {
           if (status === 'Failure' || errStream.size()) {
             reject(new FullstackTestingError(`Exec error:
-              'exec ${podName} -c ${containerName} -- ${command.join(' ')}'\n${errStream.getContentsAsString()}`))
+              [exec ${podName} -c ${containerName} -- ${command.join(' ')}'] - error details:
+              ${errStream.getContentsAsString()}`))
+            return
           }
 
-          resolve(outStream.getContentsAsString())
+          const output = outStream.getContentsAsString()
+          self.logger.debug(`Finished exec ${podName} -c ${containerName} -- ${command.join(' ')}`, { output })
+
+          resolve(output)
         }
       )
     })
@@ -475,7 +506,7 @@ export class Kubectl2 {
       )
 
       if (resp.body && resp.body.items && resp.body.items.length === podCount) {
-        this.logger.debug(`Found ${resp.body.items.length} pod with ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
+        this.logger.debug(`Found ${resp.body.items.length}/${podCount} pod with ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
         return true
       }
 

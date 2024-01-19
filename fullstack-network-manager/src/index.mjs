@@ -24,12 +24,12 @@ export function main (argv) {
   const helm = new Helm(logger)
   const kubectl = new Kubectl(logger)
   const downloader = new PackageDownloader(logger)
-  const platformInstaller = new PlatformInstaller(logger, kubectl)
   const chartManager = new ChartManager(helm, logger)
   const configManager = new ConfigManager(logger)
   const depManager = new DependencyManager(logger)
   const clusterManager = new ClusterManager(kind, kubectl)
   const kubectl2 = new Kubectl2(configManager, logger)
+  const platformInstaller = new PlatformInstaller(logger, kubectl2)
 
   const opts = {
     logger,

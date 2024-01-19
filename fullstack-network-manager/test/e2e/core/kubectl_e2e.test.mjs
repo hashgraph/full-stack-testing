@@ -73,7 +73,7 @@ describe('Kubectl', () => {
     fs.rmdirSync(tmpDir2, { recursive: true })
 
     // rm file inside the container
-    await expect(kubectl.getExecOutput(podName, containerName, ['rm', '-f', destPath])).resolves
+    await expect(kubectl.execContainer(podName, containerName, ['rm', '-f', destPath])).resolves
   }, 10000)
 
   it('should be able to port forward gossip port', (done) => {
@@ -108,5 +108,12 @@ describe('Kubectl', () => {
     ]
 
     await expect(kubectl.waitForPod(constants.POD_STATUS_RUNNING, labels)).resolves.toBeTruthy()
+  })
+
+  it('should be able to cat a log file inside the container', async () => {
+    const podName = Templates.renderNetworkPodName('node0')
+    const logfilePath = `${constants.HEDERA_HAPI_PATH}/logs/hgcaa.log`
+    const output = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
+    expect(output.indexOf('Now current platform status = ACTIVE')).toBeGreaterThan(0)
   })
 })

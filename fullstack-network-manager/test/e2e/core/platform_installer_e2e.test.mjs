@@ -1,13 +1,22 @@
 import { beforeAll, describe, expect, it } from '@jest/globals'
-import { PackageDownloader, PlatformInstaller, constants, logging, Kubectl, Templates } from '../../../src/core/index.mjs'
+import {
+  PackageDownloader,
+  PlatformInstaller,
+  constants,
+  logging,
+  Templates,
+  ConfigManager
+} from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
+import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
 
 describe('PackageInstallerE2E', () => {
   const testLogger = logging.NewLogger('debug')
-  const kubectl = new Kubectl(testLogger)
-  const installer = new PlatformInstaller(testLogger, kubectl)
+  const configManager = new ConfigManager(testLogger)
+  const kubectl2 = new Kubectl2(configManager, testLogger)
+  const installer = new PlatformInstaller(testLogger, kubectl2)
   const downloader = new PackageDownloader(testLogger)
   const testCacheDir = 'test/data/tmp'
   const podName = 'network-node0-0'
@@ -48,7 +57,7 @@ describe('PackageInstallerE2E', () => {
       try {
         packageFile = await downloader.fetchPlatform(packageTag, testCacheDir)
         await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
-        const outputs = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+        const outputs = await kubectl2.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
         testLogger.showUser(outputs)
       } catch (e) {
         console.error(e)
