@@ -1,9 +1,8 @@
 {{- if $.Values.cloud.selfSignedClusterIssuer.enabled }}
-{{/*{{- if $.Values.gatewayApi.gateway.listeners.hederaExplorer.tlsEnabled }}*/}}
+{{- if index $.Values "hedera-explorer" "enabled" | eq true }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-{{/*  name: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-hedera-explorer*/}}
   name: self-signed-ca-secret-hedera-explorer
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
@@ -11,14 +10,13 @@ spec:
   commonName: {{ $.Values.deployment.hederaExplorer.hostname }}
   dnsNames:
     - {{ $.Values.deployment.hederaExplorer.hostname }}
-{{/*  secretName: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}-ca-secret-hedera-explorer*/}}
   secretName: self-signed-ca-secret-hedera-explorer
   privateKey:
     algorithm: RSA
     size: 3072
   issuerRef:
-{{/*    name: {{ $.Values.gatewayApi.gateway.tlsClusterIssuerName }}*/}}
-    name: self-signed
+    name: fst-self-signed-cluster-issuer
     kind: ClusterIssuer
     group: cert-manager.io
+{{- end }}
 {{- end }}
