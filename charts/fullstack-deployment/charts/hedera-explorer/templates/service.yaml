@@ -13,4 +13,3 @@ spec:
       name: http
   selector: {{ include "hedera-explorer.selectorLabels" . | nindent 4 }}
   type: {{ .Values.service.type }}
-  loadBalancerIP: {{ .Values.service.loadBalancerIP }}

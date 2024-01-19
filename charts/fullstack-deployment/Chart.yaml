@@ -32,6 +32,7 @@ dependencies:
   # hedera-mirror-node-explorer (dependent on hedera-mirror-node)
   - name: hedera-explorer
     version: 0.2.0
+    # TODO use repository once source chart has been updated
     condition: hedera-explorer.enabled
 
   # hedera-mirror-node
