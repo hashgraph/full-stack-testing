@@ -2,7 +2,6 @@
 
 global:
   namespaceOverride: ""
-  ingressClassName: "" # TODO still needed?
 
 # cloud configuration
 cloud:
@@ -406,18 +405,14 @@ hedera-mirror-node:
 haproxy-ingress:
   controller:
     service:
-      loadBalancerIP: "34.41.195.144"
+      loadBalancerIP: "" # the external IP address of the hedera mirror node explorer
+
 # hedera-mirror-node-explorer configuration
 hedera-explorer:
   enabled: true
-#  service:
-#    type: LoadBalancer
-#    loadBalancerIP: "34.41.195.144"
   ingress:
     enabled: true
-    className: ""
-#    annotations:
-#      kubernetes.io/ingress.regional-static-ip-name: "fullstack-test-edge-gateway-ip-1"
+    className: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
     hosts:
       - host: "explorer.fst.local"
         paths:

@@ -2,7 +2,7 @@
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
-  name: {{ required "$.Values.global.ingressClassName is required" $.Values.global.ingressClassName }}
+  name: {{ index $.Values "hedera-explorer" "ingress" "className" }}
 spec:
   controller: haproxy-ingress.github.io/controller
 {{- end }}
