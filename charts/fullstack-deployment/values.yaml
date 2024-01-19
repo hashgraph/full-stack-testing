@@ -50,7 +50,7 @@ acme-cluster-issuer:
     production:
       email: ""
       name: fst-letsencrypt-prod
-  solvers:
+  solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
       solverType: "gatewayHTTPRoute"
       gatewayHTTPRoute:
