@@ -10,6 +10,7 @@ import {
 } from '../../../src/core/index.mjs'
 import { BaseCommand } from '../../../src/commands/base.mjs'
 import { Kind } from '../../../src/core/kind.mjs'
+import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
 
 const testLogger = logging.NewLogger('debug')
 
@@ -21,12 +22,14 @@ describe('BaseCommand', () => {
   const configManager = new ConfigManager(testLogger)
   const depManager = new DependencyManager(testLogger)
   const clusterManager = new ClusterManager(testLogger, kind)
+  const kubectl2 = new Kubectl2(configManager, testLogger)
 
   const baseCmd = new BaseCommand({
     logger: testLogger,
     kind,
     helm,
     kubectl,
+    kubectl2,
     chartManager,
     configManager,
     depManager,
