@@ -22,7 +22,7 @@ export class Templates {
    */
   static renderKeyFileName (prefix, nodeId) {
     // s-node0-key.pem
-    return `${prefix}-${nodeId}.key`
+    return `${prefix}-private-${nodeId}.pem`
   }
 
   /**
@@ -33,7 +33,7 @@ export class Templates {
    */
   static renderCertFileName (prefix, nodeId) {
     // s-node0-cert.pem
-    return `${prefix}-${nodeId}.crt`
+    return `${prefix}-public-${nodeId}.pem`
   }
 
   static renderNodeFriendlyName (prefix, nodeId, suffix = '') {
