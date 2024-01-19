@@ -371,7 +371,7 @@ haproxy-ingress:
 hedera-explorer:
   enabled: true
   ingress:
-    enabled: true
+    enabled: false
     className: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
     hosts:
       - host: "explorer.fst.local"
