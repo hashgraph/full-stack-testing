@@ -60,6 +60,7 @@ export class ChartCommand extends BaseCommand {
   async prepareConfig (task, argv) {
     this.configManager.load(argv)
     const namespace = this.configManager.flagValue(flags.namespace)
+    const nodeIds = this.configManager.flagValue(flags.nodeIDs)
     const chartDir = this.configManager.flagValue(flags.chartDirectory)
     const valuesFile = this.configManager.flagValue(flags.valuesFile)
     const deployMirrorNode = this.configManager.flagValue(flags.deployMirrorNode)
@@ -74,6 +75,7 @@ export class ChartCommand extends BaseCommand {
     // prompt if values are missing and create a config object
     const config = {
       namespace: await prompts.promptNamespaceArg(task, namespace),
+      nodeIds: await prompts.promptNodeIdsArg(task, nodeIds),
       chartDir: await prompts.promptChartDir(task, chartDir),
       valuesFile: await prompts.promptChartDir(task, valuesFile),
       deployMirrorNode: await prompts.promptDeployMirrorNode(task, deployMirrorNode),
@@ -84,7 +86,7 @@ export class ChartCommand extends BaseCommand {
       enableHederaExplorerTls: await prompts.promptEnableHederaExplorerTls(task, enableHederaExplorerTls),
       acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer),
       selfSignedClusterIssuer: await prompts.promptSelfSignedClusterIssuer(task, selfSignedClusterIssuer),
-      timeout: '900s',
+      timeout: 900,
       version: this.configManager.getVersion()
     }
 
@@ -124,12 +126,10 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Waiting for network pods to be ready',
         task: async (ctx, _) => {
-          const timeout = ctx.config.timeout || '900s'
-          await this.kubectl.wait('pod',
-            '--for=jsonpath=\'{.status.phase}\'=Running',
-            '-l fullstack.hedera.com/type=network-node',
-            `--timeout=${timeout}`
-          )
+          const timeout = ctx.config.timeout || 900
+          await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+            'fullstack.hedera.com/type=network-node'
+          ], ctx.config.nodeIds.length, timeout * 1000, 1000)
         }
       }
     ], {
@@ -203,12 +203,10 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Waiting for network pods to be ready',
         task: async (ctx, _) => {
-          const timeout = ctx.config.timeout || '900s'
-          await this.kubectl.wait('pod',
-            '--for=jsonpath=\'{.status.phase}\'=Running',
-            '-l fullstack.hedera.com/type=network-node',
-            `--timeout=${timeout}`
-          )
+          const timeout = ctx.config.timeout || 900
+          await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+            'fullstack.hedera.com/type=network-node'
+          ], timeout)
         }
       }
     ], {
@@ -237,6 +235,7 @@ export class ChartCommand extends BaseCommand {
             builder: y => {
               flags.setCommandFlags(y,
                 flags.namespace,
+                flags.nodeIDs,
                 flags.deployMirrorNode,
                 flags.deployHederaExplorer,
                 flags.deployJsonRpcRelay,

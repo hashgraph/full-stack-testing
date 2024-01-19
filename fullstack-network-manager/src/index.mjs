@@ -16,6 +16,7 @@ import {
   logging
 } from './core/index.mjs'
 import 'dotenv/config'
+import { Kubectl2 } from './core/kubectl2.mjs'
 
 export function main (argv) {
   const logger = logging.NewLogger('debug')
@@ -28,12 +29,14 @@ export function main (argv) {
   const configManager = new ConfigManager(logger)
   const depManager = new DependencyManager(logger)
   const clusterManager = new ClusterManager(kind, kubectl)
+  const kubectl2 = new Kubectl2(configManager, logger)
 
   const opts = {
     logger,
     kind,
     helm,
     kubectl,
+    kubectl2,
     downloader,
     platformInstaller,
     chartManager,

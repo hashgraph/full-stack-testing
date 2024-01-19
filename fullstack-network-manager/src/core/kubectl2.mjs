@@ -24,6 +24,10 @@ export class Kubectl2 {
   init () {
     this.kubeConfig = new k8s.KubeConfig()
     this.kubeConfig.loadFromDefault()
+
+    if (!this.kubeConfig.getCurrentContext()) throw new FullstackTestingError('No active context!')
+    if (!this.kubeConfig.getCurrentCluster()) throw new FullstackTestingError('No active cluster!')
+
     this.kubeClient = this.kubeConfig.makeApiClient(k8s.CoreV1Api)
     this.kubeCopy = new k8s.Cp(this.kubeConfig)
   }
@@ -440,22 +444,27 @@ export class Kubectl2 {
    * Wait for pod
    * @param status phase of the pod
    * @param labels pod labels
-   * @param timeoutSeconds timeout in seconds
+   * @param podCount number of pod expected
+   * @param timeout timeout in milliseconds
+   * @param delay delay between checks in milliseconds
    * @return {Promise<boolean>}
    */
-  async waitForPod (status = 'Running', labels = [], timeoutSeconds = 1) {
+  async waitForPod (status = 'Running', labels = [], podCount = 1, timeout = 1000, delay = 200) {
     const ns = this._getNamespace()
     const fieldSelector = `status.phase=${status}`
     const labelSelector = labels.join(',')
 
-    const delay = 200
-    const maxAttempts = Math.round(timeoutSeconds * 1000 / delay)
-    if (maxAttempts <= 0) {
-      throw new FullstackTestingError(`invalid timeoutSeconds '${timeoutSeconds}'. maxAttempts calculated to be negative or zero`)
+    timeout = Number.parseInt(`${timeout}`)
+    if (timeout <= 0 || timeout < delay) {
+      throw new FullstackTestingError(`invalid timeout '${timeout}' and delay '${delay}'`)
     }
+
+    const maxAttempts = Math.round(timeout / delay)
+    this.logger.debug(`WaitForPod [${fieldSelector}, ${labelSelector}], maxAttempts: ${maxAttempts}`)
 
     // wait for the pod to be available with the given status and labels
     for (let attempts = 0; attempts < maxAttempts; attempts++) {
+      this.logger.debug(`Checking for pod ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
       const resp = await this.kubeClient.listNamespacedPod(
         ns,
         false,
@@ -465,15 +474,15 @@ export class Kubectl2 {
         labelSelector
       )
 
-      const found = resp.body && resp.body.items && resp.body.items.length
-      if (found) {
+      if (resp.body && resp.body.items && resp.body.items.length === podCount) {
+        this.logger.debug(`Found ${resp.body.items.length} pod with ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
         return true
       }
 
       await sleep(delay)
     }
 
-    throw new FullstackTestingError('pod not found')
+    throw new FullstackTestingError(`Expected number of pod (${podCount}) not found ${fieldSelector} ${labelSelector} [maxAttempts = ${maxAttempts}]`)
   }
 
   _getNamespace () {
