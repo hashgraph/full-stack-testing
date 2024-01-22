@@ -369,7 +369,7 @@ export class PlatformInstaller {
       {
         title: 'Extract platform zip file',
         task: (_, task) =>
-          self.copyPlatform(podName, buildZipFile)
+          self.extractPlatform(podName, buildZipFile)
       },
       {
         title: 'Copy Gossip keys',

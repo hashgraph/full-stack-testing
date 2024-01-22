@@ -302,8 +302,8 @@ export class Kubectl2 {
         for (const entry of filterMap.entries()) {
           const field = entry[0]
           const value = entry[1]
+          this.logger.debug(`Checking file ${podName}:${containerName} ${destPath}; ${field} expected ${value}, found ${item[field]}`, { filters })
           if (`${value}` !== `${item[field]}`) {
-            this.logger.debug(`File check failed ${podName}:${containerName} ${destPath}; ${field} expected ${value}, found ${item[field]}`, { filters })
             found = false
             break
           }

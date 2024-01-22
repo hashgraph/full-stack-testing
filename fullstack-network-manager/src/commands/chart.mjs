@@ -226,12 +226,12 @@ export class ChartCommand extends BaseCommand {
   static getCommandDefinition (chartCmd) {
     return {
       command: 'chart',
-      desc: 'Manage FST chart deployment',
+      desc: 'Manage chart deployment',
       builder: yargs => {
         return yargs
           .command({
             command: 'install',
-            desc: 'Install FST network deployment chart',
+            desc: 'Install network deployment chart',
             builder: y => {
               flags.setCommandFlags(y,
                 flags.namespace,
@@ -265,7 +265,7 @@ export class ChartCommand extends BaseCommand {
           })
           .command({
             command: 'uninstall',
-            desc: 'Uninstall FST network deployment chart',
+            desc: 'Uninstall network deployment chart',
             builder: y => flags.setCommandFlags(y, flags.namespace),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart uninstall' ===")
@@ -283,7 +283,7 @@ export class ChartCommand extends BaseCommand {
           })
           .command({
             command: 'upgrade',
-            desc: 'Refresh existing FST network deployment with new values',
+            desc: 'Refresh existing network deployment with new values',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.deployMirrorNode,
