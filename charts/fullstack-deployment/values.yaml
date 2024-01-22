@@ -2,7 +2,7 @@
 
 global:
   namespaceOverride: ""
-  ingressClassName: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
+  ingressClassName: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster and make unique per cluster
 
 # cloud configuration
 cloud:
