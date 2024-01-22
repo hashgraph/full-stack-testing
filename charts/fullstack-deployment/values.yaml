@@ -54,9 +54,7 @@ acme-cluster-issuer:
     http01:
       solverType: "ingress"
       ingress:
-        name: ""
-        class: ""
-        serviceType: ""
+        class: {{ index $.Values "hedera-explorer" "ingress" "className" }}
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
