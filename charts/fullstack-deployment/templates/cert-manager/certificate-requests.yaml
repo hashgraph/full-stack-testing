@@ -7,9 +7,9 @@ metadata:
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
   isCA: false
-  commonName: {{ $.Values.deployment.hederaExplorer.hostname }}
+  commonName: {{ index $.Values "hedera-explorer" "ingress" "hosts" 0 "host" }}
   dnsNames:
-    - {{ $.Values.deployment.hederaExplorer.hostname }}
+    - {{ index $.Values "hedera-explorer" "ingress" "hosts" 0 "host" }}
   secretName: ca-secret-hedera-explorer
   privateKey:
     algorithm: RSA

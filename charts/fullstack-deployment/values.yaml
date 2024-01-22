@@ -381,7 +381,7 @@ hedera-explorer:
     tls:
       - secretName: ca-secret-hedera-explorer
         hosts:
-          - "explorer.fst.local"
+          - '{{ index .Values.ingress.hosts 0 "host" }}'
   labels:
     fullstack.hedera.com/testSuiteName: ""
     fullstack.hedera.com/testName: ""
@@ -422,8 +422,6 @@ hedera-explorer:
 
 # common deployment configuration
 deployment:
-  hederaExplorer:
-    hostname: "explorer.fst.local" # TODO remove duplication
   podAnnotations: {}
   podLabels: {}
   nodeSelector: {}
