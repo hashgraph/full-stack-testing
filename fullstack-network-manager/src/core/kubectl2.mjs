@@ -158,10 +158,12 @@ export class Kubectl2 {
    */
   async getPodIP (podNameName) {
     const pod = await this.getPodByName(podNameName)
-    if (pod && pod.status && pod.status.hostIP) {
-      return pod.status.hostIP
+    if (pod && pod.status && pod.status.podIP) {
+      this.logger.debug(`Found pod IP for ${podNameName}: ${pod.status.podIP}`)
+      return pod.status.podIP
     }
 
+    this.logger.debug(`Unable to find pod IP for ${podNameName}`)
     throw new FullstackTestingError(`unable to find host IP of podName: ${podNameName}`)
   }
 
@@ -301,12 +303,16 @@ export class Kubectl2 {
           const field = entry[0]
           const value = entry[1]
           if (`${value}` !== `${item[field]}`) {
+            this.logger.debug(`File check failed ${podName}:${containerName} ${destPath}; ${field} expected ${value}, found ${item[field]}`, { filters })
             found = false
             break
           }
         }
 
-        if (found) return true
+        if (found) {
+          this.logger.debug(`File check succeeded ${podName}:${containerName} ${destPath}`, { filters })
+          return true
+        }
       }
     }
 
@@ -342,9 +348,11 @@ export class Kubectl2 {
    * @param containerName container name
    * @param srcPath source file path in the local
    * @param destDir destination directory in the container
+   * @param maxAttempts max attempts to check if file is copied successfully or not
+   * @param delay delay between attempts to check if file is copied successfully or not
    * @returns {Promise<>}
    */
-  async copyTo (podName, containerName, srcPath, destDir) {
+  async copyTo (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 250) {
     const ns = this._getNamespace()
 
     try {
@@ -356,13 +364,14 @@ export class Kubectl2 {
 
       // check if the file is copied successfully or not
       const fileStat = fs.statSync(srcPath)
-      for (let attempt = 0; attempt < 10; attempt++) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
         if (await this.hasFile(podName, containerName, destPath, { size: fileStat.size })) {
           return true
         }
-        await sleep(200)
+        await sleep(delay)
       }
 
+      this.logger.debug(`File check failed after copy ${podName}:${containerName} [${srcPath} -> ${destDir}]`)
       throw new FullstackTestingError(`failed to find file after invoking copy: ${destPath}`)
     } catch (e) {
       throw new FullstackTestingError(`failed to copy file to ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
@@ -378,9 +387,11 @@ export class Kubectl2 {
    * @param containerName container name
    * @param srcPath source file path in the container
    * @param destDir destination directory in the local
+   * @param maxAttempts max attempts to check if file is copied successfully or not
+   * @param delay delay between attempts to check if file is copied successfully or not
    * @returns {Promise<boolean>}
    */
-  async copyFrom (podName, containerName, srcPath, destDir) {
+  async copyFrom (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 250) {
     const ns = this._getNamespace()
 
     try {
@@ -396,14 +407,14 @@ export class Kubectl2 {
       if (entries.length !== 1) throw new FullstackTestingError(`exepected 1 entry, found ${entries.length}`, { entries })
       const srcFileDesc = entries[0]
 
-      for (let attempt = 0; attempt < 10; attempt++) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
         if (fs.existsSync(destPath)) {
           const stat = fs.statSync(destPath)
           if (stat && `${stat.size}` === `${srcFileDesc.size}`) {
             return true
           }
         }
-        await sleep(200)
+        await sleep(delay)
       }
 
       throw new FullstackTestingError(`failed to find file after invoking copy: ${destPath}`)
