@@ -19,7 +19,7 @@ spec:
           {{- if .Values.solvers.http01.solverType | eq "ingress" }}
           ingress:
             {{- with .Values.solvers.http01.ingress }}
-            name: {{ .name }}
+            name: {{ tpl .name $ }}
             class: {{ $.Values.global.ingressClassName | default .class }}
             serviceType: {{ .serviceType }}
             {{- end }}

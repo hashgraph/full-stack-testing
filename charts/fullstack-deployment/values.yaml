@@ -47,10 +47,10 @@ acme-cluster-issuer:
   issuers:
     staging:
       email: ""
-      name: {{ tpl (.Values.global.namespaceOverride | default .Release.Namespace | toString | printf "%q-letsencrypt-staging" ) }}
+      name: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-letsencrypt-staging" }}'
     production:
       email: ""
-      name: {{ tpl (.Values.global.namespaceOverride | default .Release.Namespace | toString | printf "%q-letsencrypt-prod" ) }}
+      name: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-letsencrypt-prod" }}'
   solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
       solverType: "ingress"
@@ -368,8 +368,9 @@ haproxy-ingress:
 # hedera-mirror-node-explorer configuration
 hedera-explorer:
   enabled: true
-  selfSignedCertClusterIssuer: {{ tpl ( .Values.global.namespaceOverride | default .Release.Namespace | toString | printf "%q-self-signed-cluster-issuer ) }} # leave blank to use default, set if you have multiple deployments in a cluster to make it unique
-  certClusterIssuerType: "" # "acme-staging", "acme-prod", or "self-signed"
+  # leave blank to use default, set if you have multiple deployments in a cluster to make it unique
+  selfSignedCertClusterIssuer: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-self-signed-cluster-issuer" }}'
+  certClusterIssuerType: "self-signed" # "acme-staging", "acme-prod", or "self-signed"
   ingress:
     enabled: false
     hosts:
@@ -399,7 +400,7 @@ hedera-explorer:
       value: "network"
       effect: "NoSchedule"
   global:
-    namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+    namespaceOverride: "{{ .Values.global.namespaceOverride }}"
   # The hedera explorer UI /api url will proxy  all request to mirror node
   #
   # Without this we would need to expose the mirror node rest API publicly and specify its public url in the network config below

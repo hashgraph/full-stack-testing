@@ -16,11 +16,11 @@ spec:
     size: 3072
   issuerRef:
     {{- if index .Values "hedera-explorer" "certClusterIssuerType" | eq "self-signed"}}
-    name: {{ index .Values "hedera-explorer" "selfSignedCertClusterIssuer" }}
+    name: {{ tpl (index .Values "hedera-explorer" "selfSignedCertClusterIssuer") . }}
     {{- else if index .Values "hedera-explorer" "certClusterIssuerType" | eq "acme-staging" }}
-    name: {{ index .Values "acme-cluster-issuer" "issuers" "staging" "name" }}
+    name: {{ tpl (index .Values "acme-cluster-issuer" "issuers" "staging" "name") . }}
     {{- else if index .Values "hedera-explorer" "certClusterIssuerType" | eq "acme-prod" }}
-    name: {{ index .Values "acme-cluster-issuer" "issuers" "production" "name" }}
+    name: {{ tpl (index .Values "acme-cluster-issuer" "issuers" "production" "name") . }}
     {{- end }}
     kind: ClusterIssuer
     group: cert-manager.io
