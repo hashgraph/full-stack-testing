@@ -20,12 +20,3 @@ rules:
       - pods/exec
     verbs:
       - create
-  - apiGroups: [ "gateway.networking.k8s.io" ]
-    resources:
-      - gatewayclasses
-      - gateways
-      - httproutes
-      - tcproutes
-    verbs:
-      - get
-      - list

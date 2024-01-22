@@ -18,6 +18,8 @@ cloud:
     enabled: false
   selfSignedClusterIssuer:
     enabled: false
+  haproxyIngressController:
+    enabled: false
 
 # telemetry configurations
 telemetry:
@@ -48,52 +50,12 @@ acme-cluster-issuer:
     production:
       email: ""
       name: fst-letsencrypt-prod
-  solvers:
+  solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
       solverType: "gatewayHTTPRoute"
       gatewayHTTPRoute:
         name: "fst" # needs to match gatewayApi.gateway.name in this values.yaml file
         namespace: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
-
-# gateway-api configuration
-gatewayApi:
-  gatewayClass:
-    name: "fst-gateway-class" # this is a shared gateway class for all namespaces
-  gateway:
-    name: "fst"
-    enabled: "true"
-    tlsEnabled: false
-    tlsClusterIssuerName: "" # for acme-cluster-setup: staging = letsencrypt-staging, prod = letsencrypt-prod
-    tlsClusterIssuerNamespace: "" # for acme-cluster-setup: cert-manager # TODO is this needed?
-    loadBalancerIP: ""
-    loadBalancerEnabled: false
-    listeners:
-      gossip:
-        port: 51000 # i.e. node0:51000 ... node999: 51999, points to 50111 port in haproxy or network-node
-        enabled: "false" # by default, we don't need to expose the gossip ports
-      grpc: # non-tls-grpc-port
-        port: 52000 # i.e. node0:52000 ... node999: 52999, points to 50211 port in haproxy or network-node
-        enabled: "true"
-      grpcs: # tls-grpc-port
-        port: 53000 # i.e. node0:53000 ... node999: 53999, points to 50212 port in haproxy or network-node
-        enabled: "false"
-        tlsEnabled: false
-      grpcWeb:
-        port: 18000 # i.e. node0:18000 ... node999: 18999, points to 8080 port in envoy proxy
-        enabled: "true"
-        tlsEnabled: false
-      httpDebug: # this helps debugging gateway if needed by provisioning a mock http app
-        port: 3100
-        enabled: "true"
-      tcpDebug: # this helps debugging gateway if needed by provisioning a mock grpc app
-        port: 3101
-        enabled: "true"
-      hederaExplorer:
-        port: 8888 # points to 80 port on fullstack-deployment-hedera-explorer
-        enabled: "true"
-        tlsEnabled: false
-  route:
-    hostname: "{{ .node.name }}.fst.local"
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
@@ -121,7 +83,7 @@ defaults:
       tag: "2.4-alpine"
       pullPolicy: "IfNotPresent"
     resources: {}
-    loadBalancerEnabled: "false"
+    serviceType: "LoadBalancer"
   envoyProxy:
     enabled: "true"
     nameOverride: "envoy-proxy"
@@ -400,9 +362,26 @@ hedera-mirror-node:
         value: "network"
         effect: "NoSchedule"
 
-# hedera explorer configuration
+haproxy-ingress:
+  controller:
+    service:
+      loadBalancerIP: "" # the external IP address of the hedera mirror node explorer
+
+# hedera-mirror-node-explorer configuration
 hedera-explorer:
   enabled: true
+  ingress:
+    enabled: false
+    className: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
+    hosts:
+      - host: "explorer.fst.local"
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: self-signed-ca-secret-hedera-explorer # TODO update
+        hosts:
+          - "explorer.fst.local"
   labels:
     fullstack.hedera.com/testSuiteName: ""
     fullstack.hedera.com/testName: ""
@@ -444,7 +423,7 @@ hedera-explorer:
 # common deployment configuration
 deployment:
   hederaExplorer:
-    hostname: "explorer.fst.local"
+    hostname: "explorer.fst.local" # TODO remove duplication
   podAnnotations: {}
   podLabels: {}
   nodeSelector: {}

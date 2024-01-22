@@ -1,6 +1,6 @@
 apiVersion: v2
 name: fullstack-deployment
-description: A Helm chart for the fullstack deployment
+description: An umbrella Helm chart for a chart deployment of `fullstack-deployment`
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -29,10 +29,13 @@ appVersion: "0.17.0"
 kubeVersion: ">=1.25.0-0"
 
 dependencies:
+  # hedera-mirror-node-explorer (dependent on hedera-mirror-node)
   - name: hedera-explorer
     version: 0.2.0
+    # TODO use repository once source chart has been updated: https://github.com/hashgraph/full-stack-testing/issues/675
     condition: hedera-explorer.enabled
 
+  # hedera-mirror-node
   - name: hedera-mirror
     alias: hedera-mirror-node
     version: 0.86.0
@@ -47,5 +50,11 @@ dependencies:
 
   - name: acme-cluster-issuer
     version: 0.3.0
-    # TODO: uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
+    # TODO uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
+    # TODO once source chart has been updated: https://github.com/hashgraph/full-stack-testing/issues/635
     condition: cloud.acmeClusterIssuer.enabled
+
+  - name: haproxy-ingress
+    version: 0.14.5
+    repository: https://haproxy-ingress.github.io/charts
+    condition: cloud.haproxyIngressController.enabled
