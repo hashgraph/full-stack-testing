@@ -21,12 +21,23 @@ export class Kubectl2 {
     this.init()
   }
 
+  getKubeConfig () {
+    return this.kubeConfig
+  }
+
   init () {
     this.kubeConfig = new k8s.KubeConfig()
     this.kubeConfig.loadFromDefault()
 
-    if (!this.kubeConfig.getCurrentContext()) throw new FullstackTestingError('No active context!')
-    if (!this.kubeConfig.getCurrentCluster()) throw new FullstackTestingError('No active cluster!')
+    if (!this.kubeConfig.getCurrentCluster()) {
+      throw new FullstackTestingError('No active kubernetes cluster found. ' +
+        'Please create a cluster and set current context.')
+    }
+
+    if (!this.kubeConfig.getCurrentContext()) {
+      throw new FullstackTestingError('No active kubernetes context found. ' +
+        'Please set current kubernetes context.')
+    }
 
     this.kubeClient = this.kubeConfig.makeApiClient(k8s.CoreV1Api)
     this.kubeCopy = new k8s.Cp(this.kubeConfig)
@@ -517,7 +528,7 @@ export class Kubectl2 {
   }
 
   _getNamespace () {
-    const ns = this.configManager.flagValue(flags.namespace)
+    const ns = this.configManager.getFlag(flags.namespace)
     if (!ns) throw new MissingArgumentError('namespace is not set')
     return ns
   }

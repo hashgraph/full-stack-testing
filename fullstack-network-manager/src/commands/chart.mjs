@@ -59,18 +59,18 @@ export class ChartCommand extends BaseCommand {
 
   async prepareConfig (task, argv) {
     this.configManager.load(argv)
-    const namespace = this.configManager.flagValue(flags.namespace)
-    const nodeIds = this.configManager.flagValue(flags.nodeIDs)
-    const chartDir = this.configManager.flagValue(flags.chartDirectory)
-    const valuesFile = this.configManager.flagValue(flags.valuesFile)
-    const deployMirrorNode = this.configManager.flagValue(flags.deployMirrorNode)
-    const deployExplorer = this.configManager.flagValue(flags.deployHederaExplorer)
-    const enableTls = this.configManager.flagValue(flags.enableTls)
-    const tlsClusterIssuerName = this.configManager.flagValue(flags.tlsClusterIssuerName)
-    const tlsClusterIssuerNamespace = this.configManager.flagValue(flags.tlsClusterIssuerNamespace)
-    const enableHederaExplorerTls = this.configManager.flagValue(flags.enableHederaExplorerTls)
-    const acmeClusterIssuer = this.configManager.flagValue(flags.acmeClusterIssuer)
-    const selfSignedClusterIssuer = this.configManager.flagValue(flags.selfSignedClusterIssuer)
+    const namespace = this.configManager.getFlag(flags.namespace)
+    const nodeIds = this.configManager.getFlag(flags.nodeIDs)
+    const chartDir = this.configManager.getFlag(flags.chartDirectory)
+    const valuesFile = this.configManager.getFlag(flags.valuesFile)
+    const deployMirrorNode = this.configManager.getFlag(flags.deployMirrorNode)
+    const deployExplorer = this.configManager.getFlag(flags.deployHederaExplorer)
+    const enableTls = this.configManager.getFlag(flags.enableTls)
+    const tlsClusterIssuerName = this.configManager.getFlag(flags.tlsClusterIssuerName)
+    const tlsClusterIssuerNamespace = this.configManager.getFlag(flags.tlsClusterIssuerNamespace)
+    const enableHederaExplorerTls = this.configManager.getFlag(flags.enableHederaExplorerTls)
+    const acmeClusterIssuer = this.configManager.getFlag(flags.acmeClusterIssuer)
+    const selfSignedClusterIssuer = this.configManager.getFlag(flags.selfSignedClusterIssuer)
 
     // prompt if values are missing and create a config object
     const config = {
@@ -154,7 +154,7 @@ export class ChartCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-          const namespace = self.configManager.flagValue(flags.namespace)
+          const namespace = self.configManager.getFlag(flags.namespace)
           ctx.config = {
             namespace: await prompts.promptNamespaceArg(task, namespace)
           }

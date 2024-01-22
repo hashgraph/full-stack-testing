@@ -47,7 +47,7 @@ export class NodeCommand extends BaseCommand {
 
     while (attempt < maxAttempt) {
       try {
-        const output = await this.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
+        const output = await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
         if (output.indexOf(`Now current platform status = ${status}`) > 0) {
           this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}]`)
           isActive = true
@@ -58,10 +58,10 @@ export class NodeCommand extends BaseCommand {
         this.logger.warn(`error in checking if node ${nodeId} is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
 
         // ls the HAPI path for debugging
-        await this.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+        await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
 
         // ls the logs directory for debugging
-        await this.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
+        await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
       }
       attempt += 1
       await sleep(1000)
@@ -111,9 +111,7 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-          const namespace = self.configManager.flagValue(flags.namespace)
-
-          // get existing choices
+          const namespace = self.configManager.getFlag(flags.namespace)
           const namespaces = await self.kubectl2.getNamespaces()
 
           const config = {
@@ -209,9 +207,8 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-          const namespace = self.configManager.flagValue(flags.namespace)
 
-          // get existing choices
+          const namespace = self.configManager.getFlag(flags.namespace)
           const namespaces = await self.kubectl2.getNamespaces()
 
           ctx.config = {
@@ -232,7 +229,7 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Start node: ${chalk.yellow(nodeId)}`,
-              task: () => self.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
+              task: () => self.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
             })
           }
 
@@ -288,7 +285,7 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-          const namespace = self.configManager.flagValue(flags.namespace)
+          const namespace = self.configManager.getFlag(flags.namespace)
 
           // get existing choices
           const namespaces = await self.kubectl2.getNamespaces()
@@ -311,7 +308,7 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Stop node: ${chalk.yellow(nodeId)}`,
-              task: () => self.kubectl2.getExecOutput(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
+              task: () => self.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
             })
           }
 

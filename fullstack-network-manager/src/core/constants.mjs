@@ -17,7 +17,6 @@ export const RELEASE_NAME = 'fst'
 export const NAMESPACE_NAME = `fst-${USER_SANITIZED}`
 
 export const HELM = 'helm'
-export const KIND = 'kind'
 export const KUBECTL = 'kubectl'
 export const CWD = process.cwd()
 export const FST_CONFIG_FILE = `${FST_HOME_DIR}/fsnetman.config`

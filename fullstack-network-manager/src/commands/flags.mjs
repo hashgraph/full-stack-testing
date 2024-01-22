@@ -27,7 +27,7 @@ export const clusterName = {
   name: 'cluster-name',
   definition: {
     describe: 'Cluster name',
-    default: core.constants.CLUSTER_NAME,
+    default: '',
     alias: 'c',
     type: 'string'
   }
@@ -37,7 +37,7 @@ export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    default: core.constants.NAMESPACE_NAME,
+    default: '',
     alias: 'n',
     type: 'string'
   }

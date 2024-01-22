@@ -23,7 +23,7 @@ export async function promptNamespaceArg (task, input) {
 
 export async function promptSelectNamespaceArg (task, input, choices = []) {
   try {
-    const initial = choices.indexOf(`namespace/${input}`)
+    const initial = choices.indexOf(input)
     if (initial < 0) {
       const input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'select',
@@ -32,7 +32,7 @@ export async function promptSelectNamespaceArg (task, input, choices = []) {
         choices: helpers.cloneArray(choices)
       })
 
-      return input.replaceAll('namespace/', '')
+      return input
     }
 
     return input

@@ -17,6 +17,14 @@ export class ConfigManager {
     this.config = this.load()
   }
 
+  persist () {
+    this.config.updatedAt = new Date().toISOString()
+    let configJSON = JSON.stringify(this.config)
+    fs.writeFileSync(`${constants.FST_CONFIG_FILE}`, configJSON)
+    configJSON = fs.readFileSync(constants.FST_CONFIG_FILE)
+    this.config = JSON.parse(configJSON.toString())
+  }
+
   /**
    * Load and cache config on disk
    *
@@ -51,7 +59,7 @@ export class ConfigManager {
       // extract flags from argv
       if (argv) {
         flagList.forEach(flag => {
-          if (argv && argv[flag.name] !== undefined) {
+          if (argv && argv[flag.name]) {
             let val = argv[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
               val = paths.resolve(val)
@@ -73,20 +81,15 @@ export class ConfigManager {
       }
 
       // store CLI config
+      this.config = config
       if (reset || writeConfig) {
-        config.updatedAt = new Date().toISOString()
-
-        let configJSON = JSON.stringify(config)
-        fs.writeFileSync(`${constants.FST_CONFIG_FILE}`, configJSON)
-        configJSON = fs.readFileSync(constants.FST_CONFIG_FILE)
-        config = JSON.parse(configJSON.toString())
+        this.persist()
       }
 
-      this.config = config
       this.logger.debug('Setup cached config', { cachedConfig: config })
 
       // set dev mode for logger if necessary
-      this.logger.setDevMode(this.flagValue(flags.devMode))
+      this.logger.setDevMode(this.getFlag(flags.devMode))
 
       return this.config
     } catch (e) {
@@ -111,14 +114,25 @@ export class ConfigManager {
    * Return the value of the given flag
    *
    * @param flag flag object
-   * @return {*|string}
+   * @return {*|string} value of the flag or empty string if flag value is not available
    */
-  flagValue (flag) {
+  getFlag (flag) {
     if (this.config.flags[flag.name] !== undefined) {
       return this.config.flags[flag.name]
     }
 
     return ''
+  }
+
+  /**
+   * Set value for the flag
+   * @param flag flag object
+   * @param value value of the flag
+   */
+
+  setFlag (flag, value) {
+    if (!flag || !flag.name) throw new MissingArgumentError('flag must have a name')
+    this.config.flags[flag.name] = value
   }
 
   /**

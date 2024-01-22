@@ -24,14 +24,6 @@ export class DependencyManager extends ShellRunner {
   }
 
   /**
-   * Check if 'kind' CLI program is installed or not
-   * @returns {Promise<boolean>}
-   */
-  async checkKind () {
-    return this.runCheck(`${core.constants.KIND} --version`)
-  }
-
-  /**
    * Check if 'helm' CLI program is installed or not
    * @returns {Promise<boolean>}
    */

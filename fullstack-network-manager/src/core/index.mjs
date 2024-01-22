@@ -1,6 +1,5 @@
 import * as logging from './logging.mjs'
 import * as constants from './constants.mjs'
-import { Kind } from './kind.mjs'
 import { Helm } from './helm.mjs'
 import { Kubectl } from './kubectl.mjs'
 import { PackageDownloader } from './package_downloader.mjs'
@@ -10,13 +9,11 @@ import { Templates } from './templates.mjs'
 import { ChartManager } from './chart_manager.mjs'
 import { ConfigManager } from './config_manager.mjs'
 import { DependencyManager } from './dependency_manager.mjs'
-import { ClusterManager } from './cluster_manager.mjs'
 
 // Expose components from the core module
 export {
   logging,
   constants,
-  Kind,
   Helm,
   Kubectl,
   PackageDownloader,
@@ -25,6 +22,5 @@ export {
   Templates,
   ChartManager,
   ConfigManager,
-  DependencyManager,
-  ClusterManager
+  DependencyManager
 }

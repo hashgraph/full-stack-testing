@@ -73,16 +73,16 @@ export class RelayCommand extends BaseCommand {
           self.configManager.load(argv)
 
           // extract config values
-          const valuesFile = self.configManager.flagValue(flags.valuesFile)
-          const nodeIds = self.configManager.flagValue(flags.nodeIDs)
-          const chainId = self.configManager.flagValue(flags.chainId)
-          const releaseTag = self.configManager.flagValue(flags.releaseTag)
-          const replicaCount = self.configManager.flagValue(flags.replicaCount)
-          const operatorId = self.configManager.flagValue(flags.operatorId)
-          const operatorKey = self.configManager.flagValue(flags.operatorKey)
+          const valuesFile = self.configManager.getFlag(flags.valuesFile)
+          const nodeIds = self.configManager.getFlag(flags.nodeIDs)
+          const chainId = self.configManager.getFlag(flags.chainId)
+          const releaseTag = self.configManager.getFlag(flags.releaseTag)
+          const replicaCount = self.configManager.getFlag(flags.replicaCount)
+          const operatorId = self.configManager.getFlag(flags.operatorId)
+          const operatorKey = self.configManager.getFlag(flags.operatorKey)
 
-          const namespace = self.configManager.flagValue(flags.namespace)
-          const chartDir = self.configManager.flagValue(flags.chartDirectory)
+          const namespace = self.configManager.getFlag(flags.namespace)
+          const chartDir = self.configManager.getFlag(flags.chartDirectory)
 
           // prompt if inputs are empty and set it in the context
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
@@ -166,8 +166,8 @@ export class RelayCommand extends BaseCommand {
           self.configManager.load(argv)
 
           // extract config values
-          const nodeIds = self.configManager.flagValue(flags.nodeIDs)
-          const namespace = self.configManager.flagValue(flags.namespace)
+          const nodeIds = self.configManager.getFlag(flags.nodeIDs)
+          const namespace = self.configManager.getFlag(flags.namespace)
 
           // prompt if inputs are empty and set it in the context
           const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
