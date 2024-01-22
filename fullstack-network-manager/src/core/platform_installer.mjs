@@ -72,27 +72,44 @@ export class PlatformInstaller {
     }
   }
 
-  async copyPlatform (podName, buildZipFile) {
+  async copyPlatform (podName, buildZipSrc) {
     if (!podName) throw new MissingArgumentError('podName is required')
-    if (!buildZipFile) throw new MissingArgumentError('buildZipFile is required')
-    if (!fs.statSync(buildZipFile).isFile()) throw new IllegalArgumentError('buildZipFile does not exists', buildZipFile)
+    if (!buildZipSrc) throw new MissingArgumentError('buildZipSrc is required')
+    if (!fs.statSync(buildZipSrc).isFile()) throw new IllegalArgumentError('buildZipFile does not exists', buildZipSrc)
 
     try {
-      const extractScriptName = 'extract-jar.sh'
-      const extractScriptSrc = path.join(constants.RESOURCES_DIR, extractScriptName)
-      const extractScript = path.join(constants.HEDERA_USER_HOME_DIR, extractScriptName) // inside the container
+      await this.copyFiles(podName, [buildZipSrc], constants.HEDERA_USER_HOME_DIR)
+      return true
+    } catch (e) {
+      throw new FullstackTestingError(`failed to copy platform code in to pod '${podName}': ${e.message}`, e)
+    }
+  }
 
-      const buildZipFileName = path.basename(buildZipFile)
-      const buildZip = path.join(constants.HEDERA_USER_HOME_DIR, buildZipFileName) // inside the container
+  async extractPlatform (podName, buildZipSrc) {
+    if (!podName) throw new MissingArgumentError('podName is required')
+    if (!buildZipSrc) throw new MissingArgumentError('buildZipSrc is required')
 
-      await this.kubectl2.copyTo(podName, constants.ROOT_CONTAINER, extractScriptSrc, constants.HEDERA_USER_HOME_DIR)
-      await this.kubectl2.copyTo(podName, constants.ROOT_CONTAINER, buildZipFile, constants.HEDERA_USER_HOME_DIR)
+    const buildZipFileName = path.basename(buildZipSrc)
+    const buildZip = path.join(constants.HEDERA_USER_HOME_DIR, buildZipFileName) // inside the container
+    const extractScriptName = 'extract-jar.sh'
+    const extractScriptSrc = path.join(constants.RESOURCES_DIR, extractScriptName)
+    const extractScript = path.join(constants.HEDERA_USER_HOME_DIR, extractScriptName) // inside the container
+
+    this.logger.debug(`Extracting platform code in pod ${podName}`, {
+      extractScript,
+      buildZip,
+      dest: constants.HEDERA_HAPI_PATH
+    })
+
+    try {
+      await this.copyFiles(podName, [extractScriptSrc], constants.HEDERA_USER_HOME_DIR)
       await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, `chmod +x ${extractScript}`)
       await this.setupHapiDirectories(podName)
       await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
+
       return true
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy platform code to pod '${podName}': ${e.message}`, e)
+      throw new FullstackTestingError(`failed to extract platform code in this pod '${podName}': ${e.message}`, e)
     }
   }
 
@@ -100,7 +117,7 @@ export class PlatformInstaller {
     const self = this
     try {
       for (const srcPath of srcFiles) {
-        self.logger.debug(`Copying files into ${podName}: ${srcPath} -> ${destDir}`)
+        self.logger.debug(`Copying file into ${podName}: ${srcPath} -> ${destDir}`)
         await this.kubectl2.copyTo(podName, container, srcPath, destDir)
       }
 
@@ -345,7 +362,12 @@ export class PlatformInstaller {
     const self = this
     return new Listr([
       {
-        title: 'Copy platform',
+        title: 'Copy platform zip file',
+        task: (_, task) =>
+          self.copyPlatform(podName, buildZipFile)
+      },
+      {
+        title: 'Extract platform zip file',
         task: (_, task) =>
           self.copyPlatform(podName, buildZipFile)
       },
