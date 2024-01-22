@@ -15,7 +15,13 @@ spec:
     algorithm: RSA
     size: 3072
   issuerRef:
-    name: fst-self-signed-cluster-issuer
+    {{- if index ".Values" "hedera-explorer" "certClusterIssuerType" | eq "self-signed"}}
+    name: {{ index "hedera-explorer" "selfSignedCertClusterIssuer" }}
+    {{- else if index ".Values" "hedera-explorer" "certClusterIssuerType" | eq "acme-staging" }}
+    name: {{ index "acme-cluster-issuer" "issuers" "staging" "name" }}
+    {{- else if index ".Values" "hedera-explorer" "certClusterIssuerType" | eq "acme-prod" }}
+    name: {{ index "acme-cluster-issuer" "issuers" "production" "name" }}
+    {{- end }}
     kind: ClusterIssuer
     group: cert-manager.io
 {{- end }}
