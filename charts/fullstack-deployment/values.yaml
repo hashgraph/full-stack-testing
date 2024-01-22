@@ -54,8 +54,6 @@ acme-cluster-issuer:
   solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
       solverType: "ingress"
-      ingress:
-        ingressClassName: '{{ .Values.global.ingressClassName }}'
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
