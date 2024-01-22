@@ -13,6 +13,7 @@ export const FST_LOGS_DIR = `${FST_HOME_DIR}/logs`
 export const FST_CACHE_DIR = `${FST_HOME_DIR}/cache`
 export const CLUSTER_NAME = 'kind-fst' // since by default we use kind to create cluster we use 'kind-' prefix
 export const CONTEXT_NAME = CLUSTER_NAME // since by default we use kind to create cluster we use 'kind-' prefix
+export const DEFAULT_NAMESPACE = 'default'
 export const RELEASE_NAME = 'fst'
 export const NAMESPACE_NAME = `fst-${USER_SANITIZED}`
 

@@ -15,9 +15,13 @@ export async function promptNamespaceArg (task, input) {
       })
     }
 
-    return input.replace('namespace/', '')
+    if (!input) {
+      throw new FullstackTestingError('namespace cannot be empty')
+    }
+
+    return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.namespace.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.namespace.name}: ${e.message}`, e)
   }
 }
 
@@ -32,12 +36,16 @@ export async function promptSelectNamespaceArg (task, input, choices = []) {
         choices: helpers.cloneArray(choices)
       })
 
+      if (!input) {
+        throw new FullstackTestingError('namespace cannot be empty')
+      }
+
       return input
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.namespace.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.namespace.name}: ${e.message}`, e)
   }
 }
 
@@ -76,6 +84,10 @@ export async function promptReleaseTag (task, input) {
         default: flags.releaseTag.definition.default,
         message: 'Enter release version:'
       })
+    }
+
+    if (!input) {
+      throw new FullstackTestingError('release-tag cannot be empty')
     }
 
     return input

@@ -37,7 +37,7 @@ export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    default: '',
+    default: constants.DEFAULT_NAMESPACE,
     alias: 'n',
     type: 'string'
   }

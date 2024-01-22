@@ -56,7 +56,7 @@ export class ClusterCommand extends BaseCommand {
 
           // extract config values
           const clusterName = self.configManager.getFlag(flags.clusterName)
-          const namespace = 'default' // we always install the shared component in default namespace
+          const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
           const chartDir = self.configManager.getFlag(flags.chartDirectory)
           const deployPrometheusStack = self.configManager.getFlag(flags.deployPrometheusStack)
           const deployMinio = self.configManager.getFlag(flags.deployMinio)
@@ -151,7 +151,7 @@ export class ClusterCommand extends BaseCommand {
         task: async (ctx, task) => {
           self.configManager.load(argv)
           const clusterName = self.configManager.getFlag(flags.clusterName)
-          const namespace = self.configManager.getFlag(flags.namespace)
+          const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
 
           ctx.config = {
             clusterName,
