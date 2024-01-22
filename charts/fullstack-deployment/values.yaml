@@ -379,7 +379,7 @@ hedera-explorer:
           - path: /
             pathType: Prefix
     tls:
-      - secretName: self-signed-ca-secret-hedera-explorer # TODO update
+      - secretName: ca-secret-hedera-explorer
         hosts:
           - "explorer.fst.local"
   labels:

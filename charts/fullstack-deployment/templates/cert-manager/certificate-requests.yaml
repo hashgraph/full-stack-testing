@@ -3,14 +3,14 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: self-signed-ca-secret-hedera-explorer
+  name: ca-secret-hedera-explorer
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
 spec:
   isCA: false
   commonName: {{ $.Values.deployment.hederaExplorer.hostname }}
   dnsNames:
     - {{ $.Values.deployment.hederaExplorer.hostname }}
-  secretName: self-signed-ca-secret-hedera-explorer
+  secretName: ca-secret-hedera-explorer
   privateKey:
     algorithm: RSA
     size: 3072
