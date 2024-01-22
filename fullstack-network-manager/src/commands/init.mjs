@@ -111,7 +111,10 @@ export class InitCommand extends BaseCommand {
     return {
       command: 'init',
       desc: 'Perform dependency checks and initialize local environment',
-      builder: y => flags.setCommandFlags(y, flags.chartDirectory),
+      builder: y => {
+        flags.setCommandFlags(y, flags.chartDirectory)
+        flags.setCommandFlags(y, flags.namespace)
+      },
       handler: (argv) => {
         initCmd.init(argv).then(r => {
           if (!r) process.exit(1)

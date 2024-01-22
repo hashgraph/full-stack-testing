@@ -37,7 +37,7 @@ export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    default: constants.DEFAULT_NAMESPACE,
+    default: '',
     alias: 'n',
     type: 'string'
   }
@@ -165,7 +165,7 @@ export const nodeIDs = {
   name: 'node-ids',
   definition: {
     describe: 'Comma separated node IDs (empty means all nodes)',
-    default: '',
+    default: 'node0,node1,node2',
     alias: 'i',
     type: 'string'
   }

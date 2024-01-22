@@ -12,7 +12,6 @@ describe('Kubectl', () => {
   const testLogger = logging.NewLogger('debug')
   const configManager = new ConfigManager(testLogger)
   const kubectl = new Kubectl2(configManager, testLogger)
-  // configManager.load({namespace: constants.NAMESPACE_NAME})
 
   it('should be able to list clusters', async () => {
     const clusters = await kubectl.getClusters()
@@ -23,7 +22,7 @@ describe('Kubectl', () => {
   it('should be able to list namespaces', async () => {
     const namespaces = await kubectl.getNamespaces()
     expect(namespaces).not.toHaveLength(0)
-    expect(namespaces).toContain(constants.NAMESPACE_NAME)
+    expect(namespaces).toContain(constants.DEFAULT_NAMESPACE)
   })
 
   it('should be able to list contexts', async () => {
@@ -112,8 +111,18 @@ describe('Kubectl', () => {
 
   it('should be able to cat a log file inside the container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
-    const logfilePath = `${constants.HEDERA_HAPI_PATH}/logs/hgcaa.log`
-    const output = await kubectl.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
+    const containerName = constants.ROOT_CONTAINER
+    const testFileName = 'test.txt'
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
+    const tmpFile = path.join(tmpDir, testFileName)
+    const destDir = constants.HEDERA_USER_HOME_DIR
+    const destPath = `${destDir}/${testFileName}`
+    fs.writeFileSync(tmpFile, 'TEST\nNow current platform status = ACTIVE')
+
+    await expect(kubectl.copyTo(podName, containerName, tmpFile, destDir)).resolves.toBeTruthy()
+    const output = await kubectl.execContainer(podName, containerName, ['tail', '-10', destPath])
     expect(output.indexOf('Now current platform status = ACTIVE')).toBeGreaterThan(0)
+
+    fs.rmdirSync(tmpDir, { recursive: true })
   })
 })

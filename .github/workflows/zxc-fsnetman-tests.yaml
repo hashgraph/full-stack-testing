@@ -127,10 +127,11 @@ jobs:
         run: |
           npm i
           npm link
-          fsnetman init -d ../charts # use the charts directory for all subsequent commands
-          fsnetman cluster create
+          kind create cluster -n fst
+          kubectl create ns fst-e2e
+          fsnetman init -d ../charts --namespace fst-e2e
           fsnetman cluster setup --cert-manager --cert-manager-crds
-          fsnetman chart install --enable-tls --self-signed --enable-hedera-explorer-tls
+          fsnetman chart install --enable-tls --self-signed --enable-hedera-explorer-tls --acme-cluster-issuer
           npm run test-e2e
 
       - name: Output logs

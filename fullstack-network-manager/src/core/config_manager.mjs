@@ -114,14 +114,14 @@ export class ConfigManager {
    * Return the value of the given flag
    *
    * @param flag flag object
-   * @return {*|string} value of the flag or empty string if flag value is not available
+   * @return {*|string} value of the flag or undefined if flag value is not available
    */
   getFlag (flag) {
     if (this.config.flags[flag.name] !== undefined) {
       return this.config.flags[flag.name]
     }
 
-    return ''
+    return undefined
   }
 
   /**

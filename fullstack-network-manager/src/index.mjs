@@ -35,7 +35,9 @@ export function main (argv) {
     const context = kubeConfig.getContextObject(kubeConfig.getCurrentContext())
     const cluster = kubeConfig.getCurrentCluster()
     configManager.setFlag(flags.clusterName, cluster.name)
-    configManager.setFlag(flags.namespace, context.namespace)
+    if (context.namespace) {
+      configManager.setFlag(flags.namespace, context.namespace)
+    }
     configManager.persist()
 
     logger.showUser(chalk.green('\n-------------------------------------------------------------------------------'))
