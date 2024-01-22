@@ -133,6 +133,16 @@ export class Kubectl2 {
   }
 
   /**
+   * Returns true if a namespace exists with the given name
+   * @param namespace namespace name
+   * @return {Promise<boolean>}
+   */
+  async hasNamespace (namespace) {
+    const namespaces = await this.getNamespaces()
+    return namespaces.includes(namespace)
+  }
+
+  /**
    * Get a podName by name
    * @param name podName name
    * @return {Promise<{}>} k8s.V1Pod object

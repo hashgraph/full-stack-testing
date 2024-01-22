@@ -123,6 +123,10 @@ export class NodeCommand extends BaseCommand {
             chainId: await prompts.promptChainId(task, argv.chainId)
           }
 
+          if (!await this.kubectl2.hasNamespace(config.namespace)) {
+            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
+          }
+
           // compute other config parameters
           config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
           config.buildZipFile = `${config.cacheDir} /${config.releasePrefix}/build-${config.releaseTag}.zip`
@@ -215,6 +219,10 @@ export class NodeCommand extends BaseCommand {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
           }
+
+          if (!await this.kubectl2.hasNamespace(ctx.config.namespace)) {
+            throw new FullstackTestingError(`namespace ${ctx.config.namespace} does not exist`)
+          }
         }
       },
       {
@@ -289,10 +297,13 @@ export class NodeCommand extends BaseCommand {
 
           // get existing choices
           const namespaces = await self.kubectl2.getNamespaces()
-
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+          }
+
+          if (!await this.kubectl2.hasNamespace(ctx.config.namespace)) {
+            throw new FullstackTestingError(`namespace ${ctx.config.namespace} does not exist`)
           }
         }
       },

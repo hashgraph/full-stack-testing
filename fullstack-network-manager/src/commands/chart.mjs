@@ -99,6 +99,10 @@ export class ChartCommand extends BaseCommand {
       config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace, config.enableHederaExplorerTls,
       config.acmeClusterIssuer, config.selfSignedClusterIssuer)
 
+    if (!await this.kubectl2.hasNamespace(config.namespace)) {
+      throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
+    }
+
     return config
   }
 
