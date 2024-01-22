@@ -46,16 +46,17 @@ acme-cluster-issuer:
   issuers:
     staging:
       email: ""
-      name: fst-letsencrypt-staging
+      name: {{ tpl (.Values.global.namespaceOverride | default .Release.Namespace | toString | printf "%q-letsencrypt-staging" ) }}
     production:
       email: ""
-      name: fst-letsencrypt-prod
+      name: {{ tpl (.Values.global.namespaceOverride | default .Release.Namespace | toString | printf "%q-letsencrypt-prod" ) }}
   solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
-      solverType: "gatewayHTTPRoute"
-      gatewayHTTPRoute:
-        name: "fst" # needs to match gatewayApi.gateway.name in this values.yaml file
-        namespace: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+      solverType: "ingress"
+      ingress:
+        name: ""
+        class: ""
+        serviceType: ""
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
@@ -370,6 +371,8 @@ haproxy-ingress:
 # hedera-mirror-node-explorer configuration
 hedera-explorer:
   enabled: true
+  selfSignedCertClusterIssuer: {{ tpl ( .Values.global.namespaceOverride | default .Release.Namespace | toString | printf "%q-self-signed-cluster-issuer ) }} # leave blank to use default, set if you have multiple deployments in a cluster to make it unique
+  certClusterIssuerType: "" # "acme-staging", "acme-prod", or "self-signed"
   ingress:
     enabled: false
     className: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
