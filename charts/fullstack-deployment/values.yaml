@@ -2,6 +2,7 @@
 
 global:
   namespaceOverride: ""
+  ingressClassName: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
 
 # cloud configuration
 cloud:
@@ -53,8 +54,6 @@ acme-cluster-issuer:
   solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
       solverType: "ingress"
-      ingress:
-        class: {{ index $.Values "hedera-explorer" "ingress" "className" }}
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
@@ -373,7 +372,6 @@ hedera-explorer:
   certClusterIssuerType: "" # "acme-staging", "acme-prod", or "self-signed"
   ingress:
     enabled: false
-    className: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
     hosts:
       - host: "explorer.fst.local"
         paths:

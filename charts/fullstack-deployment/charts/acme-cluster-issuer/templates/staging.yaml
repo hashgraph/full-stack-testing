@@ -20,7 +20,7 @@ spec:
           ingress:
             {{- with .Values.solvers.http01.ingress }}
             name: {{ .name }}
-            class: {{ .class }}
+            class: {{ $.Values.global.ingressClassName | default .class }}
             serviceType: {{ .serviceType }}
             {{- end }}
           {{- end }}

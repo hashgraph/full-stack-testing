@@ -14,7 +14,7 @@ metadata:
   namespace: {{ include "hedera-explorer.namespace" . }}
 spec:
   {{- with .Values.ingress.className }}
-  ingressClassName: {{ . }}
+  ingressClassName: {{ $.Values.global.ingressClassName | default . }}
   {{- end }}
   rules:
   {{- range .Values.ingress.hosts }}

@@ -1,3 +1,6 @@
+global:
+  ingressClassName: "" # if set, takes precedence over the solvers.http01.ingress.class
+
 issuers:
   annotations:
   staging:
