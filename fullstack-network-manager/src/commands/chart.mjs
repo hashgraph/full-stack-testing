@@ -1,9 +1,10 @@
+import chalk from 'chalk'
 import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as paths from 'path'
-import { constants } from '../core/index.mjs'
+import { constants, Templates } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
@@ -86,7 +87,6 @@ export class ChartCommand extends BaseCommand {
       enableHederaExplorerTls: await prompts.promptEnableHederaExplorerTls(task, enableHederaExplorerTls),
       acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer),
       selfSignedClusterIssuer: await prompts.promptSelfSignedClusterIssuer(task, selfSignedClusterIssuer),
-      timeout: 900,
       version: this.configManager.getVersion()
     }
 
@@ -129,12 +129,29 @@ export class ChartCommand extends BaseCommand {
       },
       {
         title: 'Waiting for network pods to be ready',
-        task: async (ctx, _) => {
-          const timeout = ctx.config.timeout || 900
-          await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
-            'fullstack.hedera.com/type=network-node'
-          ], ctx.config.nodeIds.length, timeout * 1000, 1000)
-        }
+        task:
+          async (ctx, task) => {
+            const subTasks = []
+            for (const nodeId of ctx.config.nodeIds) {
+              const podName = Templates.renderNetworkPodName(nodeId)
+              subTasks.push({
+                title: `Node: ${chalk.yellow(nodeId)} (Pod: ${podName})`,
+                task: () =>
+                  self.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+                    'fullstack.hedera.com/type=network-node',
+                    `fullstack.hedera.com/node-name=${nodeId}`
+                  ], 1, 60 * 15, 1000) // timeout 15 minutes
+              })
+            }
+
+            // set up the sub-tasks
+            return task.newListr(subTasks, {
+              concurrent: false, // no need to run concurrently since if one node is up, the rest should be up by then
+              rendererOptions: {
+                collapseSubtasks: false
+              }
+            })
+          }
       }
     ], {
       concurrent: false,
@@ -207,10 +224,9 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Waiting for network pods to be ready',
         task: async (ctx, _) => {
-          const timeout = ctx.config.timeout || 900
           await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
             'fullstack.hedera.com/type=network-node'
-          ], timeout)
+          ], 1)
         }
       }
     ], {

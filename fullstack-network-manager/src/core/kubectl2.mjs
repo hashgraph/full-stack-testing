@@ -508,21 +508,15 @@ export class Kubectl2 {
    * @param status phase of the pod
    * @param labels pod labels
    * @param podCount number of pod expected
-   * @param timeout timeout in milliseconds
+   * @param maxAttempts maximum attempts to check
    * @param delay delay between checks in milliseconds
    * @return {Promise<boolean>}
    */
-  async waitForPod (status = 'Running', labels = [], podCount = 1, timeout = 1000, delay = 200) {
+  async waitForPod (status = 'Running', labels = [], podCount = 1, maxAttempts = 10, delay = 500) {
     const ns = this._getNamespace()
     const fieldSelector = `status.phase=${status}`
     const labelSelector = labels.join(',')
 
-    timeout = Number.parseInt(`${timeout}`)
-    if (timeout <= 0 || timeout < delay) {
-      throw new FullstackTestingError(`invalid timeout '${timeout}' and delay '${delay}'`)
-    }
-
-    const maxAttempts = Math.round(timeout / delay)
     this.logger.debug(`WaitForPod [${fieldSelector}, ${labelSelector}], maxAttempts: ${maxAttempts}`)
 
     // wait for the pod to be available with the given status and labels
@@ -534,7 +528,8 @@ export class Kubectl2 {
         false,
         undefined,
         fieldSelector,
-        labelSelector
+        labelSelector,
+        podCount
       )
 
       if (resp.body && resp.body.items && resp.body.items.length === podCount) {

@@ -22,7 +22,7 @@ export class NodeCommand extends BaseCommand {
     this.plaformInstaller = opts.platformInstaller
   }
 
-  async checkNetworkNodePod (namespace, nodeId, timeout = '300s') {
+  async checkNetworkNodePod (namespace, nodeId) {
     nodeId = nodeId.trim()
     const podName = Templates.renderNetworkPodName(nodeId)
 
@@ -164,7 +164,7 @@ export class NodeCommand extends BaseCommand {
             }
       },
       {
-        title: 'Extract platform software into network node',
+        title: 'Upload platform software into network nodes',
         task:
             async (ctx, task) => {
               const config = ctx.config
@@ -181,7 +181,7 @@ export class NodeCommand extends BaseCommand {
 
               // set up the sub-tasks
               return task.newListr(subTasks, {
-                concurrent: false,
+                concurrent: false, // parallel uploading of the zip file seems to be unreliable, so we just upload in sequence
                 rendererOptions: {
                   collapseSubtasks: false
                 }
