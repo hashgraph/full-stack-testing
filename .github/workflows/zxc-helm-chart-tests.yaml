@@ -60,7 +60,20 @@ jobs:
               - charts/**
             scripts:
               - dev/**
-
+      - name: List all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in "$ALL_CHANGED_FILES"; do
+            echo "$file was changed"
+          done
+      - name: List all changed script files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.scripts_all_changed_files }}
+        run: |
+          for file in "$ALL_CHANGED_FILES"; do
+            echo "$file was changed"
+          done
       - name: List all changed files related to charts
         id: check-changed-files
         run: |
@@ -72,7 +85,7 @@ jobs:
           echo ""
           echo "Modified script files"
           echo "-------------------------------------------------------------------"
-          for file in ${{ steps.changed-files.outputs.script_all_changed_files }}; do
+          for file in ${{ steps.changed-files.outputs.scripts_all_changed_files }}; do
             echo " - ${file} was changed"
           done
           echo ""
