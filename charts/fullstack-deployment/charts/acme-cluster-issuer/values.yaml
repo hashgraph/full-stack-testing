@@ -1,3 +1,7 @@
+global:
+  namespaceOverride: ""
+  ingressClassName: ""
+
 issuers:
   annotations:
   staging:

@@ -2,7 +2,7 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: fst-self-signed-cluster-issuer
+  name: {{ tpl (index .Values "hedera-explorer" "selfSignedCertClusterIssuer") . }}
   namespace: cert-manager
   annotations:
     helm.sh/hook: post-install

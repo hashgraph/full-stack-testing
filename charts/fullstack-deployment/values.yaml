@@ -2,6 +2,7 @@
 
 global:
   namespaceOverride: ""
+  ingressClassName: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster and make unique per cluster
 
 # cloud configuration
 cloud:
@@ -46,16 +47,13 @@ acme-cluster-issuer:
   issuers:
     staging:
       email: ""
-      name: fst-letsencrypt-staging
+      name: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-letsencrypt-staging" }}'
     production:
       email: ""
-      name: fst-letsencrypt-prod
+      name: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-letsencrypt-prod" }}'
   solvers: # TODO change in: https://github.com/hashgraph/full-stack-testing/issues/631
     http01:
-      solverType: "gatewayHTTPRoute"
-      gatewayHTTPRoute:
-        name: "fst" # needs to match gatewayApi.gateway.name in this values.yaml file
-        namespace: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+      solverType: "ingress"
 
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
@@ -370,18 +368,20 @@ haproxy-ingress:
 # hedera-mirror-node-explorer configuration
 hedera-explorer:
   enabled: true
+  # leave blank to use default, set if you have multiple deployments in a cluster to make it unique
+  selfSignedCertClusterIssuer: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-self-signed-cluster-issuer" }}'
+  certClusterIssuerType: "self-signed" # "acme-staging", "acme-prod", or "self-signed"
   ingress:
     enabled: false
-    className: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster
     hosts:
       - host: "explorer.fst.local"
         paths:
           - path: /
             pathType: Prefix
     tls:
-      - secretName: self-signed-ca-secret-hedera-explorer # TODO update
+      - secretName: ca-secret-hedera-explorer
         hosts:
-          - "explorer.fst.local"
+          - '{{ index .Values.ingress.hosts 0 "host" }}'
   labels:
     fullstack.hedera.com/testSuiteName: ""
     fullstack.hedera.com/testName: ""
@@ -400,7 +400,7 @@ hedera-explorer:
       value: "network"
       effect: "NoSchedule"
   global:
-    namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
+    namespaceOverride: "{{ .Values.global.namespaceOverride }}"
   # The hedera explorer UI /api url will proxy  all request to mirror node
   #
   # Without this we would need to expose the mirror node rest API publicly and specify its public url in the network config below
@@ -422,8 +422,6 @@ hedera-explorer:
 
 # common deployment configuration
 deployment:
-  hederaExplorer:
-    hostname: "explorer.fst.local" # TODO remove duplication
   podAnnotations: {}
   podLabels: {}
   nodeSelector: {}
