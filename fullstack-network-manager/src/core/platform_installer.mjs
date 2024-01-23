@@ -79,7 +79,7 @@ export class PlatformInstaller {
 
     try {
       await this.copyFiles(podName, [buildZipSrc], constants.HEDERA_USER_HOME_DIR)
-      return true
+      return this.extractPlatform(podName, buildZipSrc)
     } catch (e) {
       throw new FullstackTestingError(`failed to copy platform code in to pod '${podName}': ${e.message}`, e)
     }
@@ -361,16 +361,6 @@ export class PlatformInstaller {
   taskInstall (podName, buildZipFile, stagingDir, force = false) {
     const self = this
     return new Listr([
-      {
-        title: 'Copy platform zip file',
-        task: (_, task) =>
-          self.copyPlatform(podName, buildZipFile)
-      },
-      {
-        title: 'Extract platform zip file',
-        task: (_, task) =>
-          self.extractPlatform(podName, buildZipFile)
-      },
       {
         title: 'Copy Gossip keys',
         task: (_, task) =>

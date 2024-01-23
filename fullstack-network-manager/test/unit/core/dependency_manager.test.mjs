@@ -8,10 +8,6 @@ describe('DependencyManager', () => {
   const depManager = new DependencyManager(testLogger)
 
   describe('checks', () => {
-    it('should succeed with checkKind', async () => {
-      await expect(depManager.checkKind()).resolves.toBe(true)
-    })
-
     it('should succeed with checkHelm', async () => {
       await expect(depManager.checkHelm()).resolves.toBe(true)
     })

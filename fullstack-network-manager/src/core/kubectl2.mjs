@@ -362,7 +362,7 @@ export class Kubectl2 {
    * @param delay delay between attempts to check if file is copied successfully or not
    * @returns {Promise<>}
    */
-  async copyTo (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 250) {
+  async copyTo (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 500) {
     const ns = this._getNamespace()
 
     try {
@@ -401,7 +401,7 @@ export class Kubectl2 {
    * @param delay delay between attempts to check if file is copied successfully or not
    * @returns {Promise<boolean>}
    */
-  async copyFrom (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 250) {
+  async copyFrom (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 500) {
     const ns = this._getNamespace()
 
     try {

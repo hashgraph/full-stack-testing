@@ -142,7 +142,7 @@ export class NodeCommand extends BaseCommand {
         }
       },
       {
-        title: 'Fetch platform',
+        title: 'Fetch platform software',
         task: async (ctx, _) => {
           const config = ctx.config
 
@@ -164,6 +164,31 @@ export class NodeCommand extends BaseCommand {
             }
       },
       {
+        title: 'Extract platform software into network node',
+        task:
+            async (ctx, task) => {
+              const config = ctx.config
+
+              const subTasks = []
+              for (const nodeId of ctx.config.nodeIds) {
+                const podName = ctx.config.podNames[nodeId]
+                subTasks.push({
+                  title: `Node: ${chalk.yellow(nodeId)}`,
+                  task: () =>
+                    self.plaformInstaller.copyPlatform(podName, config.buildZipFile)
+                })
+              }
+
+              // set up the sub-tasks
+              return task.newListr(subTasks, {
+                concurrent: false,
+                rendererOptions: {
+                  collapseSubtasks: false
+                }
+              })
+            }
+      },
+      {
         title: 'Setup network nodes',
         task:
             async (ctx, task) => {
@@ -173,7 +198,7 @@ export class NodeCommand extends BaseCommand {
               for (const nodeId of ctx.config.nodeIds) {
                 const podName = ctx.config.podNames[nodeId]
                 subTasks.push({
-                  title: `Setup node: ${chalk.yellow(nodeId)}`,
+                  title: `Node: ${chalk.yellow(nodeId)}`,
                   task: () =>
                     self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.force)
                 })

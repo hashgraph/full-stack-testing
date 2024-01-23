@@ -230,7 +230,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Setup cluster with shared components',
             builder: y => flags.setCommandFlags(y,
               flags.clusterName,
-              flags.namespace,
+              flags.withDefaultValue(flags.namespace, constants.DEFAULT_NAMESPACE),
               flags.chartDirectory,
               flags.deployPrometheusStack,
               flags.deployMinio,

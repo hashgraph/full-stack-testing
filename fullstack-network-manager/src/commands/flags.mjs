@@ -13,6 +13,12 @@ export function setCommandFlags (y, ...commandFlags) {
   })
 }
 
+export function withDefaultValue (f, value) {
+  const clone = JSON.parse(JSON.stringify(f))
+  clone.definition.default = value
+  return clone
+}
+
 export const devMode = {
   name: 'dev',
   definition: {

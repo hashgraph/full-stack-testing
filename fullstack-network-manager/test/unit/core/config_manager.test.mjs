@@ -20,14 +20,14 @@ describe('ConfigManager', () => {
     expect(cm.config.flags).not.toBeNull()
     expect(cm.config.updatedAt).not.toBeNull()
 
-    const previousNamespace = cm.flagValue(flags.namespace)
+    const previousNamespace = cm.getFlag(flags.namespace)
     const previousUpdatedAt = cm.config.updatedAt
 
     const argv = {}
     argv[flags.namespace.name] = uuid4()
     cm.load(argv)
-    expect(cm.flagValue(flags.namespace)).not.toBe(previousNamespace)
-    expect(cm.flagValue(flags.namespace)).toBe(argv[flags.namespace.name])
+    expect(cm.getFlag(flags.namespace)).not.toBe(previousNamespace)
+    expect(cm.getFlag(flags.namespace)).toBe(argv[flags.namespace.name])
     expect(cm.config.updatedAt).not.toBe(previousUpdatedAt)
   })
 })
