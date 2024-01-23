@@ -1,10 +1,14 @@
-# Helm Chart Tests
+## Pre-requisites
+
+Install `yq` from this link: [yq](https://github.com/mikefarah/yq/#install)
+
+## Helm Chart Tests
 This directory contains the BATS tests for helm chart. 
 
 `run.sh` is the entrypoint to execute the tests locally assuming
 you have the network deployed already.
 
-## Development
+## How to create and debug test
 - Use the `test_basic_deployment.bats` file as the template while creating new tests.
 - In order to run and debug the tests inside the helm test container, do the following:
 
@@ -26,11 +30,12 @@ you have the network deployed already.
   - Once debug is done, you can exit and use Ctrl+C to terminate the helm-test process (you will need to delete the `network-test` container using `kubectl delete network-test`).
   - If it looks all good, revert changes in `charts/fullstack-deployment/template/tests/test-deployment.yaml`
 
-## Run
+## How to run the tests
+- Goto folder `full-stack-testing/charts/fullstack-deployment/tests`
 - Run `git submodule update --init` in order to install [bats](https://github.com/bats-core) for tests. 
-- Create a .env file in this directory from the `env.template` file
-- From `dev` folder run `make deploy-network`
-- Once network is deployed, you can run `./run.sh` to run the tests.
+- Create a .env file in this directory by copying from the `env.template` file
+- From `full-stack-testing/dev` folder run the follow command `make setup setup-cluster deploy-network` to create cluster and deploy network.
+- Once network is deployed, you can run `./run.sh` from `tests` directory to run the tests. It will create a log file under `logs` directory.
 - When tests are working, then redeploy and run the helm tests: `make destroy-network deploy-network helm-test`
 
 ## Notes

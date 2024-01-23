@@ -53,7 +53,6 @@ function deploy_fullstack_cluster_setup_chart() {
 
   echo "-----------------------Shared Resources------------------------------------------------------------------------------"
   kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
-  kubectl get gatewayclass
   echo ""
 
   log_time "deploy_fullstack_cluster_setup_chart"
@@ -74,7 +73,6 @@ function destroy_fullstack_cluster_setup_chart() {
 
   echo "-----------------------Shared Resources------------------------------------------------------------------------------"
   kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
-  kubectl get gatewayclass
   echo ""
 
   log_time "destroy_fullstack_cluster_setup_chart"
