@@ -51,11 +51,17 @@ jobs:
         # nmt-install.sh uses ubi8-init-dind image
         scriptName: [ direct-install.sh, nmt-install.sh  ]
     steps:
+      - name: Setup Make
+        run: |
+          if ! command -v make >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y make
+          fi
       - name: Get changed files related to charts
         id: changed-files
         uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
         with:
-          files: |
+          files_yaml: |
             chart:
               - charts/**
             scripts:
@@ -72,7 +78,7 @@ jobs:
           echo ""
           echo "Modified script files"
           echo "-------------------------------------------------------------------"
-          for file in ${{ steps.changed-files.outputs.script_all_changed_files }}; do
+          for file in ${{ steps.changed-files.outputs.scripts_all_changed_files }}; do
             echo " - ${file} was changed"
           done
           echo ""
