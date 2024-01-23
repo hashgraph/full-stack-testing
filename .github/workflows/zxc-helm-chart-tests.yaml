@@ -53,7 +53,7 @@ jobs:
     steps:
       - name: Get changed files related to charts
         id: changed-files
-        uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
+        uses: tj-actions/changed-files@v42
         with:
           files: |
             chart:
