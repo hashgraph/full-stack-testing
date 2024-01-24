@@ -14,9 +14,7 @@ metadata:
     fullstack.hedera.com/prometheus-endpoint: active
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
-  {{- if default $defaults.loadBalancerEnabled $haproxy.loadBalancerEnabled | eq "true" }}
-  type: LoadBalancer
-  {{- end }}
+  type: {{ $defaults.serviceType | default "ClusterIP" }}
   selector:
     app: haproxy-{{ $node.name }}
   ports:

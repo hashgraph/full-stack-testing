@@ -11,5 +11,8 @@ dependencies:
 - name: acme-cluster-issuer
   repository: ""
   version: 0.3.0
-digest: sha256:65f708d654ba6d14c7b193cc833f132f6133cca53850bcd37cf27809246df0f6
-generated: "2024-01-05T21:23:17.852519Z"
+- name: haproxy-ingress
+  repository: https://haproxy-ingress.github.io/charts
+  version: 0.14.5
+digest: sha256:08303f21e82e6b77a39f6018638b5ba10f180ae420422296bbc5ddcd9f257c4a
+generated: "2024-01-18T13:48:57.467807Z"

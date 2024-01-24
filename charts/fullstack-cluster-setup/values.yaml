@@ -15,11 +15,13 @@ cloud:
     enabled: false
   grafanaAgent:
     enabled: false
-  envoyGateway:
-    enabled: false
   certManager:
     enabled: false
 
 cert-manager:
   namespace: cert-manager
   installCRDs: false
+
+minio-operator:
+  operator:
+    replicaCount: 1
