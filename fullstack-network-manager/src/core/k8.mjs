@@ -15,7 +15,7 @@ import { v4 as uuid4 } from 'uuid'
  * Note: Take care if the same instance is used for parallel execution, as the behaviour may be unpredictable.
  * For parallel execution, create separate instances by invoking clone()
  */
-export class Kubectl2 {
+export class K8 {
   constructor (configManager, logger) {
     if (!configManager) throw new MissingArgumentError('An instance of core/ConfigManager is required')
     if (!logger) throw new MissingArgumentError('An instance of core/Logger is required')
@@ -30,10 +30,10 @@ export class Kubectl2 {
    * Clone a new instance with the same config manager and logger
    * Internally it instantiates a new kube API client
    *
-   * @return {Kubectl2}
+   * @return {K8}
    */
   clone () {
-    const c = new Kubectl2(this.configManager, this.logger)
+    const c = new K8(this.configManager, this.logger)
     return c.init()
   }
 

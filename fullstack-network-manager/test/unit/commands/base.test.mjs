@@ -7,7 +7,7 @@ import {
   logging
 } from '../../../src/core/index.mjs'
 import { BaseCommand } from '../../../src/commands/base.mjs'
-import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
+import { K8 } from '../../../src/core/k8.mjs'
 
 const testLogger = logging.NewLogger('debug')
 
@@ -16,12 +16,12 @@ describe('BaseCommand', () => {
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
   const depManager = new DependencyManager(testLogger)
-  const kubectl2 = new Kubectl2(configManager, testLogger)
+  const k8 = new K8(configManager, testLogger)
 
   const baseCmd = new BaseCommand({
     logger: testLogger,
     helm,
-    kubectl2,
+    k8,
     chartManager,
     configManager,
     depManager

@@ -99,7 +99,7 @@ export class ChartCommand extends BaseCommand {
       config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace, config.enableHederaExplorerTls,
       config.acmeClusterIssuer, config.selfSignedClusterIssuer)
 
-    if (!await this.kubectl2.hasNamespace(config.namespace)) {
+    if (!await this.k8.hasNamespace(config.namespace)) {
       throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
     }
 
@@ -137,7 +137,7 @@ export class ChartCommand extends BaseCommand {
               subTasks.push({
                 title: `Node: ${chalk.yellow(nodeId)} (Pod: ${podName})`,
                 task: () =>
-                  self.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+                  self.k8.waitForPod(constants.POD_STATUS_RUNNING, [
                     'fullstack.hedera.com/type=network-node',
                     `fullstack.hedera.com/node-name=${nodeId}`
                   ], 1, 60 * 15, 1000) // timeout 15 minutes
@@ -224,7 +224,7 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Waiting for network pods to be ready',
         task: async (ctx, _) => {
-          await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+          await this.k8.waitForPod(constants.POD_STATUS_RUNNING, [
             'fullstack.hedera.com/type=network-node'
           ], 1)
         }

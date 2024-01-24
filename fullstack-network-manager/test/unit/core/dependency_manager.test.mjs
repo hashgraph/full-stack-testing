@@ -11,10 +11,6 @@ describe('DependencyManager', () => {
     it('should succeed with checkHelm', async () => {
       await expect(depManager.checkHelm()).resolves.toBe(true)
     })
-
-    it('should succeed with checkKubectl', async () => {
-      await expect(depManager.checkKubectl()).resolves.toBe(true)
-    })
   })
 
   describe('checkDependency', () => {

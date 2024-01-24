@@ -9,12 +9,12 @@ import { Templates } from './templates.mjs'
  * PlatformInstaller install platform code in the root-container of a network pod
  */
 export class PlatformInstaller {
-  constructor (logger, kubectl2) {
+  constructor (logger, k8) {
     if (!logger) throw new MissingArgumentError('an instance of core/Logger is required')
-    if (!kubectl2) throw new MissingArgumentError('an instance of core/Kubectl2 is required')
+    if (!k8) throw new MissingArgumentError('an instance of core/K8 is required')
 
     this.logger = logger
-    this.kubectl2 = kubectl2
+    this.k8 = k8
   }
 
   async setupHapiDirectories (podName, containerName = constants.ROOT_CONTAINER) {
@@ -22,7 +22,7 @@ export class PlatformInstaller {
 
     try {
       // reset HAPI_PATH
-      await this.kubectl2.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}`)
+      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}`)
 
       const paths = [
         `${constants.HEDERA_HAPI_PATH}/data/keys`,
@@ -30,7 +30,7 @@ export class PlatformInstaller {
       ]
 
       for (const p of paths) {
-        await this.kubectl2.execContainer(podName, containerName, `mkdir -p ${p}`)
+        await this.k8.execContainer(podName, containerName, `mkdir -p ${p}`)
       }
 
       await this.setPathPermission(podName, constants.HEDERA_SERVICES_PATH)
@@ -103,9 +103,9 @@ export class PlatformInstaller {
 
     try {
       await this.copyFiles(podName, [extractScriptSrc], constants.HEDERA_USER_HOME_DIR)
-      await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, `chmod +x ${extractScript}`)
+      await this.k8.execContainer(podName, constants.ROOT_CONTAINER, `chmod +x ${extractScript}`)
       await this.setupHapiDirectories(podName)
-      await this.kubectl2.execContainer(podName, constants.ROOT_CONTAINER, [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
+      await this.k8.execContainer(podName, constants.ROOT_CONTAINER, [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
 
       return true
     } catch (e) {
@@ -118,10 +118,10 @@ export class PlatformInstaller {
     try {
       for (const srcPath of srcFiles) {
         self.logger.debug(`Copying file into ${podName}: ${srcPath} -> ${destDir}`)
-        await this.kubectl2.copyTo(podName, container, srcPath, destDir)
+        await this.k8.copyTo(podName, container, srcPath, destDir)
       }
 
-      const fileList = await this.kubectl2.execContainer(podName, container, `ls ${destDir}`)
+      const fileList = await this.k8.execContainer(podName, container, `ls ${destDir}`)
 
       // create full path
       if (fileList) {
@@ -213,8 +213,8 @@ export class PlatformInstaller {
 
     try {
       const recursiveFlag = recursive ? '-R' : ''
-      await this.kubectl2.execContainer(podName, container, `chown ${recursiveFlag} hedera:hedera ${destPath}`)
-      await this.kubectl2.execContainer(podName, container, `chmod ${recursiveFlag} ${mode} ${destPath}`)
+      await this.k8.execContainer(podName, container, `chown ${recursiveFlag} hedera:hedera ${destPath}`)
+      await this.k8.execContainer(podName, container, `chmod ${recursiveFlag} ${mode} ${destPath}`)
       return true
     } catch (e) {
       throw new FullstackTestingError(`failed to set permission in '${podName}': ${destPath}`, e)
@@ -286,8 +286,8 @@ export class PlatformInstaller {
         const nodeName = nodeId
         const nodeNickName = nodeId
 
-        const internalIP = await self.kubectl2.getPodIP(podName)
-        const externalIP = await self.kubectl2.getClusterIP(svcName)
+        const internalIP = await self.k8.getPodIP(podName)
+        const externalIP = await self.k8.getClusterIP(svcName)
 
         const account = `${accountIdPrefix}.${accountIdSeq}`
         if (minorVersion >= 40) {

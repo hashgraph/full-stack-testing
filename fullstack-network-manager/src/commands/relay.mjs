@@ -85,7 +85,7 @@ export class RelayCommand extends BaseCommand {
           const chartDir = self.configManager.getFlag(flags.chartDirectory)
 
           // prompt if inputs are empty and set it in the context
-          const namespaces = await self.kubectl2.getNamespaces()
+          const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             chartDir: await prompts.promptChartDir(task, chartDir),
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
@@ -131,7 +131,7 @@ export class RelayCommand extends BaseCommand {
 
           await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
 
-          await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
+          await this.k8.waitForPod(constants.POD_STATUS_RUNNING, [
             'app=hedera-json-rpc-relay',
             `app.kubernetes.io/instance=${releaseName}`
           ], 1, 120, 1000)
@@ -167,7 +167,7 @@ export class RelayCommand extends BaseCommand {
           const namespace = self.configManager.getFlag(flags.namespace)
 
           // prompt if inputs are empty and set it in the context
-          const namespaces = await self.kubectl2.getNamespaces()
+          const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, nodeIds)

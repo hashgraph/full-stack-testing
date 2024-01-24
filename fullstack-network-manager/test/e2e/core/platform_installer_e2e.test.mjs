@@ -10,13 +10,13 @@ import {
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
+import { K8 } from '../../../src/core/k8.mjs'
 
 describe('PackageInstallerE2E', () => {
   const testLogger = logging.NewLogger('debug')
   const configManager = new ConfigManager(testLogger)
-  const kubectl2 = new Kubectl2(configManager, testLogger)
-  const installer = new PlatformInstaller(testLogger, kubectl2)
+  const k8 = new K8(configManager, testLogger)
+  const installer = new PlatformInstaller(testLogger, k8)
   const downloader = new PackageDownloader(testLogger)
   const testCacheDir = 'test/data/tmp'
   const podName = 'network-node0-0'
@@ -57,7 +57,7 @@ describe('PackageInstallerE2E', () => {
       try {
         packageFile = await downloader.fetchPlatform(packageTag, testCacheDir)
         await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
-        const outputs = await kubectl2.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+        const outputs = await k8.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
         testLogger.showUser(outputs)
       } catch (e) {
         console.error(e)

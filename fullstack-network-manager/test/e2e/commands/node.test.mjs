@@ -17,7 +17,7 @@ import {
   ChartManager,
   ConfigManager,
   Helm,
-  Kubectl2,
+  K8,
   PackageDownloader,
   PlatformInstaller,
   constants,
@@ -51,7 +51,7 @@ class TestHelper {
       for (let nodeId of nodeIds) {
         nodeId = nodeId.trim()
         const podName = Templates.renderNetworkPodName(nodeId)
-        const server = await nodeCmd.kubectl2.portForward(podName, localPort, grpcPort)
+        const server = await nodeCmd.k8.portForward(podName, localPort, grpcPort)
         TestHelper.portForwards.push(server)
 
         // check if the port is actually accessible
@@ -95,13 +95,13 @@ describe('NodeCommand', () => {
   const configManager = new ConfigManager(testLogger)
   const packageDownloader = new PackageDownloader(testLogger)
   const depManager = new DependencyManager(testLogger)
-  const kubectl2 = new Kubectl2(configManager, testLogger)
-  const platformInstaller = new PlatformInstaller(testLogger, kubectl2)
+  const k8 = new K8(configManager, testLogger)
+  const platformInstaller = new PlatformInstaller(testLogger, k8)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
     helm,
-    kubectl2,
+    k8,
     chartManager,
     configManager,
     downloader: packageDownloader,

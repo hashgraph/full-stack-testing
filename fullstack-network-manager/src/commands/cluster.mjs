@@ -11,7 +11,7 @@ import * as prompts from './prompts.mjs'
  */
 export class ClusterCommand extends BaseCommand {
   async showClusterList () {
-    this.logger.showList('Clusters', await this.kubectl2.getClusters())
+    this.logger.showList('Clusters', await this.k8.getClusters())
     return true
   }
 
@@ -21,7 +21,7 @@ export class ClusterCommand extends BaseCommand {
    */
   async getClusterInfo () {
     try {
-      const cluster = this.kubectl2.getKubeConfig().getCurrentCluster()
+      const cluster = this.k8.getKubeConfig().getCurrentCluster()
       this.logger.showJSON(`Cluster Information (${cluster.name})`, cluster)
       this.logger.showUser('\n')
       return true
