@@ -65,7 +65,7 @@ export class ChartManager {
 
         let namespaceArg = ''
         if (namespaceName) {
-          namespaceArg = `-n ${namespaceName}`
+          namespaceArg = `-n ${namespaceName} --create-namespace`
         }
 
         this.logger.debug(`> installing chart:${chartPath}`)

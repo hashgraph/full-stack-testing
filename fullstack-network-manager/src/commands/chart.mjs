@@ -99,10 +99,6 @@ export class ChartCommand extends BaseCommand {
       config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace, config.enableHederaExplorerTls,
       config.acmeClusterIssuer, config.selfSignedClusterIssuer)
 
-    if (!await this.k8.hasNamespace(config.namespace)) {
-      throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
-    }
-
     return config
   }
 
@@ -119,6 +115,10 @@ export class ChartCommand extends BaseCommand {
       {
         title: `Install chart '${constants.CHART_FST_DEPLOYMENT_NAME}'`,
         task: async (ctx, _) => {
+          if (await self.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)) {
+            await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+          }
+
           await this.chartManager.install(
             ctx.config.namespace,
             constants.CHART_FST_DEPLOYMENT_NAME,

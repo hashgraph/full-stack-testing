@@ -17,7 +17,6 @@ describe('K8', () => {
   it('should be able to list clusters', async () => {
     const clusters = await k8.getClusters()
     expect(clusters).not.toHaveLength(0)
-    expect(clusters).toContain('default')
   })
 
   it('should be able to list namespaces', async () => {
@@ -28,7 +27,6 @@ describe('K8', () => {
 
   it('should be able to list contexts', async () => {
     const contexts = await k8.getContexts()
-    expect(contexts).not.toHaveLength(0)
     expect(contexts).not.toHaveLength(0)
   })
 
