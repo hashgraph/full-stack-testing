@@ -18,7 +18,7 @@ describe('DependencyManager', () => {
       await expect(depManager.checkDependency('INVALID_PROGRAM')).rejects.toThrowError(new FullstackTestingError('INVALID_PROGRAM is not found'))
     })
     it('should succeed during kubectl dependency check', async () => {
-      await expect(depManager.checkDependency(constants.KUBECTL)).resolves.toBe(true)
+      await expect(depManager.checkDependency(constants.HELM)).resolves.toBe(true)
     })
   })
 })
