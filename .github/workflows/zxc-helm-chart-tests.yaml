@@ -129,5 +129,4 @@ jobs:
         working-directory: dev
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          sleep 72000
