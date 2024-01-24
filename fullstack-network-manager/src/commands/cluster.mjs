@@ -191,7 +191,7 @@ export class ClusterCommand extends BaseCommand {
   static getCommandDefinition (clusterCmd) {
     return {
       command: 'cluster',
-      desc: 'Manage cluster',
+      desc: 'Manage fullstack testing cluster',
       builder: yargs => {
         return yargs
           .command({
