@@ -1,9 +1,10 @@
+import chalk from 'chalk'
 import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as paths from 'path'
-import { constants } from '../core/index.mjs'
+import { constants, Templates } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
@@ -58,22 +59,24 @@ export class ChartCommand extends BaseCommand {
   }
 
   async prepareConfig (task, argv) {
-    const cachedConfig = await this.configManager.setupConfig(argv)
-    const namespace = this.configManager.flagValue(cachedConfig, flags.namespace)
-    const chartDir = this.configManager.flagValue(cachedConfig, flags.chartDirectory)
-    const valuesFile = this.configManager.flagValue(cachedConfig, flags.valuesFile)
-    const deployMirrorNode = this.configManager.flagValue(cachedConfig, flags.deployMirrorNode)
-    const deployExplorer = this.configManager.flagValue(cachedConfig, flags.deployHederaExplorer)
-    const enableTls = this.configManager.flagValue(cachedConfig, flags.enableTls)
-    const tlsClusterIssuerName = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerName)
-    const tlsClusterIssuerNamespace = this.configManager.flagValue(cachedConfig, flags.tlsClusterIssuerNamespace)
-    const enableHederaExplorerTls = this.configManager.flagValue(cachedConfig, flags.enableHederaExplorerTls)
-    const acmeClusterIssuer = this.configManager.flagValue(cachedConfig, flags.acmeClusterIssuer)
-    const selfSignedClusterIssuer = this.configManager.flagValue(cachedConfig, flags.selfSignedClusterIssuer)
+    this.configManager.load(argv)
+    const namespace = this.configManager.getFlag(flags.namespace)
+    const nodeIds = this.configManager.getFlag(flags.nodeIDs)
+    const chartDir = this.configManager.getFlag(flags.chartDirectory)
+    const valuesFile = this.configManager.getFlag(flags.valuesFile)
+    const deployMirrorNode = this.configManager.getFlag(flags.deployMirrorNode)
+    const deployExplorer = this.configManager.getFlag(flags.deployHederaExplorer)
+    const enableTls = this.configManager.getFlag(flags.enableTls)
+    const tlsClusterIssuerName = this.configManager.getFlag(flags.tlsClusterIssuerName)
+    const tlsClusterIssuerNamespace = this.configManager.getFlag(flags.tlsClusterIssuerNamespace)
+    const enableHederaExplorerTls = this.configManager.getFlag(flags.enableHederaExplorerTls)
+    const acmeClusterIssuer = this.configManager.getFlag(flags.acmeClusterIssuer)
+    const selfSignedClusterIssuer = this.configManager.getFlag(flags.selfSignedClusterIssuer)
 
     // prompt if values are missing and create a config object
     const config = {
       namespace: await prompts.promptNamespaceArg(task, namespace),
+      nodeIds: await prompts.promptNodeIdsArg(task, nodeIds),
       chartDir: await prompts.promptChartDir(task, chartDir),
       valuesFile: await prompts.promptChartDir(task, valuesFile),
       deployMirrorNode: await prompts.promptDeployMirrorNode(task, deployMirrorNode),
@@ -84,8 +87,7 @@ export class ChartCommand extends BaseCommand {
       enableHederaExplorerTls: await prompts.promptEnableHederaExplorerTls(task, enableHederaExplorerTls),
       acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer),
       selfSignedClusterIssuer: await prompts.promptSelfSignedClusterIssuer(task, selfSignedClusterIssuer),
-      timeout: '900s',
-      version: cachedConfig.version
+      version: this.configManager.getVersion()
     }
 
     // compute values
@@ -113,6 +115,10 @@ export class ChartCommand extends BaseCommand {
       {
         title: `Install chart '${constants.CHART_FST_DEPLOYMENT_NAME}'`,
         task: async (ctx, _) => {
+          if (await self.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)) {
+            await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+          }
+
           await this.chartManager.install(
             ctx.config.namespace,
             constants.CHART_FST_DEPLOYMENT_NAME,
@@ -123,14 +129,29 @@ export class ChartCommand extends BaseCommand {
       },
       {
         title: 'Waiting for network pods to be ready',
-        task: async (ctx, _) => {
-          const timeout = ctx.config.timeout || '900s'
-          await this.kubectl.wait('pod',
-            '--for=jsonpath=\'{.status.phase}\'=Running',
-            '-l fullstack.hedera.com/type=network-node',
-            `--timeout=${timeout}`
-          )
-        }
+        task:
+          async (ctx, task) => {
+            const subTasks = []
+            for (const nodeId of ctx.config.nodeIds) {
+              const podName = Templates.renderNetworkPodName(nodeId)
+              subTasks.push({
+                title: `Node: ${chalk.yellow(nodeId)} (Pod: ${podName})`,
+                task: () =>
+                  self.k8.waitForPod(constants.POD_STATUS_RUNNING, [
+                    'fullstack.hedera.com/type=network-node',
+                    `fullstack.hedera.com/node-name=${nodeId}`
+                  ], 1, 60 * 15, 1000) // timeout 15 minutes
+              })
+            }
+
+            // set up the sub-tasks
+            return task.newListr(subTasks, {
+              concurrent: false, // no need to run concurrently since if one node is up, the rest should be up by then
+              rendererOptions: {
+                collapseSubtasks: false
+              }
+            })
+          }
       }
     ], {
       concurrent: false,
@@ -153,8 +174,8 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const namespace = self.configManager.getFlag(flags.namespace)
           ctx.config = {
             namespace: await prompts.promptNamespaceArg(task, namespace)
           }
@@ -203,12 +224,9 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Waiting for network pods to be ready',
         task: async (ctx, _) => {
-          const timeout = ctx.config.timeout || '900s'
-          await this.kubectl.wait('pod',
-            '--for=jsonpath=\'{.status.phase}\'=Running',
-            '-l fullstack.hedera.com/type=network-node',
-            `--timeout=${timeout}`
-          )
+          await this.k8.waitForPod(constants.POD_STATUS_RUNNING, [
+            'fullstack.hedera.com/type=network-node'
+          ], 1)
         }
       }
     ], {
@@ -228,15 +246,16 @@ export class ChartCommand extends BaseCommand {
   static getCommandDefinition (chartCmd) {
     return {
       command: 'chart',
-      desc: 'Manage FST chart deployment',
+      desc: 'Manage chart deployment',
       builder: yargs => {
         return yargs
           .command({
             command: 'install',
-            desc: 'Install FST network deployment chart',
+            desc: 'Install network deployment chart',
             builder: y => {
               flags.setCommandFlags(y,
                 flags.namespace,
+                flags.nodeIDs,
                 flags.deployMirrorNode,
                 flags.deployHederaExplorer,
                 flags.deployJsonRpcRelay,
@@ -266,7 +285,7 @@ export class ChartCommand extends BaseCommand {
           })
           .command({
             command: 'uninstall',
-            desc: 'Uninstall FST network deployment chart',
+            desc: 'Uninstall network deployment chart',
             builder: y => flags.setCommandFlags(y, flags.namespace),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart uninstall' ===")
@@ -284,7 +303,7 @@ export class ChartCommand extends BaseCommand {
           })
           .command({
             command: 'upgrade',
-            desc: 'Refresh existing FST network deployment with new values',
+            desc: 'Refresh existing network deployment with new values',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.deployMirrorNode,

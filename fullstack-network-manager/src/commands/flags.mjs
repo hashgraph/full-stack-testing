@@ -13,6 +13,12 @@ export function setCommandFlags (y, ...commandFlags) {
   })
 }
 
+export function withDefaultValue (f, value) {
+  const clone = JSON.parse(JSON.stringify(f))
+  clone.definition.default = value
+  return clone
+}
+
 export const devMode = {
   name: 'dev',
   definition: {
@@ -27,7 +33,7 @@ export const clusterName = {
   name: 'cluster-name',
   definition: {
     describe: 'Cluster name',
-    default: core.constants.CLUSTER_NAME,
+    default: '',
     alias: 'c',
     type: 'string'
   }
@@ -37,8 +43,17 @@ export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    default: core.constants.NAMESPACE_NAME,
+    default: '',
     alias: 'n',
+    type: 'string'
+  }
+}
+
+export const kubeContext = {
+  name: 'kube-context',
+  definition: {
+    describe: 'Kube context',
+    default: '',
     type: 'string'
   }
 }
@@ -142,6 +157,15 @@ export const releaseTag = {
   }
 }
 
+export const relayReleaseTag = {
+  name: 'relay-release',
+  definition: {
+    describe: 'Relay release tag to be used (e.g. v0.39.1)',
+    default: '',
+    type: 'string'
+  }
+}
+
 export const cacheDir = {
   name: 'cache-dir',
   definition: {
@@ -156,7 +180,7 @@ export const nodeIDs = {
   name: 'node-ids',
   definition: {
     describe: 'Comma separated node IDs (empty means all nodes)',
-    default: '',
+    default: 'node0,node1,node2',
     alias: 'i',
     type: 'string'
   }
@@ -279,6 +303,7 @@ export const allFlags = [
   devMode,
   clusterName,
   namespace,
+  kubeContext,
   deployMirrorNode,
   deployHederaExplorer,
   deployJsonRpcRelay,
@@ -290,6 +315,7 @@ export const allFlags = [
   deployCertManagerCrds,
   acmeClusterIssuer,
   releaseTag,
+  relayReleaseTag,
   cacheDir,
   nodeIDs,
   force,

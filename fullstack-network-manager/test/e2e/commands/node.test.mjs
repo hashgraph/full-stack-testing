@@ -6,8 +6,10 @@ import {
   PrivateKey,
   Wallet
 } from '@hashgraph/sdk'
-import { afterAll, beforeAll, describe, expect, it } from '@jest/globals'
+import { afterEach, beforeAll, describe, expect, it } from '@jest/globals'
 import net from 'net'
+import { namespace } from '../../../src/commands/flags.mjs'
+import { flags } from '../../../src/commands/index.mjs'
 import { NodeCommand } from '../../../src/commands/node.mjs'
 import { FullstackTestingError, MissingArgumentError } from '../../../src/core/errors.mjs'
 import { sleep } from '../../../src/core/helpers.mjs'
@@ -15,41 +17,31 @@ import {
   ChartManager,
   ConfigManager,
   Helm,
-  Kind,
-  Kubectl,
+  K8,
   PackageDownloader,
   PlatformInstaller,
   constants,
   DependencyManager,
-  Templates,
-  ClusterManager
+  Templates
 } from '../../../src/core/index.mjs'
 import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
 
 class TestHelper {
-  static killKubectlPortForwardProcesses = async function (nodeCmd) {
-    if (!nodeCmd || !(nodeCmd instanceof NodeCommand)) throw new MissingArgumentError('An instance of command/NodeCommand is required')
+  static portForwards = []
+  static stopPortForwards () {
+    TestHelper.portForwards.forEach(server => {
+      server.close()
+    })
 
-    // kill any previous port-forwarding commands if possible
-    const processIds = await nodeCmd.run('ps aux | grep "kubectl port-forward" | awk \'{print $2}\'')
-    for (const pid of processIds) {
-      try {
-        await nodeCmd.run(`kill -9 ${pid}`)
-      } catch (e) {
-        // best effort kill, so ignore errors
-      }
-    }
+    TestHelper.portForwards = []
   }
 
   static prepareNodeClient = async function (nodeCmd, nodeIds) {
     if (!nodeCmd || !(nodeCmd instanceof NodeCommand)) throw new MissingArgumentError('An instance of command/NodeCommand is required')
-
     try {
       if (typeof nodeIds === 'string') {
         nodeIds = nodeIds.split(',')
       }
-
-      await TestHelper.killKubectlPortForwardProcesses(nodeCmd, nodeIds)
 
       let localPort = 30212
       const grpcPort = constants.HEDERA_NODE_GRPC_PORT.toString()
@@ -58,8 +50,9 @@ class TestHelper {
       let accountIdNum = parseInt(constants.HEDERA_NODE_ACCOUNT_ID_START.num.toString(), 10)
       for (let nodeId of nodeIds) {
         nodeId = nodeId.trim()
-        const nodeSvc = Templates.renderNodeSvcName(nodeId)
-        await nodeCmd.kubectl.portForward(`svc/${nodeSvc}`, localPort, grpcPort)
+        const podName = Templates.renderNetworkPodName(nodeId)
+        const server = await nodeCmd.k8.portForward(podName, localPort, grpcPort)
+        TestHelper.portForwards.push(server)
 
         // check if the port is actually accessible
         let attempt = 1
@@ -80,7 +73,8 @@ class TestHelper {
         if (!socket) {
           throw new FullstackTestingError(`failed to expose port '${grpcPort}' of node '${nodeId}'`)
         }
-        socket.end()
+
+        socket.destroy()
 
         network[`127.0.0.1:${localPort}`] = `${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`
 
@@ -96,40 +90,43 @@ class TestHelper {
 }
 
 describe('NodeCommand', () => {
-  const kind = new Kind(testLogger)
   const helm = new Helm(testLogger)
-  const kubectl = new Kubectl(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
   const packageDownloader = new PackageDownloader(testLogger)
-  const platformInstaller = new PlatformInstaller(testLogger, kubectl)
   const depManager = new DependencyManager(testLogger)
-  const clusterManager = new ClusterManager(kind, kubectl)
+  const k8 = new K8(configManager, testLogger)
+  const platformInstaller = new PlatformInstaller(testLogger, k8)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
-    kind,
     helm,
-    kubectl,
+    k8,
     chartManager,
     configManager,
     downloader: packageDownloader,
     platformInstaller,
-    depManager,
-    clusterManager
+    depManager
   })
 
   const argv = {
     releaseTag: 'v0.42.5',
-    namespace: constants.NAMESPACE_NAME,
     nodeIds: 'node0,node1,node2',
     cacheDir: TEST_CACHE_DIR,
     force: false,
     chainId: constants.HEDERA_CHAIN_ID
   }
 
-  beforeAll(() => TestHelper.killKubectlPortForwardProcesses(nodeCmd))
-  afterAll(() => TestHelper.killKubectlPortForwardProcesses(nodeCmd))
+  beforeAll(async () => {
+    // load cached namespace
+    await configManager.load()
+    argv[namespace] = configManager.getFlag(flags.namespace)
+  }
+  )
+
+  afterEach(() => {
+    TestHelper.stopPortForwards()
+  })
 
   describe('start', () => {
     it('node setup should succeed', async () => {
@@ -140,7 +137,7 @@ describe('NodeCommand', () => {
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
-    }, 20000)
+    }, 60000)
 
     it('node start should succeed', async () => {
       expect.assertions(1)
@@ -165,7 +162,7 @@ describe('NodeCommand', () => {
 
         await nodeCmd.run(`tail ${constants.FST_LOGS_DIR}/fst.log`)
       }
-    }, 50000)
+    }, 60000)
 
     it('balance query should succeed', async () => {
       expect.assertions(1)

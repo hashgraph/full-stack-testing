@@ -22,18 +22,15 @@ export class NodeCommand extends BaseCommand {
     this.plaformInstaller = opts.platformInstaller
   }
 
-  async checkNetworkNodePod (namespace, nodeId, timeout = '300s') {
+  async checkNetworkNodePod (namespace, nodeId) {
     nodeId = nodeId.trim()
     const podName = Templates.renderNetworkPodName(nodeId)
 
     try {
-      await this.kubectl.wait('pod',
-        '--for=jsonpath=\'{.status.phase}\'=Running',
-        '-l fullstack.hedera.com/type=network-node',
-        `-l fullstack.hedera.com/node-name=${nodeId}`,
-        `--timeout=${timeout}`,
-        `-n "${namespace}"`
-      )
+      await this.k8.waitForPod(constants.POD_STATUS_RUNNING, [
+        'fullstack.hedera.com/type=network-node',
+        `fullstack.hedera.com/node-name=${nodeId}`
+      ], 1)
 
       return podName
     } catch (e) {
@@ -50,24 +47,21 @@ export class NodeCommand extends BaseCommand {
 
     while (attempt < maxAttempt) {
       try {
-        const output = await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `cat ${logfilePath} | grep "status = ${status}"`)
-        if (output.length > 0) {
+        const output = await this.k8.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
+        if (output.indexOf(`Now current platform status = ${status}`) > 0) {
+          this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}]`)
           isActive = true
           break
         }
-
         this.logger.debug(`Node ${nodeId} is not ${status} yet. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
-
-        // tail the log file for debugging
-        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `tail ${logfilePath}`)
       } catch (e) {
-        this.logger.warn(`error in checking if node is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
+        this.logger.warn(`error in checking if node ${nodeId} is ${status}: ${e.message}. Trying again... [ attempt: ${attempt}/${maxAttempt} ]`)
 
         // ls the HAPI path for debugging
-        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
+        await this.k8.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
 
         // ls the logs directory for debugging
-        await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
+        await this.k8.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}/logs`)
       }
       attempt += 1
       await sleep(1000)
@@ -76,8 +70,6 @@ export class NodeCommand extends BaseCommand {
     if (!isActive) {
       throw new FullstackTestingError(`node '${nodeId}' is not ${status} [ attempt = ${attempt}/${maxAttempt} ]`)
     }
-
-    this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}] `)
 
     return true
   }
@@ -118,11 +110,9 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-
-          // get existing choices
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          self.configManager.load(argv)
+          const namespace = self.configManager.getFlag(flags.namespace)
+          const namespaces = await self.k8.getNamespaces()
 
           const config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
@@ -131,6 +121,10 @@ export class NodeCommand extends BaseCommand {
             cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
             force: await prompts.promptForce(task, argv.force),
             chainId: await prompts.promptChainId(task, argv.chainId)
+          }
+
+          if (!await this.k8.hasNamespace(config.namespace)) {
+            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
           }
 
           // compute other config parameters
@@ -143,11 +137,12 @@ export class NodeCommand extends BaseCommand {
 
           // set config in the context for later tasks to use
           ctx.config = config
+
           self.logger.debug('Initialized config', { config })
         }
       },
       {
-        title: 'Fetch platform',
+        title: 'Fetch platform software',
         task: async (ctx, _) => {
           const config = ctx.config
 
@@ -169,6 +164,31 @@ export class NodeCommand extends BaseCommand {
             }
       },
       {
+        title: 'Upload platform software into network nodes',
+        task:
+            async (ctx, task) => {
+              const config = ctx.config
+
+              const subTasks = []
+              for (const nodeId of ctx.config.nodeIds) {
+                const podName = ctx.config.podNames[nodeId]
+                subTasks.push({
+                  title: `Node: ${chalk.yellow(nodeId)}`,
+                  task: () =>
+                    self.plaformInstaller.copyPlatform(podName, config.buildZipFile)
+                })
+              }
+
+              // set up the sub-tasks
+              return task.newListr(subTasks, {
+                concurrent: false, // parallel uploading of the zip file seems to be unreliable, so we just upload in sequence
+                rendererOptions: {
+                  collapseSubtasks: false
+                }
+              })
+            }
+      },
+      {
         title: 'Setup network nodes',
         task:
             async (ctx, task) => {
@@ -178,7 +198,7 @@ export class NodeCommand extends BaseCommand {
               for (const nodeId of ctx.config.nodeIds) {
                 const podName = ctx.config.podNames[nodeId]
                 subTasks.push({
-                  title: `Setup node: ${chalk.yellow(nodeId)}`,
+                  title: `Node: ${chalk.yellow(nodeId)}`,
                   task: () =>
                     self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.force)
                 })
@@ -215,15 +235,18 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
 
-          // get existing choices
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespace = self.configManager.getFlag(flags.namespace)
+          const namespaces = await self.k8.getNamespaces()
 
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+          }
+
+          if (!await this.k8.hasNamespace(ctx.config.namespace)) {
+            throw new FullstackTestingError(`namespace ${ctx.config.namespace} does not exist`)
           }
         }
       },
@@ -239,7 +262,7 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Start node: ${chalk.yellow(nodeId)}`,
-              task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl restart network-node')
+              task: () => self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
             })
           }
 
@@ -294,15 +317,18 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          self.configManager.load(argv)
+          const namespace = self.configManager.getFlag(flags.namespace)
 
           // get existing choices
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
-
+          const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+          }
+
+          if (!await this.k8.hasNamespace(ctx.config.namespace)) {
+            throw new FullstackTestingError(`namespace ${ctx.config.namespace} does not exist`)
           }
         }
       },
@@ -318,7 +344,7 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Stop node: ${chalk.yellow(nodeId)}`,
-              task: () => self.kubectl.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
+              task: () => self.k8.execContainer(podName, constants.ROOT_CONTAINER, 'systemctl stop network-node')
             })
           }
 
@@ -353,7 +379,7 @@ export class NodeCommand extends BaseCommand {
   static getCommandDefinition (nodeCmd) {
     return {
       command: 'node',
-      desc: 'Manage a FST node running Hedera platform',
+      desc: 'Manage a node running Hedera platform',
       builder: yargs => {
         return yargs
           .command({

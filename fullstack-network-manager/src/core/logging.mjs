@@ -43,9 +43,9 @@ export const Logger = class {
    * @param level logging level as supported by winston library:
    * @constructor
    */
-  constructor (level = 'debug') {
+  constructor (level = 'debug', devMode = false) {
     this.nextTraceId()
-    this.devMode = false
+    this.devMode = devMode
 
     this.winstonLogger = winston.createLogger({
       level,
@@ -110,6 +110,8 @@ export const Logger = class {
 
     if (this.devMode) {
       console.log(stack)
+    } else {
+      console.log(chalk.red('ERROR'), chalk.yellow(err.message))
     }
 
     this.error(err.message, { error: err.message, stacktrace: stack })
@@ -133,9 +135,9 @@ export const Logger = class {
 
   showList (title, items = []) {
     this.showUser(chalk.green(`\n *** ${title} ***`))
-    this.showUser(chalk.green('---------------------------------------'))
+    this.showUser(chalk.green('-------------------------------------------------------------------------------'))
     if (items.length > 0) {
-      items.forEach(name => this.showUser(chalk.yellow(` - ${name}`)))
+      items.forEach(name => this.showUser(chalk.cyan(` - ${name}`)))
     } else {
       this.showUser(chalk.blue('[ None ]'))
     }
@@ -146,11 +148,11 @@ export const Logger = class {
 
   showJSON (title, obj) {
     this.showUser(chalk.green(`\n *** ${title} ***`))
-    this.showUser(chalk.green('---------------------------------------'))
+    this.showUser(chalk.green('-------------------------------------------------------------------------------'))
     console.log(JSON.stringify(obj, null, ' '))
   }
 }
 
-export function NewLogger (level = 'debug') {
-  return new Logger(level)
+export function NewLogger (level = 'debug', devMode = false) {
+  return new Logger(level, devMode)
 }
