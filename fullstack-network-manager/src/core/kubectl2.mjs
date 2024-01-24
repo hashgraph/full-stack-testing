@@ -10,7 +10,10 @@ import * as tar from 'tar'
 import { v4 as uuid4 } from 'uuid'
 
 /**
- * A kubectl wrapper class providing custom functionalities required by fsnetman
+ * A kubernetes API wrapper class providing custom functionalities required by fsnetman
+ *
+ * Note: Take care if the same instance is used for parallel execution, as the behaviour may be unpredictable.
+ * For parallel execution, create separate instances by invoking clone()
  */
 export class Kubectl2 {
   constructor (configManager, logger) {
@@ -21,6 +24,17 @@ export class Kubectl2 {
     this.logger = logger
 
     this.init()
+  }
+
+  /**
+   * Clone a new instance with the same config manager and logger
+   * Internally it instantiates a new kube API client
+   *
+   * @return {Kubectl2}
+   */
+  clone () {
+    const c = new Kubectl2(this.configManager, this.logger)
+    return c.init()
   }
 
   getKubeConfig () {
@@ -42,7 +56,8 @@ export class Kubectl2 {
     }
 
     this.kubeClient = this.kubeConfig.makeApiClient(k8s.CoreV1Api)
-    this.kubeCopy = new k8s.Cp(this.kubeConfig)
+
+    return this // to enable chaining
   }
 
   /**
