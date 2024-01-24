@@ -49,9 +49,8 @@ dependencies:
     condition: cloud.minio.enabled
 
   - name: acme-cluster-issuer
-    version: 0.3.0
-    # TODO uncomment #repository: https://swirldslabs.github.io/swirldslabs-helm-charts
-    # TODO once source chart has been updated: https://github.com/hashgraph/full-stack-testing/issues/635
+    version: 0.3.1
+    repository: https://swirldslabs.github.io/swirldslabs-helm-charts
     condition: cloud.acmeClusterIssuer.enabled
 
   - name: haproxy-ingress
