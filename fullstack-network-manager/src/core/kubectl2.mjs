@@ -519,28 +519,37 @@ export class Kubectl2 {
 
     this.logger.debug(`WaitForPod [${fieldSelector}, ${labelSelector}], maxAttempts: ${maxAttempts}`)
 
-    // wait for the pod to be available with the given status and labels
-    for (let attempts = 0; attempts < maxAttempts; attempts++) {
-      this.logger.debug(`Checking for pod ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
-      const resp = await this.kubeClient.listNamespacedPod(
-        ns,
-        false,
-        false,
-        undefined,
-        fieldSelector,
-        labelSelector,
-        podCount
-      )
+    return new Promise((resolve, reject) => {
+      let attempts = 0
 
-      if (resp.body && resp.body.items && resp.body.items.length === podCount) {
-        this.logger.debug(`Found ${resp.body.items.length}/${podCount} pod with ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
-        return true
+      const check = async () => {
+        this.logger.debug(`Checking for pod ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
+
+        // wait for the pod to be available with the given status and labels
+        const resp = await this.kubeClient.listNamespacedPod(
+          ns,
+          false,
+          false,
+          undefined,
+          fieldSelector,
+          labelSelector,
+          podCount
+        )
+
+        if (resp.body && resp.body.items && resp.body.items.length === podCount) {
+          this.logger.debug(`Found ${resp.body.items.length}/${podCount} pod with ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
+          return resolve(true)
+        }
+
+        if (attempts < maxAttempts) {
+          setTimeout(check, delay)
+        } else {
+          reject(new FullstackTestingError(`Expected number of pod (${podCount}) not found ${fieldSelector} ${labelSelector} [maxAttempts = ${maxAttempts}]`))
+        }
       }
 
-      await sleep(delay)
-    }
-
-    throw new FullstackTestingError(`Expected number of pod (${podCount}) not found ${fieldSelector} ${labelSelector} [maxAttempts = ${maxAttempts}]`)
+      check()
+    })
   }
 
   _getNamespace () {
