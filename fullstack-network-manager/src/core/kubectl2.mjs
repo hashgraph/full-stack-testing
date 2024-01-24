@@ -605,7 +605,7 @@ export class Kubectl2 {
     this.logger.debug(`WaitForPod [${fieldSelector}, ${labelSelector}], maxAttempts: ${maxAttempts}`)
 
     return new Promise((resolve, reject) => {
-      const attempts = 0
+      let attempts = 0
 
       const check = async () => {
         this.logger.debug(`Checking for pod ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
@@ -626,7 +626,7 @@ export class Kubectl2 {
           return resolve(true)
         }
 
-        if (attempts < maxAttempts) {
+        if (attempts++ < maxAttempts) {
           setTimeout(check, delay)
         } else {
           reject(new FullstackTestingError(`Expected number of pod (${podCount}) not found ${fieldSelector} ${labelSelector} [maxAttempts = ${maxAttempts}]`))
