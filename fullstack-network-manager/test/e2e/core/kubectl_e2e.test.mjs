@@ -5,13 +5,14 @@ import os from 'os'
 import path from 'path'
 import { v4 as uuid4 } from 'uuid'
 import { FullstackTestingError } from '../../../src/core/errors.mjs'
-import { ConfigManager, constants, logging, Templates } from '../../../src/core/index.mjs'
+import { ConfigManager, constants, logging, PackageDownloader, Templates } from '../../../src/core/index.mjs'
 import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
 
 describe('Kubectl', () => {
   const testLogger = logging.NewLogger('debug')
   const configManager = new ConfigManager(testLogger)
   const kubectl = new Kubectl2(configManager, testLogger)
+  const downloader = new PackageDownloader(testLogger)
 
   it('should be able to list clusters', async () => {
     const clusters = await kubectl.getClusters()
@@ -57,23 +58,30 @@ describe('Kubectl', () => {
   it('should be able to copy a file to and from a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
     const containerName = constants.ROOT_CONTAINER
-    const testFileName = 'test.txt'
+
+    //  attempt fetch platform jar as we need to check if a big zip file can be uploaded/downloaded
+    const testCacheDir = 'test/data/tmp'
+    const tag = 'v0.42.5'
+    const releasePrefix = Templates.prepareReleasePrefix(tag)
+    const pkgPath = `${testCacheDir}/${releasePrefix}/build-${tag}.zip`
+    await expect(downloader.fetchPlatform(tag, testCacheDir)).resolves.toBe(pkgPath)
+    expect(fs.existsSync(pkgPath)).toBeTruthy()
+
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
-    const tmpDir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'kubectl-'))
-    const tmpFile = path.join(tmpDir, testFileName)
     const destDir = constants.HEDERA_USER_HOME_DIR
-    const destPath = `${destDir}/${testFileName}`
-    fs.writeFileSync(tmpFile, 'TEST')
+    const destPath = `${destDir}/build-${tag}.zip`
 
-    await expect(kubectl.copyTo(podName, containerName, tmpFile, destDir)).resolves.toBeTruthy()
-    fs.rmdirSync(tmpDir, { recursive: true })
+    // upload the file
+    await expect(kubectl.copyTo(podName, containerName, pkgPath, destDir)).resolves.toBeTruthy()
 
-    await expect(kubectl.copyFrom(podName, containerName, destPath, tmpDir2)).resolves.toBeTruthy()
-    fs.rmdirSync(tmpDir2, { recursive: true })
+    // download the same file
+    await expect(kubectl.copyFrom(podName, containerName, destPath, tmpDir)).resolves.toBeTruthy()
 
     // rm file inside the container
     await expect(kubectl.execContainer(podName, containerName, ['rm', '-f', destPath])).resolves
-  }, 10000)
+
+    fs.rmdirSync(tmpDir, { recursive: true })
+  }, 50000)
 
   it('should be able to port forward gossip port', (done) => {
     const podName = Templates.renderNetworkPodName('node0')

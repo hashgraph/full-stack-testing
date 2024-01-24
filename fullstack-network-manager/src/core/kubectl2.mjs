@@ -1,11 +1,13 @@
 import * as k8s from '@kubernetes/client-node'
 import fs from 'fs'
 import net from 'net'
+import os from 'os'
 import path from 'path'
 import { flags } from '../commands/index.mjs'
 import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
 import * as sb from 'stream-buffers'
-import { sleep } from './helpers.mjs'
+import * as tar from 'tar'
+import { v4 as uuid4 } from 'uuid'
 
 /**
  * A kubectl wrapper class providing custom functionalities required by fsnetman
@@ -287,7 +289,7 @@ export class Kubectl2 {
 
       return items
     } catch (e) {
-      throw new FullstackTestingError(`error occurred during listDir operation for path: ${destPath}: ${e.message}`, e)
+      throw new FullstackTestingError(`unable to check path in '${podName}':${containerName}' - ${destPath}: ${e.message}`, e)
     }
   }
 
@@ -358,31 +360,62 @@ export class Kubectl2 {
    * @param containerName container name
    * @param srcPath source file path in the local
    * @param destDir destination directory in the container
-   * @param maxAttempts max attempts to check if file is copied successfully or not
-   * @param delay delay between attempts to check if file is copied successfully or not
    * @returns {Promise<>}
    */
-  async copyTo (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 500) {
-    const ns = this._getNamespace()
+  async copyTo (podName, containerName, srcPath, destDir) {
+    const namespace = this._getNamespace()
+
+    if (!await this.hasDir(podName, containerName, destDir)) {
+      throw new FullstackTestingError(`invalid destination path: ${destDir}`)
+    }
+
+    if (!fs.existsSync(srcPath)) {
+      throw new FullstackTestingError(`invalid source path: ${srcPath}`)
+    }
 
     try {
       const srcFile = path.basename(srcPath)
       const srcDir = path.dirname(srcPath)
       const destPath = `${destDir}/${srcFile}`
 
-      await this.kubeCopy.cpToPod(ns, podName, containerName, srcFile, destDir, srcDir)
+      // zip the source file
+      const tmpFile = this._tempFileFor(srcFile)
+      await tar.c({ file: tmpFile, cwd: srcDir }, [srcFile])
 
-      // check if the file is copied successfully or not
-      const fileStat = fs.statSync(srcPath)
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        if (await this.hasFile(podName, containerName, destPath, { size: fileStat.size })) {
-          return true
-        }
-        await sleep(delay)
-      }
+      const self = this
+      return new Promise((resolve, reject) => {
+        const execInstance = new k8s.Exec(this.kubeConfig)
+        const command = ['tar', 'xf', '-', '-C', destDir]
+        const readStream = fs.createReadStream(tmpFile)
+        const errStream = new sb.WritableStreamBuffer()
+        const fileStat = fs.statSync(srcPath)
+        let statusError = null
 
-      this.logger.debug(`File check failed after copy ${podName}:${containerName} [${srcPath} -> ${destDir}]`)
-      throw new FullstackTestingError(`failed to find file after invoking copy: ${destPath}`)
+        execInstance.exec(namespace, podName, containerName, command, null, errStream, readStream, false, async ({ status }) => {
+          if (status === 'Failure' || errStream.size()) {
+            statusError = new Error(`Error from copyToPod - details: \n ${errStream.getContentsAsString()}`)
+          }
+        }).then(conn => {
+          conn.on('close', async () => {
+            self._deleteTempFile(tmpFile)
+
+            if (statusError) {
+              return reject(new FullstackTestingError(`failed to copy because of error: ${statusError.message}`, statusError))
+            }
+
+            if (!await self.hasFile(podName, containerName, destPath, { size: fileStat.size })) {
+              return reject(new FullstackTestingError(`failed to find file after copy: ${destPath}`))
+            }
+
+            return resolve(true)
+          })
+
+          conn.on('error', (e) => {
+            self._deleteTempFile(tmpFile)
+            return reject(new FullstackTestingError(`failed to copy file ${destPath} because of connection error: ${e.message}`, e))
+          })
+        })
+      })
     } catch (e) {
       throw new FullstackTestingError(`failed to copy file to ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
     }
@@ -397,39 +430,76 @@ export class Kubectl2 {
    * @param containerName container name
    * @param srcPath source file path in the container
    * @param destDir destination directory in the local
-   * @param maxAttempts max attempts to check if file is copied successfully or not
-   * @param delay delay between attempts to check if file is copied successfully or not
    * @returns {Promise<boolean>}
    */
-  async copyFrom (podName, containerName, srcPath, destDir, maxAttempts = 100, delay = 500) {
-    const ns = this._getNamespace()
+  async copyFrom (podName, containerName, srcPath, destDir) {
+    const namespace = this._getNamespace()
+
+    // get stat for source file in the container
+    const entries = await this.listDir(podName, containerName, srcPath)
+    if (entries.length !== 1) {
+      throw new FullstackTestingError(`invalid source path: ${srcPath}`)
+    }
+    const srcFileDesc = entries[0] // cache for later comparison after copy
+
+    if (!fs.existsSync(destDir)) {
+      throw new FullstackTestingError(`invalid destination path: ${destDir}`)
+    }
 
     try {
+      const srcFileSize = Number.parseInt(srcFileDesc.size)
+
       const srcFile = path.basename(srcPath)
       const srcDir = path.dirname(srcPath)
       const destPath = `${destDir}/${srcFile}`
-      if (!fs.existsSync(destDir)) throw new Error(`invalid destination dir: ${destDir}`)
 
-      await this.kubeCopy.cpFromPod(ns, podName, containerName, srcFile, destDir, srcDir)
+      // download the tar file to a temp location
+      const tmpFile = this._tempFileFor(srcFile)
 
-      // check if the file is copied successfully or not
-      const entries = await this.listDir(podName, containerName, srcPath)
-      if (entries.length !== 1) throw new FullstackTestingError(`exepected 1 entry, found ${entries.length}`, { entries })
-      const srcFileDesc = entries[0]
+      const self = this
+      return new Promise((resolve, reject) => {
+        const execInstance = new k8s.Exec(this.kubeConfig)
+        const command = ['tar', 'zcf', '-', '-C', srcDir, srcFile]
+        const writerStream = fs.createWriteStream(tmpFile)
+        const errStream = new sb.WritableStreamBuffer()
+        let statusError = null
 
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        if (fs.existsSync(destPath)) {
-          const stat = fs.statSync(destPath)
-          if (stat && `${stat.size}` === `${srcFileDesc.size}`) {
-            return true
+        execInstance.exec(namespace, podName, containerName, command, writerStream, errStream, null, false, async ({ status }) => {
+          writerStream.close()
+          if (status === 'Failure' || errStream.size()) {
+            statusError = new Error(`Error from copyFromPod - details: \n ${errStream.getContentsAsString()}`)
+            self._deleteTempFile(tmpFile)
           }
-        }
-        await sleep(delay)
-      }
+        }).then(conn => {
+          conn.on('close', async () => {
+            if (statusError) {
+              return reject(new FullstackTestingError(`failed to copy because of error: ${statusError.message}`, statusError))
+            }
 
-      throw new FullstackTestingError(`failed to find file after invoking copy: ${destPath}`)
+            // extract the downloaded file
+            await tar.x({
+              file: tmpFile,
+              cwd: destDir
+            })
+
+            self._deleteTempFile(tmpFile)
+
+            const stat = fs.statSync(destPath)
+            if (stat && stat.size === srcFileSize) {
+              return resolve(true)
+            }
+
+            return reject(new FullstackTestingError(`failed to download file completely: ${destPath}`))
+          })
+
+          conn.on('error', (e) => {
+            self._deleteTempFile(tmpFile)
+            return reject(new FullstackTestingError(`failed to copy file ${destPath} because of connection error: ${e.message}`, e))
+          })
+        })
+      })
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy file from ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
+      throw new FullstackTestingError(`failed to download file from ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
     }
   }
 
@@ -520,7 +590,7 @@ export class Kubectl2 {
     this.logger.debug(`WaitForPod [${fieldSelector}, ${labelSelector}], maxAttempts: ${maxAttempts}`)
 
     return new Promise((resolve, reject) => {
-      let attempts = 0
+      const attempts = 0
 
       const check = async () => {
         this.logger.debug(`Checking for pod ${fieldSelector}, ${labelSelector} [attempt: ${attempts}/${maxAttempts}]`)
@@ -556,5 +626,16 @@ export class Kubectl2 {
     const ns = this.configManager.getFlag(flags.namespace)
     if (!ns) throw new MissingArgumentError('namespace is not set')
     return ns
+  }
+
+  _tempFileFor (fileName) {
+    const tmpFile = `${fileName}-${uuid4()}`
+    return path.join(os.tmpdir(), tmpFile)
+  }
+
+  _deleteTempFile (tmpFile) {
+    if (fs.existsSync(tmpFile)) {
+      fs.rmSync(tmpFile)
+    }
   }
 }
