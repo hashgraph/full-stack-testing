@@ -5,15 +5,13 @@ import {
   ChartManager,
   ConfigManager,
   DependencyManager,
-  Helm,
-  Kubectl
+  Helm
 } from '../../../src/core/index.mjs'
 import { Kubectl2 } from '../../../src/core/kubectl2.mjs'
 
 const testLogger = core.logging.NewLogger('debug')
 describe('InitCommand', () => {
   const helm = new Helm(testLogger)
-  const kubectl = new Kubectl(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
   const depManager = new DependencyManager(testLogger)
@@ -22,7 +20,6 @@ describe('InitCommand', () => {
   const initCmd = new InitCommand({
     logger: testLogger,
     helm,
-    kubectl,
     kubectl2,
     chartManager,
     configManager,

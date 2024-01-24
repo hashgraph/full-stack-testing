@@ -85,7 +85,7 @@ export class RelayCommand extends BaseCommand {
           const chartDir = self.configManager.getFlag(flags.chartDirectory)
 
           // prompt if inputs are empty and set it in the context
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.kubectl2.getNamespaces()
           ctx.config = {
             chartDir: await prompts.promptChartDir(task, chartDir),
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
@@ -132,12 +132,10 @@ export class RelayCommand extends BaseCommand {
 
           await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
 
-          await this.kubectl.wait('pod',
-            '--for=condition=ready',
-            '-l app=hedera-json-rpc-relay',
-            `-l app.kubernetes.io/instance=${releaseName}`,
-            '--timeout=900s'
-          )
+          await this.kubectl2.waitForPod(constants.POD_STATUS_READY, [
+            'app=hedera-json-rpc-relay',
+            `app.kubernetes.io/instance=${releaseName}`
+          ], 1)
 
           this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
         }
@@ -170,7 +168,7 @@ export class RelayCommand extends BaseCommand {
           const namespace = self.configManager.getFlag(flags.namespace)
 
           // prompt if inputs are empty and set it in the context
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.kubectl2.getNamespaces()
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, nodeIds)

@@ -60,13 +60,12 @@ export class InitCommand extends BaseCommand {
         title: 'Check dependencies',
         task: async (_, task) => {
           const deps = [
-            core.constants.HELM,
-            core.constants.KUBECTL
+            core.constants.HELM
           ]
 
           const subTasks = self.depManager.taskCheckDependencies(deps)
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {

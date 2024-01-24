@@ -1,7 +1,6 @@
 import * as logging from './logging.mjs'
 import * as constants from './constants.mjs'
 import { Helm } from './helm.mjs'
-import { Kubectl } from './kubectl.mjs'
 import { Kubectl2 } from './kubectl2.mjs'
 import { PackageDownloader } from './package_downloader.mjs'
 import { PlatformInstaller } from './platform_installer.mjs'
@@ -16,7 +15,6 @@ export {
   logging,
   constants,
   Helm,
-  Kubectl,
   Kubectl2,
   PackageDownloader,
   PlatformInstaller,

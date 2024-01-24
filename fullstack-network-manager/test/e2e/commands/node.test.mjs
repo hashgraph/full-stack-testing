@@ -17,7 +17,6 @@ import {
   ChartManager,
   ConfigManager,
   Helm,
-  Kubectl,
   Kubectl2,
   PackageDownloader,
   PlatformInstaller,
@@ -92,7 +91,6 @@ class TestHelper {
 
 describe('NodeCommand', () => {
   const helm = new Helm(testLogger)
-  const kubectl = new Kubectl(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
   const packageDownloader = new PackageDownloader(testLogger)
@@ -103,7 +101,6 @@ describe('NodeCommand', () => {
   const nodeCmd = new NodeCommand({
     logger: testLogger,
     helm,
-    kubectl,
     kubectl2,
     chartManager,
     configManager,

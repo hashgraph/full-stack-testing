@@ -10,7 +10,6 @@ import {
   PackageDownloader,
   PlatformInstaller,
   Helm,
-  Kubectl,
   logging
 } from './core/index.mjs'
 import 'dotenv/config'
@@ -21,7 +20,6 @@ export function main (argv) {
 
   try {
     const helm = new Helm(logger)
-    const kubectl = new Kubectl(logger)
     const downloader = new PackageDownloader(logger)
     const chartManager = new ChartManager(helm, logger)
     const configManager = new ConfigManager(logger)
@@ -50,7 +48,6 @@ export function main (argv) {
     const opts = {
       logger,
       helm,
-      kubectl,
       kubectl2,
       downloader,
       platformInstaller,

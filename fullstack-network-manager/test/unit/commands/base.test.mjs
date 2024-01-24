@@ -4,7 +4,6 @@ import {
   ChartManager,
   ConfigManager,
   Helm,
-  Kubectl,
   logging
 } from '../../../src/core/index.mjs'
 import { BaseCommand } from '../../../src/commands/base.mjs'
@@ -14,7 +13,6 @@ const testLogger = logging.NewLogger('debug')
 
 describe('BaseCommand', () => {
   const helm = new Helm(testLogger)
-  const kubectl = new Kubectl(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
   const depManager = new DependencyManager(testLogger)
@@ -23,7 +21,6 @@ describe('BaseCommand', () => {
   const baseCmd = new BaseCommand({
     logger: testLogger,
     helm,
-    kubectl,
     kubectl2,
     chartManager,
     configManager,

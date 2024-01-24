@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import * as core from '../../../src/core/index.mjs'
-import { PlatformInstaller } from '../../../src/core/index.mjs'
+import { ConfigManager, PlatformInstaller } from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
@@ -10,8 +10,9 @@ import {
 } from '../../../src/core/errors.mjs'
 describe('PackageInstaller', () => {
   const testLogger = core.logging.NewLogger('debug')
-  const kubectl = new core.Kubectl(testLogger)
-  const installer = new PlatformInstaller(testLogger, kubectl)
+  const configManager = new ConfigManager(testLogger)
+  const kubectl2 = new core.Kubectl2(configManager, testLogger)
+  const installer = new PlatformInstaller(testLogger, kubectl2)
 
   describe('validatePlatformReleaseDir', () => {
     it('should fail for missing path', async () => {
