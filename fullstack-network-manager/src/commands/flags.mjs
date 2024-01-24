@@ -157,6 +157,15 @@ export const releaseTag = {
   }
 }
 
+export const relayReleaseTag = {
+  name: 'relay-release',
+  definition: {
+    describe: 'Relay release tag to be used (e.g. v0.39.1)',
+    default: '',
+    type: 'string'
+  }
+}
+
 export const cacheDir = {
   name: 'cache-dir',
   definition: {
@@ -306,6 +315,7 @@ export const allFlags = [
   deployCertManagerCrds,
   acmeClusterIssuer,
   releaseTag,
+  relayReleaseTag,
   cacheDir,
   nodeIDs,
   force,

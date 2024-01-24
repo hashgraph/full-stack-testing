@@ -96,6 +96,26 @@ export async function promptReleaseTag (task, input) {
   }
 }
 
+export async function promptRelayReleaseTag (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.relayReleaseTag.definition.default,
+        message: 'Enter relay release version:'
+      })
+    }
+
+    if (!input) {
+      throw new FullstackTestingError('relay-release-tag cannot be empty')
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.releaseTag.name}`, e)
+  }
+}
+
 export async function promptCacheDir (task, input) {
   try {
     if (!input) {

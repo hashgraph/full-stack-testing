@@ -7,7 +7,7 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class RelayCommand extends BaseCommand {
-  prepareValuesArg (valuesFile, nodeIDs, chainID, releaseTag, replicaCount, operatorID, operatorKey) {
+  prepareValuesArg (valuesFile, nodeIDs, chainID, relayRelease, replicaCount, operatorID, operatorKey) {
     let valuesArg = ''
     if (valuesFile) {
       const valuesFiles = valuesFile.split(',')
@@ -23,8 +23,8 @@ export class RelayCommand extends BaseCommand {
       valuesArg += ` --set config.CHAIN_ID=${chainID}`
     }
 
-    if (releaseTag) {
-      valuesArg += ` --set image.tag=${releaseTag.replace(/^v/, '')}`
+    if (relayRelease) {
+      valuesArg += ` --set image.tag=${relayRelease.replace(/^v/, '')}`
     }
 
     if (replicaCount) {
@@ -76,7 +76,7 @@ export class RelayCommand extends BaseCommand {
           const valuesFile = self.configManager.getFlag(flags.valuesFile)
           const nodeIds = self.configManager.getFlag(flags.nodeIDs)
           const chainId = self.configManager.getFlag(flags.chainId)
-          const releaseTag = self.configManager.getFlag(flags.releaseTag)
+          const relayRelease = self.configManager.getFlag(flags.relayReleaseTag)
           const replicaCount = self.configManager.getFlag(flags.replicaCount)
           const operatorId = self.configManager.getFlag(flags.operatorId)
           const operatorKey = self.configManager.getFlag(flags.operatorKey)
@@ -92,7 +92,7 @@ export class RelayCommand extends BaseCommand {
             valuesFile: await prompts.promptValuesFile(task, valuesFile),
             nodeIds: await prompts.promptNodeIdsArg(task, nodeIds),
             chainId: await prompts.promptChainId(task, chainId),
-            releaseTag: await prompts.promptReleaseTag(task, releaseTag),
+            relayRelease: await prompts.promptRelayReleaseTag(task, relayRelease),
             replicaCount: await prompts.promptReplicaCount(task, replicaCount),
             operatorId: await prompts.promptOperatorId(task, operatorId),
             operatorKey: await prompts.promptOperatorId(task, operatorKey)
@@ -114,13 +114,12 @@ export class RelayCommand extends BaseCommand {
             ctx.config.valuesFile,
             ctx.config.nodeIds,
             ctx.config.chainId,
-            ctx.config.releaseTag,
+            ctx.config.relayRelease,
             ctx.config.replicaCount,
             ctx.config.operatorId,
             ctx.config.operatorKey
           )
-        },
-        skip: (ctx, _) => ctx.isChartInstalled
+        }
       },
       {
         title: 'Install JSON RPC Relay',
@@ -132,10 +131,10 @@ export class RelayCommand extends BaseCommand {
 
           await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
 
-          await this.kubectl2.waitForPod(constants.POD_STATUS_READY, [
+          await this.kubectl2.waitForPod(constants.POD_STATUS_RUNNING, [
             'app=hedera-json-rpc-relay',
             `app.kubernetes.io/instance=${releaseName}`
-          ], 1)
+          ], 1, 120, 1000)
 
           this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
         }
@@ -220,7 +219,7 @@ export class RelayCommand extends BaseCommand {
                 flags.replicaCount,
                 flags.chainId,
                 flags.nodeIDs,
-                flags.releaseTag,
+                flags.relayReleaseTag,
                 flags.operatorId,
                 flags.operatorKey
               )
