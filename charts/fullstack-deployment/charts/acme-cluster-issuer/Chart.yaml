@@ -1,8 +1,0 @@
-apiVersion: v2
-appVersion: 1.10.1
-description: 'Deploys a production/staging pair of ACME cert-manager cluster issuer
-  into a Kubernetes cluster. Cert-Manager must  already be installed and running prior
-  to this chart being installed. '
-name: acme-cluster-issuer
-type: application
-version: 0.3.0
