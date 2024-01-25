@@ -135,6 +135,9 @@ jobs:
         run: |
           npm i
           npm link
+          kind delete cluster -n fst-local || true
+          docker system prune -f
+          docker image prune -f
           ./test/e2e/setup-e2e.sh
           npm run test-e2e
 
