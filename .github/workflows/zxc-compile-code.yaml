@@ -93,6 +93,34 @@ jobs:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
+        with:
+          files_yaml: |
+            source:
+              - '!charts/**'
+              - '!fullstack-network-manager/**'
+
+      - name: List all changed files
+        id: check-changed-files
+        run: |
+          echo "Modified Java code"
+          echo "-------------------------------------------------------------------"
+          for file in ${{ steps.changed-files.outputs.source_all_changed_files }}; do
+            echo " - ${file} was changed"
+          done
+          echo ""
+          echo "Before: ${inputs.enable-unit-tests}"
+          if [ "${{ steps.changed-files.outputs.source_any_changed }}" ]; then
+            inputs.enable-unit-tests=false
+            echo "Enabled execution of java unit tests...."
+          else
+            inputs.enable-unit-tests=false
+            echo ">> No relevant files are changed. No need to run java unit tests"
+          fi
+          echo "After: ${inputs.enable-unit-tests}"
+
       - name: Setup Make
         run: |
           if ! command -v make >/dev/null 2>&1; then
@@ -102,14 +130,14 @@ jobs:
 
       - name: Setup Java
         uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
-        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        if: ${{ !cancelled() && !failure() }}
         with:
           distribution: ${{ inputs.java-distribution }}
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
-        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        if: ${{ !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
@@ -171,7 +199,7 @@ jobs:
       - name: Compile
         id: gradle-build
         uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
-        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        if: ${{ !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
@@ -179,7 +207,7 @@ jobs:
       - name: Examples Compile
         id: gradle-build-examples
         uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
-        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        if: ${{ !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
@@ -188,7 +216,7 @@ jobs:
       - name: Gradle Plugin Compile
         id: gradle-build-gradle-plugin
         uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
-        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        if: ${{ !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: assemble --scan
