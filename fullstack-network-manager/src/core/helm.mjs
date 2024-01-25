@@ -7,7 +7,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {string}
      */
-  prepareCommand (action, ...args) {
+  prepareCommand(action, ...args) {
     let cmd = `helm ${action}`
     args.forEach(arg => { cmd += ` ${arg}` })
     return cmd
@@ -18,7 +18,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async install (...args) {
+  async install(...args) {
     return this.run(this.prepareCommand('install', ...args), true)
   }
 
@@ -27,7 +27,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async uninstall (...args) {
+  async uninstall(...args) {
     return this.run(this.prepareCommand('uninstall', ...args))
   }
 
@@ -36,7 +36,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async upgrade (...args) {
+  async upgrade(...args) {
     return this.run(this.prepareCommand('upgrade', ...args))
   }
 
@@ -45,7 +45,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async list (...args) {
+  async list(...args) {
     return this.run(this.prepareCommand('list', ...args))
   }
 
@@ -55,7 +55,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async dependency (subCommand, ...args) {
+  async dependency(subCommand, ...args) {
     return this.run(this.prepareCommand('dependency', subCommand, ...args))
   }
 
@@ -65,7 +65,7 @@ export class Helm extends ShellRunner {
      * @param args args of the command
      * @returns {Promise<Array>} console output as an array of strings
      */
-  async repo (subCommand, ...args) {
+  async repo(subCommand, ...args) {
     return this.run(this.prepareCommand('repo', subCommand, ...args))
   }
 }

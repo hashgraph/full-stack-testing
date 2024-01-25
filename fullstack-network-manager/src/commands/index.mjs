@@ -9,7 +9,7 @@ import * as flags from './flags.mjs'
  * Return a list of Yargs command builder to be exposed through CLI
  * @param opts it is an Options object containing logger
  */
-function Initialize (opts) {
+function Initialize(opts) {
   const initCmd = new InitCommand(opts)
   const clusterCmd = new ClusterCommand(opts)
   const chartCmd = new ChartCommand(opts)

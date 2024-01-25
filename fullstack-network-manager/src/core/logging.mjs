@@ -43,7 +43,7 @@ export const Logger = class {
    * @param level logging level as supported by winston library:
    * @constructor
    */
-  constructor (level = 'debug', devMode = false) {
+  constructor(level = 'debug', devMode = false) {
     this.nextTraceId()
     this.devMode = devMode
 
@@ -67,20 +67,20 @@ export const Logger = class {
     })
   }
 
-  setDevMode (devMode) {
+  setDevMode(devMode) {
     this.debug(`setting dev mode: ${devMode}`)
     this.devMode = devMode
   }
 
-  setLevel (level) {
+  setLevel(level) {
     this.winstonLogger.setLevel(level)
   }
 
-  nextTraceId () {
+  nextTraceId() {
     this.traceId = uuidv4()
   }
 
-  prepMeta (meta) {
+  prepMeta(meta) {
     if (meta === undefined) {
       meta = {}
     }
@@ -89,11 +89,11 @@ export const Logger = class {
     return meta
   }
 
-  showUser (msg, ...args) {
+  showUser(msg, ...args) {
     console.log(util.format(msg, ...args))
   }
 
-  showUserError (err) {
+  showUserError(err) {
     const stack = [{ message: err.message, stacktrace: err.stack }]
     if (err.cause) {
       let depth = 0
@@ -117,23 +117,23 @@ export const Logger = class {
     this.error(err.message, { error: err.message, stacktrace: stack })
   }
 
-  error (msg, ...args) {
+  error(msg, ...args) {
     this.winstonLogger.error(msg, ...args, this.prepMeta())
   }
 
-  warn (msg, ...args) {
+  warn(msg, ...args) {
     this.winstonLogger.warn(msg, ...args, this.prepMeta())
   }
 
-  info (msg, ...args) {
+  info(msg, ...args) {
     this.winstonLogger.info(msg, ...args, this.prepMeta())
   }
 
-  debug (msg, ...args) {
+  debug(msg, ...args) {
     this.winstonLogger.debug(msg, ...args, this.prepMeta())
   }
 
-  showList (title, items = []) {
+  showList(title, items = []) {
     this.showUser(chalk.green(`\n *** ${title} ***`))
     this.showUser(chalk.green('-------------------------------------------------------------------------------'))
     if (items.length > 0) {
@@ -146,13 +146,13 @@ export const Logger = class {
     return true
   }
 
-  showJSON (title, obj) {
+  showJSON(title, obj) {
     this.showUser(chalk.green(`\n *** ${title} ***`))
     this.showUser(chalk.green('-------------------------------------------------------------------------------'))
     console.log(JSON.stringify(obj, null, ' '))
   }
 }
 
-export function NewLogger (level = 'debug', devMode = false) {
+export function NewLogger(level = 'debug', devMode = false) {
   return new Logger(level, devMode)
 }

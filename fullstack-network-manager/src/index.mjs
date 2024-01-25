@@ -15,7 +15,7 @@ import {
 import 'dotenv/config'
 import { K8 } from './core/k8.mjs'
 
-export function main (argv) {
+export function main(argv) {
   const logger = logging.NewLogger('debug')
 
   try {

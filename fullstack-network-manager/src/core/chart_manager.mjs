@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import { FullstackTestingError } from './errors.mjs'
 
 export class ChartManager {
-  constructor (helm, logger) {
+  constructor(helm, logger) {
     if (!logger) throw new Error('An instance of core/Logger is required')
     if (!helm) throw new Error('An instance of core/Helm is required')
 
@@ -20,7 +20,7 @@ export class ChartManager {
    * @param force whether or not to update the repo
    * @returns {Promise<string[]>}
    */
-  async setup (repoURLs = constants.DEFAULT_CHART_REPO, force = true) {
+  async setup(repoURLs = constants.DEFAULT_CHART_REPO, force = true) {
     try {
       let forceUpdateArg = ''
       if (force) {
@@ -44,7 +44,7 @@ export class ChartManager {
    * List available clusters
    * @returns {Promise<string[]>}
    */
-  async getInstalledCharts (namespaceName) {
+  async getInstalledCharts(namespaceName) {
     try {
       return await this.helm.list(`-n ${namespaceName}`, '--no-headers | awk \'{print $1 " [" $9"]"}\'')
     } catch (e) {
@@ -54,7 +54,7 @@ export class ChartManager {
     return []
   }
 
-  async install (namespaceName, chartName, chartPath, version, valuesArg = '') {
+  async install(namespaceName, chartName, chartPath, version, valuesArg = '') {
     try {
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
       if (!isInstalled) {
@@ -81,7 +81,7 @@ export class ChartManager {
     return true
   }
 
-  async isChartInstalled (namespaceName, chartName) {
+  async isChartInstalled(namespaceName, chartName) {
     const charts = await this.getInstalledCharts(namespaceName)
     for (const item of charts) {
       if (item.startsWith(chartName)) {
@@ -92,7 +92,7 @@ export class ChartManager {
     return false
   }
 
-  async uninstall (namespaceName, chartName) {
+  async uninstall(namespaceName, chartName) {
     try {
       this.logger.debug(`> checking chart release: ${chartName}`)
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
@@ -110,7 +110,7 @@ export class ChartManager {
     return true
   }
 
-  async upgrade (namespaceName, chartName, chartPath, valuesArg = '') {
+  async upgrade(namespaceName, chartName, chartPath, valuesArg = '') {
     try {
       this.logger.showUser(chalk.cyan('> upgrading chart:'), chalk.yellow(`${chartName}`))
       await this.helm.upgrade(`-n ${namespaceName} ${chartName} ${chartPath} ${valuesArg}`)

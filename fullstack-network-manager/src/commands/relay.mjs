@@ -7,7 +7,7 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class RelayCommand extends BaseCommand {
-  prepareValuesArg (valuesFile, nodeIDs, chainID, relayRelease, replicaCount, operatorID, operatorKey) {
+  prepareValuesArg(valuesFile, nodeIDs, chainID, relayRelease, replicaCount, operatorID, operatorKey) {
     let valuesArg = ''
     if (valuesFile) {
       const valuesFiles = valuesFile.split(',')
@@ -51,7 +51,7 @@ export class RelayCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareReleaseName (nodeIDs = []) {
+  prepareReleaseName(nodeIDs = []) {
     if (!nodeIDs) {
       throw new MissingArgumentError('Node IDs must be specified')
     }
@@ -64,7 +64,7 @@ export class RelayCommand extends BaseCommand {
     return releaseName
   }
 
-  async install (argv) {
+  async install(argv) {
     const self = this
     const tasks = new Listr([
       {
@@ -109,7 +109,8 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Prepare chart values',
         task: async (ctx, _) => {
-          ctx.chartPath = await this.prepareChartPath(ctx.config.chartDir, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
+          ctx.chartPath = await this.prepareChartPath(ctx.config.chartDir, constants.CHART_JSON_RPC_RELAY_REPO_NAME,
+            constants.CHART_JSON_RPC_RELAY_NAME)
           ctx.valuesArg = this.prepareValuesArg(
             ctx.config.valuesFile,
             ctx.config.nodeIds,
@@ -153,7 +154,7 @@ export class RelayCommand extends BaseCommand {
     return true
   }
 
-  async uninstall (argv) {
+  async uninstall(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -202,7 +203,7 @@ export class RelayCommand extends BaseCommand {
     return true
   }
 
-  static getCommandDefinition (relayCmd) {
+  static getCommandDefinition(relayCmd) {
     return {
       command: 'relay',
       desc: 'Manage JSON RPC relays',

@@ -5,7 +5,7 @@ import { constants } from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import * as helpers from '../core/helpers.mjs'
 
-export async function promptNamespaceArg (task, input) {
+export async function promptNamespaceArg(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -25,7 +25,7 @@ export async function promptNamespaceArg (task, input) {
   }
 }
 
-export async function promptSelectNamespaceArg (task, input, choices = []) {
+export async function promptSelectNamespaceArg(task, input, choices = []) {
   try {
     const initial = choices.indexOf(input)
     if (initial < 0) {
@@ -49,7 +49,7 @@ export async function promptSelectNamespaceArg (task, input, choices = []) {
   }
 }
 
-export async function promptNodeIdsArg (task, input) {
+export async function promptNodeIdsArg(task, input) {
   try {
     let nodeIds = []
     if (!input) {
@@ -76,7 +76,7 @@ export async function promptNodeIdsArg (task, input) {
   }
 }
 
-export async function promptReleaseTag (task, input) {
+export async function promptReleaseTag(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -96,7 +96,7 @@ export async function promptReleaseTag (task, input) {
   }
 }
 
-export async function promptRelayReleaseTag (task, input) {
+export async function promptRelayReleaseTag(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -116,7 +116,7 @@ export async function promptRelayReleaseTag (task, input) {
   }
 }
 
-export async function promptCacheDir (task, input) {
+export async function promptCacheDir(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -132,7 +132,7 @@ export async function promptCacheDir (task, input) {
   }
 }
 
-export async function promptForce (task, input) {
+export async function promptForce(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -148,7 +148,7 @@ export async function promptForce (task, input) {
   }
 }
 
-export async function promptChainId (task, input) {
+export async function promptChainId(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -164,7 +164,7 @@ export async function promptChainId (task, input) {
   }
 }
 
-export async function promptChartDir (task, input) {
+export async function promptChartDir(task, input) {
   try {
     if (input && !fs.existsSync(input)) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -184,7 +184,7 @@ export async function promptChartDir (task, input) {
   }
 }
 
-export async function promptValuesFile (task, input) {
+export async function promptValuesFile(task, input) {
   try {
     if (input && !fs.existsSync(input)) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -204,7 +204,7 @@ export async function promptValuesFile (task, input) {
   }
 }
 
-export async function promptClusterNameArg (task, input) {
+export async function promptClusterNameArg(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -220,7 +220,7 @@ export async function promptClusterNameArg (task, input) {
   }
 }
 
-export async function promptSelectClusterNameArg (task, input, choices = []) {
+export async function promptSelectClusterNameArg(task, input, choices = []) {
   try {
     const initial = choices.indexOf(input)
     if (initial < 0) {
@@ -239,7 +239,7 @@ export async function promptSelectClusterNameArg (task, input, choices = []) {
   }
 }
 
-export async function promptDeployPrometheusStack (task, input) {
+export async function promptDeployPrometheusStack(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -255,7 +255,7 @@ export async function promptDeployPrometheusStack (task, input) {
   }
 }
 
-export async function promptDeployMinio (task, input) {
+export async function promptDeployMinio(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -271,7 +271,7 @@ export async function promptDeployMinio (task, input) {
   }
 }
 
-export async function promptDeployEnvoyGateway (task, input) {
+export async function promptDeployEnvoyGateway(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -287,7 +287,7 @@ export async function promptDeployEnvoyGateway (task, input) {
   }
 }
 
-export async function promptDeployCertManager (task, input) {
+export async function promptDeployCertManager(task, input) {
   try {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -303,7 +303,7 @@ export async function promptDeployCertManager (task, input) {
   }
 }
 
-export async function promptDeployCertManagerCrds (task, input) {
+export async function promptDeployCertManagerCrds(task, input) {
   try {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -319,7 +319,7 @@ export async function promptDeployCertManagerCrds (task, input) {
   }
 }
 
-export async function promptAcmeClusterIssuer (task, input) {
+export async function promptAcmeClusterIssuer(task, input) {
   try {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -335,7 +335,7 @@ export async function promptAcmeClusterIssuer (task, input) {
   }
 }
 
-export async function promptDeployMirrorNode (task, input) {
+export async function promptDeployMirrorNode(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -351,7 +351,7 @@ export async function promptDeployMirrorNode (task, input) {
   }
 }
 
-export async function promptDeployHederaExplorer (task, input) {
+export async function promptDeployHederaExplorer(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -367,7 +367,7 @@ export async function promptDeployHederaExplorer (task, input) {
   }
 }
 
-export async function promptEnableTls (task, input) {
+export async function promptEnableTls(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -383,7 +383,7 @@ export async function promptEnableTls (task, input) {
   }
 }
 
-export async function promptSelfSignedClusterIssuer (task, input) {
+export async function promptSelfSignedClusterIssuer(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -399,7 +399,7 @@ export async function promptSelfSignedClusterIssuer (task, input) {
   }
 }
 
-export async function promptTlsClusterIssuerName (task, input) {
+export async function promptTlsClusterIssuerName(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -415,7 +415,7 @@ export async function promptTlsClusterIssuerName (task, input) {
   }
 }
 
-export async function promptTlsClusterIssuerNamespace (task, input) {
+export async function promptTlsClusterIssuerNamespace(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -431,7 +431,7 @@ export async function promptTlsClusterIssuerNamespace (task, input) {
   }
 }
 
-export async function promptEnableHederaExplorerTls (task, input) {
+export async function promptEnableHederaExplorerTls(task, input) {
   try {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -447,7 +447,7 @@ export async function promptEnableHederaExplorerTls (task, input) {
   }
 }
 
-export async function promptOperatorId (task, input) {
+export async function promptOperatorId(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -463,7 +463,7 @@ export async function promptOperatorId (task, input) {
   }
 }
 
-export async function promptOperatorKey (task, input) {
+export async function promptOperatorKey(task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -479,7 +479,7 @@ export async function promptOperatorKey (task, input) {
   }
 }
 
-export async function promptReplicaCount (task, input) {
+export async function promptReplicaCount(task, input) {
   try {
     if (typeof input !== 'number') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({

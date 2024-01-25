@@ -2,7 +2,7 @@ import { spawn } from 'child_process'
 import chalk from 'chalk'
 
 export class ShellRunner {
-  constructor (logger) {
+  constructor(logger) {
     if (!logger) throw new Error('An instance of core/Logger is required')
     this.logger = logger
   }
@@ -12,7 +12,7 @@ export class ShellRunner {
    * @param cmd shell command string
    * @returns {Promise<Array>} console output as an array of strings
    */
-  async run (cmd, verbose = false) {
+  async run(cmd, verbose = false) {
     const self = this
     const callStack = new Error().stack // capture the callstack to be included in error
     self.logger.debug(`Executing command: '${cmd}'`)

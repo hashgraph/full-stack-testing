@@ -12,12 +12,12 @@ export class PackageDownloader {
    * Create an instance of Downloader
    * @param logger an instance of core/Logger
    */
-  constructor (logger) {
+  constructor(logger) {
     if (!logger) throw new IllegalArgumentError('an instance of core/Logger is required', logger)
     this.logger = logger
   }
 
-  isValidURL (url) {
+  isValidURL(url) {
     try {
       // attempt to parse to check URL format
       const out = new URL(url)
@@ -28,7 +28,7 @@ export class PackageDownloader {
     return false
   }
 
-  async urlExists (url) {
+  async urlExists(url) {
     const self = this
 
     return new Promise((resolve, reject) => {
@@ -75,7 +75,7 @@ export class PackageDownloader {
    * @param url source file URL
    * @param destPath destination path for the downloaded file
    */
-  async fetchFile (url, destPath) {
+  async fetchFile(url, destPath) {
     if (!url) {
       throw new IllegalArgumentError('source file URL is required', url)
     }
@@ -111,7 +111,7 @@ export class PackageDownloader {
    * @returns {Promise<string>} returns hex digest of the computed hash
    * @throws Error if the file cannot be read
    */
-  async computeFileHash (filePath, algo = 'sha384') {
+  async computeFileHash(filePath, algo = 'sha384') {
     const self = this
 
     return new Promise((resolve, reject) => {
@@ -143,7 +143,7 @@ export class PackageDownloader {
    * @param algo hash algorithm to be used to compute checksum
    * @throws DataValidationError if the checksum doesn't match
    */
-  async verifyChecksum (sourceFile, checksum, algo = 'sha384') {
+  async verifyChecksum(sourceFile, checksum, algo = 'sha384') {
     const computed = await this.computeFileHash(sourceFile, algo)
     if (checksum !== computed) throw new DataValidationError('checksum', checksum, computed)
   }
@@ -158,7 +158,7 @@ export class PackageDownloader {
    * @param force whether to download even if the file exists
    * @returns {Promise<string>} full path to the downloaded file
    */
-  async fetchPlatform (tag, destDir, force = false) {
+  async fetchPlatform(tag, destDir, force = false) {
     const self = this
     const releaseDir = Templates.prepareReleasePrefix(tag)
 

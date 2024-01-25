@@ -7,6 +7,7 @@ import { v4 as uuid4 } from 'uuid'
 import { FullstackTestingError } from '../../../src/core/errors.mjs'
 import { ConfigManager, constants, logging, PackageDownloader, Templates } from '../../../src/core/index.mjs'
 import { K8 } from '../../../src/core/k8.mjs'
+import { flags } from '../../../src/commands/index.mjs'
 
 describe('K8', () => {
   const testLogger = logging.NewLogger('debug')
@@ -50,12 +51,14 @@ describe('K8', () => {
 
   it('should be able to check if a path is directory inside a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
+    // configManager.setFlag(flags.namespace, 'custom-network-a1')
     await expect(k8.hasDir(podName, constants.ROOT_CONTAINER, constants.HEDERA_USER_HOME_DIR)).resolves.toBeTruthy()
   })
 
   it('should be able to copy a file to and from a container', async () => {
     const podName = Templates.renderNetworkPodName('node0')
     const containerName = constants.ROOT_CONTAINER
+    // configManager.setFlag(flags.namespace, 'custom-network-a1')
 
     //  attempt fetch platform jar as we need to check if a big zip file can be uploaded/downloaded
     const testCacheDir = 'test/data/tmp'

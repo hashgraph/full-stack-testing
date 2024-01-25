@@ -10,7 +10,7 @@ import * as prompts from './prompts.mjs'
  * Define the core functionalities of 'cluster' command
  */
 export class ClusterCommand extends BaseCommand {
-  async showClusterList () {
+  async showClusterList() {
     this.logger.showList('Clusters', await this.k8.getClusters())
     return true
   }
@@ -19,7 +19,7 @@ export class ClusterCommand extends BaseCommand {
    * Get cluster-info for the given cluster name
    * @returns {Promise<boolean>}
    */
-  async getClusterInfo () {
+  async getClusterInfo() {
     try {
       const cluster = this.k8.getKubeConfig().getCurrentCluster()
       this.logger.showJSON(`Cluster Information (${cluster.name})`, cluster)
@@ -36,7 +36,7 @@ export class ClusterCommand extends BaseCommand {
    * Show list of installed chart
    * @param namespace
    */
-  async showInstalledChartList (namespace) {
+  async showInstalledChartList(namespace) {
     this.logger.showList('Installed Charts', await this.chartManager.getInstalledCharts(namespace))
   }
 
@@ -45,7 +45,7 @@ export class ClusterCommand extends BaseCommand {
    * @param argv
    * @returns {Promise<boolean>}
    */
-  async setup (argv) {
+  async setup(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -78,7 +78,9 @@ export class ClusterCommand extends BaseCommand {
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
 
-          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(
+            ctx.config.namespace,
+            constants.CHART_FST_SETUP_NAME)
         }
       },
       {
@@ -142,7 +144,7 @@ export class ClusterCommand extends BaseCommand {
    * @param argv
    * @returns {Promise<boolean>}
    */
-  async reset (argv) {
+  async reset(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -158,7 +160,10 @@ export class ClusterCommand extends BaseCommand {
             namespace
           }
 
-          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(
+            ctx.config.namespace,
+            constants.CHART_FST_SETUP_NAME
+          )
         }
       },
       {
@@ -188,7 +193,7 @@ export class ClusterCommand extends BaseCommand {
    * Return Yargs command definition for 'cluster' command
    * @param clusterCmd an instance of ClusterCommand
    */
-  static getCommandDefinition (clusterCmd) {
+  static getCommandDefinition(clusterCmd) {
     return {
       command: 'cluster',
       desc: 'Manage cluster',
@@ -287,7 +292,7 @@ export class ClusterCommand extends BaseCommand {
    * @param certManagerCrdsEnabled a bool to denote whether to install cert manager CRDs
    * @returns {string}
    */
-  prepareValuesArg (chartDir = flags.chartDirectory.definition.default,
+  prepareValuesArg(chartDir = flags.chartDirectory.definition.default,
     prometheusStackEnabled = flags.deployPrometheusStack.definition.default,
     minioEnabled = flags.deployMinio.definition.default,
     envoyGatewayEnabled = flags.deployEnvoyGateway.definition.default,
@@ -318,7 +323,7 @@ export class ClusterCommand extends BaseCommand {
    * @param chartDir local charts directory (default is empty)
    * @returns {Promise<string>}
    */
-  async prepareChartPath (chartDir = flags.chartDirectory.definition.default) {
+  async prepareChartPath(chartDir = flags.chartDirectory.definition.default) {
     let chartPath = 'full-stack-testing/fullstack-cluster-setup'
     if (chartDir) {
       chartPath = `${chartDir}/fullstack-cluster-setup`

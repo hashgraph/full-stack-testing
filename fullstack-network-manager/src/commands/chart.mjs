@@ -8,7 +8,7 @@ import { constants, Templates } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class ChartCommand extends BaseCommand {
-  getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
+  getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
     const gatewayPrefix = 'gatewayApi.gateway'
     let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
     valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
@@ -25,7 +25,7 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesFiles (valuesFile) {
+  prepareValuesFiles(valuesFile) {
     let valuesArg = ''
     if (valuesFile) {
       const valuesFiles = valuesFile.split(',')
@@ -38,7 +38,7 @@ export class ChartCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName,
+  prepareValuesArg(chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName,
     tlsClusterIssuerNamespace, enableHederaExplorerTls, acmeClusterIssuer, selfSignedClusterIssuer) {
     let valuesArg = ''
     if (chartDir) {
@@ -52,13 +52,18 @@ export class ChartCommand extends BaseCommand {
     valuesArg += ` --set cloud.selfSignedClusterIssuer.enabled=${selfSignedClusterIssuer}`
 
     if (enableTls) {
-      valuesArg += this.getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls)
+      valuesArg += this.getTlsValueArguments(
+        enableTls,
+        tlsClusterIssuerName,
+        tlsClusterIssuerNamespace,
+        enableHederaExplorerTls
+      )
     }
 
     return valuesArg
   }
 
-  async prepareConfig (task, argv) {
+  async prepareConfig(task, argv) {
     this.configManager.load(argv)
     const namespace = this.configManager.getFlag(flags.namespace)
     const nodeIds = this.configManager.getFlag(flags.nodeIDs)
@@ -102,7 +107,7 @@ export class ChartCommand extends BaseCommand {
     return config
   }
 
-  async install (argv) {
+  async install(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -167,7 +172,7 @@ export class ChartCommand extends BaseCommand {
     return true
   }
 
-  async uninstall (argv) {
+  async uninstall(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -201,7 +206,7 @@ export class ChartCommand extends BaseCommand {
     return true
   }
 
-  async upgrade (argv) {
+  async upgrade(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -243,7 +248,7 @@ export class ChartCommand extends BaseCommand {
     return true
   }
 
-  static getCommandDefinition (chartCmd) {
+  static getCommandDefinition(chartCmd) {
     return {
       command: 'chart',
       desc: 'Manage chart deployment',

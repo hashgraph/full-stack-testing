@@ -5,7 +5,7 @@ import chalk from 'chalk'
 import path from 'path'
 
 export class Zippy {
-  constructor (logger) {
+  constructor(logger) {
     if (!logger) throw new Error('An instance of core/Logger is required')
     this.logger = logger
   }
@@ -16,7 +16,7 @@ export class Zippy {
    * @param destPath path to the output zip file
    * @returns {Promise<unknown>}
    */
-  async zip (srcPath, destPath, verbose = false) {
+  async zip(srcPath, destPath, verbose = false) {
     if (!srcPath) throw new MissingArgumentError('srcPath is required')
     if (!destPath) throw new MissingArgumentError('destPath is required')
     if (!destPath.endsWith('.zip')) throw new MissingArgumentError('destPath must be a path to a zip file')
@@ -39,7 +39,7 @@ export class Zippy {
     }
   }
 
-  async unzip (srcPath, destPath, verbose = false) {
+  async unzip(srcPath, destPath, verbose = false) {
     const self = this
 
     if (!srcPath) throw new MissingArgumentError('srcPath is required')

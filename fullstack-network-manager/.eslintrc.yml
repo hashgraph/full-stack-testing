@@ -5,7 +5,21 @@ extends: standard
 parserOptions:
   ecmaVersion: latest
   sourceType: module
-rules: {}
+rules: {
+  indent: ["error", 2],
+  space-before-function-paren: ["error", {
+    anonymous: "always",
+    named: "never",
+    asyncArrow: "always"
+  }],
+  max-len: ["error", {
+    code: 120,
+    ignoreComments: true,
+    ignoreStrings: true,
+    ignoreTemplateLiterals: true,
+    ignoreRegExpLiterals: true
+  }],
+}
 overrides:
   - files: ["*.mjs"]
     parserOptions:

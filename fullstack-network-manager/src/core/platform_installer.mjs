@@ -9,7 +9,7 @@ import { Templates } from './templates.mjs'
  * PlatformInstaller install platform code in the root-container of a network pod
  */
 export class PlatformInstaller {
-  constructor (logger, k8) {
+  constructor(logger, k8) {
     if (!logger) throw new MissingArgumentError('an instance of core/Logger is required')
     if (!k8) throw new MissingArgumentError('an instance of core/K8 is required')
 
@@ -17,7 +17,7 @@ export class PlatformInstaller {
     this.k8 = k8
   }
 
-  async setupHapiDirectories (podName, containerName = constants.ROOT_CONTAINER) {
+  async setupHapiDirectories(podName, containerName = constants.ROOT_CONTAINER) {
     if (!podName) throw new MissingArgumentError('podName is required')
 
     try {
@@ -41,7 +41,7 @@ export class PlatformInstaller {
     }
   }
 
-  async validatePlatformReleaseDir (releaseDir) {
+  async validatePlatformReleaseDir(releaseDir) {
     if (!releaseDir) throw new MissingArgumentError('releaseDir is required')
     if (!fs.existsSync(releaseDir)) {
       throw new IllegalArgumentError('releaseDir does not exists', releaseDir)
@@ -72,7 +72,7 @@ export class PlatformInstaller {
     }
   }
 
-  async copyPlatform (podName, buildZipSrc) {
+  async copyPlatform(podName, buildZipSrc) {
     if (!podName) throw new MissingArgumentError('podName is required')
     if (!buildZipSrc) throw new MissingArgumentError('buildZipSrc is required')
     if (!fs.statSync(buildZipSrc).isFile()) throw new IllegalArgumentError('buildZipFile does not exists', buildZipSrc)
@@ -85,7 +85,7 @@ export class PlatformInstaller {
     }
   }
 
-  async extractPlatform (podName, buildZipSrc) {
+  async extractPlatform(podName, buildZipSrc) {
     if (!podName) throw new MissingArgumentError('podName is required')
     if (!buildZipSrc) throw new MissingArgumentError('buildZipSrc is required')
 
@@ -105,7 +105,8 @@ export class PlatformInstaller {
       await this.copyFiles(podName, [extractScriptSrc], constants.HEDERA_USER_HOME_DIR)
       await this.k8.execContainer(podName, constants.ROOT_CONTAINER, `chmod +x ${extractScript}`)
       await this.setupHapiDirectories(podName)
-      await this.k8.execContainer(podName, constants.ROOT_CONTAINER, [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
+      await this.k8.execContainer(podName, constants.ROOT_CONTAINER,
+        [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
 
       return true
     } catch (e) {
@@ -113,7 +114,7 @@ export class PlatformInstaller {
     }
   }
 
-  async copyFiles (podName, srcFiles, destDir, container = constants.ROOT_CONTAINER) {
+  async copyFiles(podName, srcFiles, destDir, container = constants.ROOT_CONTAINER) {
     const self = this
     try {
       for (const srcPath of srcFiles) {
@@ -139,7 +140,7 @@ export class PlatformInstaller {
     }
   }
 
-  async copyGossipKeys (podName, stagingDir) {
+  async copyGossipKeys(podName, stagingDir) {
     const self = this
 
     if (!podName) throw new MissingArgumentError('podName is required')
@@ -159,7 +160,7 @@ export class PlatformInstaller {
     }
   }
 
-  async copyPlatformConfigFiles (podName, stagingDir) {
+  async copyPlatformConfigFiles(podName, stagingDir) {
     const self = this
 
     if (!podName) throw new MissingArgumentError('podName is required')
@@ -188,7 +189,7 @@ export class PlatformInstaller {
     }
   }
 
-  async copyTLSKeys (podName, stagingDir) {
+  async copyTLSKeys(podName, stagingDir) {
     const self = this
 
     if (!podName) throw new MissingArgumentError('podName is required')
@@ -207,7 +208,7 @@ export class PlatformInstaller {
     }
   }
 
-  async setPathPermission (podName, destPath, mode = '0755', recursive = true, container = constants.ROOT_CONTAINER) {
+  async setPathPermission(podName, destPath, mode = '0755', recursive = true, container = constants.ROOT_CONTAINER) {
     if (!podName) throw new MissingArgumentError('podName is required')
     if (!destPath) throw new MissingArgumentError('destPath is required')
 
@@ -221,7 +222,7 @@ export class PlatformInstaller {
     }
   }
 
-  async setPlatformDirPermissions (podName) {
+  async setPlatformDirPermissions(podName) {
     const self = this
     if (!podName) throw new MissingArgumentError('podName is required')
 
@@ -249,7 +250,7 @@ export class PlatformInstaller {
    * @param chainId chain ID (298 for local network)
    * @returns {Promise<unknown>}
    */
-  async prepareConfigTxt (nodeIDs, destPath, releaseTag, chainId = constants.HEDERA_CHAIN_ID, template = `${constants.RESOURCES_DIR}/templates/config.template`) {
+  async prepareConfigTxt(nodeIDs, destPath, releaseTag, chainId = constants.HEDERA_CHAIN_ID, template = `${constants.RESOURCES_DIR}/templates/config.template`) {
     const self = this
 
     if (!nodeIDs || nodeIDs.length === 0) throw new MissingArgumentError('list of node IDs is required')
@@ -321,7 +322,7 @@ export class PlatformInstaller {
    * @param chainId chain ID
    * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
    */
-  taskPrepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
+  taskPrepareStaging(nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
     const self = this
     const configTxtPath = `${stagingDir}/config.txt`
 
@@ -358,7 +359,7 @@ export class PlatformInstaller {
    * @param force force flag
    * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
    */
-  taskInstall (podName, buildZipFile, stagingDir, force = false) {
+  taskInstall(podName, buildZipFile, stagingDir, force = false) {
     const self = this
     return new Listr([
       {

@@ -7,13 +7,13 @@ import * as core from './../core/index.mjs'
  * @param commandFlags a set of command flags
  *
  */
-export function setCommandFlags (y, ...commandFlags) {
+export function setCommandFlags(y, ...commandFlags) {
   commandFlags.forEach(flag => {
     y.option(flag.name, flag.definition)
   })
 }
 
-export function withDefaultValue (f, value) {
+export function withDefaultValue(f, value) {
   const clone = JSON.parse(JSON.stringify(f))
   clone.definition.default = value
   return clone

@@ -10,14 +10,14 @@ import { fileURLToPath } from 'url'
 const CUR_FILE_DIR = paths.dirname(fileURLToPath(import.meta.url))
 
 export class ConfigManager {
-  constructor (logger) {
+  constructor(logger) {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
 
     this.logger = logger
     this.config = this.load()
   }
 
-  persist () {
+  persist() {
     this.config.updatedAt = new Date().toISOString()
     let configJSON = JSON.stringify(this.config)
     fs.writeFileSync(`${constants.FST_CONFIG_FILE}`, configJSON)
@@ -35,7 +35,7 @@ export class ConfigManager {
    * @param flagList list of flags to be processed
    * @returns {*} config object
    */
-  load (argv = {}, reset = false, flagList = flags.allFlags) {
+  load(argv = {}, reset = false, flagList = flags.allFlags) {
     const self = this
 
     try {
@@ -101,7 +101,7 @@ export class ConfigManager {
    * load package.json
    * @returns {any}
    */
-  loadPackageJSON () {
+  loadPackageJSON() {
     try {
       const raw = fs.readFileSync(`${CUR_FILE_DIR}/../../package.json`)
       return JSON.parse(raw.toString())
@@ -116,7 +116,7 @@ export class ConfigManager {
    * @param flag flag object
    * @return {*|string} value of the flag or undefined if flag value is not available
    */
-  getFlag (flag) {
+  getFlag(flag) {
     if (this.config.flags[flag.name] !== undefined) {
       return this.config.flags[flag.name]
     }
@@ -130,7 +130,7 @@ export class ConfigManager {
    * @param value value of the flag
    */
 
-  setFlag (flag, value) {
+  setFlag(flag, value) {
     if (!flag || !flag.name) throw new MissingArgumentError('flag must have a name')
     this.config.flags[flag.name] = value
   }
@@ -139,7 +139,7 @@ export class ConfigManager {
    * Get package version
    * @return {*}
    */
-  getVersion () {
+  getVersion() {
     return this.config.version
   }
 
@@ -147,7 +147,7 @@ export class ConfigManager {
    * Get last updated at timestamp
    * @return {string}
    */
-  getUpdatedAt () {
+  getUpdatedAt() {
     return this.config.updatedAt
   }
 
@@ -155,7 +155,7 @@ export class ConfigManager {
    * Get last command
    * @return {*}
    */
-  getLastCommand () {
+  getLastCommand() {
     return this.config.lastCommand
   }
 }

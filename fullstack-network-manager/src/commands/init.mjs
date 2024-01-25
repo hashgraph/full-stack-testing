@@ -14,7 +14,7 @@ export class InitCommand extends BaseCommand {
    * Setup home directories
    * @param dirs a list of directories that need to be created in sequence
    */
-  setupHomeDirectory (dirs = [
+  setupHomeDirectory(dirs = [
     constants.FST_HOME_DIR,
     constants.FST_LOGS_DIR,
     constants.FST_CACHE_DIR
@@ -40,7 +40,7 @@ export class InitCommand extends BaseCommand {
    * Executes the init CLI command
    * @returns {Promise<boolean>}
    */
-  async init (argv) {
+  async init(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -106,7 +106,7 @@ export class InitCommand extends BaseCommand {
    * Return Yargs command definition for 'init' command
    * @param initCmd an instance of InitCommand
    */
-  static getCommandDefinition (initCmd) {
+  static getCommandDefinition(initCmd) {
     return {
       command: 'init',
       desc: 'Perform dependency checks and initialize local environment',

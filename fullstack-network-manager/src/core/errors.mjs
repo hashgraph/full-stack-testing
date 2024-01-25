@@ -8,7 +8,7 @@ export class FullstackTestingError extends Error {
      * @param cause source error (if any)
      * @param meta additional metadata (if any)
      */
-  constructor (message, cause = {}, meta = {}) {
+  constructor(message, cause = {}, meta = {}) {
     super(message)
     this.name = this.constructor.name
 
@@ -31,7 +31,7 @@ export class ResourceNotFoundError extends FullstackTestingError {
      * @param resource name of the resource
      * @param cause source error (if any)
      */
-  constructor (message, resource, cause = {}) {
+  constructor(message, resource, cause = {}) {
     super(message, cause, { resource })
   }
 }
@@ -43,7 +43,7 @@ export class MissingArgumentError extends FullstackTestingError {
      * @param message error message
      * @param cause source error (if any)
      */
-  constructor (message, cause = {}) {
+  constructor(message, cause = {}) {
     super(message, cause)
   }
 }
@@ -58,7 +58,7 @@ export class IllegalArgumentError extends FullstackTestingError {
      * @param value value of the invalid argument
      * @param cause source error (if any)
      */
-  constructor (message, value = '', cause = {}) {
+  constructor(message, value = '', cause = {}) {
     super(message, cause, { value })
   }
 }
@@ -74,7 +74,7 @@ export class DataValidationError extends FullstackTestingError {
      * @param found value found
      * @param cause source error (if any)
      */
-  constructor (message, expected, found, cause = {}) {
+  constructor(message, expected, found, cause = {}) {
     super(message, cause, { expected, found })
   }
 }

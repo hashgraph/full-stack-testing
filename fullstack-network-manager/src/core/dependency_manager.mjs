@@ -3,7 +3,7 @@ import * as core from './index.mjs'
 import { ShellRunner } from './shell_runner.mjs'
 
 export class DependencyManager extends ShellRunner {
-  constructor (logger) {
+  constructor(logger) {
     super(logger)
 
     // map of dependency checks
@@ -11,7 +11,7 @@ export class DependencyManager extends ShellRunner {
       .set(core.constants.HELM, () => this.checkHelm())
   }
 
-  async runCheck (cmdString) {
+  async runCheck(cmdString) {
     try {
       await this.run(cmdString)
     } catch (e) {
@@ -26,7 +26,7 @@ export class DependencyManager extends ShellRunner {
    * Check if 'helm' CLI program is installed or not
    * @returns {Promise<boolean>}
    */
-  async checkHelm () {
+  async checkHelm() {
     return this.runCheck(`${core.constants.HELM} version`)
   }
 
@@ -35,7 +35,7 @@ export class DependencyManager extends ShellRunner {
    * @param dep is the name of the program
    * @returns {Promise<boolean>}
    */
-  async checkDependency (dep) {
+  async checkDependency(dep) {
     this.logger.debug(`Checking for dependency: ${dep}`)
 
     let status = false
@@ -53,7 +53,7 @@ export class DependencyManager extends ShellRunner {
     return true
   }
 
-  taskCheckDependencies (deps = []) {
+  taskCheckDependencies(deps = []) {
     const subTasks = []
     deps.forEach(dep => {
       subTasks.push({

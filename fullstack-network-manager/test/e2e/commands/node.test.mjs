@@ -28,7 +28,7 @@ import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
 
 class TestHelper {
   static portForwards = []
-  static stopPortForwards () {
+  static stopPortForwards() {
     TestHelper.portForwards.forEach(server => {
       server.close()
     })

@@ -12,7 +12,7 @@ import * as prompts from './prompts.mjs'
  * Defines the core functionalities of 'node' command
  */
 export class NodeCommand extends BaseCommand {
-  constructor (opts) {
+  constructor(opts) {
     super(opts)
 
     if (!opts || !opts.downloader) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
@@ -22,7 +22,7 @@ export class NodeCommand extends BaseCommand {
     this.plaformInstaller = opts.platformInstaller
   }
 
-  async checkNetworkNodePod (namespace, nodeId) {
+  async checkNetworkNodePod(namespace, nodeId) {
     nodeId = nodeId.trim()
     const podName = Templates.renderNetworkPodName(nodeId)
 
@@ -38,7 +38,7 @@ export class NodeCommand extends BaseCommand {
     }
   }
 
-  async checkNetworkNodeStarted (nodeId, maxAttempt = 50, status = 'ACTIVE') {
+  async checkNetworkNodeStarted(nodeId, maxAttempt = 50, status = 'ACTIVE') {
     nodeId = nodeId.trim()
     const podName = Templates.renderNetworkPodName(nodeId)
     const logfilePath = `${constants.HEDERA_HAPI_PATH}/logs/hgcaa.log`
@@ -77,7 +77,7 @@ export class NodeCommand extends BaseCommand {
   /**
    * Return task for checking for all network node pods
    */
-  taskCheckNetworkNodePods (ctx, task) {
+  taskCheckNetworkNodePods(ctx, task) {
     if (!ctx.config) {
       ctx.config = {}
     }
@@ -103,7 +103,7 @@ export class NodeCommand extends BaseCommand {
     })
   }
 
-  async setup (argv) {
+  async setup(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -160,7 +160,13 @@ export class NodeCommand extends BaseCommand {
         task:
             async (ctx, _) => {
               const config = ctx.config
-              return self.plaformInstaller.taskPrepareStaging(config.nodeIds, config.stagingDir, config.releaseTag, config.force, config.chainId)
+              return self.plaformInstaller.taskPrepareStaging(
+                config.nodeIds,
+                config.stagingDir,
+                config.releaseTag,
+                config.force,
+                config.chainId
+              )
             }
       },
       {
@@ -228,7 +234,7 @@ export class NodeCommand extends BaseCommand {
     return true
   }
 
-  async start (argv) {
+  async start(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -310,7 +316,7 @@ export class NodeCommand extends BaseCommand {
     return true
   }
 
-  async stop (argv) {
+  async stop(argv) {
     const self = this
 
     const tasks = new Listr([
@@ -376,7 +382,7 @@ export class NodeCommand extends BaseCommand {
    * Return Yargs command definition for 'node' command
    * @param nodeCmd an instance of NodeCommand
    */
-  static getCommandDefinition (nodeCmd) {
+  static getCommandDefinition(nodeCmd) {
     return {
       command: 'node',
       desc: 'Manage a node running Hedera platform',
