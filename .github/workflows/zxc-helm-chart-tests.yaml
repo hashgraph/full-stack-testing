@@ -100,8 +100,8 @@ jobs:
         id: docker-prune
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          docker system prune
-          docker image prune
+          docker system prune -f
+          docker image prune -f
 
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
