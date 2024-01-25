@@ -86,12 +86,20 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Docker Prune
+        id: docker-prune
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          docker system prune -f
+          docker image prune -f
+
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
+          node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
           config: dev/dev-cluster.yaml
-          version: v0.19.0
+          version: v0.20.0
           verbosity: 3
           wait: 120s
 
@@ -127,6 +135,9 @@ jobs:
         run: |
           npm i
           npm link
+          kind delete cluster -n chart-testing || true
+          docker system prune -f
+          docker image prune -f
           ./test/e2e/setup-e2e.sh
           npm run test-e2e
 
