@@ -50,69 +50,6 @@ jobs:
     name: ${{ inputs.custom-job-label || 'fsnetman Test' }}
     runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
-      - name: Install KillAll
-        if: ${{ !failure() && !cancelled() }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends psmisc
-
-      - name: Create Docker Working Directory
-        if: ${{ !failure() && !cancelled() }}
-        run: |
-          USER="$(id -un)"
-          GROUP="$(id -gn)"
-          sudo mkdir -p /x
-          sudo chown -vR ${USER}:${GROUP} /x
-          sudo ls -lah /x
-
-      - name: Remove Docker from Self Hosted Runners
-        if: ${{ !failure() && !cancelled() }}
-        run: |
-          set -x
-          sudo killall dockerd || true
-          sudo killall containerd || true
-          sudo rm -rvf /usr/bin/*containerd* || true
-          sudo rm -rvf /usr/bin/docker* || true
-          sudo rm -rvf /usr/local/bin/docker* || true
-          sudo rm -rvf /usr/local/bin/*lima* || true
-
-      - name: Setup Containerd Support
-        uses: crazy-max/ghaction-setup-containerd@60acbf31e6572da7b83a4ed6b428ed92a35ff4d7 # v3.0.0
-        if: ${{ !failure() && !cancelled() }}
-        with:
-          containerd-version: v1.7.2
-
-      - name: Setup Docker Support
-        uses: crazy-max/ghaction-setup-docker@d9be6cade441568ba10037bce5221b8f564981f1 # v3.0.0
-        if: ${{ !failure() && !cancelled() }}
-        env:
-          HOME: /x
-        with:
-          version: v24.0.7
-
-      - name: Configure Default Docker Context
-        if: ${{ !failure() && !cancelled() }}
-        run: |
-          set -x
-          if grep setup-docker-action < <(docker context ls --format '{{ .Name }}') >/dev/null; then
-            docker context rm -f setup-docker-action
-          fi
-
-          DOCKER_CONTEXT_PATH="$(sudo find /x -name docker.sock | tr -d '[:space:]')"
-          docker context create setup-docker-action --docker "host=unix://${DOCKER_CONTEXT_PATH}"
-          docker context use setup-docker-action
-
-      - name: Setup QEmu Support
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3 # v3.0.0
-        if: ${{ !failure() && !cancelled() }}
-
-      - name: Setup Docker Buildx Support
-        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
-        if: ${{ !failure() && !cancelled() }}
-        with:
-          version: v0.12.0
-          driver-opts: network=host
-
       - name: Get related changed files
         id: changed-files
         uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
@@ -153,10 +90,11 @@ jobs:
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
+          node_image: kindest/node:v1.27.1
           config: dev/dev-cluster.yaml
           version: v0.20.0
           verbosity: 3
-          wait: 180s
+          wait: 120s
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
