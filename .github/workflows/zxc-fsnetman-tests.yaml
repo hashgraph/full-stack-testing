@@ -73,6 +73,15 @@ jobs:
             echo ">> No relevant files are changed. No need to run fsnetman tests"
           fi
 
+      - name: Prune Docker file space
+        id: docker-prune
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        run: |
+          fs.inotify.max_user_watches = 524288
+          fs.inotify.max_user_instances = 512
+          docker system prune
+          docker image prune
+
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
@@ -95,6 +104,11 @@ jobs:
           version: v0.20.0
           verbosity: 3
           wait: 120s
+
+      - name: Kind Logs
+        if: ${{ steps.check-changed-files.outputs.run-tests }}
+        run: |
+          kind export logs
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
