@@ -314,7 +314,11 @@ export class NetworkCommand extends BaseCommand {
           .command({
             command: 'destroy',
             desc: 'Destroy fullstack testing network',
-            builder: y => flags.setCommandFlags(y, flags.namespace, flags.force),
+            builder: y => flags.setCommandFlags(y,
+              flags.namespace,
+              flags.force,
+              flags.deletePvcs
+            ),
             handler: argv => {
               networkCmd.logger.debug("==== Running 'network destroy' ===")
               networkCmd.logger.debug(argv)

@@ -131,4 +131,9 @@ describe('K8', () => {
 
     fs.rmdirSync(tmpDir, { recursive: true })
   })
+
+  it('should be able to get two persistent volume claims', async () => {
+    const pvcs = await k8.listPvcsByNamespace(k8._getNamespace())
+    expect(pvcs).toHaveLength(2)
+  })
 })

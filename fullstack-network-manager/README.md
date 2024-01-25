@@ -1,6 +1,6 @@
 # Full Stack Network Manager CLI
 
-Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Hedera Network using the FS Helm Chart.
+Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Hedera Network using the FS Helm Charts.
 
 ## Install
 

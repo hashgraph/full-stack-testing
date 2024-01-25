@@ -637,6 +637,39 @@ export class K8 {
     })
   }
 
+  /**
+   * Get a list of persistent volume claim names for the given namespace
+   * @param namespace the namespace of the persistent volume claims to return
+   * @returns {Promise<*[]>} list of persistent volume claims
+   */
+  async listPvcsByNamespace (namespace) {
+    const pvcs = []
+    const resp = await this.kubeClient.listNamespacedPersistentVolumeClaim(
+      namespace
+    )
+
+    for (const item of resp.body.items) {
+      pvcs.push(item.metadata.name)
+    }
+
+    return pvcs
+  }
+
+  /**
+   * Delete a persistent volume claim
+   * @param name the name of the persistent volume claim to delete
+   * @param namespace the namespace of the persistent volume claim to delete
+   * @returns {Promise<boolean>} true if the persistent volume claim was deleted
+   */
+  async deletePvc (name, namespace) {
+    const resp = await this.kubeClient.deleteNamespacedPersistentVolumeClaim(
+      name,
+      namespace
+    )
+
+    return resp.response.statusCode === 200.0
+  }
+
   _getNamespace () {
     const ns = this.configManager.getFlag(flags.namespace)
     if (!ns) throw new MissingArgumentError('namespace is not set')

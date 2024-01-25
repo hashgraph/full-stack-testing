@@ -299,6 +299,15 @@ export const enableHederaExplorerTls = {
   }
 }
 
+export const deletePvcs = {
+  name: 'delete-pvcs',
+  definition: {
+    describe: 'Delete the persistent volume claims, defaults to false',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const allFlags = [
   devMode,
   clusterName,
@@ -327,5 +336,6 @@ export const allFlags = [
   tlsClusterIssuerName,
   tlsClusterIssuerNamespace,
   enableHederaExplorerTls,
-  selfSignedClusterIssuer
+  selfSignedClusterIssuer,
+  deletePvcs
 ]
