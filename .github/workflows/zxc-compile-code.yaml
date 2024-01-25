@@ -118,11 +118,18 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Docker Prune
+        id: docker-prune
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run: |
+          docker system prune
+          docker image prune
+
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
-          node_image: kindest/node:v1.27.1
+          node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
           config: dev/dev-cluster.yaml
           version: v0.20.0
           verbosity: 3
