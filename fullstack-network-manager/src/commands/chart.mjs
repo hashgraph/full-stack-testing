@@ -176,8 +176,10 @@ export class ChartCommand extends BaseCommand {
         task: async (ctx, task) => {
           self.configManager.load(argv)
           const namespace = self.configManager.getFlag(flags.namespace)
+          const deletePvcs = self.configManager.getFlag(flags.deletePvcs)
           ctx.config = {
-            namespace: await prompts.promptNamespaceArg(task, namespace)
+            namespace: await prompts.promptNamespaceArg(task, namespace),
+            deletePvcs: await prompts.promptDeletePvcs(task, deletePvcs)
           }
         }
       },
@@ -185,6 +187,24 @@ export class ChartCommand extends BaseCommand {
         title: `Uninstall chart ${constants.CHART_FST_DEPLOYMENT_NAME}`,
         task: async (ctx, _) => {
           await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+        }
+      },
+      {
+        title: 'Get PVCs for namespace',
+        task: async (ctx, _) => {
+          if(ctx.config.deletePvcs === true) {
+            ctx.config.pvcs = await self.k8.listPvcsByNamespace(ctx.config.namespace)
+          }
+        }
+      },
+      {
+        title: 'Delete PVCs for namespace',
+        task: async (ctx, _) => {
+          if (ctx.config.pvcs) {
+            for (const pvc of ctx.config.pvcs) {
+              await self.k8.deletePvc(pvc, ctx.config.namespace)
+            }
+          }
         }
       }
     ], {
@@ -286,7 +306,10 @@ export class ChartCommand extends BaseCommand {
           .command({
             command: 'uninstall',
             desc: 'Uninstall network deployment chart',
-            builder: y => flags.setCommandFlags(y, flags.namespace),
+            builder: y => flags.setCommandFlags(y,
+                flags.namespace,
+                flags.deletePvcs
+            ),
             handler: argv => {
               chartCmd.logger.debug("==== Running 'chart uninstall' ===")
               chartCmd.logger.debug(argv)

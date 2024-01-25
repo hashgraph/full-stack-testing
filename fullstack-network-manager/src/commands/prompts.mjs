@@ -494,3 +494,19 @@ export async function promptReplicaCount (task, input) {
     throw new FullstackTestingError(`input failed: ${flags.replicaCount.name}`, e)
   }
 }
+
+export async function promptDeletePvcs (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deletePvcs.definition.default,
+        message: 'Would you like to delete persistent volume claims upon uninstall?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deletePvcs.name}`, e)
+  }
+}
