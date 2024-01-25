@@ -11,62 +11,19 @@ import * as prompts from './prompts.mjs'
  */
 export class ClusterCommand extends BaseCommand {
   async showClusterList () {
-    this.logger.showList('Clusters', await this.clusterManager.getClusters())
+    this.logger.showList('Clusters', await this.k8.getClusters())
     return true
   }
 
   /**
-   * List available namespaces
-   * @returns {Promise<string[]>}
-   */
-  async getNameSpaces () {
-    try {
-      return await this.kubectl.getNamespace('--no-headers', '-o name')
-    } catch (e) {
-      this.logger.showUserError(e)
-    }
-
-    return []
-  }
-
-  /**
    * Get cluster-info for the given cluster name
-   * @param argv arguments containing cluster name
    * @returns {Promise<boolean>}
    */
-  async getClusterInfo (argv) {
+  async getClusterInfo () {
     try {
-      const clusterName = argv.clusterName
-      const output = await this.clusterManager.getClusterInfo(clusterName)
-
-      this.logger.showUser(chalk.green(`\nCluster information (${clusterName})\n---------------------------------------`))
-      output.forEach(line => this.logger.showUser(line))
+      const cluster = this.k8.getKubeConfig().getCurrentCluster()
+      this.logger.showJSON(`Cluster Information (${cluster.name})`, cluster)
       this.logger.showUser('\n')
-      return true
-    } catch (e) {
-      this.logger.showUserError(e)
-    }
-
-    return false
-  }
-
-  async createNamespace (argv) {
-    try {
-      const namespace = argv.namespace
-      const namespaces = await this.getNameSpaces()
-      this.logger.showUser(chalk.cyan('> checking namespace:'), chalk.yellow(`${namespace}`))
-      if (!namespaces.includes(`namespace/${namespace}`)) {
-        this.logger.showUser(chalk.cyan('> creating namespace:'), chalk.yellow(`${namespace} ...`))
-        await this.kubectl.createNamespace(namespace)
-        this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' is created`)
-      } else {
-        this.logger.showUser(chalk.green('OK'), `namespace '${namespace}' already exists`)
-      }
-
-      await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
-
-      this.logger.showList('Namespaces', await this.getNameSpaces())
-
       return true
     } catch (e) {
       this.logger.showUserError(e)
@@ -84,123 +41,6 @@ export class ClusterCommand extends BaseCommand {
   }
 
   /**
-   * Create a cluster
-   * @param argv command arguments
-   * @returns {Promise<boolean>}
-   */
-  async create (argv) {
-    const self = this
-
-    const tasks = new Listr([
-      {
-        title: 'Initialize',
-        task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-
-          // get existing choices
-          ctx.clusters = await self.clusterManager.getClusters()
-
-          // extract config values
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-
-          ctx.config = {
-            clusterName: await prompts.promptClusterNameArg(task, clusterName),
-            namespace: await prompts.promptNamespaceArg(task, namespace)
-          }
-        }
-      },
-      {
-        title: 'Create cluster',
-        task: async (ctx, _) => {
-          const clusterName = ctx.config.clusterName
-          ctx.clusters = await self.clusterManager.getClusters()
-          if (!ctx.clusters.includes(clusterName)) {
-            await self.clusterManager.createCluster(clusterName)
-            await self.kubectl.get('--raw=\'/healthz?verbose\'')
-          }
-        }
-      },
-      {
-        title: 'Create namespace',
-        task: async (ctx, _) => {
-          const namespace = ctx.config.namespace
-          ctx.namespaces = await self.getNameSpaces()
-          if (!ctx.namespaces.includes(`namespace/${namespace}`)) {
-            await self.kubectl.createNamespace(namespace)
-          }
-
-          await this.kubectl.config(`set-context --current --namespace="${namespace}"`)
-
-          // display info
-          ctx.namespaces = await self.getNameSpaces()
-          ctx.kubeContexts = await self.kubectl.config('get-contexts --no-headers | awk \'{print $2 " [" $NF "]"}\'')
-          ctx.clusters = await self.clusterManager.getClusters()
-          self.logger.showList('Namespaces', await ctx.namespaces)
-          self.logger.showList('Clusters', await ctx.clusters)
-          self.logger.showList('Kubernetes Contexts', ctx.kubeContexts)
-        }
-      }
-    ], {
-      concurrent: false,
-      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
-    })
-
-    try {
-      await tasks.run()
-    } catch (e) {
-      throw new FullstackTestingError('Error on cluster create', e)
-    }
-
-    return true
-  }
-
-  /**
-   * Delete a cluster
-   * @param argv
-   * @returns {Promise<boolean>}
-   */
-  async delete (argv) {
-    const self = this
-
-    const tasks = new Listr([
-      {
-        title: 'Initialize',
-        task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-
-          // get existing choices
-          ctx.clusters = await self.clusterManager.getClusters()
-
-          ctx.config = {
-            clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, ctx.clusters)
-          }
-        }
-      },
-      {
-        title: 'Delete cluster',
-        task: async (ctx, _) => {
-          await this.clusterManager.deleteCluster(ctx.config.clusterName)
-          self.logger.showList('Clusters', await self.clusterManager.getClusters())
-        },
-        skip: (ctx, _) => !ctx.clusters.includes(ctx.config.clusterName)
-      }
-    ], {
-      concurrent: false,
-      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
-    })
-
-    try {
-      await tasks.run()
-    } catch (e) {
-      throw new FullstackTestingError('Error on cluster reset', e)
-    }
-
-    return true
-  }
-
-  /**
    * Setup cluster with shared components
    * @param argv
    * @returns {Promise<boolean>}
@@ -212,32 +52,22 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const kubeConfig = await self.clusterManager.getKubeConfig()
-          if (!kubeConfig['current-context']) {
-            throw new FullstackTestingError('kubectl context is not set, set context by running: kubectl config use-context <context-name>')
-          }
-
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          self.logger.debug('Setup cached config', { cachedConfig, argv })
+          self.configManager.load(argv)
 
           // extract config values
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-          const chartDir = self.configManager.flagValue(cachedConfig, flags.chartDirectory)
-          const deployPrometheusStack = self.configManager.flagValue(cachedConfig, flags.deployPrometheusStack)
-          const deployMinio = self.configManager.flagValue(cachedConfig, flags.deployMinio)
-          const deployEnvoyGateway = self.configManager.flagValue(cachedConfig, flags.deployEnvoyGateway)
-          const deployCertManager = self.configManager.flagValue(cachedConfig, flags.deployCertManager)
-          const deployCertManagerCrds = self.configManager.flagValue(cachedConfig, flags.deployCertManagerCrds)
-
-          // get existing choices
-          const clusters = await self.clusterManager.getClusters()
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const clusterName = self.configManager.getFlag(flags.clusterName)
+          const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
+          const chartDir = self.configManager.getFlag(flags.chartDirectory)
+          const deployPrometheusStack = self.configManager.getFlag(flags.deployPrometheusStack)
+          const deployMinio = self.configManager.getFlag(flags.deployMinio)
+          const deployEnvoyGateway = self.configManager.getFlag(flags.deployEnvoyGateway)
+          const deployCertManager = self.configManager.getFlag(flags.deployCertManager)
+          const deployCertManagerCrds = self.configManager.getFlag(flags.deployCertManagerCrds)
 
           // prompt if inputs are empty and set it in the context
           ctx.config = {
-            clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, clusters),
-            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
+            clusterName,
+            namespace,
             chartDir: await prompts.promptChartDir(task, chartDir),
             deployPrometheusStack: await prompts.promptDeployPrometheusStack(task, deployPrometheusStack),
             deployMinio: await prompts.promptDeployMinio(task, deployMinio),
@@ -248,8 +78,6 @@ export class ClusterCommand extends BaseCommand {
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
 
-          // set current context based on cluster and namespace
-          await self.clusterManager.setContext(ctx.config.clusterName, ctx.config.namespace)
           ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
         }
       },
@@ -321,17 +149,13 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          const clusterName = self.configManager.flagValue(cachedConfig, flags.clusterName)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-
-          // get existing choices
-          const clusters = await self.clusterManager.getClusters()
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          self.configManager.load(argv)
+          const clusterName = self.configManager.getFlag(flags.clusterName)
+          const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
 
           ctx.config = {
-            clusterName: await prompts.promptSelectClusterNameArg(task, clusterName, clusters),
-            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces)
+            clusterName,
+            namespace
           }
 
           ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
@@ -367,46 +191,12 @@ export class ClusterCommand extends BaseCommand {
   static getCommandDefinition (clusterCmd) {
     return {
       command: 'cluster',
-      desc: 'Manage FST cluster',
+      desc: 'Manage cluster',
       builder: yargs => {
         return yargs
           .command({
-            command: 'create',
-            desc: 'Create a cluster',
-            builder: y => flags.setCommandFlags(y, flags.clusterName, flags.namespace),
-            handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster create' ===", { argv })
-
-              clusterCmd.create(argv).then(r => {
-                clusterCmd.logger.debug('==== Finished running `cluster create`====')
-
-                if (!r) process.exit(1)
-              }).catch(err => {
-                clusterCmd.logger.showUserError(err)
-                process.exit(1)
-              })
-            }
-          })
-          .command({
-            command: 'delete',
-            desc: 'Delete a cluster',
-            builder: y => flags.setCommandFlags(y, flags.clusterName),
-            handler: argv => {
-              clusterCmd.logger.debug("==== Running 'cluster delete' ===", { argv })
-
-              clusterCmd.delete(argv).then(r => {
-                clusterCmd.logger.debug('==== Finished running `cluster delete`====')
-
-                if (!r) process.exit(1)
-              }).catch(err => {
-                clusterCmd.logger.showUserError(err)
-                process.exit(1)
-              })
-            }
-          })
-          .command({
             command: 'list',
-            desc: 'List all clusters',
+            desc: 'List all available clusters',
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster list' ===", { argv })
 
@@ -423,7 +213,6 @@ export class ClusterCommand extends BaseCommand {
           .command({
             command: 'info',
             desc: 'Get cluster info',
-            builder: y => flags.setCommandFlags(y, flags.clusterName),
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster info' ===", { argv })
               clusterCmd.getClusterInfo(argv).then(r => {

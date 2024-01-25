@@ -9,12 +9,12 @@ import { Templates } from './templates.mjs'
  * PlatformInstaller install platform code in the root-container of a network pod
  */
 export class PlatformInstaller {
-  constructor (logger, kubectl) {
+  constructor (logger, k8) {
     if (!logger) throw new MissingArgumentError('an instance of core/Logger is required')
-    if (!kubectl) throw new MissingArgumentError('an instance of core/Kubectl is required')
+    if (!k8) throw new MissingArgumentError('an instance of core/K8 is required')
 
     this.logger = logger
-    this.kubectl = kubectl
+    this.k8 = k8
   }
 
   async setupHapiDirectories (podName, containerName = constants.ROOT_CONTAINER) {
@@ -22,7 +22,7 @@ export class PlatformInstaller {
 
     try {
       // reset HAPI_PATH
-      await this.kubectl.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}`)
+      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}`)
 
       const paths = [
         `${constants.HEDERA_HAPI_PATH}/data/keys`,
@@ -30,7 +30,7 @@ export class PlatformInstaller {
       ]
 
       for (const p of paths) {
-        await this.kubectl.execContainer(podName, containerName, `mkdir -p ${p}`)
+        await this.k8.execContainer(podName, containerName, `mkdir -p ${p}`)
       }
 
       await this.setPathPermission(podName, constants.HEDERA_SERVICES_PATH)
@@ -72,25 +72,44 @@ export class PlatformInstaller {
     }
   }
 
-  async copyPlatform (podName, buildZipFile) {
+  async copyPlatform (podName, buildZipSrc) {
     if (!podName) throw new MissingArgumentError('podName is required')
-    if (!buildZipFile) throw new MissingArgumentError('buildZipFile is required')
-    if (!fs.statSync(buildZipFile).isFile()) throw new IllegalArgumentError('buildZipFile does not exists', buildZipFile)
+    if (!buildZipSrc) throw new MissingArgumentError('buildZipSrc is required')
+    if (!fs.statSync(buildZipSrc).isFile()) throw new IllegalArgumentError('buildZipFile does not exists', buildZipSrc)
 
     try {
-      await this.kubectl.copy(
-        buildZipFile,
-        `${podName}:${constants.HEDERA_USER_HOME_DIR}`,
-        '-c root-container'
-      )
+      await this.copyFiles(podName, [buildZipSrc], constants.HEDERA_USER_HOME_DIR)
+      return this.extractPlatform(podName, buildZipSrc)
+    } catch (e) {
+      throw new FullstackTestingError(`failed to copy platform code in to pod '${podName}': ${e.message}`, e)
+    }
+  }
 
+  async extractPlatform (podName, buildZipSrc) {
+    if (!podName) throw new MissingArgumentError('podName is required')
+    if (!buildZipSrc) throw new MissingArgumentError('buildZipSrc is required')
+
+    const buildZipFileName = path.basename(buildZipSrc)
+    const buildZip = path.join(constants.HEDERA_USER_HOME_DIR, buildZipFileName) // inside the container
+    const extractScriptName = 'extract-jar.sh'
+    const extractScriptSrc = path.join(constants.RESOURCES_DIR, extractScriptName)
+    const extractScript = path.join(constants.HEDERA_USER_HOME_DIR, extractScriptName) // inside the container
+
+    this.logger.debug(`Extracting platform code in pod ${podName}`, {
+      extractScript,
+      buildZip,
+      dest: constants.HEDERA_HAPI_PATH
+    })
+
+    try {
+      await this.copyFiles(podName, [extractScriptSrc], constants.HEDERA_USER_HOME_DIR)
+      await this.k8.execContainer(podName, constants.ROOT_CONTAINER, `chmod +x ${extractScript}`)
       await this.setupHapiDirectories(podName)
-      await this.kubectl.execContainer(podName, constants.ROOT_CONTAINER,
-        `cd ${constants.HEDERA_HAPI_PATH} && jar xvf /home/hedera/build-*`)
+      await this.k8.execContainer(podName, constants.ROOT_CONTAINER, [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
 
       return true
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy platform code to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to extract platform code in this pod '${podName}': ${e.message}`, e)
     }
   }
 
@@ -98,21 +117,23 @@ export class PlatformInstaller {
     const self = this
     try {
       for (const srcPath of srcFiles) {
-        self.logger.debug(`Copying files into ${podName}: ${srcPath} -> ${destDir}`)
-        await this.kubectl.copy(
-          srcPath,
-          `${podName}:${destDir}`,
-          `-c ${container}`
-        )
+        self.logger.debug(`Copying file into ${podName}: ${srcPath} -> ${destDir}`)
+        await this.k8.copyTo(podName, container, srcPath, destDir)
       }
 
-      const fileList = await this.kubectl.execContainer(podName, container, `ls ${destDir}`)
+      const fileList = await this.k8.execContainer(podName, container, `ls ${destDir}`)
 
       // create full path
-      const fullPaths = []
-      fileList.forEach(filePath => fullPaths.push(`${destDir}/${filePath}`))
-
-      return fullPaths
+      if (fileList) {
+        const fullPaths = []
+        fileList.split('\n').forEach(filePath => {
+          if (filePath) {
+            fullPaths.push(`${destDir}/${filePath}`)
+          }
+        })
+        return fullPaths
+      }
+      throw new FullstackTestingError(`could not receive file list after copy; ${fileList}`)
     } catch (e) {
       throw new FullstackTestingError(`failed to copy files to pod '${podName}'`, e)
     }
@@ -192,8 +213,8 @@ export class PlatformInstaller {
 
     try {
       const recursiveFlag = recursive ? '-R' : ''
-      await this.kubectl.execContainer(podName, container, `chown ${recursiveFlag} hedera:hedera ${destPath}`)
-      await this.kubectl.execContainer(podName, container, `chmod ${recursiveFlag} ${mode} ${destPath}`)
+      await this.k8.execContainer(podName, container, `chown ${recursiveFlag} hedera:hedera ${destPath}`)
+      await this.k8.execContainer(podName, container, `chmod ${recursiveFlag} ${mode} ${destPath}`)
       return true
     } catch (e) {
       throw new FullstackTestingError(`failed to set permission in '${podName}': ${destPath}`, e)
@@ -265,8 +286,8 @@ export class PlatformInstaller {
         const nodeName = nodeId
         const nodeNickName = nodeId
 
-        const internalIP = await self.kubectl.getPodIP(podName)
-        const externalIP = await self.kubectl.getClusterIP(svcName)
+        const internalIP = await self.k8.getPodIP(podName)
+        const externalIP = await self.k8.getClusterIP(svcName)
 
         const account = `${accountIdPrefix}.${accountIdSeq}`
         if (minorVersion >= 40) {
@@ -340,11 +361,6 @@ export class PlatformInstaller {
   taskInstall (podName, buildZipFile, stagingDir, force = false) {
     const self = this
     return new Listr([
-      {
-        title: 'Copy platform',
-        task: (_, task) =>
-          self.copyPlatform(podName, buildZipFile)
-      },
       {
         title: 'Copy Gossip keys',
         task: (_, task) =>

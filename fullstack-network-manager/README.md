@@ -1,6 +1,6 @@
 # Full Stack Network Manager CLI
 
-Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Hedera Network using the FS Helm Chart.
+Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Hedera Network using the FS Helm Charts.
 
 ## Install
 
@@ -17,19 +17,41 @@ Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Heder
 
 * Run `npm install -g @hashgraph/fullstack-network-manager`
 
-* Run `fsnetman` from a terminal as shown below
+* Ensure you have a valid kubernetes context, cluster and namespace. You may use `kind` and `kubectl` CLIs to create
+  cluster and namespace as below (See [`test/e2e/setup-e2e.sh`](test/e2e/setup_e2e.sh)):
+
+```
+export FST_CLUSTER_NAME=fst-local
+export FST_NAMESPACE=fst-local
+kind create cluster -n "${FST_CLUSTER_NAME}" 
+kubectl create ns "${FST_NAMESPACE}"
+fsnetman init -d ../charts --namespace "${FST_NAMESPACE}" # cache args for subsequent commands
+```
+
+* Run `fsnetman` from a terminal, It may show usage options as shown below:
 
 ```
 ❯ fsnetman
+
+-------------------------------------------------------------------------------
+*** Fullstack Network Manager (FsNetMan) ***
+Version                 : 0.16.0
+Kubernetes Context      : kind-fst-local
+Kubernetes Cluster      : kind-fst-local
+-------------------------------------------------------------------------------
+
 Usage:
   fsnetman <command> [options]
 
 Commands:
   fsnetman init     Perform dependency checks and initialize local environment
-  fsnetman cluster  Manage FST cluster
-  fsnetman chart    Manage FST chart deployment
+  fsnetman cluster  Manage cluster
+  fsnetman chart    Manage chart deployment
+  fsnetman node     Manage a node running Hedera platform
+  fsnetman relay    Manage JSON RPC relays
 
 Options:
+      --dev      Enable developer mode                                                        [boolean] [default: false]
   -h, --help     Show help                                                                                     [boolean]
   -v, --version  Show version number                                                                           [boolean]
 
@@ -57,11 +79,5 @@ Select a command
 ## E2E tests
 
 * In order to run E2E test, we need to set up cluster and install the chart.
-
-```
-  fsnetman init -d ../charts # use the charts directory for all subsequent commands
-  fsnetman cluster create
-  fsnetman cluster setup --cert-manager --cert-manager-crds
-  fsnetman chart install --enable-tls --self-signed --enable-hedera-explorer-tls
-  npm run test-e2e 
-```
+  * Run `./test/e2e/setup-e2e.sh`
+  * Run `npm run test-e2e`

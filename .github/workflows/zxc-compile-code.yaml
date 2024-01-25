@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2023 Hedera Hashgraph, LLC
+# Copyright (C) 2023-2024 Hedera Hashgraph, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -118,12 +118,20 @@ jobs:
         with:
           node-version: ${{ inputs.node-version }}
 
+      - name: Docker Prune
+        id: docker-prune
+        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        run: |
+          docker system prune -f
+          docker image prune -f
+
       - name: Setup Kind
         uses: helm/kind-action@b730507f7a20de303d0fed46278d039c42c61715 # v1.8.0
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
+          node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
           config: dev/dev-cluster.yaml
-          version: v0.20.0 # default version
+          version: v0.20.0
           verbosity: 3
           wait: 120s
 

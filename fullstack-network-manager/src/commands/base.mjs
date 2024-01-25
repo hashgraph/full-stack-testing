@@ -19,19 +19,17 @@ export class BaseCommand extends ShellRunner {
   constructor (opts) {
     if (!opts || !opts.logger) throw new Error('An instance of core/Logger is required')
     if (!opts || !opts.helm) throw new Error('An instance of core/Helm is required')
-    if (!opts || !opts.kubectl) throw new Error('An instance of core/Kubectl is required')
+    if (!opts || !opts.k8) throw new Error('An instance of core/K8 is required')
     if (!opts || !opts.chartManager) throw new Error('An instance of core/ChartManager is required')
     if (!opts || !opts.configManager) throw new Error('An instance of core/ConfigManager is required')
     if (!opts || !opts.depManager) throw new Error('An instance of core/DependencyManager is required')
-    if (!opts || !opts.clusterManager) throw new Error('An instance of core/ClusterManager is required')
 
     super(opts.logger)
 
     this.helm = opts.helm
-    this.kubectl = opts.kubectl
+    this.k8 = opts.k8
     this.chartManager = opts.chartManager
     this.configManager = opts.configManager
     this.depManager = opts.depManager
-    this.clusterManager = opts.clusterManager
   }
 }
