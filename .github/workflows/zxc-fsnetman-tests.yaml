@@ -91,7 +91,7 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           config: dev/dev-cluster.yaml
-          version: v0.19.0
+          version: v0.20.0 # default version
           verbosity: 3
           wait: 120s
 
