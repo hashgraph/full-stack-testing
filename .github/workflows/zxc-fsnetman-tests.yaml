@@ -133,6 +133,8 @@ jobs:
         working-directory: fullstack-network-manager
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
+          docker system prune
+          docker image prune
           npm i
           npm link
           ./test/e2e/setup-e2e.sh
