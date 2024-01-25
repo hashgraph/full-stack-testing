@@ -77,8 +77,6 @@ jobs:
         id: docker-prune
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          fs.inotify.max_user_watches = 524288
-          fs.inotify.max_user_instances = 512
           docker system prune
           docker image prune
 
