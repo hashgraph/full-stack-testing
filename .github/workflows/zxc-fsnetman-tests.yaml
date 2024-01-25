@@ -52,7 +52,9 @@ jobs:
     steps:
       - name: Install KillAll
         if: ${{ !failure() && !cancelled() }}
-        run: sudo apt-get install --yes --no-install-recommends psmisc
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends psmisc
 
       - name: Create Docker Working Directory
         if: ${{ !failure() && !cancelled() }}
