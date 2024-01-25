@@ -103,7 +103,7 @@ jobs:
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
       - name: Setup Kind
-        uses: helm/kind-action@v1.8.0
+        uses: helm/kind-action@100421effd785dca3acc12cd588e7db5428d9007
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           config: dev/dev-cluster.yaml
