@@ -131,6 +131,10 @@ jobs:
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
           docker image pull kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
+          echo '{"exec-opts": ["native.cgroupdriver=systemd"]}' > /etc/docker/daemon.json
+          sudo systemctl daemon-reload
+          sudo systemctl restart docker
+          sudo systemctl restart kubelet  
           kind create cluster --config=dev/dev-cluster.yaml
 
       - name: Setup Helm
@@ -142,7 +146,6 @@ jobs:
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         run: |
-          kind create cluster --config=dev/dev-cluster.yaml
           kubectl config get-contexts
           kubectl get crd
           kubectl get node --show-labels
