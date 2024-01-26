@@ -111,7 +111,7 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
-          if [ "${{ steps.changed-files.outputs.source_any_changed }}" ]; then
+          if [ "${{ steps.changed-files.outputs.source_any_changed }}" == "true" ]; then
             echo "files-changed=true" >> "${GITHUB_OUTPUT}"
             echo "Enabled execution of java unit tests...."
           else
@@ -141,6 +141,7 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        if: ${{ !cancelled() && !failure() }}
         with:
           node-version: ${{ inputs.node-version }}
 
