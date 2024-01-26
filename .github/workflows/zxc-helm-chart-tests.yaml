@@ -117,7 +117,7 @@ jobs:
           config: dev/dev-cluster.yaml
           version: v0.20.0
           verbosity: 3
-          wait: 120s
+          wait: 240s
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
@@ -139,4 +139,3 @@ jobs:
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
           make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
-          
