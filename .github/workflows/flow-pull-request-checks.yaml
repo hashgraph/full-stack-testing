@@ -61,12 +61,16 @@ jobs:
 
   chart-tests:
     name: FS Helm Chart Tests
+    needs:
+      - unit-tests
     uses: ./.github/workflows/zxc-helm-chart-tests.yaml
     with:
       custom-job-label: Standard
 
   fsnetman-tests:
     name: FS Network Manager Tests
+    needs:
+      - chart-tests
     uses: ./.github/workflows/zxc-fsnetman-tests.yaml
     with:
       custom-job-label: Standard
