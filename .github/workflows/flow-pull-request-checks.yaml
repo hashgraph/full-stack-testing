@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2023 Hedera Hashgraph, LLC
+# Copyright (C) 2023-2024 Hedera Hashgraph, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,13 +32,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Code
-    uses: ./.github/workflows/zxc-compile-code.yaml
-    secrets:
-      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
-      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
-
   spotless:
     name: Spotless
     uses: ./.github/workflows/zxc-compile-code.yaml
@@ -49,9 +42,20 @@ jobs:
       gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
       gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
+#  build:
+#    name: Code
+#    uses: ./.github/workflows/zxc-compile-code.yaml
+#    needs:
+#      - spotless
+#    secrets:
+#      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+#      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
+
   unit-tests:
     name: FST Java Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
+    needs:
+      - spotless
     with:
       custom-job-label: Standard
       enable-unit-tests: true
