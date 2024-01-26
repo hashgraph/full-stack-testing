@@ -110,14 +110,12 @@ jobs:
           docker image prune -f
 
       - name: Setup Kind
-        uses: helm/kind-action@b730507f7a20de303d0fed46278d039c42c61715 # v1.8.0
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
-        with:
-          node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
-          config: dev/dev-cluster.yaml
-          version: v0.20.0
-          verbosity: 3
-          wait: 240s
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          kind create cluster --config=dev/dev-cluster.yaml
 
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
