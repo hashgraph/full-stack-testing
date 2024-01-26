@@ -1,0 +1,12 @@
+
+This Helm Chart setup the following accessories used by hedera network
+
+- minio-operator : a S3 compatible object storage
+- prometheus : a monitoring system to collect metrics
+- grafana: a visualized dashboard for prometheus
+- gateway: a gateway to manage API traffic to the network
+- cert-manager: an addon to automate the management and issuance of TLS certificates
+
+
+rbac : Role-based access control (RBAC) is a method of regulating access to computer or network
+resources based on the roles of individual users
