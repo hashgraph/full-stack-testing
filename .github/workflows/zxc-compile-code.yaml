@@ -85,7 +85,7 @@ env:
 jobs:
   compile:
     name: ${{ inputs.custom-job-label || 'Compiles' }}
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -111,15 +111,15 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
-          echo "Before: ${inputs.enable-unit-tests}"
+          echo "Before: ${INPUT_ENABLE-UNIT-TESTS}"
           if [ "${{ steps.changed-files.outputs.source_any_changed }}" ]; then
-            inputs.enable-unit-tests=false
+            INPUT_ENABLE-UNIT-TESTS=true
             echo "Enabled execution of java unit tests...."
           else
-            inputs.enable-unit-tests=false
+            INPUT_ENABLE-UNIT-TESTS=false
             echo ">> No relevant files are changed. No need to run java unit tests"
           fi
-          echo "After: ${inputs.enable-unit-tests}"
+          echo "After: ${INPUT_ENABLE-UNIT-TESTS}"
 
       - name: Setup Make
         run: |
