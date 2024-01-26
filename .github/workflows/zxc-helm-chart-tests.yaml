@@ -91,7 +91,7 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
