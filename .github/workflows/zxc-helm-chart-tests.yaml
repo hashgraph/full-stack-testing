@@ -55,7 +55,7 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
         with:
-          files: |
+          files_yaml: |
             chart:
               - charts/**
             scripts:
