@@ -111,7 +111,7 @@ jobs:
 
       - name: Setup Kind
         uses: helm/kind-action@dda0770415bac9fc20092cacbc54aa298604d140 # v1.8.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
           config: dev/dev-cluster.yaml
@@ -120,8 +120,8 @@ jobs:
           wait: 120s
 
       - name: Setup Helm
-        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           version: "v3.12.3" #  helm version
 
