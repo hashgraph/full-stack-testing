@@ -15,25 +15,13 @@ cloud:
     enabled: false
   grafanaAgent:
     enabled: false
-  envoyGateway:
-    enabled: false
   certManager:
     enabled: false
-  acmeClusterIssuer:
-    enabled: false
-  selfSignedClusterIssuer:
-    enabled: true
 
 cert-manager:
   namespace: cert-manager
   installCRDs: false
 
-acme-cluster-issuer:
-  issuers:
-    annotations:
-      helm.sh/hook: post-install
-      helm.sh/hook-weight: "2"
-    staging:
-      email: ""
-    production:
-      email: ""
+minio-operator:
+  operator:
+    replicaCount: 1

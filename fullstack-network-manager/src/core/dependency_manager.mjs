@@ -8,9 +8,7 @@ export class DependencyManager extends ShellRunner {
 
     // map of dependency checks
     this.checks = new Map()
-      .set(core.constants.KIND, () => this.checkKind())
       .set(core.constants.HELM, () => this.checkHelm())
-      .set(core.constants.KUBECTL, () => this.checkKubectl())
   }
 
   async runCheck (cmdString) {
@@ -25,27 +23,11 @@ export class DependencyManager extends ShellRunner {
   }
 
   /**
-   * Check if 'kind' CLI program is installed or not
-   * @returns {Promise<boolean>}
-   */
-  async checkKind () {
-    return this.runCheck(`${core.constants.KIND} --version`)
-  }
-
-  /**
    * Check if 'helm' CLI program is installed or not
    * @returns {Promise<boolean>}
    */
   async checkHelm () {
     return this.runCheck(`${core.constants.HELM} version`)
-  }
-
-  /**
-   * Check if 'kubectl' CLI program is installed or not
-   * @returns {Promise<boolean>}
-   */
-  async checkKubectl () {
-    return this.runCheck(`${core.constants.KUBECTL} version --client`)
   }
 
   /**

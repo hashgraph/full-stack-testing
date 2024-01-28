@@ -11,12 +11,8 @@ export const USER_SANITIZED = USER.replace(/[\W_]+/g, '-')
 export const FST_HOME_DIR = `${process.env.HOME}/.fsnetman`
 export const FST_LOGS_DIR = `${FST_HOME_DIR}/logs`
 export const FST_CACHE_DIR = `${FST_HOME_DIR}/cache`
-export const CLUSTER_NAME = 'fst'
-export const RELEASE_NAME = 'fst'
-export const NAMESPACE_NAME = `fst-${USER_SANITIZED}`
+export const DEFAULT_NAMESPACE = 'default'
 export const HELM = 'helm'
-export const KIND = 'kind'
-export const KUBECTL = 'kubectl'
 export const CWD = process.cwd()
 export const FST_CONFIG_FILE = `${FST_HOME_DIR}/fsnetman.config`
 export const RESOURCES_DIR = normalize(CUR_FILE_DIR + '/../../resources')
@@ -65,6 +61,9 @@ export const DEFAULT_CHART_REPO = new Map()
 // ------------------- Hedera Account related ---------------------------------------------------------------------------------
 export const OPERATOR_ID = process.env.FST_OPERATOR_ID || '0.0.2'
 export const OPERATOR_KEY = process.env.FST_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
+
+export const POD_STATUS_RUNNING = 'Running'
+export const POD_STATUS_READY = 'Ready'
 
 // Listr related
 export const LISTR_DEFAULT_RENDERER_TIMER_OPTION = {

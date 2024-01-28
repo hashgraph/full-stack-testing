@@ -1,8 +1,7 @@
 import * as logging from './logging.mjs'
 import * as constants from './constants.mjs'
-import { Kind } from './kind.mjs'
 import { Helm } from './helm.mjs'
-import { Kubectl } from './kubectl.mjs'
+import { K8 } from './k8.mjs'
 import { PackageDownloader } from './package_downloader.mjs'
 import { PlatformInstaller } from './platform_installer.mjs'
 import { Zippy } from './zippy.mjs'
@@ -16,9 +15,8 @@ import { KeyManager } from './key_manager.mjs'
 export {
   logging,
   constants,
-  Kind,
   Helm,
-  Kubectl,
+  K8,
   PackageDownloader,
   PlatformInstaller,
   Zippy,

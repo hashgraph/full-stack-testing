@@ -41,20 +41,11 @@ export const Logger = class {
   /**
    * Create a new logger
    * @param level logging level as supported by winston library:
-   * {
-   *   emerg: 0,
-   *   alert: 1,
-   *   crit: 2,
-   *   error: 3,
-   *   warning: 4,
-   *   notice: 5,
-   *   info: 6,
-   *   debug: 7
-   * }
    * @constructor
    */
-  constructor (level) {
+  constructor (level = 'debug', devMode = false) {
     this.nextTraceId()
+    this.devMode = devMode
 
     this.winstonLogger = winston.createLogger({
       level,
@@ -76,6 +67,15 @@ export const Logger = class {
     })
   }
 
+  setDevMode (devMode) {
+    this.debug(`setting dev mode: ${devMode}`)
+    this.devMode = devMode
+  }
+
+  setLevel (level) {
+    this.winstonLogger.setLevel(level)
+  }
+
   nextTraceId () {
     this.traceId = uuidv4()
   }
@@ -94,24 +94,27 @@ export const Logger = class {
   }
 
   showUserError (err) {
-    this.error(err.message, err)
-
-    console.log(chalk.red('ERROR: '))
-    console.log(err.stack)
-
+    const stack = [{ message: err.message, stacktrace: err.stack }]
     if (err.cause) {
       let depth = 0
       let cause = err.cause
       while (cause !== undefined && depth < 10) {
         if (cause.stack) {
-          console.log(chalk.red('Caused by:'))
-          console.log(cause.stack)
+          stack.push({ message: cause.message, stacktrace: cause.stack })
         }
 
         cause = cause.cause
         depth += 1
       }
     }
+
+    if (this.devMode) {
+      console.log(stack)
+    } else {
+      console.log(chalk.red('ERROR'), chalk.yellow(err.message))
+    }
+
+    this.error(err.message, { error: err.message, stacktrace: stack })
   }
 
   error (msg, ...args) {
@@ -132,9 +135,9 @@ export const Logger = class {
 
   showList (title, items = []) {
     this.showUser(chalk.green(`\n *** ${title} ***`))
-    this.showUser(chalk.green('---------------------------------------'))
+    this.showUser(chalk.green('-------------------------------------------------------------------------------'))
     if (items.length > 0) {
-      items.forEach(name => this.showUser(chalk.yellow(` - ${name}`)))
+      items.forEach(name => this.showUser(chalk.cyan(` - ${name}`)))
     } else {
       this.showUser(chalk.blue('[ None ]'))
     }
@@ -145,11 +148,11 @@ export const Logger = class {
 
   showJSON (title, obj) {
     this.showUser(chalk.green(`\n *** ${title} ***`))
-    this.showUser(chalk.green('---------------------------------------'))
+    this.showUser(chalk.green('-------------------------------------------------------------------------------'))
     console.log(JSON.stringify(obj, null, ' '))
   }
 }
 
-export function NewLogger (level = 'debug') {
-  return new Logger(level)
+export function NewLogger (level = 'debug', devMode = false) {
+  return new Logger(level, devMode)
 }

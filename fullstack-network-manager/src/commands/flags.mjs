@@ -13,12 +13,27 @@ export function setCommandFlags (y, ...commandFlags) {
   })
 }
 
+export function withDefaultValue (f, value) {
+  const clone = JSON.parse(JSON.stringify(f))
+  clone.definition.default = value
+  return clone
+}
+
+export const devMode = {
+  name: 'dev',
+  definition: {
+    describe: 'Enable developer mode',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 // list of common flags across commands. command specific flags are defined in the command's module.
 export const clusterName = {
   name: 'cluster-name',
   definition: {
     describe: 'Cluster name',
-    default: core.constants.CLUSTER_NAME,
+    default: '',
     alias: 'c',
     type: 'string'
   }
@@ -28,8 +43,17 @@ export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    default: core.constants.NAMESPACE_NAME,
+    default: '',
     alias: 'n',
+    type: 'string'
+  }
+}
+
+export const kubeContext = {
+  name: 'kube-context',
+  definition: {
+    describe: 'Kube context',
+    default: '',
     type: 'string'
   }
 }
@@ -133,6 +157,15 @@ export const releaseTag = {
   }
 }
 
+export const relayReleaseTag = {
+  name: 'relay-release',
+  definition: {
+    describe: 'Relay release tag to be used (e.g. v0.39.1)',
+    default: '',
+    type: 'string'
+  }
+}
+
 export const cacheDir = {
   name: 'cache-dir',
   definition: {
@@ -147,7 +180,7 @@ export const nodeIDs = {
   name: 'node-ids',
   definition: {
     describe: 'Comma separated node IDs (empty means all nodes)',
-    default: '',
+    default: 'node0,node1,node2',
     alias: 'i',
     type: 'string'
   }
@@ -248,6 +281,15 @@ export const tlsClusterIssuerName = {
   }
 }
 
+export const selfSignedClusterIssuer = {
+  name: 'self-signed',
+  definition: {
+    describe: 'Enable the self signed cluster issuer',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const tlsClusterIssuerNamespace = {
   name: 'tls-cluster-issuer-namespace',
   definition: {
@@ -266,9 +308,29 @@ export const acmeClusterIssuer = {
   }
 }
 
+export const enableHederaExplorerTls = {
+  name: 'enable-hedera-explorer-tls',
+  definition: {
+    describe: 'Enable the Hedera Explorer TLS, defaults to false',
+    default: false,
+    type: 'boolean'
+  }
+}
+
+export const deletePvcs = {
+  name: 'delete-pvcs',
+  definition: {
+    describe: 'Delete the persistent volume claims, defaults to false',
+    default: false,
+    type: 'boolean'
+  }
+}
+
 export const allFlags = [
+  devMode,
   clusterName,
   namespace,
+  kubeContext,
   deployMirrorNode,
   deployHederaExplorer,
   deployJsonRpcRelay,
@@ -280,9 +342,9 @@ export const allFlags = [
   deployCertManagerCrds,
   acmeClusterIssuer,
   releaseTag,
+  relayReleaseTag,
   cacheDir,
   nodeIDs,
-  force,
   chartDirectory,
   replicaCount,
   chainId,
@@ -292,5 +354,8 @@ export const allFlags = [
   generateTlsKeys,
   enableTls,
   tlsClusterIssuerName,
-  tlsClusterIssuerNamespace
+  tlsClusterIssuerNamespace,
+  enableHederaExplorerTls,
+  selfSignedClusterIssuer,
+  deletePvcs
 ]

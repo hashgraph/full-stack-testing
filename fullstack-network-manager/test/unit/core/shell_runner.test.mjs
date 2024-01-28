@@ -17,7 +17,8 @@ describe('ShellRunner', () => {
     expect(loggerSpy).toHaveBeenNthCalledWith(2, 'Finished executing: \'ls -l\'', {
       commandExitCode: expect.any(Number),
       commandExitSignal: null,
-      commandOutput: expect.any(Array)
+      commandOutput: expect.any(Array),
+      errOutput: expect.any(Array)
     })
     expect(readableSpy).toHaveBeenCalledWith('data', expect.anything())
     expect(childProcessSpy).toHaveBeenCalledWith('exit', expect.anything())

@@ -8,14 +8,8 @@ dependencies:
 - name: grafana-agent
   repository: https://grafana.github.io/helm-charts
   version: 0.27.1
-- name: gateway-helm
-  repository: oci://docker.io/envoyproxy
-  version: v0.5.0
 - name: cert-manager
   repository: https://charts.jetstack.io
-  version: v1.13.2
-- name: acme-cluster-issuer
-  repository: ""
-  version: 0.3.0
-digest: sha256:630e4c5a362a5d9a9c8ea6b10653d9b35eb91e93a14e19578e8ef75eeb4a49c6
-generated: "2023-11-10T14:03:37.262415Z"
+  version: v1.13.3
+digest: sha256:cd0eb03b231d5936416078dab1c715e1b6c23412a502d49e261db155096f40f7
+generated: "2024-01-12T17:15:10.149274Z"

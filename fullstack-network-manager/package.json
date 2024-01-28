@@ -1,6 +1,6 @@
 {
   "name": "@hashgraph/fullstack-network-manager",
-  "version": "0.15.0",
+  "version": "0.18.0",
   "description": "Fullstack-Network-Manager is a CLI tool to manage and deploy a Hedera Network using Helm chart for local testing.",
   "main": "src/index.mjs",
   "type": "module",
@@ -11,8 +11,8 @@
     "fsnetman": "fsnetman.mjs"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --testPathIgnorePatterns=\".*/e2e/.*\"",
-    "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\".*/e2e/.*\"",
+    "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
     "fsnetman": "NODE_OPTIONS=--experimental-vm-modules node fsnetman.mjs",
     "check": "remark . --quiet --frail && eslint .",
     "format": "remark . --quiet --frail --output && eslint --fix ."
@@ -24,7 +24,8 @@
   "author": "Lenin Mehedy",
   "license": "Apache2.0",
   "dependencies": {
-    "@hashgraph/sdk": "^2.38.0",
+    "@hashgraph/sdk": "^2.40.0",
+    "@kubernetes/client-node": "^0.20.0",
     "@listr2/prompt-adapter-enquirer": "^1.0.2",
     "@peculiar/x509": "^1.9.5",
     "adm-zip": "^0.5.10",
@@ -36,8 +37,10 @@
     "got": "^13.0.0",
     "inquirer": "^9.2.11",
     "listr2": "^7.0.2",
+    "tar": "^6.1.11",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
+    "yaml": "^2.3.4",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

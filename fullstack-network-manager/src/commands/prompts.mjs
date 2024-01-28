@@ -3,6 +3,7 @@ import fs from 'fs'
 import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
 import { constants } from '../core/index.mjs'
 import * as flags from './flags.mjs'
+import * as helpers from '../core/helpers.mjs'
 
 export async function promptNamespaceArg (task, input) {
   try {
@@ -14,29 +15,37 @@ export async function promptNamespaceArg (task, input) {
       })
     }
 
-    return input.replace('namespace/', '')
+    if (!input) {
+      throw new FullstackTestingError('namespace cannot be empty')
+    }
+
+    return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.namespace.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.namespace.name}: ${e.message}`, e)
   }
 }
 
 export async function promptSelectNamespaceArg (task, input, choices = []) {
   try {
-    const initial = choices.indexOf(`namespace/${input}`)
+    const initial = choices.indexOf(input)
     if (initial < 0) {
       const input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'select',
         initial,
-        message: 'Which namespace do you wish to use?',
-        choices
+        message: 'Select namespace',
+        choices: helpers.cloneArray(choices)
       })
 
-      return input.replace('namespace/', '')
+      if (!input) {
+        throw new FullstackTestingError('namespace cannot be empty')
+      }
+
+      return input
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.namespace.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.namespace.name}: ${e.message}`, e)
   }
 }
 
@@ -77,6 +86,30 @@ export async function promptReleaseTag (task, input) {
       })
 
       if (!input) throw new IllegalArgumentError('release tag cannot be empty')
+    }
+
+    if (!input) {
+      throw new FullstackTestingError('release-tag cannot be empty')
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.releaseTag.name}`, e)
+  }
+}
+
+export async function promptRelayReleaseTag (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.relayReleaseTag.definition.default,
+        message: 'Enter relay release version:'
+      })
+    }
+
+    if (!input) {
+      throw new FullstackTestingError('relay-release-tag cannot be empty')
     }
 
     return input
@@ -197,9 +230,9 @@ export async function promptSelectClusterNameArg (task, input, choices = []) {
         type: 'select',
         initial,
         message: 'Select cluster',
-        choices
+        choices: helpers.cloneArray(choices)
       })
-      return input.replace('namespace/', '')
+      return input
     }
 
     return input
@@ -352,6 +385,22 @@ export async function promptEnableTls (task, input) {
   }
 }
 
+export async function promptSelfSignedClusterIssuer (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.selfSignedClusterIssuer.definition.default,
+        message: 'Would you like to enable the self signed cluster issuer?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.selfSignedClusterIssuer.name}`, e)
+  }
+}
+
 export async function promptTlsClusterIssuerName (task, input) {
   try {
     if (!input) {
@@ -381,6 +430,22 @@ export async function promptTlsClusterIssuerNamespace (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerNamespace.name}`, e)
+  }
+}
+
+export async function promptEnableHederaExplorerTls (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.enableHederaExplorerTls.definition.default,
+        message: 'Would you like to enable the Hedera Explorer TLS?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.enableHederaExplorerTls.name}`, e)
   }
 }
 
@@ -456,14 +521,14 @@ export async function promptGenerateGossipKeys (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.generateGossipKeys.definition.default,
-        message: 'Would you like to generate gossip keys?'
+        default: flags.generateTlsKeys.definition.default,
+        message: 'Would you like to generate Gossip keys?'
       })
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.deletePvcs.name}`, e)
   }
 }
 
@@ -474,6 +539,22 @@ export async function promptGenerateTLSKeys (task, input) {
         type: 'toggle',
         default: flags.generateTlsKeys.definition.default,
         message: 'Would you like to generate TLS keys?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.deletePvcs.name}`, e)
+  }
+}
+
+export async function promptDeletePvcs (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.deletePvcs.definition.default,
+        message: 'Would you like to delete persistent volume claims upon uninstall?'
       })
     }
 

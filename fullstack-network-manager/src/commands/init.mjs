@@ -53,21 +53,19 @@ export class InitCommand extends BaseCommand {
       {
         title: 'Setup config manager',
         task: async (ctx, _) => {
-          ctx.config = await this.configManager.setupConfig(argv, true)
+          ctx.config = this.configManager.load(argv, true)
         }
       },
       {
         title: 'Check dependencies',
         task: async (_, task) => {
           const deps = [
-            core.constants.HELM,
-            core.constants.KIND,
-            core.constants.KUBECTL
+            core.constants.HELM
           ]
 
           const subTasks = self.depManager.taskCheckDependencies(deps)
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
@@ -111,8 +109,11 @@ export class InitCommand extends BaseCommand {
   static getCommandDefinition (initCmd) {
     return {
       command: 'init',
-      desc: 'Perform dependency checks and initialize local environment',
-      builder: y => flags.setCommandFlags(y, flags.chartDirectory),
+      desc: 'Initialize local environment',
+      builder: y => {
+        flags.setCommandFlags(y, flags.chartDirectory)
+        flags.setCommandFlags(y, flags.namespace)
+      },
       handler: (argv) => {
         initCmd.init(argv).then(r => {
           if (!r) process.exit(1)

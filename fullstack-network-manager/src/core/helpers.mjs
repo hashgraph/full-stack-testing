@@ -3,3 +3,7 @@ export function sleep (ms) {
     setTimeout(resolve, ms)
   })
 }
+
+export function cloneArray (arr) {
+  return JSON.parse(JSON.stringify(arr))
+}

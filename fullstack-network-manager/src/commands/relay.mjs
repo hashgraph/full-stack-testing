@@ -7,7 +7,7 @@ import { constants } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class RelayCommand extends BaseCommand {
-  prepareValuesArg (valuesFile, nodeIDs, chainID, releaseTag, replicaCount, operatorID, operatorKey) {
+  prepareValuesArg (valuesFile, nodeIDs, chainID, relayRelease, replicaCount, operatorID, operatorKey) {
     let valuesArg = ''
     if (valuesFile) {
       const valuesFiles = valuesFile.split(',')
@@ -23,8 +23,8 @@ export class RelayCommand extends BaseCommand {
       valuesArg += ` --set config.CHAIN_ID=${chainID}`
     }
 
-    if (releaseTag) {
-      valuesArg += ` --set image.tag=${releaseTag.replace(/^v/, '')}`
+    if (relayRelease) {
+      valuesArg += ` --set image.tag=${relayRelease.replace(/^v/, '')}`
     }
 
     if (replicaCount) {
@@ -70,30 +70,29 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          self.logger.debug('Setup cached config', { cachedConfig, argv })
+          self.configManager.load(argv)
 
           // extract config values
-          const valuesFile = self.configManager.flagValue(cachedConfig, flags.valuesFile)
-          const nodeIds = self.configManager.flagValue(cachedConfig, flags.nodeIDs)
-          const chainId = self.configManager.flagValue(cachedConfig, flags.chainId)
-          const releaseTag = self.configManager.flagValue(cachedConfig, flags.releaseTag)
-          const replicaCount = self.configManager.flagValue(cachedConfig, flags.replicaCount)
-          const operatorId = self.configManager.flagValue(cachedConfig, flags.operatorId)
-          const operatorKey = self.configManager.flagValue(cachedConfig, flags.operatorKey)
+          const valuesFile = self.configManager.getFlag(flags.valuesFile)
+          const nodeIds = self.configManager.getFlag(flags.nodeIDs)
+          const chainId = self.configManager.getFlag(flags.chainId)
+          const relayRelease = self.configManager.getFlag(flags.relayReleaseTag)
+          const replicaCount = self.configManager.getFlag(flags.replicaCount)
+          const operatorId = self.configManager.getFlag(flags.operatorId)
+          const operatorKey = self.configManager.getFlag(flags.operatorKey)
 
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
-          const chartDir = self.configManager.flagValue(cachedConfig, flags.chartDirectory)
+          const namespace = self.configManager.getFlag(flags.namespace)
+          const chartDir = self.configManager.getFlag(flags.chartDirectory)
 
           // prompt if inputs are empty and set it in the context
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             chartDir: await prompts.promptChartDir(task, chartDir),
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             valuesFile: await prompts.promptValuesFile(task, valuesFile),
             nodeIds: await prompts.promptNodeIdsArg(task, nodeIds),
             chainId: await prompts.promptChainId(task, chainId),
-            releaseTag: await prompts.promptReleaseTag(task, releaseTag),
+            relayRelease: await prompts.promptRelayReleaseTag(task, relayRelease),
             replicaCount: await prompts.promptReplicaCount(task, replicaCount),
             operatorId: await prompts.promptOperatorId(task, operatorId),
             operatorKey: await prompts.promptOperatorId(task, operatorKey)
@@ -115,13 +114,12 @@ export class RelayCommand extends BaseCommand {
             ctx.config.valuesFile,
             ctx.config.nodeIds,
             ctx.config.chainId,
-            ctx.config.releaseTag,
+            ctx.config.relayRelease,
             ctx.config.replicaCount,
             ctx.config.operatorId,
             ctx.config.operatorKey
           )
-        },
-        skip: (ctx, _) => ctx.isChartInstalled
+        }
       },
       {
         title: 'Install JSON RPC Relay',
@@ -133,12 +131,10 @@ export class RelayCommand extends BaseCommand {
 
           await this.chartManager.install(namespace, releaseName, chartPath, '', valuesArg)
 
-          await this.kubectl.wait('pod',
-            '--for=condition=ready',
-            '-l app=hedera-json-rpc-relay',
-            `-l app.kubernetes.io/instance=${releaseName}`,
-            '--timeout=900s'
-          )
+          await this.k8.waitForPod(constants.POD_STATUS_RUNNING, [
+            'app=hedera-json-rpc-relay',
+            `app.kubernetes.io/instance=${releaseName}`
+          ], 1, 120, 1000)
 
           this.logger.showList('Deployed Relays', await self.chartManager.getInstalledCharts(namespace))
         }
@@ -164,15 +160,14 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          const cachedConfig = await self.configManager.setupConfig(argv)
-          self.logger.debug('Setup cached config', { cachedConfig, argv })
+          self.configManager.load(argv)
 
           // extract config values
-          const nodeIds = self.configManager.flagValue(cachedConfig, flags.nodeIDs)
-          const namespace = self.configManager.flagValue(cachedConfig, flags.namespace)
+          const nodeIds = self.configManager.getFlag(flags.nodeIDs)
+          const namespace = self.configManager.getFlag(flags.namespace)
 
           // prompt if inputs are empty and set it in the context
-          const namespaces = await self.kubectl.getNamespace('--no-headers', '-o name')
+          const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             nodeIds: await prompts.promptNodeIdsArg(task, nodeIds)
@@ -210,7 +205,7 @@ export class RelayCommand extends BaseCommand {
   static getCommandDefinition (relayCmd) {
     return {
       command: 'relay',
-      desc: 'Manage JSON RPC relays',
+      desc: 'Manage JSON RPC relays in fullstack testing network',
       builder: yargs => {
         return yargs
           .command({
@@ -224,16 +219,16 @@ export class RelayCommand extends BaseCommand {
                 flags.replicaCount,
                 flags.chainId,
                 flags.nodeIDs,
-                flags.releaseTag,
+                flags.relayReleaseTag,
                 flags.operatorId,
                 flags.operatorKey
               )
             },
             handler: argv => {
-              relayCmd.logger.debug("==== Running 'chart install' ===", { argv })
+              relayCmd.logger.debug("==== Running 'relay install' ===", { argv })
 
               relayCmd.install(argv).then(r => {
-                relayCmd.logger.debug('==== Finished running `chart install`====')
+                relayCmd.logger.debug('==== Finished running `relay install`====')
 
                 if (!r) process.exit(1)
               }).catch(err => {
@@ -250,17 +245,17 @@ export class RelayCommand extends BaseCommand {
               flags.nodeIDs
             ),
             handler: argv => {
-              relayCmd.logger.debug("==== Running 'chart uninstall' ===", { argv })
+              relayCmd.logger.debug("==== Running 'relay uninstall' ===", { argv })
               relayCmd.logger.debug(argv)
 
               relayCmd.uninstall(argv).then(r => {
-                relayCmd.logger.debug('==== Finished running `chart uninstall`====')
+                relayCmd.logger.debug('==== Finished running `relay uninstall`====')
 
                 if (!r) process.exit(1)
               })
             }
           })
-          .demandCommand(1, 'Select a chart command')
+          .demandCommand(1, 'Select a relay command')
       }
     }
   }
