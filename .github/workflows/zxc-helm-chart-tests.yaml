@@ -76,7 +76,7 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
-          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ]; then
+          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
           else
@@ -91,7 +91,7 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        if: ${{ steps.check-changed-files.outputs.run-tests && inputs.enable-unit-tests && !cancelled() && !failure() }}
+        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
@@ -100,8 +100,6 @@ jobs:
         id: docker-prune
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          docker info
-          docker ps -a
           docker system prune -f
           docker image prune -f
 
