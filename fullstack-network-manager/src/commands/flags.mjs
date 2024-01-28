@@ -327,7 +327,6 @@ export const allFlags = [
   relayReleaseTag,
   cacheDir,
   nodeIDs,
-  force,
   chartDirectory,
   replicaCount,
   chainId,

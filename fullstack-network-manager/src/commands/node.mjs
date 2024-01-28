@@ -379,7 +379,7 @@ export class NodeCommand extends BaseCommand {
   static getCommandDefinition (nodeCmd) {
     return {
       command: 'node',
-      desc: 'Manage a node running Hedera platform',
+      desc: 'Manage Hedera platform node in fullstack testing network',
       builder: yargs => {
         return yargs
           .command({

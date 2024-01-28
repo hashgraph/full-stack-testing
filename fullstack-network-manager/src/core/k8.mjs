@@ -644,7 +644,7 @@ export class K8 {
    */
   async listPvcsByNamespace (namespace) {
     const pvcs = []
-    const resp = await this.kubeClient.listNamespacedPersistentVolumeClaim (
+    const resp = await this.kubeClient.listNamespacedPersistentVolumeClaim(
       namespace
     )
 
@@ -662,7 +662,7 @@ export class K8 {
    * @returns {Promise<boolean>} true if the persistent volume claim was deleted
    */
   async deletePvc (name, namespace) {
-    const resp = await this.kubeClient.deleteNamespacedPersistentVolumeClaim (
+    const resp = await this.kubeClient.deleteNamespacedPersistentVolumeClaim(
       name,
       namespace
     )

@@ -1,3 +1,4 @@
+import { ListrEnquirerPromptAdapter } from '@listr2/prompt-adapter-enquirer'
 import chalk from 'chalk'
 import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
@@ -7,7 +8,7 @@ import * as paths from 'path'
 import { constants, Templates } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
-export class ChartCommand extends BaseCommand {
+export class NetworkCommand extends BaseCommand {
   getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
     const gatewayPrefix = 'gatewayApi.gateway'
     let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
@@ -102,7 +103,12 @@ export class ChartCommand extends BaseCommand {
     return config
   }
 
-  async install (argv) {
+  /**
+   * Run helm install and deploy network components
+   * @param argv
+   * @return {Promise<boolean>}
+   */
+  async deploy (argv) {
     const self = this
 
     const tasks = new Listr([
@@ -167,13 +173,30 @@ export class ChartCommand extends BaseCommand {
     return true
   }
 
-  async uninstall (argv) {
+  /**
+   * Run helm uninstall and destroy network components
+   * @param argv
+   * @return {Promise<boolean>}
+   */
+  async destroy (argv) {
     const self = this
 
     const tasks = new Listr([
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          if (!argv.force) {
+            const confirm = await task.prompt(ListrEnquirerPromptAdapter).run({
+              type: 'toggle',
+              default: false,
+              message: 'Are you sure you would like to destroy the network components?'
+            })
+
+            if (!confirm) {
+              process.exit(0)
+            }
+          }
+
           self.configManager.load(argv)
           const namespace = self.configManager.getFlag(flags.namespace)
           const deletePvcs = self.configManager.getFlag(flags.deletePvcs)
@@ -192,7 +215,7 @@ export class ChartCommand extends BaseCommand {
       {
         title: 'Get PVCs for namespace',
         task: async (ctx, _) => {
-          if(ctx.config.deletePvcs === true) {
+          if (ctx.config.deletePvcs === true) {
             ctx.config.pvcs = await self.k8.listPvcsByNamespace(ctx.config.namespace)
           }
         }
@@ -221,7 +244,12 @@ export class ChartCommand extends BaseCommand {
     return true
   }
 
-  async upgrade (argv) {
+  /**
+   * Run helm upgrade to refresh network components with new settings
+   * @param argv
+   * @return {Promise<boolean>}
+   */
+  async refresh (argv) {
     const self = this
 
     const tasks = new Listr([
@@ -263,15 +291,15 @@ export class ChartCommand extends BaseCommand {
     return true
   }
 
-  static getCommandDefinition (chartCmd) {
+  static getCommandDefinition (networkCmd) {
     return {
-      command: 'chart',
-      desc: 'Manage chart deployment',
+      command: 'network',
+      desc: 'Manage fullstack testing network deployment',
       builder: yargs => {
         return yargs
           .command({
-            command: 'install',
-            desc: 'Install network deployment chart',
+            command: 'deploy',
+            desc: 'Deploy fullstack testing network',
             builder: y => {
               flags.setCommandFlags(y,
                 flags.namespace,
@@ -290,43 +318,44 @@ export class ChartCommand extends BaseCommand {
               )
             },
             handler: argv => {
-              chartCmd.logger.debug("==== Running 'chart install' ===")
-              chartCmd.logger.debug(argv)
+              networkCmd.logger.debug("==== Running 'network deploy' ===")
+              networkCmd.logger.debug(argv)
 
-              chartCmd.install(argv).then(r => {
-                chartCmd.logger.debug('==== Finished running `chart install`====')
+              networkCmd.deploy(argv).then(r => {
+                networkCmd.logger.debug('==== Finished running `network deploy`====')
 
                 if (!r) process.exit(1)
               }).catch(err => {
-                chartCmd.logger.showUserError(err)
+                networkCmd.logger.showUserError(err)
                 process.exit(1)
               })
             }
           })
           .command({
-            command: 'uninstall',
-            desc: 'Uninstall network deployment chart',
+            command: 'destroy',
+            desc: 'Destroy fullstack testing network',
             builder: y => flags.setCommandFlags(y,
-                flags.namespace,
-                flags.deletePvcs
+              flags.namespace,
+              flags.force,
+              flags.deletePvcs
             ),
             handler: argv => {
-              chartCmd.logger.debug("==== Running 'chart uninstall' ===")
-              chartCmd.logger.debug(argv)
+              networkCmd.logger.debug("==== Running 'network destroy' ===")
+              networkCmd.logger.debug(argv)
 
-              chartCmd.uninstall(argv).then(r => {
-                chartCmd.logger.debug('==== Finished running `chart uninstall`====')
+              networkCmd.destroy(argv).then(r => {
+                networkCmd.logger.debug('==== Finished running `network destroy`====')
 
                 if (!r) process.exit(1)
               }).catch(err => {
-                chartCmd.logger.showUserError(err)
+                networkCmd.logger.showUserError(err)
                 process.exit(1)
               })
             }
           })
           .command({
-            command: 'upgrade',
-            desc: 'Refresh existing network deployment with new values',
+            command: 'refresh',
+            desc: 'Refresh fullstack testing network deployment',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.deployMirrorNode,
@@ -341,15 +370,15 @@ export class ChartCommand extends BaseCommand {
               flags.selfSignedClusterIssuer
             ),
             handler: argv => {
-              chartCmd.logger.debug("==== Running 'chart upgrade' ===")
-              chartCmd.logger.debug(argv)
+              networkCmd.logger.debug("==== Running 'chart upgrade' ===")
+              networkCmd.logger.debug(argv)
 
-              chartCmd.upgrade(argv).then(r => {
-                chartCmd.logger.debug('==== Finished running `chart upgrade`====')
+              networkCmd.refresh(argv).then(r => {
+                networkCmd.logger.debug('==== Finished running `chart upgrade`====')
 
                 if (!r) process.exit(1)
               }).catch(err => {
-                chartCmd.logger.showUserError(err)
+                networkCmd.logger.showUserError(err)
                 process.exit(1)
               })
             }

@@ -191,7 +191,7 @@ export class ClusterCommand extends BaseCommand {
   static getCommandDefinition (clusterCmd) {
     return {
       command: 'cluster',
-      desc: 'Manage cluster',
+      desc: 'Manage fullstack testing cluster',
       builder: yargs => {
         return yargs
           .command({
@@ -277,7 +277,7 @@ export class ClusterCommand extends BaseCommand {
   }
 
   /**
-   * Prepare values arg for chart install command
+   * Prepare values arg for cluster setup command
    *
    * @param chartDir local charts directory (default is empty)
    * @param prometheusStackEnabled a bool to denote whether to install prometheus stack

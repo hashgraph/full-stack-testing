@@ -205,7 +205,7 @@ export class RelayCommand extends BaseCommand {
   static getCommandDefinition (relayCmd) {
     return {
       command: 'relay',
-      desc: 'Manage JSON RPC relays',
+      desc: 'Manage JSON RPC relays in fullstack testing network',
       builder: yargs => {
         return yargs
           .command({
@@ -225,10 +225,10 @@ export class RelayCommand extends BaseCommand {
               )
             },
             handler: argv => {
-              relayCmd.logger.debug("==== Running 'chart install' ===", { argv })
+              relayCmd.logger.debug("==== Running 'relay install' ===", { argv })
 
               relayCmd.install(argv).then(r => {
-                relayCmd.logger.debug('==== Finished running `chart install`====')
+                relayCmd.logger.debug('==== Finished running `relay install`====')
 
                 if (!r) process.exit(1)
               }).catch(err => {
@@ -245,17 +245,17 @@ export class RelayCommand extends BaseCommand {
               flags.nodeIDs
             ),
             handler: argv => {
-              relayCmd.logger.debug("==== Running 'chart uninstall' ===", { argv })
+              relayCmd.logger.debug("==== Running 'relay uninstall' ===", { argv })
               relayCmd.logger.debug(argv)
 
               relayCmd.uninstall(argv).then(r => {
-                relayCmd.logger.debug('==== Finished running `chart uninstall`====')
+                relayCmd.logger.debug('==== Finished running `relay uninstall`====')
 
                 if (!r) process.exit(1)
               })
             }
           })
-          .demandCommand(1, 'Select a chart command')
+          .demandCommand(1, 'Select a relay command')
       }
     }
   }

@@ -11,8 +11,8 @@
     "fsnetman": "fsnetman.mjs"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --testPathIgnorePatterns=\".*/e2e/.*\"",
-    "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\".*/e2e/.*\"",
+    "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
     "fsnetman": "NODE_OPTIONS=--experimental-vm-modules node fsnetman.mjs",
     "check": "remark . --quiet --frail && eslint .",
     "format": "remark . --quiet --frail --output && eslint --fix ."

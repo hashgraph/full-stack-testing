@@ -147,9 +147,7 @@ describe('NodeCommand', () => {
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
-    },
-    60000
-    )
+    }, 60000)
 
     it('nodes should be in ACTIVE status', async () => {
       const nodeIds = argv.nodeIds.split(',')
