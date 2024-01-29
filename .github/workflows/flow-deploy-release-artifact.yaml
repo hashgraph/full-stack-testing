@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2023 Hedera Hashgraph, LLC
+# Copyright (C) 2023-2024 Hedera Hashgraph, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -152,6 +152,14 @@ jobs:
           platforms: linux/amd64, linux/arm64
           push: ${{ github.event.inputs.dry-run-enabled != 'true' }}
           tags: ghcr.io/${{ github.repository }}/ubi8-init-java17:${{ needs.prepare-release.outputs.version }}
+
+      - name: Build Docker Image (ubi8-init-java21)
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
+        with:
+          context: docker/ubi8-init-java21
+          platforms: linux/amd64, linux/arm64
+          push: ${{ github.event.inputs.dry-run-enabled != 'true' }}
+          tags: ghcr.io/${{ github.repository }}/ubi8-init-java21:${{ needs.prepare-release.outputs.version }}
 
       - name: Build Docker Image (kubectl-bats)
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
