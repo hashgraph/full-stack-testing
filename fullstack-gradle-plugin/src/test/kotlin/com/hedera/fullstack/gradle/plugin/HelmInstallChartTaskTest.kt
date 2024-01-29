@@ -17,28 +17,27 @@
 package com.hedera.fullstack.gradle.plugin
 
 import com.hedera.fullstack.base.api.util.ExceptionUtils.suppressExceptions
-import org.assertj.core.api.Assertions.*
-import org.junit.jupiter.api.Assertions.assertThrows
-
 import com.hedera.fullstack.helm.client.HelmClient
 import com.hedera.fullstack.helm.client.HelmExecutionException
 import com.hedera.fullstack.helm.client.model.Chart
 import com.hedera.fullstack.helm.client.model.Repository
-import java.io.File
+import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.create
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.io.File
 
 class HelmInstallChartTaskTest {
     companion object {
-        private val REPOSITORY = Repository("stable", "https://charts.helm.sh/stable")
-        private val CHART = Chart("mysql", "stable")
+        private val REPOSITORY = Repository("prometheus-community", "https://prometheus-community.github.io/helm-charts")
+        private val CHART = Chart("prometheus", "prometheus-community")
 
-        private const val RELEASE_NAME = "mysql-release"
+        private const val RELEASE_NAME = "prometheus-release"
 
         private lateinit var project: Project
 

@@ -9,10 +9,6 @@ cloud:
   buckets:
     streamBucket: "fst-streams"
     backupBucket: "fst-backups"
-  s3:
-    enabled: "true"
-  gcs:
-    enabled: "true"
   minio:
     enabled: true
   acmeClusterIssuer:

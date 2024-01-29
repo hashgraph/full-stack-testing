@@ -10,19 +10,47 @@ import { fileURLToPath } from 'url'
 const CUR_FILE_DIR = paths.dirname(fileURLToPath(import.meta.url))
 
 export class ConfigManager {
-  constructor (logger) {
+  constructor (logger, fstConfigFile = constants.FST_CONFIG_FILE, persistMode = true) {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
+
+    if (fstConfigFile === constants.FST_CONFIG_FILE) {
+      this.fstConfigFile = fstConfigFile
+    } else {
+      if (this.verifyConfigFile(fstConfigFile)) {
+        this.fstConfigFile = fstConfigFile
+      } else {
+        throw new FullstackTestingError(`Invalid config file: ${fstConfigFile}`)
+      }
+    }
+
+    this.persistMode = persistMode === true
 
     this.logger = logger
     this.config = this.load()
   }
 
+  verifyConfigFile (fstConfigFile) {
+    try {
+      if (fs.existsSync(fstConfigFile)) {
+        const configJSON = fs.readFileSync(fstConfigFile)
+        JSON.parse(configJSON.toString())
+      } else {
+        this.persist()
+      }
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
   persist () {
     this.config.updatedAt = new Date().toISOString()
-    let configJSON = JSON.stringify(this.config)
-    fs.writeFileSync(`${constants.FST_CONFIG_FILE}`, configJSON)
-    configJSON = fs.readFileSync(constants.FST_CONFIG_FILE)
-    this.config = JSON.parse(configJSON.toString())
+    if (this.persistMode) {
+      let configJSON = JSON.stringify(this.config)
+      fs.writeFileSync(`${this.fstConfigFile}`, configJSON)
+      configJSON = fs.readFileSync(this.fstConfigFile)
+      this.config = JSON.parse(configJSON.toString())
+    }
   }
 
   /**
@@ -44,8 +72,8 @@ export class ConfigManager {
       const packageJSON = self.loadPackageJSON()
 
       // if config exist, then load it first
-      if (!reset && fs.existsSync(constants.FST_CONFIG_FILE)) {
-        const configJSON = fs.readFileSync(constants.FST_CONFIG_FILE)
+      if (!reset && fs.existsSync(this.fstConfigFile)) {
+        const configJSON = fs.readFileSync(this.fstConfigFile)
         config = JSON.parse(configJSON.toString())
       }
 
@@ -57,21 +85,27 @@ export class ConfigManager {
       config.version = packageJSON.version
 
       // extract flags from argv
-      if (argv) {
+      if (argv && Object.keys(argv).length > 0) {
         for (const flag of flagList) {
-          // we don't want to cache force flag
-          if (flag.name === 'force') {
-            continue
+          if (flag.name === flags.force.name) {
+            continue // we don't want to cache force flag
           }
 
-          if (argv && argv[flag.name]) {
+          if (argv[flag.name] === '' &&
+                [flags.namespace.name, flags.clusterName.name, flags.chartDirectory.name].includes(flag.name)) {
+            continue // don't cache empty namespace, clusterName, or chartDirectory
+          }
+
+          if (argv[flag.name] !== undefined) {
             let val = argv[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
               val = paths.resolve(val)
             }
 
             if (val === undefined) {
-              config.flags[flag.name] = ''
+              if (config.flags[flag.name] !== undefined) {
+                config.flags[flag.name] = ''
+              }
             } else {
               config.flags[flag.name] = val
             }
