@@ -109,7 +109,7 @@ export class InitCommand extends BaseCommand {
   static getCommandDefinition (initCmd) {
     return {
       command: 'init',
-      desc: 'Perform dependency checks and initialize local environment',
+      desc: 'Initialize local environment',
       builder: y => {
         flags.setCommandFlags(y, flags.chartDirectory)
         flags.setCommandFlags(y, flags.namespace)

@@ -58,7 +58,12 @@ export class ConfigManager {
 
       // extract flags from argv
       if (argv) {
-        flagList.forEach(flag => {
+        for (const flag of flagList) {
+          // we don't want to cache force flag
+          if (flag.name === 'force') {
+            continue
+          }
+
           if (argv && argv[flag.name]) {
             let val = argv[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
@@ -72,7 +77,7 @@ export class ConfigManager {
             }
             writeConfig = true
           }
-        })
+        }
 
         // store last command that was run
         if (argv._) {

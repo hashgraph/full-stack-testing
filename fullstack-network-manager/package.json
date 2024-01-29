@@ -1,6 +1,6 @@
 {
   "name": "@hashgraph/fullstack-network-manager",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Fullstack-Network-Manager is a CLI tool to manage and deploy a Hedera Network using Helm chart for local testing.",
   "main": "src/index.mjs",
   "type": "module",
@@ -11,8 +11,8 @@
     "fsnetman": "fsnetman.mjs"
   },
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --testPathIgnorePatterns=\".*/e2e/.*\"",
-    "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\".*/e2e/.*\"",
+    "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
     "fsnetman": "NODE_OPTIONS=--experimental-vm-modules node fsnetman.mjs",
     "check": "remark . --quiet --frail && eslint .",
     "format": "remark . --quiet --frail --output && eslint --fix ."
