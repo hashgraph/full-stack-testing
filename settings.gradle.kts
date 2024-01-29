@@ -29,6 +29,8 @@ include(":docker-ubi8-init-dind", "docker/ubi8-init-dind")
 
 include(":docker-ubi8-init-java17", "docker/ubi8-init-java17")
 
+include(":docker-ubi8-init-java21", "docker/ubi8-init-java21")
+
 include(":fullstack-bom", "fullstack-core/fullstack-bom")
 
 include(":fullstack-alerting-api", "fullstack-core/fullstack-alerting-api")
