@@ -130,13 +130,18 @@ export class NodeCommand extends BaseCommand {
 
           const config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
+            nodeIds: await prompts.promptNodeIdsArg(task, argv[flags.nodeIDs.name]),
             releaseTag: await prompts.promptReleaseTag(task, self.configManager.getFlag(flags.releaseTag)),
-            cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
-            force: await prompts.promptForce(task, argv.force),
-            chainId: await prompts.promptChainId(task, argv.chainId),
-            generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv.generateGossipKeys),
-            generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv.generateTlsKeys)
+            cacheDir: await prompts.promptCacheDir(task, argv[flags.cacheDir.name]),
+            force: await prompts.promptForce(task, argv[flags.force.name]),
+            chainId: await prompts.promptChainId(task, argv[flags.chainId.name]),
+            generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv[flags.generateGossipKeys.name]),
+            generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv[flags.generateTlsKeys.name]),
+            keyFormat: await prompts.promptKeyFormat(task, argv[flags.keyFormat.name])
+          }
+
+          if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
+            throw new FullstackTestingError(`Unable to generate PFX gossip keys. Please ensure you have pre-generated keys in ${config.cacheDir}/keys`)
           }
 
           if (!await this.k8.hasNamespace(config.namespace)) {
@@ -187,7 +192,7 @@ export class NodeCommand extends BaseCommand {
           // generate gossip keys if required
           if (config.generateGossipKeys) {
             for (const nodeId of ctx.config.nodeIds) {
-              const signingKey = await self.keyManager.generateNodeSigningKey(nodeId)
+              const signingKey = await self.keyManager.generateSigningKey(nodeId)
               const signingKeyFiles = await self.keyManager.storeSigningKey(nodeId, signingKey, config.keysDir)
               self.logger.debug(`generated Gossip signing keys for node ${nodeId}`, { keyFiles: signingKeyFiles })
 
@@ -234,12 +239,27 @@ export class NodeCommand extends BaseCommand {
 
                 // copy gossip keys to the staging
                 for (const nodeId of ctx.config.nodeIds) {
-                  const signingKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.SIGNING_KEY_PREFIX)
-                  await self._copyNodeKeys(signingKeyFiles, config.stagingDir)
+                  switch (config.keyFormat) {
+                    case constants.KEY_FORMAT_PEM: {
+                      const signingKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.SIGNING_KEY_PREFIX)
+                      await self._copyNodeKeys(signingKeyFiles, config.stagingKeysDir)
 
-                  // generate missing agreement keys
-                  const agreementKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.AGREEMENT_KEY_PREFIX)
-                  await self._copyNodeKeys(agreementKeyFiles, config.stagingDir)
+                      // generate missing agreement keys
+                      const agreementKeyFiles = self.keyManager.prepareNodeKeyFilePaths(nodeId, config.keysDir, constants.AGREEMENT_KEY_PREFIX)
+                      await self._copyNodeKeys(agreementKeyFiles, config.stagingKeysDir)
+                      break
+                    }
+
+                    case constants.KEY_FORMAT_PFX: {
+                      const privateKeyFile = Templates.renderGossipPfxPrivateKeyFile(nodeId)
+                      fs.cpSync(`${config.keysDir}/${privateKeyFile}`, `${config.stagingKeysDir}/${privateKeyFile}`)
+                      fs.cpSync(`${config.keysDir}/public.pfx`, `${config.stagingKeysDir}/public.pfx`)
+                      break
+                    }
+
+                    default:
+                      throw new FullstackTestingError(`Unsupported key-format ${config.keyFormat}`)
+                  }
                 }
               }
             },
@@ -249,7 +269,7 @@ export class NodeCommand extends BaseCommand {
                 const config = ctx.config
                 for (const nodeId of ctx.config.nodeIds) {
                   const tlsKeyFiles = self.keyManager.prepareTLSKeyFilePaths(nodeId, config.keysDir)
-                  await self._copyNodeKeys(tlsKeyFiles, config.stagingDir)
+                  await self._copyNodeKeys(tlsKeyFiles, config.stagingKeysDir)
                 }
               }
             },
@@ -306,7 +326,7 @@ export class NodeCommand extends BaseCommand {
             subTasks.push({
               title: `Node: ${chalk.yellow(nodeId)}`,
               task: () =>
-                self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.force)
+                self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.keyFormat, config.force)
             })
           }
 
@@ -325,7 +345,7 @@ export class NodeCommand extends BaseCommand {
     try {
       await tasks.run()
     } catch (e) {
-      throw new FullstackTestingError('Error in setting up nodes', e)
+      throw new FullstackTestingError(`Error in setting up nodes: ${e.message}`, e)
     }
 
     return true
@@ -345,7 +365,7 @@ export class NodeCommand extends BaseCommand {
 
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+            nodeIds: await prompts.promptNodeIdsArg(task, argv[flags.nodeIDs.name])
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -365,16 +385,39 @@ export class NodeCommand extends BaseCommand {
             const podName = ctx.config.podNames[nodeId]
             subTasks.push({
               title: `Start node: ${chalk.yellow(nodeId)}`,
-              task: () => self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
+              task: async () => {
+                await self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['rm', '-rf', `${constants.HEDERA_HAPI_PATH}/data/logs/*.log`])
+                await self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
+              }
             })
           }
 
-          // setup the sub-tasks
+          // set up the sub-tasks
           return task.newListr(subTasks, {
             concurrent: true,
             rendererOptions: {
               collapseSubtasks: false,
               timer: constants.LISTR_DEFAULT_RENDERER_TIMER_OPTION
+            }
+          })
+        }
+      },
+      {
+        title: 'Check nodes are ACTIVE',
+        task: (ctx, task) => {
+          const subTasks = []
+          for (const nodeId of ctx.config.nodeIds) {
+            subTasks.push({
+              title: `Check node: ${chalk.yellow(nodeId)}`,
+              task: () => self.checkNetworkNodeStarted(nodeId)
+            })
+          }
+
+          // set up the sub-tasks
+          return task.newListr(subTasks, {
+            concurrent: true,
+            rendererOptions: {
+              collapseSubtasks: false
             }
           })
         }
@@ -510,8 +553,6 @@ export class NodeCommand extends BaseCommand {
               self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.signingKeyFiles.certificateFile} ${fileList.agreementKeyFiles.certificateFile}`))
             }
             self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
-          } else {
-            throw new FullstackTestingError(`unsupported key type: ${ctx.config.keyType}`)
           }
         },
         skip: (ctx, _) => !ctx.config.generateGossipKeys
@@ -543,8 +584,6 @@ export class NodeCommand extends BaseCommand {
               self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.tlsKeyFiles.certificateFile} ${fileList.tlsKeyFiles.certificateFile}`))
             }
             self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
-          } else {
-            throw new FullstackTestingError(`expected '${constants.KEY_TYPE_TLS}' key type, found '${ctx.config.keyType}'`)
           }
         },
         skip: (ctx, _) => !ctx.config.generateTlsKeys

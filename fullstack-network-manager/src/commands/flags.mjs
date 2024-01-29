@@ -263,6 +263,14 @@ export const enableTls = {
   }
 }
 
+export const keyFormat = {
+  name: 'key-format',
+  definition: {
+    describe: 'Key file format (pem or pfx)',
+    default: 'pem'
+  }
+}
+
 export const generateTlsKeys = {
   name: 'tls-keys',
   definition: {

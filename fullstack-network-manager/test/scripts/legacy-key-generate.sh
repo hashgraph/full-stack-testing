@@ -16,7 +16,10 @@
 # DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
 #
 
-cd "$(dirname "$0")"
+keyDir="${1}"
+mkdir -p "${keyDir}"
+cd "${keyDir}"
+shift
 
 # check if the names were supplied as arguments
 if [[ -z "$*" ]]; then

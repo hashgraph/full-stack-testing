@@ -563,3 +563,27 @@ export async function promptDeletePvcs (task, input) {
     throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
   }
 }
+
+export async function promptKeyFormat (task, input, choices = [constants.KEY_FORMAT_PFX, constants.KEY_FORMAT_PEM]) {
+  try {
+    const initial = choices.indexOf(input)
+    if (initial < 0) {
+      const input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'select',
+        initial,
+        message: 'Select key format',
+        choices: helpers.cloneArray(choices)
+      })
+
+      if (!input) {
+        throw new FullstackTestingError('key-format cannot be empty')
+      }
+
+      return input
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.keyFormat.name}: ${e.message}`, e)
+  }
+}

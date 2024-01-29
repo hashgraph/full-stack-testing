@@ -14,7 +14,7 @@ describe('KeyManager', () => {
     const nodeId = 'node0'
     const keyPrefix = constants.SIGNING_KEY_PREFIX
 
-    const signingKey = await keyManager.generateNodeSigningKey(nodeId)
+    const signingKey = await keyManager.generateSigningKey(nodeId)
 
     const nodeKeyFiles = keyManager.prepareNodeKeyFilePaths(nodeId, tmpDir, constants.SIGNING_KEY_PREFIX)
     const files = await keyManager.storeNodeKey(nodeId, signingKey, tmpDir, nodeKeyFiles, keyPrefix)

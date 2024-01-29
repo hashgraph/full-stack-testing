@@ -93,8 +93,8 @@ export class KeyManager {
     if (!keysDir) throw new MissingArgumentError('keysDir is required')
     if (!keyPrefix) throw new MissingArgumentError('keyPrefix is required')
 
-    const keyFile = path.join(keysDir, Templates.renderKeyFileName(keyPrefix, nodeId))
-    const certFile = path.join(keysDir, Templates.renderCertFileName(keyPrefix, nodeId))
+    const keyFile = path.join(keysDir, Templates.renderGossipPemPrivateKeyFile(keyPrefix, nodeId))
+    const certFile = path.join(keysDir, Templates.renderGossipPemPublicKeyFile(keyPrefix, nodeId))
 
     return {
       privateKeyFile: keyFile,
@@ -246,7 +246,7 @@ export class KeyManager {
    * @param nodeId node ID
    * @return {privateKey: CryptoKey, certificate: x509.X509Certificate, certificateChain: x509.X509Certificates}
    */
-  async generateNodeSigningKey (nodeId) {
+  async generateSigningKey (nodeId) {
     try {
       const keyPrefix = constants.SIGNING_KEY_PREFIX
       const curDate = new Date()

@@ -8,6 +8,7 @@ import {
 } from '@hashgraph/sdk'
 import { afterEach, beforeAll, describe, expect, it } from '@jest/globals'
 import net from 'net'
+import path from 'path'
 import { namespace } from '../../../src/commands/flags.mjs'
 import { flags } from '../../../src/commands/index.mjs'
 import { NodeCommand } from '../../../src/commands/node.mjs'
@@ -24,10 +25,12 @@ import {
   DependencyManager,
   Templates, KeyManager
 } from '../../../src/core/index.mjs'
-import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
+import { ShellRunner } from '../../../src/core/shell_runner.mjs'
+import { getTestCacheDir, testLogger } from '../../test_util.js'
 
 class TestHelper {
   static portForwards = []
+
   static stopPortForwards () {
     TestHelper.portForwards.forEach(server => {
       server.close()
@@ -108,23 +111,34 @@ describe('NodeCommand', () => {
     downloader: packageDownloader,
     platformInstaller,
     depManager,
-    keyManager,
+    keyManager
   })
+  const cacheDir = getTestCacheDir()
 
-  const argv = {
-    releaseTag: 'v0.42.5',
-    nodeIds: 'node0,node1,node2',
-    cacheDir: TEST_CACHE_DIR,
-    force: false,
-    chainId: constants.HEDERA_CHAIN_ID
-  }
+  const argv = {}
+  // argv[flags.releaseTag.name] = 'v0.47.0-alpha.0'
+  argv[flags.releaseTag.name] = 'v0.42.0'
+  argv[flags.nodeIDs.name] = 'node0,node1,node2'
+  argv[flags.cacheDir.name] = cacheDir
+  argv[flags.force.name] = false
+  argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
+  argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
+  argv[flags.generateGossipKeys.name] = false
+  argv[flags.generateTlsKeys.name] = true
+  argv[flags.keyFormat.name] = constants.KEY_FORMAT_PFX
+
+  const nodeIds = argv[flags.nodeIDs.name].split(',')
 
   beforeAll(async () => {
     // load cached namespace
     await configManager.load()
     argv[namespace] = configManager.getFlag(flags.namespace)
-  }
-  )
+
+    if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {
+      const shellRunner = new ShellRunner(testLogger)
+      await shellRunner.run(`test/scripts/legacy-key-generate.sh ${path.join(cacheDir, 'keys')} ${nodeIds.join(' ')}`)
+    }
+  })
 
   afterEach(() => {
     TestHelper.stopPortForwards()
@@ -152,7 +166,6 @@ describe('NodeCommand', () => {
     }, 60000)
 
     it('nodes should be in ACTIVE status', async () => {
-      const nodeIds = argv.nodeIds.split(',')
       for (const nodeId of nodeIds) {
         try {
           await expect(nodeCmd.checkNetworkNodeStarted(nodeId, 5)).resolves.toBeTruthy()

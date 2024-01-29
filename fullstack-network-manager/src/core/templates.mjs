@@ -15,25 +15,31 @@ export class Templates {
   }
 
   /**
-   * Generate node key file name
-   * @param prefix short from of key name such as 's' for signing key
+   * Generate pfx node private key file name
    * @param nodeId node ID
    * @returns {string}
    */
-  static renderKeyFileName (prefix, nodeId) {
+  static renderGossipPfxPrivateKeyFile (nodeId) {
+    return `private-${nodeId}.pfx`
+  }
+
+  static renderGossipPemPrivateKeyFile (prefix, nodeId) {
     // s-node0-key.pem
     return `${prefix}-private-${nodeId}.pem`
   }
 
-  /**
-   * Generate node cert file name
-   * @param prefix short from of key name such as 's' for signing key
-   * @param nodeId node ID
-   * @returns {string}
-   */
-  static renderCertFileName (prefix, nodeId) {
+  static renderGossipPemPublicKeyFile (prefix, nodeId) {
     // s-node0-cert.pem
     return `${prefix}-public-${nodeId}.pem`
+  }
+
+  static renderTLSPemPrivateKeyFile (nodeId) {
+    return `hedera-${nodeId}.key`
+  }
+
+  static renderTLSPemPublicKeyFile (nodeId) {
+    // s-node0-cert.pem
+    return `hedera-${nodeId}.crt`
   }
 
   static renderNodeFriendlyName (prefix, nodeId, suffix = '') {

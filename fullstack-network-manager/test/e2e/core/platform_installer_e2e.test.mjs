@@ -3,24 +3,24 @@ import {
   PackageDownloader,
   PlatformInstaller,
   constants,
-  logging,
   Templates,
-  ConfigManager
+  ConfigManager, Templates as Template
 } from '../../../src/core/index.mjs'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as os from 'os'
 import { K8 } from '../../../src/core/k8.mjs'
+import { ShellRunner } from '../../../src/core/shell_runner.mjs'
+
+import { getTestCacheDir, getTmpDir, testLogger } from '../../test_util.js'
 
 describe('PackageInstallerE2E', () => {
-  const testLogger = logging.NewLogger('debug')
   const configManager = new ConfigManager(testLogger)
   const k8 = new K8(configManager, testLogger)
   const installer = new PlatformInstaller(testLogger, k8)
   const downloader = new PackageDownloader(testLogger)
-  const testCacheDir = 'test/data/tmp'
+  const testCacheDir = getTestCacheDir()
   const podName = 'network-node0-0'
-  const packageTag = 'v0.42.5'
+  const packageVersion = 'v0.47.0-alpha.0'
   let packageFile = ''
 
   beforeAll(() => {
@@ -43,9 +43,9 @@ describe('PackageInstallerE2E', () => {
 
   describe('copyPlatform', () => {
     it('should succeed fetching platform release', async () => {
-      const releasePrefix = Templates.prepareReleasePrefix(packageTag)
-      const destPath = `${testCacheDir}/${releasePrefix}/build-${packageTag}.zip`
-      await expect(downloader.fetchPlatform(packageTag, testCacheDir)).resolves.toBe(destPath)
+      const releasePrefix = Templates.prepareReleasePrefix(packageVersion)
+      const destPath = `${testCacheDir}/${releasePrefix}/build-${packageVersion}.zip`
+      await expect(downloader.fetchPlatform(packageVersion, testCacheDir)).resolves.toBe(destPath)
       expect(fs.existsSync(destPath)).toBeTruthy()
       testLogger.showUser(destPath)
 
@@ -55,7 +55,7 @@ describe('PackageInstallerE2E', () => {
     it('should succeed with valid tag and pod', async () => {
       expect.assertions(1)
       try {
-        packageFile = await downloader.fetchPlatform(packageTag, testCacheDir)
+        packageFile = await downloader.fetchPlatform(packageVersion, testCacheDir)
         await expect(installer.copyPlatform(podName, packageFile, true)).resolves.toBeTruthy()
         const outputs = await k8.execContainer(podName, constants.ROOT_CONTAINER, `ls -la ${constants.HEDERA_HAPI_PATH}`)
         testLogger.showUser(outputs)
@@ -68,13 +68,12 @@ describe('PackageInstallerE2E', () => {
 
   describe('prepareConfigTxt', () => {
     it('should succeed in generating config.txt', async () => {
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
+      const tmpDir = getTmpDir()
       const configPath = `${tmpDir}/config.txt`
       const nodeIDs = ['node0', 'node1', 'node2']
-      const releaseTag = 'v0.42.0'
       const chainId = '299'
 
-      const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, releaseTag, chainId)
+      const configLines = await installer.prepareConfigTxt(nodeIDs, configPath, packageVersion, chainId)
 
       // verify format is correct
       expect(configLines.length).toBe(6)
@@ -97,66 +96,73 @@ describe('PackageInstallerE2E', () => {
   })
 
   describe('copyGossipKeys', () => {
-    it('should succeed to copy gossip keys for node0', async () => {
-      const stagingDir = 'test/data'
+    it('should succeed to copy legacy pfx gossip keys for node0', async () => {
       const podName = 'network-node0-0'
       const nodeId = 'node0'
 
-      await installer.setupHapiDirectories(podName)
+      // generate pfx keys
+      const tmpDir = getTmpDir()
+      const keysDir = path.join(tmpDir, 'keys')
+      const shellRunner = new ShellRunner(testLogger)
+      await shellRunner.run(`test/scripts/legacy-key-generate.sh ${keysDir} node0`)
 
-      const fileList = await installer.copyGossipKeys(podName, stagingDir)
+      await installer.setupHapiDirectories(podName)
+      const fileList = await installer.copyGossipKeys(podName, tmpDir, constants.KEY_FORMAT_PFX)
 
       const destDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
-      expect(fileList.length).toBe(4)
-      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
-    })
+      expect(fileList.length).toBe(2)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPfxPrivateKeyFile(nodeId)}`)
+      expect(fileList).toContain(`${destDir}/public.pfx`)
 
-    it('should succeed to copy gossip keys for node1', async () => {
-      const stagingDir = 'test/data'
+      fs.rmSync(tmpDir, { recursive: true })
+    }, 20000)
+
+    it('should succeed to copy pem gossip keys for node1', async () => {
       const podName = 'network-node1-0'
       const nodeId = 'node1'
 
-      await installer.setupHapiDirectories(podName)
+      // generate pfx keys
+      const tmpDir = getTmpDir()
+      const keysDir = path.join(tmpDir, 'keys')
+      const shellRunner = new ShellRunner(testLogger)
+      await shellRunner.run(`test/scripts/standard-key-generate.sh ${keysDir} node1`)
 
-      const fileList = await installer.copyGossipKeys(podName, stagingDir)
+      await installer.setupHapiDirectories(podName)
+      const fileList = await installer.copyGossipKeys(podName, tmpDir, constants.KEY_FORMAT_PEM)
 
       const destDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
       expect(fileList.length).toBe(4)
-      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderKeyFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderCertFileName(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPrivateKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPrivateKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 
   describe('copyTLSKeys', () => {
     it('should succeed to copy TLS keys for node0', async () => {
-      const stagingDir = 'test/data'
-      const podName = 'network-node0-0'
+      const nodeId = 'node1'
+      const podName = Template.renderNetworkPodName(nodeId)
+      const tmpDir = getTmpDir()
+      const keysDir = path.join(tmpDir, 'keys')
+
+      // create mock files
+      fs.mkdirSync(keysDir)
+      fs.writeFileSync(path.join(keysDir, `hedera-${nodeId}.pem`), '')
+      fs.writeFileSync(path.join(keysDir, `hedera-${nodeId}.pem`), '')
+
       await installer.setupHapiDirectories(podName)
 
-      const fileList = await installer.copyTLSKeys(podName, stagingDir)
+      const fileList = await installer.copyTLSKeys(podName, tmpDir)
 
       expect(fileList.length).toBe(2) // [data , hedera.crt, hedera.key]
       expect(fileList.length).toBeGreaterThanOrEqual(2)
       expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.crt`)
       expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.key`)
-    })
 
-    it('should succeed to copy TLS keys for node1', async () => {
-      const stagingDir = 'test/data'
-      const podName = 'network-node1-0'
-      await installer.setupHapiDirectories(podName)
-
-      const fileList = await installer.copyTLSKeys(podName, stagingDir)
-
-      expect(fileList.length).toBe(2) // [data , hedera.crt, hedera.key]
-      expect(fileList.length).toBeGreaterThanOrEqual(2)
-      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.crt`)
-      expect(fileList).toContain(`${constants.HEDERA_HAPI_PATH}/hedera.key`)
+      fs.rmSync(tmpDir, { recursive: true })
     })
   })
 
@@ -165,7 +171,7 @@ describe('PackageInstallerE2E', () => {
       const podName = 'network-node0-0'
       await installer.setupHapiDirectories(podName)
 
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'downloader-'))
+      const tmpDir = getTmpDir()
       const nodeIDs = ['node0']
       const releaseTag = 'v0.42.0'
 

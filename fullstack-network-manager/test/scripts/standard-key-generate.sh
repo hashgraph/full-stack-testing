@@ -1,6 +1,9 @@
 #!/bin/bash
 
-cd "$(dirname "$0")"
+keyDir="${1}"
+mkdir -p "${keyDir}"
+cd "${keyDir}"
+shift
 
 # check if the names were supplied as arguments
 if [[ -z "$*" ]]; then
@@ -46,9 +49,9 @@ function generate_signing_key() {
     local n="${1}"
     local prefix="${2}"
 
-    local s_key="${prefix}-${n}.key"
-    local s_csr="${prefix}-${n}.csr"
-    local s_cert="${prefix}-${n}.crt"
+    local s_key="${prefix}-private-${n}.pem"
+    local s_csr="${prefix}-csr-${n}.pem"
+    local s_cert="${prefix}-public-${n}.pem"
     local s_key_pfx="${prefix}-private-${n}.pfx"
     local s_cert_pfx="${prefix}-public-${n}.pfx"
     local s_friendly_name="${prefix}-${n}"
@@ -105,9 +108,9 @@ function generate_key() {
     local s_cert="${4}"
 
 
-    local key_file="${prefix}-${n}.key"
-    local csr_file="${prefix}-${n}.csr"
-    local cert_file="${prefix}-${n}.crt"
+    local key_file="${prefix}-private-${n}.pem"
+    local csr_file="${prefix}-csr-${n}.pem"
+    local cert_file="${prefix}-public-${n}.pem"
     local key_pfx="${prefix}-private-${n}.pfx"
     local cert_pfx="${prefix}-public-${n}.pfx"
     local friendly_name="${prefix}-${n}"
@@ -172,8 +175,8 @@ function generate_key() {
 
 for nm in "${names[@]}"; do
     n="$(echo "${nm}" | tr '[A-Z]' '[a-z]')"
-    s_key="${s_key_prefix}-${n}.key"
-    s_cert="${s_key_prefix}-${n}.crt"
+    s_key="${s_key_prefix}-private-${n}.pem"
+    s_cert="${s_key_prefix}-public-${n}.pem"
 
     generate_signing_key "${n}" "${s_key_prefix}" || exit 1
     generate_key "${n}" "${a_key_prefix}" "${s_key}" "${s_cert}" || exit 1
