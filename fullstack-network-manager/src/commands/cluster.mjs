@@ -60,7 +60,6 @@ export class ClusterCommand extends BaseCommand {
           const chartDir = self.configManager.getFlag(flags.chartDirectory)
           const deployPrometheusStack = self.configManager.getFlag(flags.deployPrometheusStack)
           const deployMinio = self.configManager.getFlag(flags.deployMinio)
-          const deployEnvoyGateway = self.configManager.getFlag(flags.deployEnvoyGateway)
           const deployCertManager = self.configManager.getFlag(flags.deployCertManager)
           const deployCertManagerCrds = self.configManager.getFlag(flags.deployCertManagerCrds)
 
@@ -71,7 +70,6 @@ export class ClusterCommand extends BaseCommand {
             chartDir: await prompts.promptChartDir(task, chartDir),
             deployPrometheusStack: await prompts.promptDeployPrometheusStack(task, deployPrometheusStack),
             deployMinio: await prompts.promptDeployMinio(task, deployMinio),
-            deployEnvoyGateway: await prompts.promptDeployEnvoyGateway(task, deployEnvoyGateway),
             deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager),
             deployCertManagerCrds: await prompts.promptDeployCertManagerCrds(task, deployCertManagerCrds)
           }
@@ -89,7 +87,6 @@ export class ClusterCommand extends BaseCommand {
             ctx.config.chartDir,
             ctx.config.deployPrometheusStack,
             ctx.config.deployMinio,
-            ctx.config.deployEnvoyGateway,
             ctx.config.deployCertManager,
             ctx.config.deployCertManagerCrds
           )
@@ -234,7 +231,6 @@ export class ClusterCommand extends BaseCommand {
               flags.chartDirectory,
               flags.deployPrometheusStack,
               flags.deployMinio,
-              flags.deployEnvoyGateway,
               flags.deployCertManager,
               flags.deployCertManagerCrds
             ),
@@ -282,7 +278,6 @@ export class ClusterCommand extends BaseCommand {
    * @param chartDir local charts directory (default is empty)
    * @param prometheusStackEnabled a bool to denote whether to install prometheus stack
    * @param minioEnabled a bool to denote whether to install minio
-   * @param envoyGatewayEnabled a bool to denote whether to install envoy-gateway
    * @param certManagerEnabled a bool to denote whether to install cert manager
    * @param certManagerCrdsEnabled a bool to denote whether to install cert manager CRDs
    * @returns {string}
@@ -290,7 +285,6 @@ export class ClusterCommand extends BaseCommand {
   prepareValuesArg (chartDir = flags.chartDirectory.definition.default,
     prometheusStackEnabled = flags.deployPrometheusStack.definition.default,
     minioEnabled = flags.deployMinio.definition.default,
-    envoyGatewayEnabled = flags.deployEnvoyGateway.definition.default,
     certManagerEnabled = flags.deployCertManager.definition.default,
     certManagerCrdsEnabled = flags.deployCertManagerCrds.definition.default
   ) {
@@ -301,7 +295,6 @@ export class ClusterCommand extends BaseCommand {
 
     valuesArg += ` --set cloud.prometheusStack.enabled=${prometheusStackEnabled}`
     valuesArg += ` --set cloud.minio.enabled=${minioEnabled}`
-    valuesArg += ` --set cloud.envoyGateway.enabled=${envoyGatewayEnabled}`
     valuesArg += ` --set cloud.certManager.enabled=${certManagerEnabled}`
     valuesArg += ` --set cert-manager.installCRDs=${certManagerCrdsEnabled}`
 

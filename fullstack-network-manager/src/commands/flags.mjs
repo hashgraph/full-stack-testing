@@ -97,19 +97,19 @@ export const deployPrometheusStack = {
   }
 }
 
-export const deployMinio = {
-  name: 'minio',
+export const enablePrometheusSvcMonitor = {
+  name: 'enable-prometheus-svc-monitor',
   definition: {
-    describe: 'Deploy minio operator',
+    describe: 'Enable prometheus service monitor for the network nodes',
     default: true,
     type: 'boolean'
   }
 }
 
-export const deployEnvoyGateway = {
-  name: 'envoy-gateway',
+export const deployMinio = {
+  name: 'minio',
   definition: {
-    describe: 'Deploy envoy gateway',
+    describe: 'Deploy minio operator',
     default: true,
     type: 'boolean'
   }
@@ -245,57 +245,39 @@ export const operatorKey = {
   }
 }
 
-export const enableTls = {
-  name: 'enable-tls',
+export const tlsClusterIssuerType = {
+  name: 'tls-cluster-issuer-type',
   definition: {
-    describe: 'Enables TLS for gateway ingress services [grpcs, grpcWeb, hederaExplorer]',
-    default: false,
-    type: 'boolean'
-  }
-}
-
-export const tlsClusterIssuerName = {
-  name: 'tls-cluster-issuer-name',
-  definition: {
-    describe: 'The name of the TLS cluster issuer to use for gateway services, defaults to "self-signed-ca", another option for the acme-cluster-issuer is "letsencrypt-staging" and "letsencrypt-prod"',
+    describe: 'The TLS cluster issuer type to use for hedera explorer, defaults to "self-signed", the available options are: "acme-staging", "acme-prod", or "self-signed"',
     default: 'self-signed',
     type: 'string'
   }
 }
 
-export const selfSignedClusterIssuer = {
-  name: 'self-signed',
-  definition: {
-    describe: 'Enable the self signed cluster issuer',
-    default: false,
-    type: 'boolean'
-  }
-}
-
-export const tlsClusterIssuerNamespace = {
-  name: 'tls-cluster-issuer-namespace',
-  definition: {
-    describe: 'The namespace of the TLS cluster issuer to use for gateway services, defaults to "cert-manager"',
-    default: 'cert-manager',
-    type: 'string'
-  }
-}
-
-export const acmeClusterIssuer = {
-  name: 'acme-cluster-issuer',
-  definition: {
-    describe: 'The acme let\'s encrypt cert-manager cluster issuer, defaults to false',
-    default: false,
-    type: 'boolean'
-  }
-}
-
-export const enableHederaExplorerTls = {
+export const enableHederaExplorerTls = { // KEEP
   name: 'enable-hedera-explorer-tls',
   definition: {
     describe: 'Enable the Hedera Explorer TLS, defaults to false',
     default: false,
     type: 'boolean'
+  }
+}
+
+export const hederaExplorerTlsLoadBalancerIp = {
+  name: 'hedera-explorer-tls-load-balancer-ip',
+  definition: {
+    describe: 'The static IP address to use for the Hedera Explorer TLS load balancer, defaults to ""',
+    default: '',
+    type: 'string'
+  }
+}
+
+export const hederaExplorerTlsHostName = {
+  name: 'hedera-explorer-tls-host-name',
+  definition: {
+    describe: 'The host name to use for the Hedera Explorer TLS, defaults to "explorer.fst.local"',
+    default: 'explorer.fst.local',
+    type: 'string'
   }
 }
 
@@ -318,11 +300,10 @@ export const allFlags = [
   deployJsonRpcRelay,
   valuesFile,
   deployPrometheusStack,
+  enablePrometheusSvcMonitor,
   deployMinio,
-  deployEnvoyGateway,
   deployCertManager,
   deployCertManagerCrds,
-  acmeClusterIssuer,
   releaseTag,
   relayReleaseTag,
   cacheDir,
@@ -332,10 +313,9 @@ export const allFlags = [
   chainId,
   operatorId,
   operatorKey,
-  enableTls,
-  tlsClusterIssuerName,
-  tlsClusterIssuerNamespace,
+  tlsClusterIssuerType,
   enableHederaExplorerTls,
-  selfSignedClusterIssuer,
+  hederaExplorerTlsLoadBalancerIp,
+  hederaExplorerTlsHostName,
   deletePvcs
 ]

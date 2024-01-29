@@ -221,7 +221,10 @@ jobs:
         run: |
           helm repo add haproxytech https://haproxytech.github.io/helm-charts
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
+          helm pull prometheus-community/prometheus
+          helm pull haproxytech/haproxy
 
       - name: Unit Tests
         id: gradle-test

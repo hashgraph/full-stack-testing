@@ -9,18 +9,30 @@ import { constants, Templates } from '../core/index.mjs'
 import * as prompts from './prompts.mjs'
 
 export class NetworkCommand extends BaseCommand {
-  getTlsValueArguments (enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls) {
-    const gatewayPrefix = 'gatewayApi.gateway'
-    let valuesArg = ` --set ${gatewayPrefix}.tlsEnabled=${enableTls}`
-    valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerName=${tlsClusterIssuerName}`
-    valuesArg += ` --set ${gatewayPrefix}.tlsClusterIssuerNamespace=${tlsClusterIssuerNamespace}`
+  getTlsValueArguments (tlsClusterIssuerType, enableHederaExplorerTls, namespace,
+    hederaExplorerTlsLoadBalancerIp, hederaExplorerTlsHostName) {
+    let valuesArg = ''
 
-    const listenerPrefix = `${gatewayPrefix}.listeners`
-    valuesArg += ` --set ${listenerPrefix}.grpcs.tlsEnabled=${enableTls}`
-    valuesArg += ` --set ${listenerPrefix}.grpcWeb.tlsEnabled=${enableTls}`
+    if (enableHederaExplorerTls) {
+      if (!['acme-staging', 'acme-prod', 'self-signed'].includes(tlsClusterIssuerType)) {
+        throw new Error(`Invalid TLS cluster issuer type: ${tlsClusterIssuerType}, must be one of: "acme-staging", "acme-prod", or "self-signed"`)
+      }
 
-    if (enableTls || enableHederaExplorerTls) {
-      valuesArg += ` --set ${listenerPrefix}.hederaExplorer.tlsEnabled=true`
+      valuesArg += ' --set hedera-explorer.ingress.enabled=true'
+      valuesArg += ' --set cloud.haproxyIngressController.enabled=true'
+      valuesArg += ` --set global.ingressClassName=${namespace}-hedera-explorer-ingress-class`
+      valuesArg += ` --set-json 'hedera-explorer.ingress.hosts[0]={"host":"${hederaExplorerTlsHostName}","paths":[{"path":"/","pathType":"Prefix"}]}'`
+
+      if (hederaExplorerTlsLoadBalancerIp !== '') {
+        valuesArg += ` --set haproxy-ingress.controller.service.loadBalancerIP=${hederaExplorerTlsLoadBalancerIp}`
+      }
+
+      if (tlsClusterIssuerType === 'self-signed') {
+        valuesArg += ' --set cloud.selfSignedClusterIssuer.enabled=true'
+      } else {
+        valuesArg += ' --set cloud.acmeClusterIssuer.enabled=true'
+        valuesArg += ` --set hedera-explorer.certClusterIssuerType=${tlsClusterIssuerType}"`
+      }
     }
 
     return valuesArg
@@ -39,8 +51,9 @@ export class NetworkCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, enableTls, tlsClusterIssuerName,
-    tlsClusterIssuerNamespace, enableHederaExplorerTls, acmeClusterIssuer, selfSignedClusterIssuer) {
+  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, tlsClusterIssuerType,
+    enableHederaExplorerTls, namespace, hederaExplorerTlsLoadBalancerIp, hederaExplorerTlsHostName,
+    enablePrometheusSvcMonitor) {
     let valuesArg = ''
     if (chartDir) {
       valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
@@ -49,11 +62,11 @@ export class NetworkCommand extends BaseCommand {
     valuesArg += this.prepareValuesFiles(valuesFile)
 
     valuesArg += ` --set hedera-mirror-node.enabled=${deployMirrorNode} --set hedera-explorer.enabled=${deployHederaExplorer}`
-    valuesArg += ` --set cloud.acmeClusterIssuer.enabled=${acmeClusterIssuer}`
-    valuesArg += ` --set cloud.selfSignedClusterIssuer.enabled=${selfSignedClusterIssuer}`
+    valuesArg += ` --set telemetry.prometheus.svcMonitor.enabled=${enablePrometheusSvcMonitor}`
 
-    if (enableTls) {
-      valuesArg += this.getTlsValueArguments(enableTls, tlsClusterIssuerName, tlsClusterIssuerNamespace, enableHederaExplorerTls)
+    if (enableHederaExplorerTls) {
+      valuesArg += this.getTlsValueArguments(tlsClusterIssuerType, enableHederaExplorerTls, namespace,
+        hederaExplorerTlsLoadBalancerIp, hederaExplorerTlsHostName)
     }
 
     return valuesArg
@@ -67,12 +80,11 @@ export class NetworkCommand extends BaseCommand {
     const valuesFile = this.configManager.getFlag(flags.valuesFile)
     const deployMirrorNode = this.configManager.getFlag(flags.deployMirrorNode)
     const deployExplorer = this.configManager.getFlag(flags.deployHederaExplorer)
-    const enableTls = this.configManager.getFlag(flags.enableTls)
-    const tlsClusterIssuerName = this.configManager.getFlag(flags.tlsClusterIssuerName)
-    const tlsClusterIssuerNamespace = this.configManager.getFlag(flags.tlsClusterIssuerNamespace)
+    const tlsClusterIssuerType = this.configManager.getFlag(flags.tlsClusterIssuerType)
     const enableHederaExplorerTls = this.configManager.getFlag(flags.enableHederaExplorerTls)
-    const acmeClusterIssuer = this.configManager.getFlag(flags.acmeClusterIssuer)
-    const selfSignedClusterIssuer = this.configManager.getFlag(flags.selfSignedClusterIssuer)
+    const hederaExplorerTlsLoadBalancerIp = this.configManager.getFlag(flags.hederaExplorerTlsLoadBalancerIp)
+    const hederaExplorerTlsHostName = this.configManager.getFlag(flags.hederaExplorerTlsHostName)
+    const enablePrometheusSvcMonitor = this.configManager.getFlag(flags.enablePrometheusSvcMonitor)
 
     // prompt if values are missing and create a config object
     const config = {
@@ -82,12 +94,11 @@ export class NetworkCommand extends BaseCommand {
       valuesFile: await prompts.promptChartDir(task, valuesFile),
       deployMirrorNode: await prompts.promptDeployMirrorNode(task, deployMirrorNode),
       deployHederaExplorer: await prompts.promptDeployHederaExplorer(task, deployExplorer),
-      enableTls: await prompts.promptEnableTls(task, enableTls),
-      tlsClusterIssuerName: await prompts.promptTlsClusterIssuerName(task, tlsClusterIssuerName),
-      tlsClusterIssuerNamespace: await prompts.promptTlsClusterIssuerNamespace(task, tlsClusterIssuerNamespace),
+      tlsClusterIssuerType: await prompts.promptTlsClusterIssuerType(task, tlsClusterIssuerType),
       enableHederaExplorerTls: await prompts.promptEnableHederaExplorerTls(task, enableHederaExplorerTls),
-      acmeClusterIssuer: await prompts.promptAcmeClusterIssuer(task, acmeClusterIssuer),
-      selfSignedClusterIssuer: await prompts.promptSelfSignedClusterIssuer(task, selfSignedClusterIssuer),
+      hederaExplorerTlsLoadBalancerIp: await prompts.promptHederaExplorerTlsLoadBalancerIp(task, hederaExplorerTlsLoadBalancerIp),
+      hederaExplorerTlsHostName: await prompts.promptHederaExplorerTlsHostName(task, hederaExplorerTlsHostName),
+      enablePrometheusSvcMonitor: await prompts.promptEnablePrometheusSvcMonitor(task, enablePrometheusSvcMonitor),
       version: this.configManager.getVersion()
     }
 
@@ -97,8 +108,8 @@ export class NetworkCommand extends BaseCommand {
 
     config.valuesArg = this.prepareValuesArg(config.chartDir,
       config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer,
-      config.enableTls, config.tlsClusterIssuerName, config.tlsClusterIssuerNamespace, config.enableHederaExplorerTls,
-      config.acmeClusterIssuer, config.selfSignedClusterIssuer)
+      config.tlsClusterIssuerType, config.enableHederaExplorerTls, config.namespace,
+      config.hederaExplorerTlsLoadBalancerIp, config.hederaExplorerTlsHostName, config.enablePrometheusSvcMonitor)
 
     return config
   }
@@ -309,12 +320,11 @@ export class NetworkCommand extends BaseCommand {
                 flags.deployJsonRpcRelay,
                 flags.valuesFile,
                 flags.chartDirectory,
-                flags.enableTls,
-                flags.tlsClusterIssuerName,
-                flags.tlsClusterIssuerNamespace,
+                flags.tlsClusterIssuerType,
                 flags.enableHederaExplorerTls,
-                flags.acmeClusterIssuer,
-                flags.selfSignedClusterIssuer
+                flags.hederaExplorerTlsLoadBalancerIp,
+                flags.hederaExplorerTlsHostName,
+                flags.enablePrometheusSvcMonitor
               )
             },
             handler: argv => {
@@ -362,12 +372,11 @@ export class NetworkCommand extends BaseCommand {
               flags.deployHederaExplorer,
               flags.valuesFile,
               flags.chartDirectory,
-              flags.enableTls,
-              flags.tlsClusterIssuerName,
-              flags.tlsClusterIssuerNamespace,
+              flags.tlsClusterIssuerType,
               flags.enableHederaExplorerTls,
-              flags.acmeClusterIssuer,
-              flags.selfSignedClusterIssuer
+              flags.hederaExplorerTlsLoadBalancerIp,
+              flags.hederaExplorerTlsHostName,
+              flags.enablePrometheusSvcMonitor
             ),
             handler: argv => {
               networkCmd.logger.debug("==== Running 'chart upgrade' ===")
