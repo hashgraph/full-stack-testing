@@ -41,7 +41,7 @@ RUN dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.n
     dnf -y install binutils libsodium openssl zlib readline tzdata gzip tar ca-certificates curl && \
     dnf clean all
 
-# Install Java 17 Adoptium JDK
+# Install Java 21 Adoptium JDK
 RUN set -eux; \
         ARCH="$(dpkg --print-architecture)"; \
         case "${ARCH}" in \
