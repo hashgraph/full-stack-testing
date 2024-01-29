@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Get related changed files
         id: changed-files
-        uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
+        uses: tj-actions/changed-files@90a06d6ba9543371ab4df8eeca0be07ca6054959 #v42.0.2
         with:
           files: |
             fullstack-network-manager/**
