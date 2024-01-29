@@ -92,7 +92,7 @@ export const deployPrometheusStack = {
   name: 'prometheus-stack',
   definition: {
     describe: 'Deploy prometheus stack',
-    default: true,
+    default: false,
     type: 'boolean'
   }
 }
@@ -110,7 +110,7 @@ export const deployMinio = {
   name: 'minio',
   definition: {
     describe: 'Deploy minio operator',
-    default: true,
+    default: false,
     type: 'boolean'
   }
 }

@@ -31,7 +31,7 @@ export class NetworkCommand extends BaseCommand {
         valuesArg += ' --set cloud.selfSignedClusterIssuer.enabled=true'
       } else {
         valuesArg += ' --set cloud.acmeClusterIssuer.enabled=true'
-        valuesArg += ` --set hedera-explorer.certClusterIssuerType=${tlsClusterIssuerType}"`
+        valuesArg += ` --set hedera-explorer.certClusterIssuerType=${tlsClusterIssuerType}`
       }
     }
 

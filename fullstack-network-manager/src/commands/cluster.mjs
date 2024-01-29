@@ -56,7 +56,7 @@ export class ClusterCommand extends BaseCommand {
 
           // extract config values
           const clusterName = self.configManager.getFlag(flags.clusterName)
-          const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
+          const namespace = self.configManager.getFlag(flags.namespace) || constants.DEFAULT_NAMESPACE
           const chartDir = self.configManager.getFlag(flags.chartDirectory)
           const deployPrometheusStack = self.configManager.getFlag(flags.deployPrometheusStack)
           const deployMinio = self.configManager.getFlag(flags.deployMinio)
