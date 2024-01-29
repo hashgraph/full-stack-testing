@@ -32,6 +32,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    name: Code
+    uses: ./.github/workflows/zxc-compile-code.yaml
+    secrets:
+      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
+      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
+
   spotless:
     name: Spotless
     uses: ./.github/workflows/zxc-compile-code.yaml
@@ -41,15 +48,6 @@ jobs:
     secrets:
       gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
       gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
-
-#  build:
-#    name: Code
-#    uses: ./.github/workflows/zxc-compile-code.yaml
-#    needs:
-#      - spotless
-#    secrets:
-#      gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
-#      gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
   unit-tests:
     name: FST Java Unit Tests
