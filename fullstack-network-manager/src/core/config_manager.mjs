@@ -64,7 +64,15 @@ export class ConfigManager {
             continue
           }
 
-          if (argv && argv[flag.name]) {
+          if (argv && argv[flag.name] !== undefined) {
+            if (flags.namespace.name === flag.name && argv[flag.name] === '') {
+              continue // don't cache empty namespace
+            }
+
+            if (flags.clusterName.name === flag.name && argv[flag.name] === '') {
+              continue // don't cache empty cluster name
+            }
+
             let val = argv[flag.name]
             if (val && flag.name === flags.chartDirectory.name) {
               val = paths.resolve(val)

@@ -387,22 +387,6 @@ export async function promptEnableHederaExplorerTls (task, input) {
   }
 }
 
-export async function promptHederaExplorerTlsLoadBalancerIp (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.hederaExplorerTlsLoadBalancerIp.definition.default,
-        message: 'Enter the static IP address to use for the Hedera Explorer TLS load balancer or leave empty:'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.hederaExplorerTlsLoadBalancerIp.name}`, e)
-  }
-}
-
 export async function promptHederaExplorerTlsHostName (task, input) {
   try {
     if (!input) {

@@ -96,7 +96,7 @@ export class NetworkCommand extends BaseCommand {
       deployHederaExplorer: await prompts.promptDeployHederaExplorer(task, deployExplorer),
       tlsClusterIssuerType: await prompts.promptTlsClusterIssuerType(task, tlsClusterIssuerType),
       enableHederaExplorerTls: await prompts.promptEnableHederaExplorerTls(task, enableHederaExplorerTls),
-      hederaExplorerTlsLoadBalancerIp: await prompts.promptHederaExplorerTlsLoadBalancerIp(task, hederaExplorerTlsLoadBalancerIp),
+      hederaExplorerTlsLoadBalancerIp, // no prompt for this, instead use CLI parameters if needed
       hederaExplorerTlsHostName: await prompts.promptHederaExplorerTlsHostName(task, hederaExplorerTlsHostName),
       enablePrometheusSvcMonitor: await prompts.promptEnablePrometheusSvcMonitor(task, enablePrometheusSvcMonitor),
       version: this.configManager.getVersion()
