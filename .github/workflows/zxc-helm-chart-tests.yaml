@@ -138,7 +138,6 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          set
           
           CUR_DIR="scripts"
           source "${CUR_DIR}/env.sh"
@@ -156,7 +155,13 @@ jobs:
           kubectl config set-context --current --namespace="${NAMESPACE}"
           kubectl config get-contexts
           
-          make local-kubectl-bats
+          KUBECTL_BATS_IMAGE="${LOCAL_DOCKER_REGISTRY}/kubectl-bats:${LOCAL_DOCKER_IMAGE_TAG}"
+          echo ""
+          echo "Building kubectl-bats image"
+          echo "-----------------------------------------------------------------------------------------------------"
+          cd "${DOCKERFILE_DIR}/kubectl-bats" && docker build -t "${KUBECTL_BATS_IMAGE}" .
+          kind load docker-image "${KUBECTL_BATS_IMAGE}" -n "${CLUSTER_NAME}"
+  
           make deploy-network CHART_VALUES_FILES="ci/ci-values.yaml"
           make helm-test
           make setup-nodes
