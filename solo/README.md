@@ -1,6 +1,6 @@
 # Full Stack Network Manager CLI
 
-Full Stack Network Manager (solo) is a CLI tool to manage and deploy a Hedera Network using the FS Helm Charts.
+Solo is a CLI tool to manage and deploy a private Hedera Network.
 
 ## Install
 

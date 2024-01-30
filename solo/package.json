@@ -1,7 +1,7 @@
 {
   "name": "@hashgraph/solo",
   "version": "0.18.0",
-  "description": "SOLO is a CLI tool to manage a private Hedera Network using Helm chart.",
+  "description": "Solo is a CLI tool to manage and deploy a private Hedera Network.",
   "main": "src/index.mjs",
   "type": "module",
   "publishConfig": {
