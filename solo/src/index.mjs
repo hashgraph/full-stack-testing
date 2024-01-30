@@ -38,13 +38,12 @@ export function main (argv) {
     }
     configManager.persist()
 
-    logger.showUser(chalk.green('\n-------------------------------------------------------------------------------'))
-    logger.showUser(chalk.cyan('*** Fullstack Network Manager (FsNetMan) ***'))
+    logger.showUser(chalk.cyan('\n******************************* Solo *********************************************'))
     logger.showUser(chalk.cyan('Version\t\t\t:'), chalk.yellow(configManager.getVersion()))
     logger.showUser(chalk.cyan('Kubernetes Context\t:'), chalk.yellow(context.name))
     logger.showUser(chalk.cyan('Kubernetes Cluster\t:'), chalk.yellow(configManager.getFlag(flags.clusterName)))
     logger.showUser(chalk.cyan('Kubernetes Namespace\t:'), chalk.yellow(configManager.getFlag(flags.namespace)))
-    logger.showUser(chalk.green('-------------------------------------------------------------------------------\n'))
+    logger.showUser(chalk.cyan('**********************************************************************************'))
 
     const opts = {
       logger,

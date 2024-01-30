@@ -1,27 +1,28 @@
 {
-  "name": "@hashgraph/fullstack-network-manager",
+  "name": "@hashgraph/solo",
   "version": "0.18.0",
-  "description": "Fullstack-Network-Manager is a CLI tool to manage and deploy a Hedera Network using Helm chart for local testing.",
+  "description": "SOLO is a CLI tool to manage a private Hedera Network using Helm chart.",
   "main": "src/index.mjs",
   "type": "module",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
   "bin": {
-    "fsnetman": "fsnetman.mjs"
+    "solo": "solo.mjs"
   },
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\".*/e2e/.*\"",
     "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
-    "fsnetman": "NODE_OPTIONS=--experimental-vm-modules node fsnetman.mjs",
+    "solo": "NODE_OPTIONS=--experimental-vm-modules node solo.mjs",
     "check": "remark . --quiet --frail && eslint .",
     "format": "remark . --quiet --frail --output && eslint --fix ."
   },
   "keywords": [
-    "fullstack-network-manager",
-    "full-stack-testing"
+    "solo",
+    "full-stack-testing",
+    "fullstack-network-manager"
   ],
-  "author": "Lenin Mehedy",
+  "author": "Swirlds Labs",
   "license": "Apache2.0",
   "dependencies": {
     "@hashgraph/sdk": "^2.40.0",
@@ -57,8 +58,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hashgraph/full-stack-testing.git",
-    "directory": "fullstack-network-manager"
+    "url": "git+https://github.com/hashgraph/solo.git",
+    "directory": "solo"
   },
   "os": [
     "darwin",

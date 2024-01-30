@@ -4,17 +4,17 @@ import { dirname, normalize } from 'path'
 import { fileURLToPath } from 'url'
 import chalk from 'chalk'
 
-// -------------------- fsnetman related constants ---------------------------------------------------------------------
+// -------------------- solo related constants ---------------------------------------------------------------------
 export const CUR_FILE_DIR = dirname(fileURLToPath(import.meta.url))
 export const USER = `${process.env.USER}`
 export const USER_SANITIZED = USER.replace(/[\W_]+/g, '-')
-export const FST_HOME_DIR = `${process.env.HOME}/.fsnetman`
+export const FST_HOME_DIR = `${process.env.HOME}/.solo`
 export const FST_LOGS_DIR = `${FST_HOME_DIR}/logs`
 export const FST_CACHE_DIR = `${FST_HOME_DIR}/cache`
 export const DEFAULT_NAMESPACE = 'default'
 export const HELM = 'helm'
 export const CWD = process.cwd()
-export const FST_CONFIG_FILE = `${FST_HOME_DIR}/fsnetman.config`
+export const FST_CONFIG_FILE = `${FST_HOME_DIR}/solo.config`
 export const RESOURCES_DIR = normalize(CUR_FILE_DIR + '/../../resources')
 
 export const ROOT_CONTAINER = 'root-container'

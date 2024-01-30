@@ -10,7 +10,7 @@ import * as tar from 'tar'
 import { v4 as uuid4 } from 'uuid'
 
 /**
- * A kubernetes API wrapper class providing custom functionalities required by fsnetman
+ * A kubernetes API wrapper class providing custom functionalities required by solo
  *
  * Note: Take care if the same instance is used for parallel execution, as the behaviour may be unpredictable.
  * For parallel execution, create separate instances by invoking clone()
