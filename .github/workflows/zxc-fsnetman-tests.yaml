@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Get related changed files
         id: changed-files
-        uses: tj-actions/changed-files@94549999469dbfa032becf298d95c87a14c34394 #v40.2.2
+        uses: tj-actions/changed-files@90a06d6ba9543371ab4df8eeca0be07ca6054959 #v42.0.2
         with:
           files: |
             fullstack-network-manager/**
@@ -81,7 +81,7 @@ jobs:
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
       - name: Setup Node
-        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           node-version: ${{ inputs.node-version }}

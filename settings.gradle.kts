@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2023-2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ include(":docker-kubectl-bats", "docker/kubectl-bats")
 include(":docker-ubi8-init-dind", "docker/ubi8-init-dind")
 
 include(":docker-ubi8-init-java17", "docker/ubi8-init-java17")
+
+include(":docker-ubi8-init-java21", "docker/ubi8-init-java21")
 
 include(":fullstack-bom", "fullstack-core/fullstack-bom")
 

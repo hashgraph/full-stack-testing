@@ -1,5 +1,5 @@
 ##
-# Copyright (C) 2023 Hedera Hashgraph, LLC
+# Copyright (C) 2023-2024 Hedera Hashgraph, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,13 +47,13 @@ jobs:
           java-version: 21.0.1
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         with:
           gradle-version: wrapper
 
       # Node.JS 16.x is required for the Snyk CLI.
       - name: Setup NodeJS
-        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: 16
 
@@ -61,7 +61,7 @@ jobs:
       # Snyk will fail if the code does not compile and the error messages are less than helpful. Therefore, we will
       # compile the code first and then run Snyk so that we can get diagnostic information if the code does not compile.
       - name: Compile
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         with:
           gradle-version: wrapper
           arguments: assemble --scan

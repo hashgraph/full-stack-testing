@@ -257,6 +257,22 @@ export async function promptDeployPrometheusStack (task, input) {
   }
 }
 
+export async function promptEnablePrometheusSvcMonitor (task, input) {
+  try {
+    if (input === undefined) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'toggle',
+        default: flags.enablePrometheusSvcMonitor.definition.default,
+        message: 'Would you like to enable the Prometheus service monitor for the network nodes?'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.enablePrometheusSvcMonitor.name}`, e)
+  }
+}
+
 export async function promptDeployMinio (task, input) {
   try {
     if (input === undefined) {
@@ -270,22 +286,6 @@ export async function promptDeployMinio (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.deployMinio.name}`, e)
-  }
-}
-
-export async function promptDeployEnvoyGateway (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployEnvoyGateway.definition.default,
-        message: 'Would you like to deploy Envoy Gateway?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployEnvoyGateway.name}`, e)
   }
 }
 
@@ -321,22 +321,6 @@ export async function promptDeployCertManagerCrds (task, input) {
   }
 }
 
-export async function promptAcmeClusterIssuer (task, input) {
-  try {
-    if (typeof input !== 'boolean') {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.acmeClusterIssuer.definition.default,
-        message: 'Would you like to deploy ACME Cluster Issuer?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.acmeClusterIssuer.name}`, e)
-  }
-}
-
 export async function promptDeployMirrorNode (task, input) {
   try {
     if (input === undefined) {
@@ -369,67 +353,23 @@ export async function promptDeployHederaExplorer (task, input) {
   }
 }
 
-export async function promptEnableTls (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.enableTls.definition.default,
-        message: 'Would you like to enable TLS?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.enableTls.name}`, e)
-  }
-}
-
-export async function promptSelfSignedClusterIssuer (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.selfSignedClusterIssuer.definition.default,
-        message: 'Would you like to enable the self signed cluster issuer?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.selfSignedClusterIssuer.name}`, e)
-  }
-}
-
-export async function promptTlsClusterIssuerName (task, input) {
+export async function promptTlsClusterIssuerType (task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.tlsClusterIssuerName.definition.default,
-        message: 'Enter TLS cluster issuer name:'
+        default: flags.tlsClusterIssuerType.definition.default,
+        message: 'Enter TLS cluster issuer type, available options are: "acme-staging", "acme-prod", or "self-signed":'
       })
+    }
+
+    if (!input || !['acme-staging', 'acme-prod', 'self-signed'].includes(input)) {
+      throw new FullstackTestingError('must be one of: "acme-staging", "acme-prod", or "self-signed"')
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerName.name}`, e)
-  }
-}
-
-export async function promptTlsClusterIssuerNamespace (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.tlsClusterIssuerNamespace.definition.default,
-        message: 'Enter TLS cluster issuer namespace:'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerNamespace.name}`, e)
+    throw new FullstackTestingError(`input failed: ${flags.tlsClusterIssuerType.name}`, e)
   }
 }
 
@@ -446,6 +386,22 @@ export async function promptEnableHederaExplorerTls (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.enableHederaExplorerTls.name}`, e)
+  }
+}
+
+export async function promptHederaExplorerTlsHostName (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.hederaExplorerTlsHostName.definition.default,
+        message: 'Enter the host name to use for the Hedera Explorer TLS:'
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.hederaExplorerTlsHostName.name}`, e)
   }
 }
 

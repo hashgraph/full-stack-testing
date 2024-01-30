@@ -108,13 +108,13 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
 
       - name: Setup Node
-        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: ${{ inputs.node-version }}
 
@@ -168,7 +168,7 @@ jobs:
 
       - name: Compile
         id: gradle-build
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -176,7 +176,7 @@ jobs:
 
       - name: Examples Compile
         id: gradle-build-examples
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -185,7 +185,7 @@ jobs:
 
       - name: Gradle Plugin Compile
         id: gradle-build-gradle-plugin
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -193,14 +193,14 @@ jobs:
           build-root-directory: fullstack-gradle-plugin
 
       - name: Spotless Check
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-spotless-check && steps.gradle-build.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: spotlessCheck --scan
 
       - name: Examples Spotless Check
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-spotless-check && steps.gradle-build-examples.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -208,7 +208,7 @@ jobs:
           build-root-directory: fullstack-examples
 
       - name: Gradle Plugin Spotless Check
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-spotless-check && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -221,11 +221,14 @@ jobs:
         run: |
           helm repo add haproxytech https://haproxytech.github.io/helm-charts
           helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
           helm repo update
+          helm pull prometheus-community/prometheus
+          helm pull haproxytech/haproxy
 
       - name: Unit Tests
         id: gradle-test
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -233,7 +236,7 @@ jobs:
 
       - name: Examples Unit Tests
         id: gradle-test-examples
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build-examples.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -242,7 +245,7 @@ jobs:
 
       - name: Gradle Plugin Unit Tests
         id: gradle-test-gradle-plugin
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
@@ -261,21 +264,21 @@ jobs:
       # Technically, this step is not required since the Gradle check task implicitly includes it but is executed again
       # here to prevent failures if future modules are not wired properly.
       - name: Jacoco Coverage Report
-        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() }}
         with:
           gradle-version: ${{ inputs.gradle-version }}
           arguments: jacocoTestReport --scan
 
       - name: Publish Jacoco Coverage Report
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
           name: Coverage Reports
           path: '**/jacocoTestReport.xml'
 
       - name: Publish Test Reports
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        uses: actions/upload-artifact@26f96dfa697d77e81fd5907df203aa23a56210a8 # v4.3.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() }}
         with:
           name: Test Reports
