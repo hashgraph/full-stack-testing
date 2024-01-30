@@ -138,4 +138,27 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          sleep 7200
+          set
+          
+          CUR_DIR="scripts"
+          source "${CUR_DIR}/env.sh"
+          
+          kind create cluster -n "${CLUSTER_NAME}" --config=dev-cluster.yaml
+
+          cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
+    
+          set -a
+          source "${TMP_DIR}/.env"
+          
+          kubectl create ns "${NAMESPACE}"
+          kubectl get ns
+          kubectl config use-context "kind-${CLUSTER_NAME}"
+          kubectl config set-context --current --namespace="${NAMESPACE}"
+          kubectl config get-contexts
+          
+          make local-kubectl-bats
+          make deploy-network CHART_VALUES_FILES="ci/ci-values.yaml"
+          make helm-test
+          make setup-nodes
+          make start-nodes
+          make destroy-network
