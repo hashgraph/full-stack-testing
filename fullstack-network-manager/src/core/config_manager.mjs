@@ -102,13 +102,7 @@ export class ConfigManager {
               val = paths.resolve(val)
             }
 
-            if (val === undefined) {
-              if (config.flags[flag.name] !== undefined) {
-                config.flags[flag.name] = ''
-              }
-            } else {
-              config.flags[flag.name] = val
-            }
+            config.flags[flag.name] = val
             writeConfig = true
           }
         }
