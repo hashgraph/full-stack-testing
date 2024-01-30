@@ -170,7 +170,6 @@ export const cacheDir = {
   name: 'cache-dir',
   definition: {
     describe: 'Local cache directory',
-    alias: 'd',
     default: core.constants.FST_CACHE_DIR,
     type: 'string'
   }

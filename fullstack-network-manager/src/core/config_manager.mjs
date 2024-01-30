@@ -26,7 +26,11 @@ export class ConfigManager {
     this.persistMode = persistMode === true
 
     this.logger = logger
-    this.config = this.load()
+    this.config = {
+      flags: {},
+      version: '',
+      updatedAt: ''
+    }
   }
 
   verifyConfigFile (fstConfigFile) {
@@ -81,6 +85,8 @@ export class ConfigManager {
         config.flags = {}
       }
 
+      this.logger.debug('Start: load config', { argv, cachedConfig: config })
+
       // we always use packageJSON version as the version, so overwrite.
       config.version = packageJSON.version
 
@@ -92,13 +98,14 @@ export class ConfigManager {
           }
 
           if (argv[flag.name] === '' &&
-                [flags.namespace.name, flags.clusterName.name, flags.chartDirectory.name].includes(flag.name)) {
+            [flags.namespace.name, flags.clusterName.name, flags.chartDirectory.name].includes(flag.name)) {
             continue // don't cache empty namespace, clusterName, or chartDirectory
           }
 
           if (argv[flag.name] !== undefined) {
             let val = argv[flag.name]
-            if (val && flag.name === flags.chartDirectory.name) {
+            if (val && (flag.name === flags.chartDirectory.name || flag.name === flags.cacheDir.name)) {
+              this.logger.debug(`Resolving directory path for '${flag.name}': ${val}`)
               val = paths.resolve(val)
             }
 
@@ -119,7 +126,7 @@ export class ConfigManager {
         this.persist()
       }
 
-      this.logger.debug('Setup cached config', { cachedConfig: config })
+      this.logger.debug('Finish: load config', { argv, cachedConfig: config })
 
       // set dev mode for logger if necessary
       this.logger.setDevMode(this.getFlag(flags.devMode))
