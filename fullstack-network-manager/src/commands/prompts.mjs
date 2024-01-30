@@ -5,7 +5,7 @@ import { constants } from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import * as helpers from '../core/helpers.mjs'
 
-export async function promptNamespaceArg (task, input) {
+export async function promptNamespace (task, input) {
   try {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
@@ -25,31 +25,7 @@ export async function promptNamespaceArg (task, input) {
   }
 }
 
-export async function promptSelectNamespaceArg (task, input, choices = []) {
-  try {
-    const initial = choices.indexOf(input)
-    if (initial < 0) {
-      const input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'select',
-        initial,
-        message: 'Select namespace',
-        choices: helpers.cloneArray(choices)
-      })
-
-      if (!input) {
-        throw new FullstackTestingError('namespace cannot be empty')
-      }
-
-      return input
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.namespace.name}: ${e.message}`, e)
-  }
-}
-
-export async function promptNodeIdsArg (task, input) {
+export async function promptNodeIds (task, input) {
   try {
     let nodeIds = []
     if (!input) {
@@ -136,7 +112,7 @@ export async function promptCacheDir (task, input) {
 
 export async function promptForce (task, input) {
   try {
-    if (input === undefined) {
+    if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
         default: flags.force.definition.default,
@@ -203,41 +179,6 @@ export async function promptValuesFile (task, input) {
     return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.valuesFile.name}`, e)
-  }
-}
-
-export async function promptClusterNameArg (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.clusterName.definition.default,
-        message: 'Enter cluster name: '
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.clusterName.name}`, e)
-  }
-}
-
-export async function promptSelectClusterNameArg (task, input, choices = []) {
-  try {
-    const initial = choices.indexOf(input)
-    if (initial < 0) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'select',
-        initial,
-        message: 'Select cluster',
-        choices: helpers.cloneArray(choices)
-      })
-      return input
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.clusterName.name}`, e)
   }
 }
 
@@ -453,25 +394,6 @@ export async function promptReplicaCount (task, input) {
   }
 }
 
-export async function promptKeyType (task, input) {
-  try {
-    const initial = 0
-    const choices = [constants.KEY_TYPE_GOSSIP, constants.KEY_TYPE_TLS]
-    if (!input || !choices.includes(input)) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'select',
-        initial,
-        message: 'Select key type',
-        choices
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
-  }
-}
-
 export async function promptGenerateGossipKeys (task, input) {
   try {
     if (typeof input !== 'boolean') {
@@ -542,4 +464,55 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.keyFormat.name}: ${e.message}`, e)
   }
+}
+
+// build the prompt registry
+const prompts = new Map()
+  .set(flags.keyFormat.name, promptKeyFormat)
+  .set(flags.nodeIDs.name, promptNodeIds)
+  .set(flags.releaseTag.name, promptReleaseTag)
+  .set(flags.relayReleaseTag.name, promptRelayReleaseTag)
+  .set(flags.namespace.name, promptNamespace)
+  .set(flags.cacheDir.name, promptCacheDir)
+  .set(flags.force.name, promptForce)
+  .set(flags.chainId.name, promptChainId)
+  .set(flags.chartDirectory.name, promptChartDir)
+  .set(flags.valuesFile.name, promptValuesFile)
+  .set(flags.deployPrometheusStack.name, promptDeployPrometheusStack)
+  .set(flags.enablePrometheusSvcMonitor.name, promptEnablePrometheusSvcMonitor)
+  .set(flags.deployMinio.name, promptDeployMinio)
+  .set(flags.deployCertManager.name, promptDeployCertManager)
+  .set(flags.deployCertManagerCrds.name, promptDeployCertManagerCrds)
+  .set(flags.deployMirrorNode.name, promptDeployMirrorNode)
+  .set(flags.deployHederaExplorer.name, promptDeployHederaExplorer)
+  .set(flags.tlsClusterIssuerType.name, promptTlsClusterIssuerType)
+  .set(flags.enableHederaExplorerTls.name, promptEnableHederaExplorerTls)
+  .set(flags.hederaExplorerTlsHostName.name, promptHederaExplorerTlsHostName)
+  .set(flags.operatorId.name, promptOperatorId)
+  .set(flags.operatorKey.name, promptOperatorKey)
+  .set(flags.replicaCount.name, promptReplicaCount)
+  .set(flags.generateGossipKeys.name, promptGenerateGossipKeys)
+  .set(flags.generateTlsKeys.name, promptGenerateTLSKeys)
+  .set(flags.deletePvcs.name, promptDeletePvcs)
+  .set(flags.keyFormat.name, promptKeyFormat)
+
+/**
+ * Run prompts for the given set of flags
+ * @param task task object from listr2
+ * @param configManager config manager to store flag values
+ * @param flagList list of flag objects
+ * @return {Promise<void>}
+ */
+export async function execute (task, configManager, flagList = []) {
+  for (const flag of flagList) {
+    if (!prompts.has(flag.name)) {
+      throw new FullstackTestingError(`No prompt available for flag: ${flag.name}`)
+    }
+
+    const prompt = prompts.get(flag.name)
+    const input = await prompt(task, configManager.getFlag(flag))
+    configManager.setFlag(flag, input)
+  }
+
+  configManager.persist()
 }

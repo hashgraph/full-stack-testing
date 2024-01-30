@@ -6,6 +6,7 @@ import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
 import { sleep } from '../core/helpers.mjs'
 import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
+import {generateGossipKeys} from "./flags.mjs";
 import * as flags from './flags.mjs'
 import * as prompts from './prompts.mjs'
 
@@ -125,19 +126,28 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-          const namespace = self.configManager.getFlag(flags.namespace)
-          const namespaces = await self.k8.getNamespaces()
+          await prompts.execute(task, self.configManager, [
+            flags.namespace,
+            flags.nodeIDs,
+            flags.releaseTag,
+            flags.cacheDir,
+            flags.force,
+            flags.chainId,
+            flags.generateGossipKeys,
+            flags.generateTlsKeys,
+            flags.keyFormat,
+          ])
 
           const config = {
-            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIdsArg(task, argv[flags.nodeIDs.name]),
-            releaseTag: await prompts.promptReleaseTag(task, self.configManager.getFlag(flags.releaseTag)),
-            cacheDir: await prompts.promptCacheDir(task, argv[flags.cacheDir.name]),
-            force: await prompts.promptForce(task, argv[flags.force.name]),
-            chainId: await prompts.promptChainId(task, argv[flags.chainId.name]),
-            generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv[flags.generateGossipKeys.name]),
-            generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv[flags.generateTlsKeys.name]),
-            keyFormat: await prompts.promptKeyFormat(task, argv[flags.keyFormat.name])
+            namespace: self.configManager.getFlag(flags.namespace),
+            nodeIds: self.configManager.getFlag(flags.nodeIDs),
+            releaseTag: self.configManager.getFlag(flags.releaseTag),
+            cacheDir: self.configManager.getFlag(flags.cacheDir),
+            force: self.configManager.getFlag(flags.force),
+            chainId: self.configManager.getFlag(flags.chainId),
+            generateGossipKeys: self.configManager.getFlag(flags.generateGossipKeys),
+            generateTlsKeys: self.configManager.getFlag(flags.generateTlsKeys),
+            keyFormat: self.configManager.getFlag(flags.keyFormat),
           }
 
           if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
@@ -365,7 +375,7 @@ export class NodeCommand extends BaseCommand {
 
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIdsArg(task, argv[flags.nodeIDs.name])
+            nodeIds: await prompts.promptNodeIds(task, argv[flags.nodeIDs.name])
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -450,7 +460,7 @@ export class NodeCommand extends BaseCommand {
           const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds)
+            nodeIds: await prompts.promptNodeIds(task, argv.nodeIds)
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -505,7 +515,7 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           ctx.config = {
-            nodeIds: await prompts.promptNodeIdsArg(task, argv.nodeIds),
+            nodeIds: await prompts.promptNodeIds(task, argv.nodeIds),
             cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
             generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv.generateGossipKeys),
             generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv.generateTlsKeys)
@@ -526,7 +536,7 @@ export class NodeCommand extends BaseCommand {
           const nodeKeyFiles = new Map()
           if (ctx.config.generateGossipKeys) {
             for (const nodeId of ctx.config.nodeIds) {
-              const signingKey = await self.keyManager.generateNodeSigningKey(nodeId)
+              const signingKey = await self.keyManager.generateSigningKey(nodeId)
               const signingKeyFiles = await self.keyManager.storeSigningKey(nodeId, signingKey, keysDir)
               const agreementKey = await self.keyManager.generateAgreementKey(nodeId, signingKey)
               const agreementKeyFiles = await self.keyManager.storeAgreementKey(nodeId, agreementKey, keysDir)

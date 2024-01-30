@@ -67,12 +67,16 @@ describe('KeyManager', () => {
     const keyName = 'TLS'
 
     const tlsKey = await keyManager.generateGrpcTLSKey(nodeId)
+    expect(tlsKey.certificate.subject).not.toBe('')
+    expect(tlsKey.certificate.issuer).not.toBe('')
 
     const files = await keyManager.storeTLSKey(nodeId, tlsKey, tmpDir)
     expect(files.privateKeyFile).not.toBeNull()
     expect(files.certificateFile).not.toBeNull()
 
     const nodeKey = await keyManager.loadTLSKey(nodeId, tmpDir, KeyManager.TLSKeyAlgo, keyName)
+    expect(nodeKey.certificate.subject).toStrictEqual(tlsKey.certificate.subject)
+    expect(nodeKey.certificate.issuer).toStrictEqual(tlsKey.certificate.issuer)
     expect(nodeKey.certificate).toStrictEqual(tlsKey.certificate)
     expect(nodeKey.privateKeyPem).toStrictEqual(tlsKey.privateKeyPem)
     expect(nodeKey.certificatePem).toStrictEqual(tlsKey.certificatePem)

@@ -90,7 +90,7 @@ export class RelayCommand extends BaseCommand {
             chartDir: await prompts.promptChartDir(task, chartDir),
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
             valuesFile: await prompts.promptValuesFile(task, valuesFile),
-            nodeIds: await prompts.promptNodeIdsArg(task, nodeIds),
+            nodeIds: await prompts.promptNodeIds(task, nodeIds),
             chainId: await prompts.promptChainId(task, chainId),
             relayRelease: await prompts.promptRelayReleaseTag(task, relayRelease),
             replicaCount: await prompts.promptReplicaCount(task, replicaCount),
@@ -170,7 +170,7 @@ export class RelayCommand extends BaseCommand {
           const namespaces = await self.k8.getNamespaces()
           ctx.config = {
             namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIdsArg(task, nodeIds)
+            nodeIds: await prompts.promptNodeIds(task, nodeIds)
           }
 
           ctx.config.releaseName = this.prepareReleaseName(ctx.config.nodeIds)
