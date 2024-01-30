@@ -55,7 +55,7 @@ jobs:
         uses: tj-actions/changed-files@90a06d6ba9543371ab4df8eeca0be07ca6054959 #v42.0.2
         with:
           files: |
-            fullstack-network-manager/**
+            solo/**
 
       - name: List all related changed files
         id: check-changed-files
@@ -121,7 +121,7 @@ jobs:
 
       - name: NodeJS CLI Unit Tests
         id: nodejs-test
-        working-directory: fullstack-network-manager
+        working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           which npm
@@ -132,7 +132,7 @@ jobs:
 
       - name: NodeJS CLI E2E Tests
         id: nodejs-test-e2e
-        working-directory: fullstack-network-manager
+        working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           npm i
@@ -145,7 +145,7 @@ jobs:
 
       - name: Output logs
         id: nodejs-test-e2e-logs
-        working-directory: fullstack-network-manager
+        working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() }}
         run: |
           cat ~/.fsnetman/logs/fst.log
