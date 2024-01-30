@@ -139,6 +139,32 @@ jobs:
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
           set
+          
+          CUR_DIR="scripts"
+          source "${CUR_DIR}/env.sh"       
+          kind create cluster -n "${CLUSTER_NAME}" --config=dev-cluster.yaml"
+
+          if [ ! -f "${TMP_DIR}/.env" ]; then \
+          echo "Creating .env file from template.env"
+          cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
+          echo "File list in ${TMP_DIR}"
+          ls -la "${TMP_DIR}"
+          fi
+    
+          if [ -f "${TMP_DIR}/.env" ]; then \
+          echo "Loading .env file: ${TMP_DIR}/.env"
+          set -a
+          # shellcheck source=./../temp/.env
+          source "${TMP_DIR}/.env"
+          set +a
+          fi
+          
+          kubectl create ns "${NAMESPACE}"
+          kubectl get ns
+          kubectl config use-context "kind-${CLUSTER_NAME}"
+          kubectl config set-context --current --namespace="${NAMESPACE}"
+          kubectl config get-contexts
+          
           make setup-cluster
           make local-kubectl-bats
           make deploy-network CHART_VALUES_FILES="ci/ci-values.yaml"
