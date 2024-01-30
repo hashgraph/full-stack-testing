@@ -141,7 +141,7 @@ jobs:
           set
           make setup-cluster
           make local-kubectl-bats
-          make deploy-network CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+          make deploy-network CHART_VALUES_FILES="ci/ci-values.yaml"
           make helm-test
           make setup-nodes
           make start-nodes
