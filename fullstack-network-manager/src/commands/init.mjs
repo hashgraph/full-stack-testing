@@ -109,10 +109,11 @@ export class InitCommand extends BaseCommand {
   static getCommandDefinition (initCmd) {
     return {
       command: 'init',
-      desc: 'Initialize local environment',
+      desc: 'Initialize local environment and default flags',
       builder: y => {
-        flags.setCommandFlags(y, flags.chartDirectory)
-        flags.setCommandFlags(y, flags.namespace)
+        for (const flag of flags.allFlags) {
+          flags.setCommandFlags(y, flag)
+        }
       },
       handler: (argv) => {
         initCmd.init(argv).then(r => {

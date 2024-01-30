@@ -266,7 +266,7 @@ export const enableTls = {
 export const keyFormat = {
   name: 'key-format',
   definition: {
-    describe: 'Key file format (pem or pfx)',
+    describe: 'Public and Private key file format (pem or pfx)',
     default: 'pem'
   }
 }
@@ -365,5 +365,6 @@ export const allFlags = [
   tlsClusterIssuerNamespace,
   enableHederaExplorerTls,
   selfSignedClusterIssuer,
-  deletePvcs
+  deletePvcs,
+  keyFormat
 ]
