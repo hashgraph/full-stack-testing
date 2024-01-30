@@ -139,5 +139,10 @@ jobs:
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
           set
-          pwd
-          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          make setup-cluster
+          make local-kubectl-bats
+          make deploy-network CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
+          make helm-test
+          make setup-nodes
+          make start-nodes
+          make destroy-network
