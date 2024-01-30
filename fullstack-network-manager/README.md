@@ -18,7 +18,7 @@ Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Heder
 * Run `npm install -g @hashgraph/fullstack-network-manager`
 
 * Ensure you have a valid kubernetes context, cluster and namespace. You may use `kind` and `kubectl` CLIs to create
-  cluster and namespace as below (See [`test/e2e/setup-e2e.sh`](test/e2e/setup_e2e.sh)):
+  cluster and namespace as below (See [`test/e2e/setup-e2e.sh`](test/e2e/setup-e2e.sh)):
 
 ```
 export FST_CLUSTER_NAME=fst-local
