@@ -477,7 +477,7 @@ export async function promptGenerateGossipKeys (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.generateTlsKeys.definition.default,
+        default: flags.generateGossipKeys.definition.default,
         message: 'Would you like to generate Gossip keys?'
       })
     }
@@ -526,7 +526,7 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
     if (initial < 0) {
       const input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'select',
-        initial,
+        initial: choices.indexOf(flags.keyFormat.definition.default),
         message: 'Select key format',
         choices: helpers.cloneArray(choices)
       })

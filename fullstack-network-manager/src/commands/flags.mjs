@@ -101,7 +101,7 @@ export const enablePrometheusSvcMonitor = {
   name: 'enable-prometheus-svc-monitor',
   definition: {
     describe: 'Enable prometheus service monitor for the network nodes',
-    default: true,
+    default: false,
     type: 'boolean'
   }
 }
@@ -110,7 +110,7 @@ export const deployMinio = {
   name: 'minio',
   definition: {
     describe: 'Deploy minio operator',
-    default: false,
+    default: true,
     type: 'boolean'
   }
 }
@@ -249,10 +249,18 @@ export const generateGossipKeys = {
   name: 'gossip-keys',
   definition: {
     describe: 'Generate gossip keys for nodes',
-    default: false,
-    alias: 'g'
+    default: ''
   }
 }
+
+export const generateTlsKeys = {
+  name: 'tls-keys',
+  definition: {
+    describe: 'Generate gRPC TLS keys for nodes',
+    default: ''
+  }
+}
+
 export const enableTls = {
   name: 'enable-tls',
   definition: {
@@ -266,16 +274,7 @@ export const keyFormat = {
   name: 'key-format',
   definition: {
     describe: 'Public and Private key file format (pem or pfx)',
-    default: 'pem'
-  }
-}
-
-export const generateTlsKeys = {
-  name: 'tls-keys',
-  definition: {
-    describe: 'Generate gRPC TLS keys for nodes',
-    default: false,
-    alias: 'k'
+    default: 'pfx'
   }
 }
 
