@@ -47,8 +47,8 @@ describe('ConfigManager', () => {
     it('config file match, dev=false', () => {
       expect(cm.config.flags[flags.devMode.name]).toBeFalsy()
     })
-    it('config file match, namespace=fst-user', () => {
-      expect(cm.config.flags[flags.namespace.name]).toBe('fst-user')
+    it('config file match, namespace=solo-user', () => {
+      expect(cm.config.flags[flags.namespace.name]).toBe('solo-user')
     })
     it('config file match, chartDirectory is empty', () => {
       expect(cm.config.flags[flags.chartDirectory.name]).toBe('')
@@ -95,7 +95,7 @@ describe('ConfigManager', () => {
     const newConfig = JSON.parse(configJSON.toString())
 
     it('config file takes precedence over empty namespace', () => {
-      expect(newConfig.flags[flags.namespace.name]).toBe('fst-user')
+      expect(newConfig.flags[flags.namespace.name]).toBe('solo-user')
     })
     it('config file takes precedence over empty cluster name', () => {
       expect(newConfig.flags[flags.clusterName.name]).toBe('kind-kind')

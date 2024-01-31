@@ -10,10 +10,10 @@ import { fileURLToPath } from 'url'
 const CUR_FILE_DIR = paths.dirname(fileURLToPath(import.meta.url))
 
 export class ConfigManager {
-  constructor (logger, fstConfigFile = constants.FST_CONFIG_FILE, persistMode = true) {
+  constructor (logger, fstConfigFile = constants.SOLO_CONFIG_FILE, persistMode = true) {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
 
-    if (fstConfigFile === constants.FST_CONFIG_FILE) {
+    if (fstConfigFile === constants.SOLO_CONFIG_FILE) {
       this.fstConfigFile = fstConfigFile
     } else {
       if (this.verifyConfigFile(fstConfigFile)) {

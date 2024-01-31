@@ -21,11 +21,11 @@ Solo is a CLI tool to manage and deploy a private Hedera Network.
   cluster and namespace as below (See [`test/e2e/setup-e2e.sh`](test/e2e/setup_e2e.sh)):
 
 ```
-export FST_CLUSTER_NAME=fst-local
-export FST_NAMESPACE=fst-local
-kind create cluster -n "${FST_CLUSTER_NAME}" 
-kubectl create ns "${FST_NAMESPACE}"
-solo init -d ../charts --namespace "${FST_NAMESPACE}" # cache args for subsequent commands
+export SOLO_CLUSTER_NAME=solo-local
+export SOLO_NAMESPACE=solo-local
+kind create cluster -n "${SOLO_CLUSTER_NAME}" 
+kubectl create ns "${SOLO_NAMESPACE}"
+solo init -d ../charts --namespace "${SOLO_NAMESPACE}" # cache args for subsequent commands
 ```
 
 * Run `solo` from a terminal, It may show usage options as shown below:
@@ -71,7 +71,7 @@ Select a command
   * Alternative way would be to run `npm run solo -- <COMMAND> <ARGS>`
 * Run `npm test` or `npm run test` to run the unit tests
 * Run `solo` to access the CLI as shown above.
-* Note that debug logs are stored at `~/.solo/logs/fst.log`. So you may use `tail -f ~/.solo/logs/fst.log | jq
+* Note that debug logs are stored at `~/.solo/logs/solo.log`. So you may use `tail -f ~/.solo/logs/solo.log | jq
   ` in a separate terminal to keep an eye on the logs.
 * Before making a commit run `npm run format`
 

@@ -8,19 +8,19 @@ import chalk from 'chalk'
 export const CUR_FILE_DIR = dirname(fileURLToPath(import.meta.url))
 export const USER = `${process.env.USER}`
 export const USER_SANITIZED = USER.replace(/[\W_]+/g, '-')
-export const FST_HOME_DIR = `${process.env.HOME}/.solo`
-export const FST_LOGS_DIR = `${FST_HOME_DIR}/logs`
-export const FST_CACHE_DIR = `${FST_HOME_DIR}/cache`
+export const SOLO_HOME_DIR = `${process.env.HOME}/.solo`
+export const SOLO_LOGS_DIR = `${SOLO_HOME_DIR}/logs`
+export const SOLO_CACHE_DIR = `${SOLO_HOME_DIR}/cache`
 export const DEFAULT_NAMESPACE = 'default'
 export const HELM = 'helm'
 export const CWD = process.cwd()
-export const FST_CONFIG_FILE = `${FST_HOME_DIR}/solo.config`
+export const SOLO_CONFIG_FILE = `${SOLO_HOME_DIR}/solo.config`
 export const RESOURCES_DIR = normalize(CUR_FILE_DIR + '/../../resources')
 
 export const ROOT_CONTAINER = 'root-container'
 
 // --------------- Hedera network and node related constants --------------------------------------------------------------------
-export const HEDERA_CHAIN_ID = process.env.FST_CHAIN_ID || '298'
+export const HEDERA_CHAIN_ID = process.env.SOLO_CHAIN_ID || '298'
 export const HEDERA_HGCAPP_DIR = '/opt/hgcapp'
 export const HEDERA_SERVICES_PATH = `${HEDERA_HGCAPP_DIR}/services-hedera`
 export const HEDERA_HAPI_PATH = `${HEDERA_SERVICES_PATH}/HapiApp2.0`
@@ -29,13 +29,13 @@ export const HEDERA_DATA_LIB_DIR = 'data/lib'
 export const HEDERA_USER_HOME_DIR = '/home/hedera'
 export const HEDERA_APP_NAME = 'HederaNode.jar'
 export const HEDERA_BUILDS_URL = 'https://builds.hedera.com'
-export const HEDERA_NODE_ACCOUNT_ID_START = AccountId.fromString(process.env.FST_NODE_ACCOUNT_ID_START || '0.0.3')
-export const HEDERA_NODE_INTERNAL_GOSSIP_PORT = process.env.FST_NODE_INTERNAL_GOSSIP_PORT || '50111'
-export const HEDERA_NODE_EXTERNAL_GOSSIP_PORT = process.env.FST_NODE_EXTERNAL_GOSSIP_PORT || '50111'
+export const HEDERA_NODE_ACCOUNT_ID_START = AccountId.fromString(process.env.SOLO_NODE_ACCOUNT_ID_START || '0.0.3')
+export const HEDERA_NODE_INTERNAL_GOSSIP_PORT = process.env.SOLO_NODE_INTERNAL_GOSSIP_PORT || '50111'
+export const HEDERA_NODE_EXTERNAL_GOSSIP_PORT = process.env.SOLO_NODE_EXTERNAL_GOSSIP_PORT || '50111'
 
-export const HEDERA_NODE_GRPC_PORT = process.env.FST_NODE_GRPC_PORT || '50211'
-export const HEDERA_NODE_GRPCS_PORT = process.env.FST_NODE_GRPC_PORT || '50212'
-export const HEDERA_NODE_DEFAULT_STAKE_AMOUNT = process.env.FST_NODE_DEFAULT_STAKE_AMOUNT || 1
+export const HEDERA_NODE_GRPC_PORT = process.env.SOLO_NODE_GRPC_PORT || '50211'
+export const HEDERA_NODE_GRPCS_PORT = process.env.SOLO_NODE_GRPC_PORT || '50212'
+export const HEDERA_NODE_DEFAULT_STAKE_AMOUNT = process.env.SOLO_NODE_DEFAULT_STAKE_AMOUNT || 1
 
 // --------------- Logging related constants ---------------------------------------------------------------------------
 export const LOG_STATUS_PROGRESS = chalk.cyan('>>')
@@ -43,24 +43,22 @@ export const LOG_STATUS_DONE = chalk.green('OK')
 export const LOG_GROUP_DIVIDER = chalk.yellow('----------------------------------------------------------------------------')
 
 // --------------- Charts related constants ----------------------------------------------------------------------------
-export const CHART_REPO_FST_URL = 'https://hashgraph.github.io/full-stack-testing/charts'
-export const CHART_FST_REPO_NAME = 'full-stack-testing'
-export const CHART_FST_SETUP_NAME = 'fullstack-cluster-setup'
-export const CHART_FST_DEPLOYMENT_NAME = 'fullstack-deployment'
-export const CHART_REPO_JSON_RPC_RELAY_URL = 'https://hashgraph.github.io/hedera-json-rpc-relay/charts'
-export const CHART_JSON_RPC_RELAY_REPO_NAME = 'hedera-json-rpc-relay'
-export const CHART_JSON_RPC_RELAY_NAME = 'hedera-json-rpc-relay'
-export const CHART_MIRROR_NODE_URL = 'https://hashgraph.github.io/hedera-mirror-node/charts'
-export const CHART_MIRROR_NODE_REPO_NAME = 'hedera-mirror'
-export const CHART_MIRROR_NODE_NAME = 'hedera-mirror'
+export const FULLSTACK_TESTING_CHART_URL = 'https://hashgraph.github.io/full-stack-testing/charts'
+export const FULLSTACK_TESTING_CHART = 'full-stack-testing'
+export const FULLSTACK_CLUSTER_SETUP_CHART = 'fullstack-cluster-setup'
+export const FULLSTACK_DEPLOYMENT_CHART = 'fullstack-deployment'
+export const JSON_RPC_RELAY_CHART_URL = 'https://hashgraph.github.io/hedera-json-rpc-relay/charts'
+export const JSON_RPC_RELAY_CHART = 'hedera-json-rpc-relay'
+export const MIRROR_NODE_CHART_URL = 'https://hashgraph.github.io/hedera-mirror-node/charts'
+export const MIRROR_NODE_CHART = 'hedera-mirror'
 export const DEFAULT_CHART_REPO = new Map()
-  .set(CHART_FST_REPO_NAME, CHART_REPO_FST_URL)
-  .set(CHART_JSON_RPC_RELAY_REPO_NAME, CHART_REPO_JSON_RPC_RELAY_URL)
-  .set(CHART_MIRROR_NODE_REPO_NAME, CHART_MIRROR_NODE_URL)
+  .set(FULLSTACK_TESTING_CHART, FULLSTACK_TESTING_CHART_URL)
+  .set(JSON_RPC_RELAY_CHART, JSON_RPC_RELAY_CHART_URL)
+  .set(MIRROR_NODE_CHART, MIRROR_NODE_CHART_URL)
 
 // ------------------- Hedera Account related ---------------------------------------------------------------------------------
-export const OPERATOR_ID = process.env.FST_OPERATOR_ID || '0.0.2'
-export const OPERATOR_KEY = process.env.FST_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
+export const OPERATOR_ID = process.env.SOLO_OPERATOR_ID || '0.0.2'
+export const OPERATOR_KEY = process.env.SOLO_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
 
 export const POD_STATUS_RUNNING = 'Running'
 export const POD_STATUS_READY = 'Ready'

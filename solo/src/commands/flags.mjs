@@ -171,7 +171,7 @@ export const cacheDir = {
   definition: {
     describe: 'Local cache directory containing platform release artifacts',
     alias: 'd',
-    default: core.constants.FST_CACHE_DIR,
+    default: core.constants.SOLO_CACHE_DIR,
     type: 'string'
   }
 }
