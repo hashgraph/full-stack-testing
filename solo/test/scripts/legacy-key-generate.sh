@@ -16,18 +16,23 @@
 # DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
 #
 
-keyDir="${1}"
+keyDir="~/.solo/cache/keys"
+ids="node0,node1,node2,node3"
+
+if [ "$#" -gt 0 ]; then
+    ids="${1}"
+fi
+
+if [ "$#" -eq 2 ]; then
+    keyDir="${2}"
+fi
+
 mkdir -p "${keyDir}"
 cd "${keyDir}"
-shift
 
-# check if the names were supplied as arguments
-if [[ -z "$*" ]]; then
-  # if not, use a default set of names
-  names=("alice" "bob" "carol" "dave")
-else
-  names=("$@")
-fi
+IFS=',' read -ra names <<< "${ids}"
+echo "KeyDir: ${keyDir}"
+echo "Node Names: ${names[*]}"
 
 #names=(`cat names.txt`)
 
