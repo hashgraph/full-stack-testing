@@ -26,7 +26,7 @@ on:
         description: "Custom Job Label:"
         type: string
         required: false
-        default: "fsnetman Test"
+        default: "solo Test"
       node-version:
         description: "NodeJS Version:"
         type: string
@@ -47,7 +47,7 @@ permissions:
 
 jobs:
   test:
-    name: ${{ inputs.custom-job-label || 'fsnetman Test' }}
+    name: ${{ inputs.custom-job-label || 'solo Test' }}
     runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Get related changed files
@@ -68,9 +68,9 @@ jobs:
           echo ""
           if [ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
-            echo "Executing fsnetman tests...."
+            echo "Scheduled solo tests...."
           else
-            echo ">> No relevant files are changed. No need to run fsnetman tests"
+            echo ">> No relevant files are changed. No need to run solo tests"
           fi
 
       - name: Checkout Code
@@ -148,4 +148,4 @@ jobs:
         working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() }}
         run: |
-          cat ~/.fsnetman/logs/fst.log
+          cat ~/.solo/logs/solo.log
