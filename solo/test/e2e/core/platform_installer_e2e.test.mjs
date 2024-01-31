@@ -23,10 +23,12 @@ describe('PackageInstallerE2E', () => {
   const packageTag = 'v0.42.5'
   let packageFile = ''
 
-  beforeAll(() => {
+  beforeAll(async () => {
     if (!fs.existsSync(testCacheDir)) {
       fs.mkdirSync(testCacheDir)
     }
+
+    await configManager.load()
   })
 
   describe('setupHapiDirectories', () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 import fs from 'fs'
 import net from 'net'
 import os from 'os'
@@ -13,6 +13,10 @@ describe('K8', () => {
   const configManager = new ConfigManager(testLogger)
   const k8 = new K8(configManager, testLogger)
   const downloader = new PackageDownloader(testLogger)
+
+  beforeAll(async () => {
+    await configManager.load()
+  })
 
   it('should be able to list clusters', async () => {
     const clusters = await k8.getClusters()

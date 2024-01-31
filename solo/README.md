@@ -1,4 +1,4 @@
-# Solo 
+# Solo
 
 Solo is a CLI tool to manage and deploy a private Hedera Network.
 
