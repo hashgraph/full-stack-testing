@@ -182,7 +182,7 @@ describe('NodeCommand', () => {
       let client = null
 
       try {
-        client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
         const wallet = new Wallet(
           constants.OPERATOR_ID,
           constants.OPERATOR_KEY,
@@ -209,7 +209,7 @@ describe('NodeCommand', () => {
       let client = null
 
       try {
-        client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
         const accountKey = PrivateKey.generate()
         const wallet = new Wallet(
           constants.OPERATOR_ID,
