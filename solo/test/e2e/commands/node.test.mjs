@@ -131,7 +131,7 @@ describe('NodeCommand', () => {
 
   beforeAll(async () => {
     // load cached namespace
-    await configManager.load()
+    configManager.load()
     argv[namespace] = configManager.getFlag(flags.namespace)
 
     if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {

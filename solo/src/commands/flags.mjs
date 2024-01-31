@@ -250,7 +250,8 @@ export const generateGossipKeys = {
   name: 'gossip-keys',
   definition: {
     describe: 'Generate gossip keys for nodes',
-    default: ''
+    default: false,
+    type: 'boolean'
   }
 }
 
@@ -258,7 +259,8 @@ export const generateTlsKeys = {
   name: 'tls-keys',
   definition: {
     describe: 'Generate gRPC TLS keys for nodes',
-    default: ''
+    default: false,
+    type: 'boolean'
   }
 }
 

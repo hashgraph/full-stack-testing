@@ -28,7 +28,7 @@ describe('PackageInstallerE2E', () => {
       fs.mkdirSync(testCacheDir)
     }
 
-    await configManager.load()
+    configManager.load()
   })
 
   describe('setupHapiDirectories', () => {

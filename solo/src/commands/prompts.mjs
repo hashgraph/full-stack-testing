@@ -400,7 +400,7 @@ export async function promptGenerateGossipKeys (task, input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
         default: flags.generateGossipKeys.definition.default,
-        message: 'Would you like to generate Gossip keys?'
+        message: `Would you like to generate Gossip keys? ${typeof input} ${input}`
       })
     }
 
@@ -466,36 +466,37 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
   }
 }
 
-// build the prompt registry
-const prompts = new Map()
-  .set(flags.keyFormat.name, promptKeyFormat)
-  .set(flags.nodeIDs.name, promptNodeIds)
-  .set(flags.releaseTag.name, promptReleaseTag)
-  .set(flags.relayReleaseTag.name, promptRelayReleaseTag)
-  .set(flags.namespace.name, promptNamespace)
-  .set(flags.cacheDir.name, promptCacheDir)
-  .set(flags.force.name, promptForce)
-  .set(flags.chainId.name, promptChainId)
-  .set(flags.chartDirectory.name, promptChartDir)
-  .set(flags.valuesFile.name, promptValuesFile)
-  .set(flags.deployPrometheusStack.name, promptDeployPrometheusStack)
-  .set(flags.enablePrometheusSvcMonitor.name, promptEnablePrometheusSvcMonitor)
-  .set(flags.deployMinio.name, promptDeployMinio)
-  .set(flags.deployCertManager.name, promptDeployCertManager)
-  .set(flags.deployCertManagerCrds.name, promptDeployCertManagerCrds)
-  .set(flags.deployMirrorNode.name, promptDeployMirrorNode)
-  .set(flags.deployHederaExplorer.name, promptDeployHederaExplorer)
-  .set(flags.tlsClusterIssuerType.name, promptTlsClusterIssuerType)
-  .set(flags.enableHederaExplorerTls.name, promptEnableHederaExplorerTls)
-  .set(flags.hederaExplorerTlsHostName.name, promptHederaExplorerTlsHostName)
-  .set(flags.operatorId.name, promptOperatorId)
-  .set(flags.operatorKey.name, promptOperatorKey)
-  .set(flags.replicaCount.name, promptReplicaCount)
-  .set(flags.generateGossipKeys.name, promptGenerateGossipKeys)
-  .set(flags.generateTlsKeys.name, promptGenerateTLSKeys)
-  .set(flags.deletePvcs.name, promptDeletePvcs)
-  .set(flags.keyFormat.name, promptKeyFormat)
+export function getPromptMap() {
+  return new Map()
+    .set(flags.nodeIDs.name, promptNodeIds)
+    .set(flags.releaseTag.name, promptReleaseTag)
+    .set(flags.relayReleaseTag.name, promptRelayReleaseTag)
+    .set(flags.namespace.name, promptNamespace)
+    .set(flags.cacheDir.name, promptCacheDir)
+    .set(flags.force.name, promptForce)
+    .set(flags.chainId.name, promptChainId)
+    .set(flags.chartDirectory.name, promptChartDir)
+    .set(flags.valuesFile.name, promptValuesFile)
+    .set(flags.deployPrometheusStack.name, promptDeployPrometheusStack)
+    .set(flags.enablePrometheusSvcMonitor.name, promptEnablePrometheusSvcMonitor)
+    .set(flags.deployMinio.name, promptDeployMinio)
+    .set(flags.deployCertManager.name, promptDeployCertManager)
+    .set(flags.deployCertManagerCrds.name, promptDeployCertManagerCrds)
+    .set(flags.deployMirrorNode.name, promptDeployMirrorNode)
+    .set(flags.deployHederaExplorer.name, promptDeployHederaExplorer)
+    .set(flags.tlsClusterIssuerType.name, promptTlsClusterIssuerType)
+    .set(flags.enableHederaExplorerTls.name, promptEnableHederaExplorerTls)
+    .set(flags.hederaExplorerTlsHostName.name, promptHederaExplorerTlsHostName)
+    .set(flags.operatorId.name, promptOperatorId)
+    .set(flags.operatorKey.name, promptOperatorKey)
+    .set(flags.replicaCount.name, promptReplicaCount)
+    .set(flags.generateGossipKeys.name, promptGenerateGossipKeys)
+    .set(flags.generateTlsKeys.name, promptGenerateTLSKeys)
+    .set(flags.deletePvcs.name, promptDeletePvcs)
+    .set(flags.keyFormat.name, promptKeyFormat)
+}
 
+// build the prompt registry
 /**
  * Run prompts for the given set of flags
  * @param task task object from listr2
@@ -504,6 +505,7 @@ const prompts = new Map()
  * @return {Promise<void>}
  */
 export async function execute (task, configManager, flagList = []) {
+  const prompts = getPromptMap()
   for (const flag of flagList) {
     if (!prompts.has(flag.name)) {
       throw new FullstackTestingError(`No prompt available for flag: ${flag.name}`)

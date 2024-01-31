@@ -38,8 +38,6 @@ export class ConfigManager {
       if (fs.existsSync(fstConfigFile)) {
         const configJSON = fs.readFileSync(fstConfigFile)
         JSON.parse(configJSON.toString())
-      } else {
-        this.persist()
       }
       return true
     } catch (e) {
@@ -75,17 +73,18 @@ export class ConfigManager {
       let writeConfig = false
       const packageJSON = self.loadPackageJSON()
 
+      this.logger.debug('Start: load config', { argv, cachedConfig: config })
+
       // if config exist, then load it first
       if (!reset && fs.existsSync(this.fstConfigFile)) {
         const configJSON = fs.readFileSync(this.fstConfigFile)
         config = JSON.parse(configJSON.toString())
+        this.logger.debug(`Loaded cached config from ${this.fstConfigFile}`, { cachedConfig: config })
       }
 
       if (!config.flags) {
         config.flags = {}
       }
-
-      this.logger.debug('Start: load config', { argv, cachedConfig: config })
 
       // we always use packageJSON version as the version, so overwrite.
       config.version = packageJSON.version

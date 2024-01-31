@@ -130,7 +130,6 @@ export class NodeCommand extends BaseCommand {
             flags.nodeIDs,
             flags.releaseTag,
             flags.cacheDir,
-            flags.force,
             flags.chainId,
             flags.generateGossipKeys,
             flags.generateTlsKeys,
@@ -150,7 +149,8 @@ export class NodeCommand extends BaseCommand {
           }
 
           if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
-            throw new FullstackTestingError(`Unable to generate PFX gossip keys. Please ensure you have pre-generated keys in ${config.cacheDir}/keys`)
+            throw new FullstackTestingError(`Unable to generate PFX gossip keys.\n
+            Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.cacheDir}/keys`)
           }
 
           if (!await this.k8.hasNamespace(config.namespace)) {
@@ -368,13 +368,14 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-
-          const namespace = self.configManager.getFlag(flags.namespace)
-          const namespaces = await self.k8.getNamespaces()
+          await prompts.execute(task, self.configManager, [
+            flags.namespace,
+            flags.nodeIDs
+          ])
 
           ctx.config = {
-            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIds(task, argv[flags.nodeIDs.name])
+            namespace: self.configManager.getFlag(flags.namespace),
+            nodeIds: self.configManager.getFlag(flags.nodeIDs)
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -439,7 +440,7 @@ export class NodeCommand extends BaseCommand {
     try {
       await tasks.run()
     } catch (e) {
-      throw new FullstackTestingError('Error starting node', e)
+      throw new FullstackTestingError(`Error starting node: ${e.message}`, e)
     }
 
     return true
@@ -513,16 +514,31 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          self.configManager.load(argv)
+          await prompts.execute(task, self.configManager, [
+            flags.nodeIDs,
+            flags.cacheDir,
+            flags.generateGossipKeys,
+            flags.generateTlsKeys,
+            flags.keyFormat
+          ])
+
           ctx.config = {
-            nodeIds: await prompts.promptNodeIds(task, argv.nodeIds),
-            cacheDir: await prompts.promptCacheDir(task, argv.cacheDir),
-            generateGossipKeys: await prompts.promptGenerateGossipKeys(task, argv.generateGossipKeys),
-            generateTlsKeys: await prompts.promptGenerateTLSKeys(task, argv.generateTlsKeys)
+            nodeIds: self.configManager.getFlag(flags.nodeIDs),
+            cacheDir: self.configManager.getFlag(flags.cacheDir),
+            generateGossipKeys: self.configManager.getFlag(flags.generateGossipKeys),
+            generateTlsKeys: self.configManager.getFlag(flags.generateTlsKeys),
+            keyFormat: self.configManager.getFlag(flags.keyFormat)
           }
 
           const keysDir = path.join(ctx.config.cacheDir, 'keys')
           if (!fs.existsSync(keysDir)) {
             fs.mkdirSync(keysDir)
+          }
+
+          if (ctx.config.keyFormat === constants.KEY_FORMAT_PFX && ctx.config.generateGossipKeys) {
+            throw new FullstackTestingError(`Unable to generate PFX gossip keys.\n
+            Please ensure you have pre-generated (*.pfx) key files in keys directory: ${keysDir}`)
           }
 
           ctx.config.keysDir = keysDir
@@ -629,7 +645,8 @@ export class NodeCommand extends BaseCommand {
               flags.generateTlsKeys,
               flags.cacheDir,
               flags.chainId,
-              flags.force
+              flags.force,
+              flags.keyFormat
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node setup' ===")

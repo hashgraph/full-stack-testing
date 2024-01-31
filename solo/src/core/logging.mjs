@@ -110,13 +110,13 @@ export const Logger = class {
 
     console.log(chalk.red('*********************************** ERROR *****************************************'))
     if (this.devMode) {
-      let prefix=""
-      let indent = ""
+      let prefix = ''
+      let indent = ''
       stack.forEach(s => {
         console.log(indent + prefix + chalk.yellow(s.message))
-        console.log(indent + chalk.gray(s.stacktrace) + "\n")
-        indent += " "
-        prefix +="Caused by: "
+        console.log(indent + chalk.gray(s.stacktrace) + '\n')
+        indent += ' '
+        prefix += 'Caused by: '
       })
     } else {
       const lines = err.message.split('\n')
