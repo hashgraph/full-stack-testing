@@ -148,21 +148,24 @@ export class NodeCommand extends BaseCommand {
             keyFormat: self.configManager.getFlag(flags.keyFormat)
           }
 
-          if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
-            throw new FullstackTestingError(`Unable to generate PFX gossip keys.\n
-            Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.cacheDir}/keys`)
-          }
-
-          if (!await this.k8.hasNamespace(config.namespace)) {
-            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
-          }
-
           // compute other config parameters
           config.releasePrefix = Templates.prepareReleasePrefix(config.releaseTag)
           config.buildZipFile = `${config.cacheDir}/${config.releasePrefix}/build-${config.releaseTag}.zip`
           config.keysDir = path.join(config.cacheDir, 'keys')
           config.stagingDir = `${config.cacheDir}/${config.releasePrefix}/staging/${config.releaseTag}`
           config.stagingKeysDir = path.join(config.stagingDir, 'keys')
+
+          if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
+            throw new FullstackTestingError('Unable to generate PFX gossip keys.\n' +
+              `Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.keysDir}\n` +
+              'If you have keytool installed, you may run the command: \n\n' +
+              `\tnpm run pfx-keys ${config.nodeIds.join(' ')}\n`
+            )
+          }
+
+          if (!await this.k8.hasNamespace(config.namespace)) {
+            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
+          }
 
           // prepare staging keys directory
           if (!fs.existsSync(config.stagingKeysDir)) {
@@ -523,25 +526,28 @@ export class NodeCommand extends BaseCommand {
             flags.keyFormat
           ])
 
-          ctx.config = {
+          const config = {
             nodeIds: self.configManager.getFlag(flags.nodeIDs),
             cacheDir: self.configManager.getFlag(flags.cacheDir),
             generateGossipKeys: self.configManager.getFlag(flags.generateGossipKeys),
             generateTlsKeys: self.configManager.getFlag(flags.generateTlsKeys),
-            keyFormat: self.configManager.getFlag(flags.keyFormat)
+            keyFormat: self.configManager.getFlag(flags.keyFormat),
+            keysDir: path.join(self.configManager.getFlag(flags.cacheDir), 'keys')
           }
 
-          const keysDir = path.join(ctx.config.cacheDir, 'keys')
-          if (!fs.existsSync(keysDir)) {
-            fs.mkdirSync(keysDir)
+          if (!fs.existsSync(config.keysDir)) {
+            fs.mkdirSync(config.keysDir)
           }
 
-          if (ctx.config.keyFormat === constants.KEY_FORMAT_PFX && ctx.config.generateGossipKeys) {
-            throw new FullstackTestingError(`Unable to generate PFX gossip keys.\n
-            Please ensure you have pre-generated (*.pfx) key files in keys directory: ${keysDir}`)
+          if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
+            throw new FullstackTestingError('Unable to generate PFX gossip keys.\n' +
+              `Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.keysDir}\n` +
+              'If you have keytool installed, you may run the command: \n\n' +
+              `\tnpm run pfx-keys ${config.nodeIds.join(' ')}\n`
+            )
           }
 
-          ctx.config.keysDir = keysDir
+          ctx.config = config
         }
       },
       {
@@ -708,7 +714,8 @@ export class NodeCommand extends BaseCommand {
               flags.nodeIDs,
               flags.cacheDir,
               flags.generateGossipKeys,
-              flags.generateTlsKeys
+              flags.generateTlsKeys,
+              flags.keyFormat
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node keys' ===")
