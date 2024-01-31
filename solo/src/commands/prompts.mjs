@@ -466,7 +466,7 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
   }
 }
 
-export function getPromptMap() {
+export function getPromptMap () {
   return new Map()
     .set(flags.nodeIDs.name, promptNodeIds)
     .set(flags.releaseTag.name, promptReleaseTag)

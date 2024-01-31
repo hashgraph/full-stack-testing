@@ -20,7 +20,7 @@ describe('PackageInstallerE2E', () => {
   const downloader = new PackageDownloader(testLogger)
   const testCacheDir = getTestCacheDir()
   const podName = 'network-node0-0'
-  const packageVersion = 'v0.47.0-alpha.0'
+  const packageVersion = 'v0.42.5'
   let packageFile = ''
 
   beforeAll(async () => {
@@ -152,8 +152,8 @@ describe('PackageInstallerE2E', () => {
 
       // create mock files
       fs.mkdirSync(keysDir)
-      fs.writeFileSync(path.join(keysDir, `hedera-${nodeId}.pem`), '')
-      fs.writeFileSync(path.join(keysDir, `hedera-${nodeId}.pem`), '')
+      fs.writeFileSync(path.join(keysDir, `hedera-${nodeId}.key`), '')
+      fs.writeFileSync(path.join(keysDir, `hedera-${nodeId}.crt`), '')
 
       await installer.setupHapiDirectories(podName)
 
