@@ -2,6 +2,7 @@
 
 keyDir="~/.solo/cache/keys"
 ids="node0,node1,node2,node3"
+generate_pfx=false
 
 if [ "$#" -gt 0 ]; then
     ids="${1}"
@@ -18,26 +19,11 @@ IFS=',' read -ra names <<< "${ids}"
 echo "KeyDir: ${keyDir}"
 echo "Node Names: ${names[*]}"
 
-# Replace ("alice" "bob" ...) with the list of member names, separated by spaces.
-# Or, replace the list with (`cat names.txt`) and then put all the names into names.txt.
-# The names should all have their uppercase letters changed to lowercase.
-# All spaces and punctuation should be deleted. All accents should be removed.
-# So if the config.txt has the names "Alice", "Bob", and "Carol", the list here would
-# need to be ("alice" "bob" "carol").
-# A name like "5- John O'Donald, Sr." in the config.txt would need to be listed
-# as "5johnodonaldsr" here. And if the "o" had an umlaut above it or a grave accent
-# above it in the config.txt, then it would need to be entered as a plain "o" here.
-# It is important that every name in the config.txt be different, even after making
-# these changes. So the config.txt can't have two members with the name "Alice", nor can
-# it have one member named "Alice" and another named "--alice--".
-
-
 backup_dir="backup/$(date +"%Y-%m-%dT%H_%M_%S")"
 dummy_password="password"
 s_key_prefix="s" # signing key
 a_key_prefix="a" # agreement key
 e_key_prefix="e" # encryption key
-
 
 function backup() {
     local pattern="${1}"
@@ -83,21 +69,9 @@ function generate_signing_key() {
     echo "------------------------------------------------------------------------------------"
     openssl x509 -in "${s_cert}" -text -noout
 
-    # genereate s-private.pfx
-    openssl pkcs12 -export -out "${s_key_pfx}" -inkey "${s_key}" -in "${s_cert}" -iter 10000 \
-        -name "${s_friendly_name}" -macsaltlen 20 -password pass:"${dummy_password}" || return 1
-    echo "------------------------------------------------------------------------------------"
-    echo "Generated: ${s_key_pfx}"
-    echo "------------------------------------------------------------------------------------"
-    openssl pkcs12 -info -nokeys -in "${s_key_pfx}" -passin pass:"${dummy_password}"
-
-    # genereate s-public.pfx
-    openssl pkcs12 -export -nokeys -out "${s_cert_pfx}" -in "${s_cert}" -iter 10000 \
-        -name "${s_friendly_name}" -macsaltlen 20 -password pass:"${dummy_password}" || return 1
-    echo "------------------------------------------------------------------------------------"
-    echo "Generated: ${s_cert_pfx}"
-    echo "------------------------------------------------------------------------------------"
-    openssl pkcs12 -info -nokeys -in "${s_cert_pfx}" -passin pass:"${dummy_password}"
+    if [[ "${generate_pfx}" == "true" ]]; then
+        generate_pfx_files "${s_key}" "${s_cert}" "${s_key_pfx}" "${s_cert_pfx}" "${friendly_name}"
+    fi
 
     # remove csr
     rm "${s_csr}"
@@ -106,7 +80,7 @@ function generate_signing_key() {
 }
 
 # Generate keys signed by the s-key
-function generate_key() {
+function generate_signed_key() {
     local n="${1}"
     local prefix="${2}"
     local s_key="${3}"
@@ -155,6 +129,23 @@ function generate_key() {
     echo "------------------------------------------------------------------------------------"
     openssl storeutl -noout -text -certs "${cert_file}"
 
+    if [[ "${generate_pfx}" == "true" ]]; then
+        generate_pfx_files "${key_file}" "${cert_file}" "${key_pfx}" "${cert_pfx}" "${friendly_name}"
+    fi
+
+    # remove csr
+    rm "${csr_file}"
+
+    return 0
+}
+
+function generate_pfx_files() {
+    let key_file="${1}"
+    let cert_file="${2}"
+    let key_pfx="${3}"
+    let cert_pfx="${4}"
+    let friendly_name="${5}"
+
     # generate private.pfx
     openssl pkcs12 -export -out "${key_pfx}" -inkey "${key_file}" -in "${cert_file}" -iter 10000 \
         -name "${friendly_name}" -macsaltlen 20 -password pass:"${dummy_password}" || return 1
@@ -171,11 +162,6 @@ function generate_key() {
     echo "------------------------------------------------------------------------------------"
     #openssl pkcs12 -info -in a-public-node0.pfx -passin pass:password -passout pass:password -nokeys
     openssl pkcs12 -info -in "${cert_pfx}" -passin pass:"${dummy_password}" -passout pass:"${dummy_password}" -nokeys
-
-    # remove csr
-    rm "${csr_file}"
-
-    return 0
 }
 
 for nm in "${names[@]}"; do
@@ -184,8 +170,12 @@ for nm in "${names[@]}"; do
     s_cert="${s_key_prefix}-public-${n}.pem"
 
     generate_signing_key "${n}" "${s_key_prefix}" || exit 1
-    generate_key "${n}" "${a_key_prefix}" "${s_key}" "${s_cert}" || exit 1
-    generate_key "${n}" "${e_key_prefix}" "${s_key}" "${s_cert}" || exit 1
+    generate_signed_key "${n}" "${a_key_prefix}" "${s_key}" "${s_cert}" || exit 1
+
+    # Generate node mTLS keys
+    openssl req -new -newkey rsa:3072 -out "hedera-${n}.csr" -keyout "hedera-${n}.key" -sha384 -nodes -subj "/CN=${n}" || exit 1
+    openssl x509 -req -in "hedera-${n}.csr" -out "hedera-${n}.crt" -signkey "hedera-${n}.key" -days 36524 -sha384 || exit 1
+    rm -f "hedera-${n}.csr"
 done
 
 # display backup dir
