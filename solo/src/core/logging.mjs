@@ -5,7 +5,7 @@ import * as util from 'util'
 import chalk from 'chalk'
 
 const customFormat = winston.format.combine(
-  winston.format.label({ label: 'FST', message: false }),
+  winston.format.label({ label: 'SOLO', message: false }),
 
   winston.format.splat(),
 
@@ -58,7 +58,7 @@ export const Logger = class {
       transports: [
         //
         // - Write all logs with importance level of `error` or less to `error.log`
-        // - Write all logs with importance level of `info` or less to `fst.log`
+        // - Write all logs with importance level of `info` or less to `solo.log`
         //
         new winston.transports.File({ filename: `${constants.SOLO_LOGS_DIR}/solo.log` })
         // new winston.transports.File({filename: constants.TMP_DIR + "/logs/error.log", level: 'error'}),

@@ -158,7 +158,7 @@ describe('NodeCommand', () => {
           testLogger.showUserError(e)
         }
 
-        await nodeCmd.run(`tail ${constants.SOLO_LOGS_DIR}/fst.log`)
+        await nodeCmd.run(`tail ${constants.SOLO_LOGS_DIR}/solo.log`)
       }
     }, 60000)
 
