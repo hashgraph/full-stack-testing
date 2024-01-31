@@ -48,6 +48,20 @@ export class NodeCommand extends BaseCommand {
     let attempt = 0
     let isActive = false
 
+    // check log file is accessible
+    let logFileAccessible = false
+    while (attempt++ < maxAttempt) {
+      if (await this.k8.hasFile(podName, constants.ROOT_CONTAINER, logfilePath)) {
+        logFileAccessible = true
+        break
+      }
+      await sleep(1000)
+    }
+
+    if (!logFileAccessible) {
+      throw new FullstackTestingError(`Logs are not accessible: ${logfilePath}`)
+    }
+
     while (attempt < maxAttempt) {
       try {
         const output = await this.k8.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
@@ -455,13 +469,14 @@ export class NodeCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
-          const namespace = self.configManager.getFlag(flags.namespace)
+          await prompts.execute(task, self.configManager, [
+            flags.namespace,
+            flags.nodeIDs
+          ])
 
-          // get existing choices
-          const namespaces = await self.k8.getNamespaces()
           ctx.config = {
-            namespace: await prompts.promptSelectNamespaceArg(task, namespace, namespaces),
-            nodeIds: await prompts.promptNodeIds(task, argv.nodeIds)
+            namespace: self.configManager.getFlag(flags.namespace),
+            nodeIds: self.configManager.getFlag(flags.nodeIDs)
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
