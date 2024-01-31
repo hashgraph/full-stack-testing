@@ -20,3 +20,6 @@ waitAtStartup,                                 false
 jasperDb.iteratorInputBufferBytes,             16777216
 prometheusEndpointEnabled,                     true
 transactionMaxBytes,                           6144
+loadKeysFromPfxFiles,                          true
+crypto.enableNewKeyStoreModel,                 true
+
