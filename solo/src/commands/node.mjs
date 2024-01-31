@@ -157,9 +157,7 @@ export class NodeCommand extends BaseCommand {
 
           if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
             throw new FullstackTestingError('Unable to generate PFX gossip keys.\n' +
-              `Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.keysDir}\n` +
-              'If you have keytool installed, you may run the command: \n\n' +
-              `\tnpm run pfx-keys -- ${config.nodeIds.join(' ')}\n`
+              `Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.keysDir}\n`
             )
           }
 
@@ -541,9 +539,7 @@ export class NodeCommand extends BaseCommand {
 
           if (config.keyFormat === constants.KEY_FORMAT_PFX && config.generateGossipKeys) {
             throw new FullstackTestingError('Unable to generate PFX gossip keys.\n' +
-              `Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.keysDir}\n` +
-              'If you have keytool installed, you may run the command: \n\n' +
-              `\tnpm run pfx-keys -- ${config.nodeIds.join(' ')}\n`
+              `Please ensure you have pre-generated (*.pfx) key files in keys directory: ${config.keysDir}\n`
             )
           }
 
