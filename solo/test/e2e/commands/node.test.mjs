@@ -93,7 +93,7 @@ class TestHelper {
 }
 
 describe.each([
-  ['v0.42.5', constants.KEY_FORMAT_PFX],
+  ['v0.42.5', constants.KEY_FORMAT_PFX]
   // ['v0.47.0-alpha.0', constants.KEY_FORMAT_PFX],
   // ['v0.47.0-alpha.0', constants.KEY_FORMAT_PEM]
 ])('NodeCommand', (testRelease, testKeyFormat) => {

@@ -264,15 +264,6 @@ export const generateTlsKeys = {
   }
 }
 
-export const enableTls = {
-  name: 'enable-tls',
-  definition: {
-    describe: 'Enables TLS for gateway ingress services [grpcs, grpcWeb, hederaExplorer]',
-    default: false,
-    type: 'boolean'
-  }
-}
-
 export const keyFormat = {
   name: 'key-format',
   definition: {
@@ -351,9 +342,6 @@ export const allFlags = [
   operatorKey,
   generateGossipKeys,
   generateTlsKeys,
-  enableTls,
-  enableHederaExplorerTls,
-  deletePvcs,
   keyFormat,
   tlsClusterIssuerType,
   enableHederaExplorerTls,

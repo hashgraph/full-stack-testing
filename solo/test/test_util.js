@@ -14,5 +14,5 @@ export function getTestCacheDir () {
 }
 
 export function getTmpDir () {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'fsnetman-'))
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'solo-'))
 }
