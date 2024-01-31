@@ -2,6 +2,7 @@
 
 keysDir="${HOME}/.solo/cache/keys"
 ids="node0,node1,node2,node3"
+validity=36524 # number of days
 generate_pfx=false
 
 if [ "$#" -gt 0 ]; then
@@ -10,6 +11,10 @@ fi
 
 if [ "$#" -eq 2 ]; then
     keysDir="${2}"
+fi
+
+if [ "$#" -eq 3 ]; then
+    validity="${3}"
 fi
 
 mkdir -p "${keysDir}"
@@ -60,7 +65,7 @@ function generate_signing_key() {
     openssl req -new -newkey rsa:3072 -out "${s_csr}" -keyout "${s_key}" -sha384 -nodes -subj "/CN=${s_friendly_name}" || return 1
 
     # Generate: self-signed s_cert
-    openssl x509 -req -in "${s_csr}" -out "${s_cert}" -signkey "${s_key}" -days 36524 -sha384 || return 1
+    openssl x509 -req -in "${s_csr}" -out "${s_cert}" -signkey "${s_key}" -days "${validity}" -sha384 || return 1
 
     # output s_cert
     echo "------------------------------------------------------------------------------------"
@@ -106,9 +111,7 @@ function generate_signed_key() {
     echo "------------------------------------------------------------------------------------"
 
     # generate key
-    #openssl ecparam -genkey -name secp384r1 -noout -out "${key_file}" || return 1
-    # Use ED25519 key instead of EC key: https://blog.pinterjann.is/ed25519-certificates.html
-    openssl genpkey -algorithm ED25519 -out "${key_file}" || return 1
+    openssl ecparam -genkey -name secp384r1 -noout -out "${key_file}" || return 1
 
     # generate csr
     openssl req -new -out "${csr_file}" -key "${key_file}" -subj "/CN=${friendly_name}" || return 1
@@ -118,7 +121,7 @@ function generate_signed_key() {
     openssl req -text -in "${csr_file}"
 
     # generate cert and verify
-    openssl x509 -req -in "${csr_file}" -out  "${cert_file}.tmp" -CA "${s_cert}" -CAkey "${s_key}" -days 36524 -sha384 || return 1
+    openssl x509 -req -in "${csr_file}" -out  "${cert_file}.tmp" -CA "${s_cert}" -CAkey "${s_key}" -days "${validity}" -sha384 || return 1
     cat "${s_cert}" "${cert_file}.tmp" > "${cert_file}" # combine cert chain
     openssl verify -verbose -purpose sslserver -CAfile "${s_cert}" "${cert_file}"
     rm "${cert_file}.tmp" # remove tmp file
@@ -173,7 +176,7 @@ for nm in "${names[@]}"; do
 
     # Generate node mTLS keys
     openssl req -new -newkey rsa:3072 -out "hedera-${n}.csr" -keyout "hedera-${n}.key" -sha384 -nodes -subj "/CN=${n}" || exit 1
-    openssl x509 -req -in "hedera-${n}.csr" -out "hedera-${n}.crt" -signkey "hedera-${n}.key" -days 36524 -sha384 || exit 1
+    openssl x509 -req -in "hedera-${n}.csr" -out "hedera-${n}.crt" -signkey "hedera-${n}.key" -days "${validity}" -sha384 || exit 1
     rm -f "hedera-${n}.csr"
 done
 
