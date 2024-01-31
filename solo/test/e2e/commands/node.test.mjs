@@ -92,7 +92,11 @@ class TestHelper {
   }
 }
 
-describe('NodeCommand', () => {
+describe.each([
+  ['v0.42.5', constants.KEY_FORMAT_PFX],
+  ['v0.47.0-alpha.0', constants.KEY_FORMAT_PFX],
+  ['v0.47.0-alpha.0', constants.KEY_FORMAT_PEM]
+])('NodeCommand', (testRelease, testKeyFormat) => {
   const helm = new Helm(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
@@ -113,38 +117,38 @@ describe('NodeCommand', () => {
     depManager,
     keyManager
   })
+
   const cacheDir = getTestCacheDir()
-
-  const argv = {}
-  // argv[flags.releaseTag.name] = 'v0.47.0-alpha.0'
-  argv[flags.releaseTag.name] = 'v0.42.0'
-  argv[flags.nodeIDs.name] = 'node0,node1,node2'
-  argv[flags.cacheDir.name] = cacheDir
-  argv[flags.force.name] = false
-  argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
-  argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
-  argv[flags.generateGossipKeys.name] = false
-  argv[flags.generateTlsKeys.name] = true
-  argv[flags.keyFormat.name] = constants.KEY_FORMAT_PFX
-
-  const nodeIds = argv[flags.nodeIDs.name].split(',')
-
-  beforeAll(async () => {
-    // load cached namespace
-    configManager.load()
-    argv[namespace] = configManager.getFlag(flags.namespace)
-
-    if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {
-      const shellRunner = new ShellRunner(testLogger)
-      await shellRunner.run(`test/scripts/legacy-key-generate.sh ${path.join(cacheDir, 'keys')} ${nodeIds.join(' ')}`)
-    }
-  }, 60000)
 
   afterEach(() => {
     TestHelper.stopPortForwards()
   })
 
-  describe('start', () => {
+  describe(`node start should succeed [release ${testRelease}, keyFormat: ${testKeyFormat}]`, () => {
+    const argv = {}
+    argv[flags.releaseTag.name] = testRelease
+    argv[flags.keyFormat.name] = testKeyFormat
+    argv[flags.nodeIDs.name] = 'node0,node1,node2'
+    argv[flags.cacheDir.name] = cacheDir
+    argv[flags.force.name] = false
+    argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
+    argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
+    argv[flags.generateGossipKeys.name] = false
+    argv[flags.generateTlsKeys.name] = true
+
+    const nodeIds = argv[flags.nodeIDs.name].split(',')
+
+    beforeAll(() => {
+      configManager.load()
+      argv[namespace] = configManager.getFlag(flags.namespace)
+    })
+
+    it('should pre-generate keys', async () => {
+      if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {
+        const shellRunner = new ShellRunner(testLogger)
+        await shellRunner.run(`test/scripts/legacy-key-generate.sh ${path.join(cacheDir, 'keys')} ${nodeIds.join(' ')}`)
+      }
+    }, 60000)
     it('node setup should succeed', async () => {
       expect.assertions(1)
       try {

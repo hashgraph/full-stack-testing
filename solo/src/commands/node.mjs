@@ -396,7 +396,7 @@ export class NodeCommand extends BaseCommand {
             subTasks.push({
               title: `Start node: ${chalk.yellow(nodeId)}`,
               task: async () => {
-                await self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['rm', '-rf', `${constants.HEDERA_HAPI_PATH}/data/logs/*.log`])
+                await self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['rm', '-rf', `${constants.HEDERA_HAPI_PATH}/data/logs`])
                 await self.k8.execContainer(podName, constants.ROOT_CONTAINER, ['systemctl', 'restart', 'network-node'])
               }
             })
@@ -425,7 +425,7 @@ export class NodeCommand extends BaseCommand {
 
           // set up the sub-tasks
           return task.newListr(subTasks, {
-            concurrent: true,
+            concurrent: false,
             rendererOptions: {
               collapseSubtasks: false
             }
