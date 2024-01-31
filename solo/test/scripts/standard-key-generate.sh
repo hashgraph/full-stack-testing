@@ -1,6 +1,6 @@
 #!/bin/bash
 
-keyDir="~/.solo/cache/keys"
+keyDir="${HOME}/.solo/cache/keys"
 ids="node0,node1,node2,node3"
 generate_pfx=false
 

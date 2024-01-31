@@ -16,7 +16,7 @@
 # DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
 #
 
-keyDir="~/.solo/cache/keys"
+keyDir="${HOME}/.solo/cache/keys"
 ids="node0,node1,node2,node3"
 
 if [ "$#" -gt 0 ]; then
