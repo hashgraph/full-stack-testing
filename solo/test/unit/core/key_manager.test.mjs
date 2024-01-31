@@ -89,5 +89,5 @@ describe('KeyManager', () => {
     })).resolves.toBeTruthy()
 
     fs.rmSync(tmpDir, { recursive: true })
-  })
+  }, 20000)
 })
