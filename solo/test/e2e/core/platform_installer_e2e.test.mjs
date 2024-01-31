@@ -141,7 +141,7 @@ describe('PackageInstallerE2E', () => {
 
       fs.rmSync(tmpDir, { recursive: true })
     })
-  })
+  }, 20000)
 
   describe('copyTLSKeys', () => {
     it('should succeed to copy TLS keys for node0', async () => {

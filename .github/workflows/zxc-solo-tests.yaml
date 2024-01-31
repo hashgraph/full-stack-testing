@@ -32,6 +32,16 @@ on:
         type: string
         required: false
         default: "18"
+      java-distribution:
+        description: "Java JDK Distribution:"
+        type: string
+        required: false
+        default: "temurin"
+      java-version:
+        description: "Java JDK Version:"
+        type: string
+        required: false
+        default: "21.0.1"
 
 defaults:
   run:
@@ -79,6 +89,13 @@ jobs:
         with:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
+
+      - name: Setup Java
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
+        if: ${{ !inputs.enable-nodejs-tests && !cancelled() && !failure() }}
+        with:
+          distribution: ${{ inputs.java-distribution }}
+          java-version: ${{ inputs.java-version }}
 
       - name: Setup Node
         uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
