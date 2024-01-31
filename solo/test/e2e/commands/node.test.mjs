@@ -146,7 +146,7 @@ describe.each([
     it('should pre-generate keys', async () => {
       if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {
         const shellRunner = new ShellRunner(testLogger)
-        await shellRunner.run(`test/scripts/legacy-key-generate.sh ${path.join(cacheDir, 'keys')} ${nodeIds.join(' ')}`)
+        await shellRunner.run(`test/scripts/gen-legacy-keys.sh ${nodeIds.join(',')} ${path.join(cacheDir, 'keys')}`)
       }
     }, 60000)
     it('node setup should succeed', async () => {

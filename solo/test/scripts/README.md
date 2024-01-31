@@ -8,13 +8,13 @@ There are two scripts to generate node gossip keys in `pkcs12` format (`*.pfx` f
 In order to generate keys in PEM format for 3 nodes (`node0,node1,node3`), you may run the script as below:
 
 ```
-./standard-key-generate.sh <keysDir> node0 node1 node3
+./standard-key-generate.sh node0,node1,node3 <keysDir> 
 ```
 
 Or,
 
 ```
-./legacy-key-generate.sh <keysDir> node0 node1 node3
+./legacy-key-generate.sh node0,node1,node3 <keysDir> 
 ```
 
 ## Useful commands for reference

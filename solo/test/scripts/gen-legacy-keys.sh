@@ -16,7 +16,7 @@
 # DISTRIBUTING THIS SOFTWARE OR ITS DERIVATIVES.
 #
 
-keyDir="${HOME}/.solo/cache/keys"
+keysDir="${HOME}/.solo/cache/keys"
 ids="node0,node1,node2,node3"
 
 if [ "$#" -gt 0 ]; then
@@ -24,14 +24,14 @@ if [ "$#" -gt 0 ]; then
 fi
 
 if [ "$#" -eq 2 ]; then
-    keyDir="${2}"
+    keysDir="${2}"
 fi
 
-mkdir -p "${keyDir}"
-cd "${keyDir}"
+mkdir -p "${keysDir}"
+cd "${keysDir}"
 
 IFS=',' read -ra names <<< "${ids}"
-echo "KeyDir: ${keyDir}"
+echo "KeyDir: ${keysDir}"
 echo "Node Names: ${names[*]}"
 
 mkdir unused 2>/dev/null
@@ -62,7 +62,7 @@ for nm in "${names[@]}"; do
     keytool -importcert -alias "e-$n" -keystore "public.pfx" -storetype "pkcs12" -storepass "password" -noprompt
 
   echo "---------------------------------------------------------------------------------------------------------------"
-  echo "Generated private key of node '${n}': ${keyDir}/private-$n.pfx"
+  echo "Generated private key of node '${n}': ${keysDir}/private-$n.pfx"
   echo "---------------------------------------------------------------------------------------------------------------"
   keytool -list -keystore "private-$n.pfx" -storetype "pkcs12" -storepass "password"
 
@@ -73,7 +73,7 @@ for nm in "${names[@]}"; do
 done
 
 echo "---------------------------------------------------------------------------------------------------------------"
-echo "Generated public keys: ${keyDir}/public.pfx"
+echo "Generated public keys: ${keysDir}/public.pfx"
 echo "---------------------------------------------------------------------------------------------------------------"
 keytool -list -keystore "public.pfx" -storetype "pkcs12" -storepass "password"
 ls

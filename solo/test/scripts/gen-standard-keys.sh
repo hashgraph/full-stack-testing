@@ -1,6 +1,6 @@
 #!/bin/bash
 
-keyDir="${HOME}/.solo/cache/keys"
+keysDir="${HOME}/.solo/cache/keys"
 ids="node0,node1,node2,node3"
 generate_pfx=false
 
@@ -9,14 +9,14 @@ if [ "$#" -gt 0 ]; then
 fi
 
 if [ "$#" -eq 2 ]; then
-    keyDir="${2}"
+    keysDir="${2}"
 fi
 
-mkdir -p "${keyDir}"
-cd "${keyDir}"
+mkdir -p "${keysDir}"
+cd "${keysDir}"
 
 IFS=',' read -ra names <<< "${ids}"
-echo "KeyDir: ${keyDir}"
+echo "KeyDir: ${keysDir}"
 echo "Node Names: ${names[*]}"
 
 backup_dir="backup/$(date +"%Y-%m-%dT%H_%M_%S")"

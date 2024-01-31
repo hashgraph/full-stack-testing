@@ -2,6 +2,12 @@
 
 Solo is a CLI tool to manage and deploy a private Hedera Network.
 
+## Requirements
+
+* Node(^18.19.0)
+* Helm(^3.14.0)
+* Kubectl(^1.28.2)
+
 ## Install
 
 * Create or update `~/.npmrc` file and specify the GitHub package registry:
@@ -71,7 +77,7 @@ Select a command
   * Alternative way would be to run `npm run solo -- <COMMAND> <ARGS>`
 * Run `npm test` or `npm run test` to run the unit tests
 * Run `solo` to access the CLI as shown above.
-* Note that debug logs are stored at `~/.solo/logs/solo.log`. So you may use `tail -f ~/.solo/logs/solo.log | jq
+* Note that debug logs are stored at `$HOME/.solo/logs/solo.log`. So you may use `tail -f $HOME/.solo/logs/solo.log | jq
   ` in a separate terminal to keep an eye on the logs.
 * Before making a commit run `npm run format`
 
@@ -81,24 +87,24 @@ Select a command
   * Run `./test/e2e/setup-e2e.sh`
   * Run `npm run test-e2e`
 
-## Key generation
+## Node Keys
 
-### Gossip keys (.pem file)
+### Standard keys (.pem file)
 
-By default, `solo` is able to generate `PEM` formatted gossip keys for nodes.
-User may run `solo node keys --gossip-keys` command to generate keys.
+`solo` is able to generate standard `PEM` formatted keys for nodes. You may run `solo node keys --gossip-keys --tls-keys`
+command to generate the required keys.
 
-### Gossip keys (.pfx file)
+### Legacy keys (.pfx file)
 
-`solo` is not able to generate legacy `PFX` formatted gossip keys. However, if `keytool` is installed on the machine,
-you may run the following command to pre-generate the pfx formatted gossip keys in the default cache
-directory (`~/.solo/cache/keys`):
+`solo` is not able to generate legacy `PFX` formatted gossip keys. However, you may use the script [test/scripts/gen-legacy-keys](test/scripts/gen-legacy-keys.sh).
+For example, if `curl`, `keytool` and `openssl` are installed on the machine, you may run the following command to generate the pfx formatted gossip keys in the default
+cache directory (`$HOME/.solo/cache/keys`):
 
 ```
-# npm run pfx-keys -- < space separated list of node IDs>
-npm run pfx-keys -- node0 node1 node2 
+# Option - 1: Generate keys for default node IDs: node0,node1,node2,node3
+/bin/bash -c "${curl -fsSL  https://raw.githubusercontent.com/hashgraph/solo/main/test/scripts/gen-legacy-keys.sh)"
+
+# Option - 2: Generate keys for custom node IDs
+curl -o gen-legacy-keys.sh https://raw.githubusercontent.com/hashgraph/solo/main/test/scripts/gen-legacy-keys.sh
+./legacy-key-generation.sh alice,bob,carol
 ```
-
-### mTLS keys (hedera.key, hedera.crt)
-
-You can run `node keys --tls-keys -i node0 node1 node2` to generate mTLS keys for the given set of nodes

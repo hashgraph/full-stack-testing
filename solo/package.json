@@ -15,8 +15,7 @@
     "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
     "solo": "NODE_OPTIONS=--experimental-vm-modules node solo.mjs",
     "check": "remark . --quiet --frail && eslint .",
-    "format": "remark . --quiet --frail --output && eslint --fix .",
-    "pfx-keys": "test/scripts/legacy-key-generate.sh ~/.solo/cache/keys "
+    "format": "remark . --quiet --frail --output && eslint --fix ."
   },
   "keywords": [
     "solo",
