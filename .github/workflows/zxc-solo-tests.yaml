@@ -26,7 +26,7 @@ on:
         description: "Custom Job Label:"
         type: string
         required: false
-        default: "fsnetman Test"
+        default: "solo Test"
       node-version:
         description: "NodeJS Version:"
         type: string
@@ -47,7 +47,7 @@ permissions:
 
 jobs:
   test:
-    name: ${{ inputs.custom-job-label || 'fsnetman Test' }}
+    name: ${{ inputs.custom-job-label || 'solo Test' }}
     runs-on: [ self-hosted, Linux, medium, ephemeral ]
     steps:
       - name: Get related changed files
@@ -55,7 +55,7 @@ jobs:
         uses: tj-actions/changed-files@90a06d6ba9543371ab4df8eeca0be07ca6054959 #v42.0.2
         with:
           files: |
-            fullstack-network-manager/**
+            solo/**
 
       - name: List all related changed files
         id: check-changed-files
@@ -68,9 +68,9 @@ jobs:
           echo ""
           if [ "${{ steps.changed-files.outputs.any_changed }}" == "true" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
-            echo "Executing fsnetman tests...."
+            echo "Scheduled solo tests...."
           else
-            echo ">> No relevant files are changed. No need to run fsnetman tests"
+            echo ">> No relevant files are changed. No need to run solo tests"
           fi
 
       - name: Checkout Code
@@ -121,7 +121,7 @@ jobs:
 
       - name: NodeJS CLI Unit Tests
         id: nodejs-test
-        working-directory: fullstack-network-manager
+        working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           which npm
@@ -132,7 +132,7 @@ jobs:
 
       - name: NodeJS CLI E2E Tests
         id: nodejs-test-e2e
-        working-directory: fullstack-network-manager
+        working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           npm i
@@ -145,7 +145,7 @@ jobs:
 
       - name: Output logs
         id: nodejs-test-e2e-logs
-        working-directory: fullstack-network-manager
+        working-directory: solo
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() }}
         run: |
-          cat ~/.fsnetman/logs/fst.log
+          cat ~/.solo/logs/solo.log

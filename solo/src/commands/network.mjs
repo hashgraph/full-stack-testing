@@ -104,7 +104,7 @@ export class NetworkCommand extends BaseCommand {
 
     // compute values
     config.chartPath = await this.prepareChartPath(config.chartDir,
-      constants.CHART_FST_REPO_NAME, constants.CHART_FST_DEPLOYMENT_NAME)
+      constants.FULLSTACK_TESTING_CHART, constants.FULLSTACK_DEPLOYMENT_CHART)
 
     config.valuesArg = this.prepareValuesArg(config.chartDir,
       config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer,
@@ -130,15 +130,15 @@ export class NetworkCommand extends BaseCommand {
         }
       },
       {
-        title: `Install chart '${constants.CHART_FST_DEPLOYMENT_NAME}'`,
+        title: `Install chart '${constants.FULLSTACK_DEPLOYMENT_CHART}'`,
         task: async (ctx, _) => {
-          if (await self.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)) {
-            await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+          if (await self.chartManager.isChartInstalled(ctx.config.namespace, constants.FULLSTACK_DEPLOYMENT_CHART)) {
+            await self.chartManager.uninstall(ctx.config.namespace, constants.FULLSTACK_DEPLOYMENT_CHART)
           }
 
           await this.chartManager.install(
             ctx.config.namespace,
-            constants.CHART_FST_DEPLOYMENT_NAME,
+            constants.FULLSTACK_DEPLOYMENT_CHART,
             ctx.config.chartPath,
             ctx.config.version,
             ctx.config.valuesArg)
@@ -178,7 +178,7 @@ export class NetworkCommand extends BaseCommand {
     try {
       await tasks.run()
     } catch (e) {
-      throw new FullstackTestingError(`Error installing chart ${constants.CHART_FST_DEPLOYMENT_NAME}`, e)
+      throw new FullstackTestingError(`Error installing chart ${constants.FULLSTACK_DEPLOYMENT_CHART}`, e)
     }
 
     return true
@@ -218,9 +218,9 @@ export class NetworkCommand extends BaseCommand {
         }
       },
       {
-        title: `Uninstall chart ${constants.CHART_FST_DEPLOYMENT_NAME}`,
+        title: `Uninstall chart ${constants.FULLSTACK_DEPLOYMENT_CHART}`,
         task: async (ctx, _) => {
-          await self.chartManager.uninstall(ctx.config.namespace, constants.CHART_FST_DEPLOYMENT_NAME)
+          await self.chartManager.uninstall(ctx.config.namespace, constants.FULLSTACK_DEPLOYMENT_CHART)
         }
       },
       {
@@ -271,11 +271,11 @@ export class NetworkCommand extends BaseCommand {
         }
       },
       {
-        title: `Upgrade chart '${constants.CHART_FST_DEPLOYMENT_NAME}'`,
+        title: `Upgrade chart '${constants.FULLSTACK_DEPLOYMENT_CHART}'`,
         task: async (ctx, _) => {
           await this.chartManager.upgrade(
             ctx.config.namespace,
-            constants.CHART_FST_DEPLOYMENT_NAME,
+            constants.FULLSTACK_DEPLOYMENT_CHART,
             ctx.config.chartPath,
             ctx.config.valuesArg)
         }
@@ -296,7 +296,7 @@ export class NetworkCommand extends BaseCommand {
     try {
       await tasks.run()
     } catch (e) {
-      throw new FullstackTestingError(`Error upgrading chart ${constants.CHART_FST_DEPLOYMENT_NAME}`, e)
+      throw new FullstackTestingError(`Error upgrading chart ${constants.FULLSTACK_DEPLOYMENT_CHART}`, e)
     }
 
     return true

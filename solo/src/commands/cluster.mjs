@@ -76,7 +76,7 @@ export class ClusterCommand extends BaseCommand {
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
 
-          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART)
         }
       },
       {
@@ -94,7 +94,7 @@ export class ClusterCommand extends BaseCommand {
         skip: (ctx, _) => ctx.isChartInstalled
       },
       {
-        title: `Install '${constants.CHART_FST_SETUP_NAME}' chart`,
+        title: `Install '${constants.FULLSTACK_CLUSTER_SETUP_CHART}' chart`,
         task: async (ctx, _) => {
           const namespace = ctx.config.namespace
           const version = ctx.config.version
@@ -103,12 +103,12 @@ export class ClusterCommand extends BaseCommand {
           const valuesArg = ctx.valuesArg
 
           try {
-            await self.chartManager.install(namespace, constants.CHART_FST_SETUP_NAME, chartPath, version, valuesArg)
+            await self.chartManager.install(namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART, chartPath, version, valuesArg)
           } catch (e) {
             // if error, uninstall the chart and rethrow the error
-            self.logger.debug(`Error on installing ${constants.CHART_FST_SETUP_NAME}. attempting to rollback by uninstalling the chart`, e)
+            self.logger.debug(`Error on installing ${constants.FULLSTACK_CLUSTER_SETUP_CHART}. attempting to rollback by uninstalling the chart`, e)
             try {
-              await self.chartManager.uninstall(namespace, constants.CHART_FST_SETUP_NAME)
+              await self.chartManager.uninstall(namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART)
             } catch (ex) {
               // ignore error during uninstall since we are doing the best-effort uninstall here
             }
@@ -155,14 +155,14 @@ export class ClusterCommand extends BaseCommand {
             namespace
           }
 
-          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.CHART_FST_SETUP_NAME)
+          ctx.isChartInstalled = await this.chartManager.isChartInstalled(ctx.config.namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART)
         }
       },
       {
-        title: `Uninstall '${constants.CHART_FST_SETUP_NAME}' chart`,
+        title: `Uninstall '${constants.FULLSTACK_CLUSTER_SETUP_CHART}' chart`,
         task: async (ctx, _) => {
           const namespace = ctx.config.namespace
-          await self.chartManager.uninstall(namespace, constants.CHART_FST_SETUP_NAME)
+          await self.chartManager.uninstall(namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART)
           await self.showInstalledChartList(namespace)
         },
         skip: (ctx, _) => !ctx.isChartInstalled

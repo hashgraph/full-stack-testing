@@ -17,7 +17,7 @@ export class RelayCommand extends BaseCommand {
       })
     }
 
-    valuesArg += ` --set config.MIRROR_NODE_URL=${constants.CHART_FST_DEPLOYMENT_NAME}-rest`
+    valuesArg += ` --set config.MIRROR_NODE_URL=${constants.FULLSTACK_DEPLOYMENT_CHART}-rest`
 
     if (chainID) {
       valuesArg += ` --set config.CHAIN_ID=${chainID}`
@@ -109,7 +109,7 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Prepare chart values',
         task: async (ctx, _) => {
-          ctx.chartPath = await this.prepareChartPath(ctx.config.chartDir, constants.CHART_JSON_RPC_RELAY_REPO_NAME, constants.CHART_JSON_RPC_RELAY_NAME)
+          ctx.chartPath = await this.prepareChartPath(ctx.config.chartDir, constants.JSON_RPC_RELAY_CHART, constants.CHART_JSON_RPC_RELAY_NAME)
           ctx.valuesArg = this.prepareValuesArg(
             ctx.config.valuesFile,
             ctx.config.nodeIds,

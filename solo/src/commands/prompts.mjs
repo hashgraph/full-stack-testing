@@ -121,7 +121,7 @@ export async function promptCacheDir (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: constants.FST_CACHE_DIR,
+        default: constants.SOLO_CACHE_DIR,
         message: 'Enter local cache directory path:'
       })
     }

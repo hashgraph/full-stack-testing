@@ -1,6 +1,6 @@
-# Full Stack Network Manager CLI
+# Solo
 
-Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Hedera Network using the FS Helm Charts.
+Solo is a CLI tool to manage and deploy a private Hedera Network.
 
 ## Install
 
@@ -15,40 +15,39 @@ Full Stack Network Manager (fsnetman) is a CLI tool to manage and deploy a Heder
   your [Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
   and setup an environment variable GITHUB\_TOKEN.
 
-* Run `npm install -g @hashgraph/fullstack-network-manager`
+* Run `npm install -g @hashgraph/solo`
 
 * Ensure you have a valid kubernetes context, cluster and namespace. You may use `kind` and `kubectl` CLIs to create
   cluster and namespace as below (See [`test/e2e/setup-e2e.sh`](test/e2e/setup_e2e.sh)):
 
 ```
-export FST_CLUSTER_NAME=fst-local
-export FST_NAMESPACE=fst-local
-kind create cluster -n "${FST_CLUSTER_NAME}" 
-kubectl create ns "${FST_NAMESPACE}"
-fsnetman init -d ../charts --namespace "${FST_NAMESPACE}" # cache args for subsequent commands
+export SOLO_CLUSTER_NAME=solo-local
+export SOLO_NAMESPACE=solo-local
+kind create cluster -n "${SOLO_CLUSTER_NAME}" 
+kubectl create ns "${SOLO_NAMESPACE}"
+solo init -d ../charts --namespace "${SOLO_NAMESPACE}" # cache args for subsequent commands
 ```
 
-* Run `fsnetman` from a terminal, It may show usage options as shown below:
+* Run `solo` from a terminal, It may show usage options as shown below:
 
 ```
-❯ fsnetman
+❯ solo
 
--------------------------------------------------------------------------------
-*** Fullstack Network Manager (FsNetMan) ***
-Version                 : 0.16.0
-Kubernetes Context      : kind-fst-local
-Kubernetes Cluster      : kind-fst-local
--------------------------------------------------------------------------------
-
+******************************* Solo *********************************************
+Version                 : 0.18.0
+Kubernetes Context      : kind-kind
+Kubernetes Cluster      : kind-kind
+Kubernetes Namespace    : undefined
+**********************************************************************************
 Usage:
-  fsnetman <command> [options]
+  solo <command> [options]
 
 Commands:
-  fsnetman init     Perform dependency checks and initialize local environment
-  fsnetman cluster  Manage cluster
-  fsnetman chart    Manage chart deployment
-  fsnetman node     Manage a node running Hedera platform
-  fsnetman relay    Manage JSON RPC relays
+  solo init     Initialize local environment
+  solo cluster  Manage fullstack testing cluster
+  solo network  Manage fullstack testing network deployment
+  solo node     Manage Hedera platform node in fullstack testing network
+  solo relay    Manage JSON RPC relays in fullstack testing network
 
 Options:
       --dev      Enable developer mode                                                        [boolean] [default: false]
@@ -67,12 +66,12 @@ Select a command
     * `Run->Edit Configurations->Edit Configuration Templates->Jest` and then set `--experimental-vm-modules`
       in `Node Options`.
 * Run `npm i` to install the required packages
-* Run `npm link` to install `fsnetman` as the CLI
-  * Note: you need to do it once. If `fsnetman` already exists in your path, you will need to remove it first.
-  * Alternative way would be to run `npm run fsnetman -- <COMMAND> <ARGS>`
+* Run `npm link` to install `solo` as the CLI
+  * Note: you need to do it once. If `solo` already exists in your path, you will need to remove it first.
+  * Alternative way would be to run `npm run solo -- <COMMAND> <ARGS>`
 * Run `npm test` or `npm run test` to run the unit tests
-* Run `fsnetman` to access the CLI as shown above.
-* Note that debug logs are stored at `~/.fsnetman/logs/fst.log`. So you may use `tail -f ~/.fsnetman/logs/fst.log | jq
+* Run `solo` to access the CLI as shown above.
+* Note that debug logs are stored at `~/.solo/logs/solo.log`. So you may use `tail -f ~/.solo/logs/solo.log | jq
   ` in a separate terminal to keep an eye on the logs.
 * Before making a commit run `npm run format`
 

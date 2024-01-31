@@ -270,13 +270,13 @@ jobs:
           npm install -g marked-mangle@1.0.1 marked-gfm-heading-id@3.0.4 semantic-release-conventional-commits@3.0.0
 
       - name: Install Dependencies
-        working-directory: fullstack-network-manager
+        working-directory: solo
         run: npm ci
 
       - name: Setup NPM Authentication
-        working-directory: fullstack-network-manager
+        working-directory: solo
         run: |
-          # create .npmrc file to publish fullstack-network-manager to Github NPM registry
+          # create .npmrc file to publish solo to Github NPM registry
           rm -f .npmrc || true
           echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' > ".npmrc"
           echo '@hashgraph:registry=https://npm.pkg.github.com' >> ".npmrc"
