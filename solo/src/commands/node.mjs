@@ -220,7 +220,7 @@ export class NodeCommand extends BaseCommand {
           // generate TLS keys if required
           if (config.generateTlsKeys) {
             for (const nodeId of ctx.config.nodeIds) {
-              const tlsKeys = await self.keyManager.generateGrpcTLSKey(nodeId, config.keysDir)
+              const tlsKeys = await self.keyManager.generateGrpcTLSKey(nodeId)
               const tlsKeyFiles = await self.keyManager.storeTLSKey(nodeId, tlsKeys, config.keysDir)
               self.logger.debug(`generated TLS keys for node: ${nodeId}`, { keyFiles: tlsKeyFiles })
             }
