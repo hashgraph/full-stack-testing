@@ -7,6 +7,9 @@ Solo is a CLI tool to manage and deploy a private Hedera Network.
 * Node(^18.19.0)
 * Helm(^3.14.0)
 * Kubectl(^1.28.2)
+* Helpful tools (Optional):
+  * [`k9s`](https://k9scli.io/)
+  * [`kubectx`](https://github.com/ahmetb/kubectx)
 
 ## Install
 
