@@ -23,7 +23,6 @@ backup_dir="backup/$(date +"%Y-%m-%dT%H_%M_%S")"
 dummy_password="password"
 s_key_prefix="s" # signing key
 a_key_prefix="a" # agreement key
-e_key_prefix="e" # encryption key
 
 function backup() {
     local pattern="${1}"
