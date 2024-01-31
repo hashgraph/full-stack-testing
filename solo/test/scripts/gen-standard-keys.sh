@@ -27,7 +27,7 @@ a_key_prefix="a" # agreement key
 function backup() {
     local pattern="${1}"
     mkdir -p "${backup_dir}"
-    mv "${pattern}" "${backup_dir}"
+    mv "${pattern}" "${backup_dir}" 2>/dev/null
 }
 
 # make a backup of old *.pem files

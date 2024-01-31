@@ -106,7 +106,7 @@ describe('PackageInstallerE2E', () => {
       const tmpDir = getTmpDir()
       const keysDir = path.join(tmpDir, 'keys')
       const shellRunner = new ShellRunner(testLogger)
-      await shellRunner.run(`test/scripts/legacy-key-generate.sh ${keysDir} node0`)
+      await shellRunner.run(`test/scripts/gen-legacy-keys.sh node0,node1 ${keysDir}`)
 
       await installer.setupHapiDirectories(podName)
       const fileList = await installer.copyGossipKeys(podName, tmpDir, constants.KEY_FORMAT_PFX)
@@ -123,11 +123,11 @@ describe('PackageInstallerE2E', () => {
       const podName = 'network-node1-0'
       const nodeId = 'node1'
 
-      // generate pfx keys
+      // generate pem keys
       const tmpDir = getTmpDir()
       const keysDir = path.join(tmpDir, 'keys')
       const shellRunner = new ShellRunner(testLogger)
-      await shellRunner.run(`test/scripts/standard-key-generate.sh ${keysDir} node1`)
+      await shellRunner.run(`test/scripts/gen-standard-keys.sh node0,node1 ${keysDir}`)
 
       await installer.setupHapiDirectories(podName)
       const fileList = await installer.copyGossipKeys(podName, tmpDir, constants.KEY_FORMAT_PEM)
