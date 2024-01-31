@@ -80,3 +80,25 @@ Select a command
 * In order to run E2E test, we need to set up cluster and install the chart.
   * Run `./test/e2e/setup-e2e.sh`
   * Run `npm run test-e2e`
+
+## Key generation
+
+### Gossip keys (.pem file)
+
+By default, `solo` is able to generate `PEM` formatted gossip keys for nodes.
+User may run `solo node keys --gossip-keys` command to generate keys.
+
+### Gossip keys (.pfx file)
+
+`solo` is not able to generate legacy `PFX` formatted gossip keys. However, if `keytool` is installed on the machine,
+you may run the following command to pre-generate the pfx formatted gossip keys in the default cache
+directory (`~/.solo/cache/keys`):
+
+```
+# npm run pfx-keys -- < space separated list of node IDs>
+npm run pfx-keys -- node0 node1 node2 
+```
+
+### mTLS keys (hedera.key, hedera.crt)
+
+You can run `node keys --tls-keys -i node0 node1 node2` to generate mTLS keys for the given set of nodes
