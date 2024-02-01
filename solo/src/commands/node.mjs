@@ -51,10 +51,13 @@ export class NodeCommand extends BaseCommand {
     // check log file is accessible
     let logFileAccessible = false
     while (attempt++ < maxAttempt) {
-      if (await this.k8.hasFile(podName, constants.ROOT_CONTAINER, logfilePath)) {
-        logFileAccessible = true
-        break
-      }
+      try {
+        if (await this.k8.hasFile(podName, constants.ROOT_CONTAINER, logfilePath)) {
+          logFileAccessible = true
+          break
+        }
+      } catch (e) {} // ignore errors
+
       await sleep(1000)
     }
 
@@ -62,6 +65,7 @@ export class NodeCommand extends BaseCommand {
       throw new FullstackTestingError(`Logs are not accessible: ${logfilePath}`)
     }
 
+    attempt = 0
     while (attempt < maxAttempt) {
       try {
         const output = await this.k8.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
