@@ -79,7 +79,7 @@ jobs:
 
       - name: Calculate Next Version
         env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_AUTHOR_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_AUTHOR_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
@@ -252,16 +252,32 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         with:
-          gradle-version: wrapper
-          gradle-home-cache-includes: |
-            caches
-            notifications
-            dependency-check-data
+          gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
 
       - name: Setup Node
         uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: 18
+
+      - name: Setup JFrog CLI
+        uses: jfrog/setup-jfrog-cli@8fc3d0018a8721b9a797cd7fd97c8e4833f5a3d1 # v3.5.3
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+
+      - name: Show JFrog Config
+        run: jfrog config show
+
+      - name: Verify JFrog Connectivity
+        run: jfrog rt ping
+
+      - name: Setup JFrog NPM Repository
+        working-directory: solo
+        run: |
+          jf npmc --server-id-resolve setup-jfrog-cli-server --server-id-deploy setup-jfrog-cli-server --repo-resolve solo-npm-release --repo-deploy solo-npm-release
+          echo "::group::JFrog NPM Repository Configuration"
+            cat .jfrog/projects/npm.yaml
+          echo "::endgroup::"
 
       - name: Install Semantic Release
         run: |
@@ -271,19 +287,24 @@ jobs:
 
       - name: Install Dependencies
         working-directory: solo
-        run: npm ci
+        run: jf npm ci
+
+      - name: Deploy to JFrog Registry
+        working-directory: solo
+        if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
+        run: jf npm publish
 
       - name: Setup NPM Authentication
         working-directory: solo
         run: |
           # create .npmrc file to publish solo to Github NPM registry
           rm -f .npmrc || true
-          echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' > ".npmrc"
-          echo '@hashgraph:registry=https://npm.pkg.github.com' >> ".npmrc"
+          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > ".npmrc"
+          echo '@hashgraph:registry=https://registry.npmjs.org/' >> ".npmrc"
 
       - name: Publish Semantic Release
         env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
           GIT_AUTHOR_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_AUTHOR_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
