@@ -1,6 +1,6 @@
 # Solo
 
-Solo is a CLI tool to manage and deploy a private Hedera Network.
+An opinionated CLI tool to deploy and manage private Hedera Networks.
 
 ## Requirements
 
@@ -12,17 +12,6 @@ Solo is a CLI tool to manage and deploy a private Hedera Network.
   * [`kubectx`](https://github.com/ahmetb/kubectx)
 
 ## Install
-
-* Create or update `~/.npmrc` file and specify the GitHub package registry:
-
-```
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-@hashgraph:registry=https://npm.pkg.github.com
-```
-
-* Get
-  your [Github access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
-  and setup an environment variable GITHUB\_TOKEN.
 
 * Run `npm install -g @hashgraph/solo`
 

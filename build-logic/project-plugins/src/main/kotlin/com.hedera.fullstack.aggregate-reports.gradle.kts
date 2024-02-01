@@ -60,7 +60,7 @@ tasks.register("versionAsSpecified") {
         val newVer = SemVer.parse(verStr)
         Utils.updateHelmChartVersion(project, newVer)
         Utils.updateHelmChartAppVersion(project, newVer)
-        Utils.updateFullstackNetworkManagerVersion(project, newVer)
+        Utils.updateSoloVersion(project, newVer)
         Utils.updateVersion(project, newVer)
     }
 }
@@ -73,7 +73,7 @@ tasks.register("versionAsSnapshot") {
 
         Utils.updateHelmChartVersion(project, newVer)
         Utils.updateHelmChartAppVersion(project, newVer)
-        Utils.updateFullstackNetworkManagerVersion(project, newVer)
+        Utils.updateSoloVersion(project, newVer)
         Utils.updateVersion(project, newVer)
     }
 }
