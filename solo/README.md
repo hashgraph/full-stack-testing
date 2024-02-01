@@ -50,7 +50,7 @@ are installed, you may run the following command to generate the pfx formatted g
 cache directory (`$HOME/.solo/cache/keys`):
 
 ```
-# Option - 1: Generate keys for default node IDs: node0,node1,node2,node3
+# Option - 1: Generate keys for default node IDs: node0,node1,node2
 /bin/bash -c "$(curl -fsSL  https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/solo/test/scripts/gen-legacy-keys.sh)"
 
 # Option - 2: Generate keys for custom node IDs
@@ -59,20 +59,62 @@ chmod +x gen-legacy-keys.sh
 ./gen-legacy-keys.sh alice,bob,carol
 ```
 
-# Example
+# Examples
 
 ## Deploy a private Hedera network (version `0.42.5`)
-
-* Generate `pfx` node keys for default node IDs: node0,node1,node2,node3 (You will need `curl`, `keytool` and `openssl`)
-
-```
-/bin/bash -c "$(curl -fsSL  https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/solo/test/scripts/gen-legacy-keys.sh)"
-```
 
 * Initialize `solo`
 
 ```
 solo init -t 0.42.5 # cache args for subsequent commands
+```
+
+* Generate `pfx` node keys for default node IDs: node0,node1,node2 (You will need `curl`, `keytool` and `openssl`)
+
+```
+/bin/bash -c "$(curl -fsSL  https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/solo/test/scripts/gen-legacy-keys.sh)"
+```
+
+* Setup cluster with shared components in the `default` namespace
+
+```
+solo cluster setup -n default 
+```
+
+In a separate terminal, you may run `k9s` to view the pod status.
+
+* Deploy helm chart with Hedera network components
+
+```
+solo network deploy -n "${SOLO_NAMESPACE}" 
+```
+
+* Setup node with Hedera platform. It may take a while (~10 minutes depending on your internet speed) to download
+  various docker images and get the pods started.
+
+```
+solo node setup
+
+```
+
+* Start the nodes
+
+```
+solo node start
+```
+
+## Deploy a private Hedera network (version `0.47.0-alpha.0`)
+
+* Initialize `solo`
+
+```
+solo init -t 0.47.0-alpha.0 # cache args for subsequent commands
+```
+
+* Generate `pem` node keys for default node IDs: node0,node1,node2
+
+```
+solo node keys --gossip-keys --tls-keys --key-format pem -i node0,node1,node2
 ```
 
 * Setup cluster with shared components in the `default` namespace
