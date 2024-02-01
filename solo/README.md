@@ -43,7 +43,7 @@ You may run `solo node keys --gossip-keys --tls-keys --key-format pem -i node0,n
 
 ### Legacy keys (.pfx file)
 
-All Hedera platform version supports the legacy `.pfx` formatted key files.
+All Hedera platform versions support the legacy `.pfx` formatted key files.
 
 Unfortunately `solo` is not able to generate legacy `PFX` formatted keys. However, if `curl`, `keytool` and `openssl`
 are installed, you may run the following command to generate the pfx formatted gossip keys in the default
