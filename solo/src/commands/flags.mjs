@@ -152,7 +152,7 @@ export const releaseTag = {
   name: 'release-tag',
   definition: {
     describe: 'Release tag to be used (e.g. v0.42.5)',
-    default: '0.42.5',
+    default: 'v0.42.5',
     alias: 't',
     type: 'string'
   }
