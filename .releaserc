@@ -40,8 +40,8 @@
           "gradle.properties",
           "charts/fullstack-deployment/Chart.yaml",
           "charts/fullstack-cluster-setup/Chart.yaml",
-          "fullstack-network-manager/package.json",
-          "fullstack-network-manager/package-lock.json"
+          "solo/package.json",
+          "solo/package-lock.json"
         ]
       }
     ]
