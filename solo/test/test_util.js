@@ -6,11 +6,11 @@ import { logging } from '../src/core/index.mjs'
 export const testLogger = logging.NewLogger('debug')
 
 export function getTestCacheDir () {
-  const TEST_CACHE_DIR = 'test/data/tmp'
-  if (!fs.existsSync(TEST_CACHE_DIR)) {
-    fs.mkdirSync(TEST_CACHE_DIR)
+  const cacheDir= 'test/data/tmp'
+  if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir)
   }
-  return TEST_CACHE_DIR
+  return cacheDir
 }
 
 export function getTmpDir () {

@@ -73,7 +73,7 @@ for nm in "${names[@]}"; do
 
   # Generate node mTLS keys
   openssl req -new -newkey rsa:3072 -out "hedera-${n}.csr" -keyout "hedera-${n}.key" -sha384 -nodes -subj "/CN=${n}" || exit 1
-  openssl x509 -req -in "hedera-${n}.csr" -out "hedera-${n}.crt" -signkey "hedera-${n}.key" -days ${validity} -sha384 || exit 1
+  openssl x509 -req -in "hedera-${n}.csr" -out "hedera-${n}.crt" -signkey "hedera-${n}.key" -days "${validity}" -sha384 || exit 1
   rm -f "hedera-${n}.csr"
 done
 
