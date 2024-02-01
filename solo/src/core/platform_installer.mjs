@@ -1,9 +1,11 @@
 import * as fs from 'fs'
+import * as os from 'os'
 import { Listr } from 'listr2'
 import * as path from 'path'
 import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
 import { constants } from './index.mjs'
 import { Templates } from './templates.mjs'
+import * as helpers from './helpers.mjs'
 
 /**
  * PlatformInstaller install platform code in the root-container of a network pod
@@ -113,49 +115,74 @@ export class PlatformInstaller {
     }
   }
 
+  /**
+   * Copy a list of files to a directory in the container
+   *
+   * @param podName pod name
+   * @param srcFiles list of source files
+   * @param destDir destination directory
+   * @param container name of the container
+   *
+   * @return {Promise<string[]>} list of pathso of the copied files insider the container
+   */
   async copyFiles (podName, srcFiles, destDir, container = constants.ROOT_CONTAINER) {
-    const self = this
     try {
+      const copiedFiles = []
+
+      // prepare the file mapping
       for (const srcPath of srcFiles) {
-        self.logger.debug(`Copying file into ${podName}: ${srcPath} -> ${destDir}`)
+        if (!fs.existsSync(srcPath)) {
+          throw new FullstackTestingError(`file does not exist: ${srcPath}`)
+        }
+
+        this.logger.debug(`Copying file into ${podName}: ${srcPath} -> ${destDir}`)
         await this.k8.copyTo(podName, container, srcPath, destDir)
+
+        const fileName = path.basename(srcPath)
+        copiedFiles.push(path.join(destDir, fileName))
       }
 
-      const fileList = await this.k8.execContainer(podName, container, `ls ${destDir}`)
-
-      // create full path
-      if (fileList) {
-        const fullPaths = []
-        fileList.split('\n').forEach(filePath => {
-          if (filePath) {
-            fullPaths.push(`${destDir}/${filePath}`)
-          }
-        })
-        return fullPaths
-      }
-      throw new FullstackTestingError(`could not receive file list after copy; ${fileList}`)
+      return copiedFiles
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy files to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to copy files to pod '${podName}': ${e.message}`, e)
     }
   }
 
-  async copyGossipKeys (podName, stagingDir) {
+  async copyGossipKeys (podName, stagingDir, nodeIds, keyFormat = constants.KEY_FORMAT_PEM) {
     const self = this
 
     if (!podName) throw new MissingArgumentError('podName is required')
     if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
+    if (!nodeIds || nodeIds.length <= 0) throw new MissingArgumentError('nodeIds cannot be empty')
 
     try {
       const keysDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
       const nodeId = Templates.extractNodeIdFromPodName(podName)
-      const srcFiles = [
-        `${stagingDir}/templates/node-keys/private-${nodeId}.pfx`,
-        `${stagingDir}/templates/node-keys/public.pfx`
-      ]
+      const srcFiles = []
+
+      switch (keyFormat) {
+        case constants.KEY_FORMAT_PEM:
+          // copy private keys for the node
+          srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPrivateKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
+          srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPrivateKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+
+          // copy all public keys for all nodes
+          nodeIds.forEach(id => {
+            srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, id)}`)
+            srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, id)}`)
+          })
+          break
+        case constants.KEY_FORMAT_PFX:
+          srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPfxPrivateKeyFile(nodeId)}`)
+          srcFiles.push(`${stagingDir}/keys/public.pfx`)
+          break
+        default:
+          throw new FullstackTestingError(`Unsupported key file format ${keyFormat}`)
+      }
 
       return await self.copyFiles(podName, srcFiles, keysDir)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy gossip keys to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to copy gossip keys to pod '${podName}': ${e.message}`, e)
     }
   }
 
@@ -189,21 +216,26 @@ export class PlatformInstaller {
   }
 
   async copyTLSKeys (podName, stagingDir) {
-    const self = this
-
     if (!podName) throw new MissingArgumentError('podName is required')
     if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
 
     try {
-      const destDir = constants.HEDERA_HAPI_PATH
-      const srcFiles = [
-        `${stagingDir}/templates/hedera.key`,
-        `${stagingDir}/templates/hedera.crt`
-      ]
+      const nodeId = Templates.extractNodeIdFromPodName(podName)
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `${nodeId}-tls-keys-`))
 
-      return await self.copyFiles(podName, srcFiles, destDir)
+      // rename files appropriately in the tmp directory
+      fs.cpSync(`${stagingDir}/keys/${Templates.renderTLSPemPrivateKeyFile(nodeId)}`,
+        `${tmpDir}/hedera.key`)
+      fs.cpSync(`${stagingDir}/keys/${Templates.renderTLSPemPublicKeyFile(nodeId)}`,
+        `${tmpDir}/hedera.crt`)
+
+      const srcFiles = []
+      srcFiles.push(`${tmpDir}/hedera.key`)
+      srcFiles.push(`${tmpDir}/hedera.crt`)
+
+      return this.copyFiles(podName, srcFiles, constants.HEDERA_HAPI_PATH)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy TLS keys to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to copy TLS keys to pod '${podName}': ${e.message}`, e)
     }
   }
 
@@ -268,9 +300,7 @@ export class PlatformInstaller {
     const appName = constants.HEDERA_APP_NAME
     const nodeStakeAmount = constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 
-    const releaseTagParts = releaseTag.split('.')
-    if (releaseTagParts.length !== 3) throw new FullstackTestingError(`release tag must have form v<major>.<minior>.<patch>, found ${releaseTagParts}`, 'v<major>.<minor>.<patch>', releaseTag)
-    const minorVersion = parseInt(releaseTagParts[1], 10)
+    const releaseVersion = helpers.parseReleaseTag(releaseTag)
 
     try {
       const configLines = []
@@ -290,7 +320,7 @@ export class PlatformInstaller {
         const externalIP = await self.k8.getClusterIP(svcName)
 
         const account = `${accountIdPrefix}.${accountIdSeq}`
-        if (minorVersion >= 40) {
+        if (releaseVersion.minor >= 40) {
           configLines.push(`address, ${nodeSeq}, ${nodeNickName}, ${nodeName}, ${nodeStakeAmount}, ${internalIP}, ${internalPort}, ${externalIP}, ${externalPort}, ${account}`)
         } else {
           configLines.push(`address, ${nodeSeq}, ${nodeName}, ${nodeStakeAmount}, ${internalIP}, ${internalPort}, ${externalIP}, ${externalPort}, ${account}`)
@@ -300,7 +330,7 @@ export class PlatformInstaller {
         accountIdSeq += 1
       }
 
-      if (minorVersion >= 41) {
+      if (releaseVersion.minor >= 41) {
         configLines.push(`nextNodeId, ${nodeSeq}`)
       }
 
@@ -313,63 +343,40 @@ export class PlatformInstaller {
   }
 
   /**
-   * Return a lit of task to prepare the staging directory
-   * @param nodeIDs list of node IDs
-   * @param stagingDir full path to the staging directory
-   * @param releaseTag release version
-   * @param force force flag
-   * @param chainId chain ID
-   * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
-   */
-  taskPrepareStaging (nodeIDs, stagingDir, releaseTag, force = false, chainId = constants.HEDERA_CHAIN_ID) {
-    const self = this
-    const configTxtPath = `${stagingDir}/config.txt`
-
-    return new Listr([
-      {
-        title: 'Copy templates',
-        task: () => {
-          if (!fs.existsSync(stagingDir)) {
-            fs.mkdirSync(stagingDir, { recursive: true })
-          }
-
-          fs.cpSync(`${constants.RESOURCES_DIR}/templates/`, `${stagingDir}/templates`, { recursive: true })
-        }
-      },
-      {
-        title: 'Prepare config.txt',
-        task: () => self.prepareConfigTxt(nodeIDs, configTxtPath, releaseTag, chainId, `${stagingDir}/templates/config.template`)
-      }
-    ],
-    {
-      concurrent: false,
-      rendererOptions: {
-        collapseSubtasks: false
-      }
-    }
-    )
-  }
-
-  /**
    * Return a list of task to perform node installation
+   *
+   * It assumes the staging directory has the following files and resources:
+   *   ${staging}/keys/s-<nodeId>.key: signing key for a node
+   *   ${staging}/keys/s-<nodeId>.crt: signing cert for a node
+   *   ${staging}/keys/a-<nodeId>.key: agreement key for a node
+   *   ${staging}/keys/a-<nodeId>.crt: agreement cert for a node
+   *   ${staging}/keys/hedera-<nodeId>.key: gRPC TLS key for a node
+   *   ${staging}/keys/hedera-<nodeId>.crt: gRPC TSL cert for a node
+   *   ${staging}/properties: contains all properties files
+   *   ${staging}/log4j2.xml: LOG4J file
+   *   ${staging}/settings.txt: settings.txt file for the network
+   *   ${staging}/config.txt: config.txt file for the network
+   *
    * @param podName name of the pod
    * @param buildZipFile path to the platform build.zip file
    * @param stagingDir staging directory path
+   * @param nodeIds list of node ids
+   * @param keyFormat key format (pfx or pem)
    * @param force force flag
    * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
    */
-  taskInstall (podName, buildZipFile, stagingDir, force = false) {
+  taskInstall (podName, buildZipFile, stagingDir, nodeIds, keyFormat = constants.KEY_FORMAT_PEM, force = false) {
     const self = this
     return new Listr([
       {
         title: 'Copy Gossip keys',
         task: (_, task) =>
-          self.copyGossipKeys(podName, stagingDir)
+          self.copyGossipKeys(podName, stagingDir, nodeIds, keyFormat)
       },
       {
         title: 'Copy TLS keys',
         task: (_, task) =>
-          self.copyTLSKeys(podName, stagingDir)
+          self.copyTLSKeys(podName, stagingDir, keyFormat)
       },
       {
         title: 'Copy configuration files',

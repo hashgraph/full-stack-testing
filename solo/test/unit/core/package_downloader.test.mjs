@@ -29,7 +29,7 @@ describe('PackageDownloader', () => {
       try {
         await downloader.fetchFile('', os.tmpdir())
       } catch (e) {
-        expect(e.message).toBe('source file URL is required')
+        expect(e.message).toBe('package URL is required')
       }
     })
 
@@ -50,7 +50,7 @@ describe('PackageDownloader', () => {
         await downloader.fetchFile('INVALID_URL', os.tmpdir())
       } catch (e) {
         expect(e).toBeInstanceOf(IllegalArgumentError)
-        expect(e.message).toBe("source URL 'INVALID_URL' is invalid")
+        expect(e.message).toBe("package URL 'INVALID_URL' is invalid")
       }
     })
 
@@ -61,7 +61,7 @@ describe('PackageDownloader', () => {
         await downloader.fetchFile('https://localhost/INVALID_FILE', os.tmpdir())
       } catch (e) {
         expect(e).toBeInstanceOf(ResourceNotFoundError)
-        expect(e.message).toBe('source URL does not exist')
+        expect(e.message).toBe("package URL 'https://localhost/INVALID_FILE' does not exist")
       }
     })
 

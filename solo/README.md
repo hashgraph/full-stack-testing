@@ -2,19 +2,26 @@
 
 An opinionated CLI tool to deploy and manage private Hedera Networks.
 
+## Requirements
+
+* Node(^18.19.0)
+* Helm(^3.14.0)
+* Kubectl(^1.28.2)
+* Helpful tools (Optional):
+  * [`k9s`](https://k9scli.io/)
+  * [`kubectx`](https://github.com/ahmetb/kubectx)
+
 ## Install
 
 * Run `npm install -g @hashgraph/solo`
 
 * Ensure you have a valid kubernetes context, cluster and namespace. You may use `kind` and `kubectl` CLIs to create
-  cluster and namespace as below (See [`test/e2e/setup-e2e.sh`](test/e2e/setup_e2e.sh)):
+  cluster and namespace as below:
 
 ```
-export SOLO_CLUSTER_NAME=solo-local
-export SOLO_NAMESPACE=solo-local
-kind create cluster -n "${SOLO_CLUSTER_NAME}" 
-kubectl create ns "${SOLO_NAMESPACE}"
-solo init -d ../charts --namespace "${SOLO_NAMESPACE}" # cache args for subsequent commands
+export SOLO_NAMESPACE=solo # use a namespace that suits you
+kind create cluster
+kubectl create ns "${SOLO_NAMESPACE}" 
 ```
 
 * Run `solo` from a terminal, It may show usage options as shown below:
@@ -46,6 +53,16 @@ Options:
 Select a command
 ```
 
+* Deploy private Hedera network in your existing cluster and namespace
+
+```
+solo init -n "${SOLO_NAMESPACE}" # cache args for subsequent commands
+solo cluster setup
+solo network deploy
+solo node setup
+solo node start
+```
+
 ## Develop
 
 * In order to support ES6 modules with `jest`, set an env
@@ -60,7 +77,7 @@ Select a command
   * Alternative way would be to run `npm run solo -- <COMMAND> <ARGS>`
 * Run `npm test` or `npm run test` to run the unit tests
 * Run `solo` to access the CLI as shown above.
-* Note that debug logs are stored at `~/.solo/logs/solo.log`. So you may use `tail -f ~/.solo/logs/solo.log | jq
+* Note that debug logs are stored at `$HOME/.solo/logs/solo.log`. So you may use `tail -f $HOME/.solo/logs/solo.log | jq
   ` in a separate terminal to keep an eye on the logs.
 * Before making a commit run `npm run format`
 
@@ -69,3 +86,28 @@ Select a command
 * In order to run E2E test, we need to set up cluster and install the chart.
   * Run `./test/e2e/setup-e2e.sh`
   * Run `npm run test-e2e`
+
+## Node Keys
+
+### Standard keys (.pem file)
+
+`solo` is able to generate standard `PEM` formatted keys for nodes. You may
+run `solo node keys --gossip-keys --tls-keys`
+command to generate the required keys.
+
+### Legacy keys (.pfx file)
+
+`solo` is not able to generate legacy `PFX` formatted gossip keys. However, you may use the
+script [test/scripts/gen-legacy-keys](test/scripts/gen-legacy-keys.sh).
+For example, if `curl`, `keytool` and `openssl` are installed on the machine, you may run the following command to
+generate the pfx formatted gossip keys in the default
+cache directory (`$HOME/.solo/cache/keys`):
+
+```
+# Option - 1: Generate keys for default node IDs: node0,node1,node2,node3
+/bin/bash -c "${curl -fsSL  https://raw.githubusercontent.com/hashgraph/solo/main/test/scripts/gen-legacy-keys.sh)"
+
+# Option - 2: Generate keys for custom node IDs
+curl -o gen-legacy-keys.sh https://raw.githubusercontent.com/hashgraph/solo/main/test/scripts/gen-legacy-keys.sh
+./legacy-key-generation.sh alice,bob,carol
+```

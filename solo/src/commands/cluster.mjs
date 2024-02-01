@@ -1,3 +1,4 @@
+import { ListrEnquirerPromptAdapter } from '@listr2/prompt-adapter-enquirer'
 import { Listr } from 'listr2'
 import { FullstackTestingError } from '../core/errors.mjs'
 import * as flags from './flags.mjs'
@@ -53,25 +54,24 @@ export class ClusterCommand extends BaseCommand {
         title: 'Initialize',
         task: async (ctx, task) => {
           self.configManager.load(argv)
+          await prompts.execute(task, self.configManager, [
+            flags.chartDirectory,
+            flags.fstChartVersion,
+            flags.deployPrometheusStack,
+            flags.deployMinio,
+            flags.deployCertManager,
+            flags.deployCertManagerCrds
+          ])
 
-          // extract config values
-          const clusterName = self.configManager.getFlag(flags.clusterName)
-          const namespace = self.configManager.getFlag(flags.namespace) || constants.DEFAULT_NAMESPACE
-          const chartDir = self.configManager.getFlag(flags.chartDirectory)
-          const deployPrometheusStack = self.configManager.getFlag(flags.deployPrometheusStack)
-          const deployMinio = self.configManager.getFlag(flags.deployMinio)
-          const deployCertManager = self.configManager.getFlag(flags.deployCertManager)
-          const deployCertManagerCrds = self.configManager.getFlag(flags.deployCertManagerCrds)
-
-          // prompt if inputs are empty and set it in the context
+          // prepare config
           ctx.config = {
-            clusterName,
-            namespace,
-            chartDir: await prompts.promptChartDir(task, chartDir),
-            deployPrometheusStack: await prompts.promptDeployPrometheusStack(task, deployPrometheusStack),
-            deployMinio: await prompts.promptDeployMinio(task, deployMinio),
-            deployCertManager: await prompts.promptDeployCertManager(task, deployCertManager),
-            deployCertManagerCrds: await prompts.promptDeployCertManagerCrds(task, deployCertManagerCrds)
+            namespace: self.configManager.getFlag(flags.namespace) || constants.DEFAULT_NAMESPACE,
+            chartDir: self.configManager.getFlag(flags.chartDirectory),
+            deployPrometheusStack: self.configManager.getFlag(flags.deployPrometheusStack),
+            deployMinio: self.configManager.getFlag(flags.deployMinio),
+            deployCertManager: self.configManager.getFlag(flags.deployCertManager),
+            deployCertManagerCrds: self.configManager.getFlag(flags.deployCertManagerCrds),
+            fstChartVersion: self.configManager.getFlag(flags.fstChartVersion)
           }
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
@@ -97,7 +97,7 @@ export class ClusterCommand extends BaseCommand {
         title: `Install '${constants.FULLSTACK_CLUSTER_SETUP_CHART}' chart`,
         task: async (ctx, _) => {
           const namespace = ctx.config.namespace
-          const version = ctx.config.version
+          const version = ctx.config.fstChartVersion
 
           const chartPath = ctx.chartPath
           const valuesArg = ctx.valuesArg
@@ -146,10 +146,19 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
+          const confirm = await task.prompt(ListrEnquirerPromptAdapter).run({
+            type: 'toggle',
+            default: false,
+            message: 'Are you sure you would like to uninstall fullstack-cluster-setup chart?'
+          })
+
+          if (!confirm) {
+            process.exit(0)
+          }
+
           self.configManager.load(argv)
           const clusterName = self.configManager.getFlag(flags.clusterName)
           const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
-
           ctx.config = {
             clusterName,
             namespace
@@ -232,7 +241,8 @@ export class ClusterCommand extends BaseCommand {
               flags.deployPrometheusStack,
               flags.deployMinio,
               flags.deployCertManager,
-              flags.deployCertManagerCrds
+              flags.deployCertManagerCrds,
+              flags.fstChartVersion
             ),
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster setup' ===", { argv })

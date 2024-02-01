@@ -108,11 +108,23 @@ export const Logger = class {
       }
     }
 
+    console.log(chalk.red('*********************************** ERROR *****************************************'))
     if (this.devMode) {
-      console.log(stack)
+      let prefix = ''
+      let indent = ''
+      stack.forEach(s => {
+        console.log(indent + prefix + chalk.yellow(s.message))
+        console.log(indent + chalk.gray(s.stacktrace) + '\n')
+        indent += ' '
+        prefix += 'Caused by: '
+      })
     } else {
-      console.log(chalk.red('ERROR'), chalk.yellow(err.message))
+      const lines = err.message.split('\n')
+      lines.forEach(line => {
+        console.log(chalk.yellow(line))
+      })
     }
+    console.log(chalk.red('***********************************************************************************'))
 
     this.error(err.message, { error: err.message, stacktrace: stack })
   }

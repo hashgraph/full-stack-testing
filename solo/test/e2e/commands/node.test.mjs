@@ -8,6 +8,7 @@ import {
 } from '@hashgraph/sdk'
 import { afterEach, beforeAll, describe, expect, it } from '@jest/globals'
 import net from 'net'
+import path from 'path'
 import { namespace } from '../../../src/commands/flags.mjs'
 import { flags } from '../../../src/commands/index.mjs'
 import { NodeCommand } from '../../../src/commands/node.mjs'
@@ -22,12 +23,14 @@ import {
   PlatformInstaller,
   constants,
   DependencyManager,
-  Templates
+  Templates, KeyManager
 } from '../../../src/core/index.mjs'
-import { TEST_CACHE_DIR, testLogger } from '../../test_util.js'
+import { ShellRunner } from '../../../src/core/shell_runner.mjs'
+import { getTestCacheDir, testLogger } from '../../test_util.js'
 
 class TestHelper {
   static portForwards = []
+
   static stopPortForwards () {
     TestHelper.portForwards.forEach(server => {
       server.close()
@@ -89,7 +92,11 @@ class TestHelper {
   }
 }
 
-describe('NodeCommand', () => {
+describe.each([
+  ['v0.42.5', constants.KEY_FORMAT_PFX]
+  // ['v0.47.0-alpha.0', constants.KEY_FORMAT_PFX],
+  // ['v0.47.0-alpha.0', constants.KEY_FORMAT_PEM]
+])('NodeCommand', (testRelease, testKeyFormat) => {
   const helm = new Helm(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
   const configManager = new ConfigManager(testLogger)
@@ -97,6 +104,7 @@ describe('NodeCommand', () => {
   const depManager = new DependencyManager(testLogger)
   const k8 = new K8(configManager, testLogger)
   const platformInstaller = new PlatformInstaller(testLogger, k8)
+  const keyManager = new KeyManager(testLogger)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
@@ -106,29 +114,41 @@ describe('NodeCommand', () => {
     configManager,
     downloader: packageDownloader,
     platformInstaller,
-    depManager
+    depManager,
+    keyManager
   })
 
-  const argv = {
-    releaseTag: 'v0.42.5',
-    nodeIds: 'node0,node1,node2',
-    cacheDir: TEST_CACHE_DIR,
-    force: false,
-    chainId: constants.HEDERA_CHAIN_ID
-  }
-
-  beforeAll(async () => {
-    // load cached namespace
-    await configManager.load()
-    argv[namespace] = configManager.getFlag(flags.namespace)
-  }
-  )
+  const cacheDir = getTestCacheDir()
 
   afterEach(() => {
     TestHelper.stopPortForwards()
   })
 
-  describe('start', () => {
+  describe(`node start should succeed [release ${testRelease}, keyFormat: ${testKeyFormat}]`, () => {
+    const argv = {}
+    argv[flags.releaseTag.name] = testRelease
+    argv[flags.keyFormat.name] = testKeyFormat
+    argv[flags.nodeIDs.name] = 'node0,node1,node2'
+    argv[flags.cacheDir.name] = cacheDir
+    argv[flags.force.name] = false
+    argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
+    argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
+    argv[flags.generateGossipKeys.name] = false
+    argv[flags.generateTlsKeys.name] = true
+
+    const nodeIds = argv[flags.nodeIDs.name].split(',')
+
+    beforeAll(() => {
+      configManager.load()
+      argv[namespace] = configManager.getFlag(flags.namespace)
+    })
+
+    it('should pre-generate keys', async () => {
+      if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {
+        const shellRunner = new ShellRunner(testLogger)
+        await shellRunner.run(`test/scripts/gen-legacy-keys.sh ${nodeIds.join(',')} ${path.join(cacheDir, 'keys')}`)
+      }
+    }, 60000)
     it('node setup should succeed', async () => {
       expect.assertions(1)
       try {
@@ -150,7 +170,6 @@ describe('NodeCommand', () => {
     }, 60000)
 
     it('nodes should be in ACTIVE status', async () => {
-      const nodeIds = argv.nodeIds.split(',')
       for (const nodeId of nodeIds) {
         try {
           await expect(nodeCmd.checkNetworkNodeStarted(nodeId, 5)).resolves.toBeTruthy()
@@ -167,7 +186,7 @@ describe('NodeCommand', () => {
       let client = null
 
       try {
-        client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
         const wallet = new Wallet(
           constants.OPERATOR_ID,
           constants.OPERATOR_KEY,
@@ -194,7 +213,7 @@ describe('NodeCommand', () => {
       let client = null
 
       try {
-        client = await TestHelper.prepareNodeClient(nodeCmd, argv.nodeIds)
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
         const accountKey = PrivateKey.generate()
         const wallet = new Wallet(
           constants.OPERATOR_ID,

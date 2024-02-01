@@ -1,5 +1,6 @@
-import { constants } from './../core/index.mjs'
-import * as core from './../core/index.mjs'
+import { constants } from '../core/index.mjs'
+import * as core from '../core/index.mjs'
+import * as helpers from '../core/helpers.mjs'
 
 /**
  * Set flag from the flag option
@@ -101,7 +102,7 @@ export const enablePrometheusSvcMonitor = {
   name: 'enable-prometheus-svc-monitor',
   definition: {
     describe: 'Enable prometheus service monitor for the network nodes',
-    default: true,
+    default: false,
     type: 'boolean'
   }
 }
@@ -110,7 +111,7 @@ export const deployMinio = {
   name: 'minio',
   definition: {
     describe: 'Deploy minio operator',
-    default: false,
+    default: true,
     type: 'boolean'
   }
 }
@@ -151,7 +152,7 @@ export const releaseTag = {
   name: 'release-tag',
   definition: {
     describe: 'Release tag to be used (e.g. v0.42.5)',
-    default: '',
+    default: 'v0.42.5',
     alias: 't',
     type: 'string'
   }
@@ -169,8 +170,7 @@ export const relayReleaseTag = {
 export const cacheDir = {
   name: 'cache-dir',
   definition: {
-    describe: 'Local cache directory containing platform release artifacts',
-    alias: 'd',
+    describe: 'Local cache directory',
     default: core.constants.SOLO_CACHE_DIR,
     type: 'string'
   }
@@ -217,10 +217,11 @@ export const replicaCount = {
 }
 
 export const chainId = {
-  name: 'chain-id',
+  name: 'ledger-id',
   definition: {
-    describe: 'Chain ID',
+    describe: 'Ledger ID (a.k.a. Chain ID)',
     default: '298', // Ref: https://github.com/hashgraph/hedera-json-rpc-relay#configuration
+    alias: 'l',
     type: 'string'
   }
 }
@@ -242,6 +243,32 @@ export const operatorKey = {
     describe: 'Operator Key',
     default: constants.OPERATOR_KEY,
     type: 'string'
+  }
+}
+
+export const generateGossipKeys = {
+  name: 'gossip-keys',
+  definition: {
+    describe: 'Generate gossip keys for nodes',
+    default: false,
+    type: 'boolean'
+  }
+}
+
+export const generateTlsKeys = {
+  name: 'tls-keys',
+  definition: {
+    describe: 'Generate gRPC TLS keys for nodes',
+    default: false,
+    type: 'boolean'
+  }
+}
+
+export const keyFormat = {
+  name: 'key-format',
+  definition: {
+    describe: 'Public and Private key file format (pem or pfx)',
+    default: 'pfx'
   }
 }
 
@@ -290,6 +317,15 @@ export const deletePvcs = {
   }
 }
 
+export const fstChartVersion = {
+  name: 'fst-chart-version',
+  definition: {
+    describe: 'Fullstack testing chart version',
+    default: helpers.packageVersion(),
+    type: 'string'
+  }
+}
+
 export const allFlags = [
   devMode,
   clusterName,
@@ -313,9 +349,13 @@ export const allFlags = [
   chainId,
   operatorId,
   operatorKey,
+  generateGossipKeys,
+  generateTlsKeys,
+  keyFormat,
   tlsClusterIssuerType,
   enableHederaExplorerTls,
   hederaExplorerTlsLoadBalancerIp,
   hederaExplorerTlsHostName,
-  deletePvcs
+  deletePvcs,
+  fstChartVersion
 ]

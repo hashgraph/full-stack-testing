@@ -10,7 +10,8 @@ import {
   PackageDownloader,
   PlatformInstaller,
   Helm,
-  logging
+  logging,
+  KeyManager
 } from './core/index.mjs'
 import 'dotenv/config'
 import { K8 } from './core/k8.mjs'
@@ -26,12 +27,14 @@ export function main (argv) {
     const depManager = new DependencyManager(logger)
     const k8 = new K8(configManager, logger)
     const platformInstaller = new PlatformInstaller(logger, k8)
+    const keyManager = new KeyManager(logger)
 
     // set cluster and namespace in the global configManager from kubernetes context
     // so that we don't need to prompt the user
     const kubeConfig = k8.getKubeConfig()
     const context = kubeConfig.getContextObject(kubeConfig.getCurrentContext())
     const cluster = kubeConfig.getCurrentCluster()
+    configManager.load()
     configManager.setFlag(flags.clusterName, cluster.name)
     if (context.namespace) {
       configManager.setFlag(flags.namespace, context.namespace)
@@ -53,7 +56,8 @@ export function main (argv) {
       platformInstaller,
       chartManager,
       configManager,
-      depManager
+      depManager,
+      keyManager
     }
 
     return yargs(hideBin(argv))

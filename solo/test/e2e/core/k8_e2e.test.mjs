@@ -14,8 +14,8 @@ describe('K8', () => {
   const k8 = new K8(configManager, testLogger)
   const downloader = new PackageDownloader(testLogger)
 
-  beforeAll(async () => {
-    await configManager.load()
+  beforeAll(() => {
+    configManager.load()
   })
 
   it('should be able to list clusters', async () => {
