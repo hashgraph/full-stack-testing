@@ -349,12 +349,12 @@ export class NodeCommand extends BaseCommand {
           const config = ctx.config
 
           const subTasks = []
-          for (const nodeId of ctx.config.nodeIds) {
-            const podName = ctx.config.podNames[nodeId]
+          for (const nodeId of config.nodeIds) {
+            const podName = config.podNames[nodeId]
             subTasks.push({
               title: `Node: ${chalk.yellow(nodeId)}`,
               task: () =>
-                self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.keyFormat, config.force)
+                self.plaformInstaller.taskInstall(podName, config.buildZipFile, config.stagingDir, config.nodeIds, config.keyFormat, config.force)
             })
           }
 

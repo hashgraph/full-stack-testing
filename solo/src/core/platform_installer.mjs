@@ -148,11 +148,12 @@ export class PlatformInstaller {
     }
   }
 
-  async copyGossipKeys (podName, stagingDir, keyFormat = constants.KEY_FORMAT_PEM) {
+  async copyGossipKeys (podName, stagingDir, nodeIds, keyFormat = constants.KEY_FORMAT_PEM) {
     const self = this
 
     if (!podName) throw new MissingArgumentError('podName is required')
     if (!stagingDir) throw new MissingArgumentError('stagingDir is required')
+    if (!nodeIds || nodeIds.length <= 0) throw new MissingArgumentError('nodeIds cannot be empty')
 
     try {
       const keysDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
@@ -161,10 +162,15 @@ export class PlatformInstaller {
 
       switch (keyFormat) {
         case constants.KEY_FORMAT_PEM:
+          // copy private keys for the node
           srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPrivateKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-          srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
           srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPrivateKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
-          srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+
+          // copy all public keys for all nodes
+          nodeIds.forEach(id => {
+            srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, id)}`)
+            srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, id)}`)
+          })
           break
         case constants.KEY_FORMAT_PFX:
           srcFiles.push(`${stagingDir}/keys/${Templates.renderGossipPfxPrivateKeyFile(nodeId)}`)
@@ -354,17 +360,18 @@ export class PlatformInstaller {
    * @param podName name of the pod
    * @param buildZipFile path to the platform build.zip file
    * @param stagingDir staging directory path
+   * @param nodeIds list of node ids
    * @param keyFormat key format (pfx or pem)
    * @param force force flag
    * @returns {Listr<ListrContext, ListrPrimaryRendererValue, ListrSecondaryRendererValue>}
    */
-  taskInstall (podName, buildZipFile, stagingDir, keyFormat = constants.KEY_FORMAT_PEM, force = false) {
+  taskInstall (podName, buildZipFile, stagingDir, nodeIds, keyFormat = constants.KEY_FORMAT_PEM, force = false) {
     const self = this
     return new Listr([
       {
         title: 'Copy Gossip keys',
         task: (_, task) =>
-          self.copyGossipKeys(podName, stagingDir, keyFormat)
+          self.copyGossipKeys(podName, stagingDir, nodeIds, keyFormat)
       },
       {
         title: 'Copy TLS keys',

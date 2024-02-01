@@ -109,7 +109,7 @@ describe('PackageInstallerE2E', () => {
       await shellRunner.run(`test/scripts/gen-legacy-keys.sh node0,node1 ${keysDir}`)
 
       await installer.setupHapiDirectories(podName)
-      const fileList = await installer.copyGossipKeys(podName, tmpDir, constants.KEY_FORMAT_PFX)
+      const fileList = await installer.copyGossipKeys(podName, tmpDir, ['node0', 'node1'], constants.KEY_FORMAT_PFX)
 
       const destDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
       expect(fileList.length).toBe(2)
@@ -121,7 +121,6 @@ describe('PackageInstallerE2E', () => {
 
     it('should succeed to copy pem gossip keys for node1', async () => {
       const podName = 'network-node1-0'
-      const nodeId = 'node1'
 
       // generate pem keys
       const tmpDir = getTmpDir()
@@ -130,14 +129,18 @@ describe('PackageInstallerE2E', () => {
       await shellRunner.run(`test/scripts/gen-standard-keys.sh node0,node1 ${keysDir}`)
 
       await installer.setupHapiDirectories(podName)
-      const fileList = await installer.copyGossipKeys(podName, tmpDir, constants.KEY_FORMAT_PEM)
+      const fileList = await installer.copyGossipKeys(podName, tmpDir, ['node0', 'node1'], constants.KEY_FORMAT_PEM)
 
       const destDir = `${constants.HEDERA_HAPI_PATH}/data/keys`
-      expect(fileList.length).toBe(4)
-      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPrivateKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPrivateKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
-      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
+      expect(fileList.length).toBe(6)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPrivateKeyFile(constants.SIGNING_KEY_PREFIX, 'node1')}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPrivateKeyFile(constants.AGREEMENT_KEY_PREFIX, 'node1')}`)
+
+      // public keys
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, 'node0')}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, 'node0')}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, 'node1')}`)
+      expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.SIGNING_KEY_PREFIX, 'node1')}`)
 
       fs.rmSync(tmpDir, { recursive: true })
     }, 60000)
