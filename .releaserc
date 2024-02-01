@@ -10,7 +10,7 @@
     [
       "@semantic-release/npm",
       {
-        "pkgRoot": "fullstack-network-manager"
+        "pkgRoot": "solo"
       }
     ],
     "@semantic-release/git",
@@ -30,7 +30,7 @@
     [
       "@semantic-release/npm",
       {
-        "pkgRoot": "fullstack-network-manager"
+        "pkgRoot": "solo"
       }
     ],
     [

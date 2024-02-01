@@ -1,12 +1,9 @@
 {
   "name": "@hashgraph/solo",
   "version": "0.18.0",
-  "description": "Solo is a CLI tool to manage and deploy a private Hedera Network.",
+  "description": "An opinionated CLI tool to deploy and manage private Hedera Networks.",
   "main": "src/index.mjs",
   "type": "module",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "bin": {
     "solo": "solo.mjs"
   },
@@ -58,8 +55,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hashgraph/solo.git",
-    "directory": "solo"
+    "url": "git+https://github.com/hashgraph/solo.git"
   },
   "os": [
     "darwin",

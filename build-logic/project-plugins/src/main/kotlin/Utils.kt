@@ -47,8 +47,8 @@ class Utils {
         }
 
         @JvmStatic
-        fun updateFullstackNetworkManagerVersion(project: Project, newVersion: SemVer) {
-            val manifestFile = File(project.rootProject.projectDir, "fullstack-network-manager/package.json")
+        fun updateSoloVersion(project: Project, newVersion: SemVer) {
+            val manifestFile = File(project.rootProject.projectDir, "solo/package.json")
             updateStringInFile(manifestFile, "\"version\":", "  \"version\": \"${newVersion}\",")
         }
 
