@@ -1,7 +1,7 @@
 #!/bin/bash
 
 keysDir="${HOME}/.solo/cache/keys"
-ids="node0,node1,node2,node3"
+ids="node0,node1,node2"
 validity=36524 # number of days
 generate_pfx=false
 
