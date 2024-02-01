@@ -39,6 +39,11 @@ export function packageVersion () {
  * @return {{patch: number, major: number, minor: number}}
  */
 export function parseReleaseTag (releaseTag) {
+  if (!releaseTag || releaseTag[0] !== 'v') {
+    throw new FullstackTestingError(`invalid release tag. Expected 'v<MAJOR>.<MINOR>.<PATCH>', found '${releaseTag}'`)
+  }
+
+  releaseTag = releaseTag.replace('v', '') // remove first 'v'
   const parts = releaseTag.split('-')[0].split('.') // just take the major.minor.patch part of the version
   if (parts.length < 3) {
     throw new FullstackTestingError('releaseTag must have the format MAJOR.MINOR.PATCH')
