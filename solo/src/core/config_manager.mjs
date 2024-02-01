@@ -4,10 +4,7 @@ import { constants } from './index.mjs'
 import { Logger } from './logging.mjs'
 import * as flags from '../commands/flags.mjs'
 import * as paths from 'path'
-import { fileURLToPath } from 'url'
-
-// cache current directory
-const CUR_FILE_DIR = paths.dirname(fileURLToPath(import.meta.url))
+import * as helpers from './helpers.mjs'
 
 export class ConfigManager {
   constructor (logger, fstConfigFile = constants.SOLO_CONFIG_FILE, persistMode = true) {
@@ -66,12 +63,10 @@ export class ConfigManager {
    * @returns {*} config object
    */
   load (argv = {}, reset = false, flagList = flags.allFlags) {
-    const self = this
-
     try {
       let config = {}
       let writeConfig = false
-      const packageJSON = self.loadPackageJSON()
+      const packageJSON = helpers.loadPackageJSON()
 
       this.logger.debug('Start: load config', { argv, cachedConfig: config })
 
@@ -133,19 +128,6 @@ export class ConfigManager {
       return this.config
     } catch (e) {
       throw new FullstackTestingError(`failed to load config: ${e.message}`, e)
-    }
-  }
-
-  /**
-   * load package.json
-   * @returns {any}
-   */
-  loadPackageJSON () {
-    try {
-      const raw = fs.readFileSync(`${CUR_FILE_DIR}/../../package.json`)
-      return JSON.parse(raw.toString())
-    } catch (e) {
-      throw new FullstackTestingError('failed to load package.json', e)
     }
   }
 

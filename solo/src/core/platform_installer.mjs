@@ -5,6 +5,7 @@ import * as path from 'path'
 import { FullstackTestingError, IllegalArgumentError, MissingArgumentError } from './errors.mjs'
 import { constants } from './index.mjs'
 import { Templates } from './templates.mjs'
+import * as helpers from './helpers.mjs'
 
 /**
  * PlatformInstaller install platform code in the root-container of a network pod
@@ -293,13 +294,7 @@ export class PlatformInstaller {
     const appName = constants.HEDERA_APP_NAME
     const nodeStakeAmount = constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 
-    const releaseTagParts = releaseTag.split('.')
-    if (releaseTagParts.length < 3) {
-      throw new FullstackTestingError(
-        `release tag must have form v<major>.<minior>.<patch>, found ${releaseTagParts}`, 'v<major>.<minor>.<patch>', releaseTag)
-    }
-
-    const minorVersion = parseInt(releaseTagParts[1], 10)
+    const releaseVersion = helpers.parseReleaseTag(releaseTag)
 
     try {
       const configLines = []
@@ -319,7 +314,7 @@ export class PlatformInstaller {
         const externalIP = await self.k8.getClusterIP(svcName)
 
         const account = `${accountIdPrefix}.${accountIdSeq}`
-        if (minorVersion >= 40) {
+        if (releaseVersion.minor >= 40) {
           configLines.push(`address, ${nodeSeq}, ${nodeNickName}, ${nodeName}, ${nodeStakeAmount}, ${internalIP}, ${internalPort}, ${externalIP}, ${externalPort}, ${account}`)
         } else {
           configLines.push(`address, ${nodeSeq}, ${nodeName}, ${nodeStakeAmount}, ${internalIP}, ${internalPort}, ${externalIP}, ${externalPort}, ${account}`)
@@ -329,7 +324,7 @@ export class PlatformInstaller {
         accountIdSeq += 1
       }
 
-      if (minorVersion >= 41) {
+      if (releaseVersion.minor >= 41) {
         configLines.push(`nextNodeId, ${nodeSeq}`)
       }
 

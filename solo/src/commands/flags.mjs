@@ -1,5 +1,6 @@
-import { constants } from './../core/index.mjs'
-import * as core from './../core/index.mjs'
+import { constants } from '../core/index.mjs'
+import * as core from '../core/index.mjs'
+import * as helpers from '../core/helpers.mjs'
 
 /**
  * Set flag from the flag option
@@ -151,7 +152,7 @@ export const releaseTag = {
   name: 'release-tag',
   definition: {
     describe: 'Release tag to be used (e.g. v0.42.5)',
-    default: '',
+    default: '0.42.5',
     alias: 't',
     type: 'string'
   }
@@ -170,7 +171,6 @@ export const cacheDir = {
   name: 'cache-dir',
   definition: {
     describe: 'Local cache directory',
-    alias: 'd',
     default: core.constants.SOLO_CACHE_DIR,
     type: 'string'
   }
@@ -317,6 +317,15 @@ export const deletePvcs = {
   }
 }
 
+export const fstChartVersion = {
+  name: 'fst-chart-version',
+  definition: {
+    describe: 'Fullstack testing chart version',
+    default: helpers.packageVersion(),
+    type: 'string'
+  }
+}
+
 export const allFlags = [
   devMode,
   clusterName,
@@ -347,5 +356,6 @@ export const allFlags = [
   enableHederaExplorerTls,
   hederaExplorerTlsLoadBalancerIp,
   hederaExplorerTlsHostName,
-  deletePvcs
+  deletePvcs,
+  fstChartVersion
 ]

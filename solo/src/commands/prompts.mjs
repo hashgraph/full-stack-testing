@@ -466,6 +466,22 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
   }
 }
 
+export async function promptFstChartVersion (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: flags.fstChartVersion.definition.default,
+        message: 'Enter fullstack testing chart version: '
+      })
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.fstChartVersion.name}`, e)
+  }
+}
+
 export function getPromptMap () {
   return new Map()
     .set(flags.nodeIDs.name, promptNodeIds)
@@ -494,6 +510,7 @@ export function getPromptMap () {
     .set(flags.generateTlsKeys.name, promptGenerateTLSKeys)
     .set(flags.deletePvcs.name, promptDeletePvcs)
     .set(flags.keyFormat.name, promptKeyFormat)
+    .set(flags.fstChartVersion.name, promptFstChartVersion)
 }
 
 // build the prompt registry

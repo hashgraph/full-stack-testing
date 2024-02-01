@@ -55,8 +55,8 @@ export class ClusterCommand extends BaseCommand {
         task: async (ctx, task) => {
           self.configManager.load(argv)
           await prompts.execute(task, self.configManager, [
-            flags.namespace,
             flags.chartDirectory,
+            flags.fstChartVersion,
             flags.deployPrometheusStack,
             flags.deployMinio,
             flags.deployCertManager,
@@ -70,7 +70,8 @@ export class ClusterCommand extends BaseCommand {
             deployPrometheusStack: self.configManager.getFlag(flags.deployPrometheusStack),
             deployMinio: self.configManager.getFlag(flags.deployMinio),
             deployCertManager: self.configManager.getFlag(flags.deployCertManager),
-            deployCertManagerCrds: self.configManager.getFlag(flags.deployCertManagerCrds)
+            deployCertManagerCrds: self.configManager.getFlag(flags.deployCertManagerCrds),
+            fstChartVersion: self.configManager.getFlag(flags.fstChartVersion)
           }
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
@@ -96,7 +97,7 @@ export class ClusterCommand extends BaseCommand {
         title: `Install '${constants.FULLSTACK_CLUSTER_SETUP_CHART}' chart`,
         task: async (ctx, _) => {
           const namespace = ctx.config.namespace
-          const version = ctx.config.version
+          const version = ctx.config.fstChartVersion
 
           const chartPath = ctx.chartPath
           const valuesArg = ctx.valuesArg
@@ -240,7 +241,8 @@ export class ClusterCommand extends BaseCommand {
               flags.deployPrometheusStack,
               flags.deployMinio,
               flags.deployCertManager,
-              flags.deployCertManagerCrds
+              flags.deployCertManagerCrds,
+              flags.fstChartVersion
             ),
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster setup' ===", { argv })
