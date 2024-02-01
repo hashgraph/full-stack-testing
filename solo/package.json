@@ -7,6 +7,9 @@
   "bin": {
     "solo": "solo.mjs"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\".*/e2e/.*\"",
     "test-e2e": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --detectOpenHandles --forceExit --testPathIgnorePatterns=\\\".*/unit/.*\\\"",
