@@ -140,8 +140,8 @@ describe('PackageInstallerE2E', () => {
       expect(fileList).toContain(`${destDir}/${Templates.renderGossipPemPublicKeyFile(constants.AGREEMENT_KEY_PREFIX, nodeId)}`)
 
       fs.rmSync(tmpDir, { recursive: true })
-    })
-  }, 60000)
+    }, 60000)
+  })
 
   describe('copyTLSKeys', () => {
     it('should succeed to copy TLS keys for node0', async () => {
