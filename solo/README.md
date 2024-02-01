@@ -63,7 +63,7 @@ chmod +x gen-legacy-keys.sh
 
 ## Deploy a private Hedera network (version `0.42.5`)
 
-* Generate `pfx` node keys for default node IDs: node0,node1,node2,node3
+* Generate `pfx` node keys for default node IDs: node0,node1,node2,node3 (You will need `curl`, `keytool` and `openssl`)
 
 ```
 /bin/bash -c "$(curl -fsSL  https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/solo/test/scripts/gen-legacy-keys.sh)"
