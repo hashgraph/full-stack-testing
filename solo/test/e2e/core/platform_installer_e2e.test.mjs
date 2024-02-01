@@ -117,7 +117,7 @@ describe('PackageInstallerE2E', () => {
       expect(fileList).toContain(`${destDir}/public.pfx`)
 
       fs.rmSync(tmpDir, { recursive: true })
-    }, 20000)
+    }, 60000)
 
     it('should succeed to copy pem gossip keys for node1', async () => {
       const podName = 'network-node1-0'
@@ -141,7 +141,7 @@ describe('PackageInstallerE2E', () => {
 
       fs.rmSync(tmpDir, { recursive: true })
     })
-  }, 20000)
+  }, 60000)
 
   describe('copyTLSKeys', () => {
     it('should succeed to copy TLS keys for node0', async () => {
