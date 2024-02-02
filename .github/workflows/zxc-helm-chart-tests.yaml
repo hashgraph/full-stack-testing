@@ -227,7 +227,8 @@ jobs:
           echo "-----------------------------------------------------------------------------------------------------"
 
           helm test "${RELEASE_NAME}" --filter name=network-test --timeout 15m
-
+          kubectl logs network-test
+          
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Setup and start nodes"
           source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
