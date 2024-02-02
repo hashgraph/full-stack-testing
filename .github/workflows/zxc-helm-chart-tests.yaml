@@ -128,7 +128,7 @@ jobs:
           kubectl get node --show-labels
 
       - name: Helm Chart Test
-        working-directory: dev
+        working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "-----------------------------------------------------------------------------------------------------"
