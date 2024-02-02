@@ -102,6 +102,7 @@ function prepare_platform_software_URL() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly CLUSTER_SETUP_VALUES_FILE="${TMP_DIR}/cluster-values.yaml"
+mkdir -p $TMP_DIR
 load_env_file
 
 USER="${USER:-changeme}"
@@ -135,7 +136,7 @@ readonly PROMETHEUS_RBAC_YAML="${PROMETHEUS_DIR}/prometheus-rbac.yaml"
 readonly PROMETHEUS_EXAMPLE_APP_YAML="${PROMETHEUS_DIR}/example-app.yaml"
 
 # docker build related env variables
-readonly DOCKERFILE_DIR="../../../../docker"
+readonly DOCKERFILE_DIR="../../../docker"
 readonly LOCAL_DOCKER_REGISTRY="docker.fst.local" # same as in dev/ci/ci-values.yaml
 readonly LOCAL_DOCKER_IMAGE_TAG="local"
 
