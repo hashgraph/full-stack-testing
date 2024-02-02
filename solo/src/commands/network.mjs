@@ -75,7 +75,7 @@ export class NetworkCommand extends BaseCommand {
 
     // prepare name and account IDs for nodes
     let i = 0
-    let accountId = 3
+    let accountId = Number.parseInt(constants.HEDERA_NODE_ACCOUNT_ID_START)
     config.nodeIds.forEach(nodeId => {
       valuesArg += ` --set hedera.nodes[${i}].name=${nodeId},hedera.nodes[${i++}].accountId=0.0.${accountId++}`
     })
