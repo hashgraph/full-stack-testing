@@ -56,6 +56,7 @@ export class ClusterCommand extends BaseCommand {
           self.configManager.load()
           const prevNamespace = self.configManager.getFlag(flags.namespace)
 
+          self.configManager.load(argv)
           await prompts.execute(task, self.configManager, [
             flags.chartDirectory,
             flags.fstChartVersion,
