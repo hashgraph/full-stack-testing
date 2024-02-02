@@ -178,8 +178,8 @@ jobs:
           echo "  minio:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
           echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
 
-          helm dependency update ../charts/fullstack-deployment
-          helm dependency update ../charts/fullstack-cluster-setup
+          helm dependency update ../../../charts/fullstack-deployment
+          helm dependency update ../../../charts/fullstack-cluster-setup
 
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Helm cluster setup"
