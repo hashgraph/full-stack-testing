@@ -133,6 +133,8 @@ jobs:
         working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
+          sleep 7200
+          
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Setting up environment variables"
           SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
