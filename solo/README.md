@@ -405,7 +405,7 @@ $ solo network deploy
     pods started.
 
 ```
-solo node setup
+$ solo node setup
 
 # output is similar to example-1 
 ```
