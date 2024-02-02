@@ -118,7 +118,7 @@ You may run `solo node keys --gossip-keys --tls-keys --key-format pem -i node0,n
 * Initialize `solo` with tag `v0.42.5` and list of node names `node0,node1,node2`:
 
 ```
-$ solo init -t 0.42.5 -i node0,node1,node2 -n "${SOLO_NAMESPACE}" 
+$ solo init -t v0.42.5 -i node0,node1,node2 -n "${SOLO_NAMESPACE}" 
 
 ******************************* Solo *********************************************
 Version                 : 0.19.1
@@ -353,7 +353,7 @@ Once the nodes are up, you may now expose various services (using `k9s` (shift-f
 * Initialize `solo` with tag `v0.42.5` and list of node names `node0,node1,node2`:
 
 ```
-$ solo init -t 0.47.0-alpha.0 -i node0,node1,node2 -n "${SOLO_NAMESPACE}" 
+$ solo init -t v0.47.0-alpha.0 -i node0,node1,node2 -n "${SOLO_NAMESPACE}" 
 
 # output is similar as example-1 
 ```
