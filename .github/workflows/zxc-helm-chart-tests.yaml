@@ -58,8 +58,10 @@ jobs:
           files_yaml: |
             chart:
               - charts/**
+              - .github/workflows/support/**
             scripts:
               - dev/**
+              - .github/workflows/support/**
 
       - name: List all changed files related to charts
         id: check-changed-files
@@ -137,7 +139,7 @@ jobs:
 
           CUR_DIR="scripts"
           source "${CUR_DIR}/env.sh"
-          
+
 
           CHART_VALUES_FILES=ci/ci-values.yaml
           SCRIPTS_DIR=scripts
