@@ -361,7 +361,7 @@ $ solo init -t v0.47.0-alpha.0 -i node0,node1,node2 -n "${SOLO_NAMESPACE}"
 * Generate `pem` node keys for default node IDs: node0,node1,node2
 
 ```
-solo node keys --gossip-keys --tls-keys --key-format pem -i node0,node1,node2
+$ solo node keys --gossip-keys --tls-keys --key-format pem -i node0,node1,node2
 
 ******************************* Solo *********************************************
 Version                 : 0.19.1
