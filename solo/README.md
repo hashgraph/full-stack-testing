@@ -395,7 +395,7 @@ In a separate terminal, you may run `k9s` to view the pod status.
 * Deploy helm chart with Hedera network components
 
 ```
-solo network deploy
+$ solo network deploy
 
 # output is similar to example-1 
 ```
