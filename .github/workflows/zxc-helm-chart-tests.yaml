@@ -82,7 +82,7 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
-          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ] || [ "${{ steps.changed-files.outputs.scripts_any_changed }}" ]; then
+          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
           else
