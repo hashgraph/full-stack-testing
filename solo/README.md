@@ -413,7 +413,7 @@ solo node setup
 * Start the nodes
 
 ```
-solo node start
+$ solo node start
 
 # output is similar to example-1 
 ```
