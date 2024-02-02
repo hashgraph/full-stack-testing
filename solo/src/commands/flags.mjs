@@ -10,8 +10,19 @@ import * as helpers from '../core/helpers.mjs'
  */
 export function setCommandFlags (y, ...commandFlags) {
   commandFlags.forEach(flag => {
-    y.option(flag.name, flag.definition)
+    setCommandFlag(y, flag, false)
   })
+}
+
+export function setCommandFlag (y, flag, demand = false) {
+  if (demand) {
+    const def = JSON.parse(JSON.stringify(flag.definition))
+    delete (def.default)
+    def.demand = demand
+    y.option(flag.name, def)
+  } else {
+    y.option(flag.name, flag.definition)
+  }
 }
 
 export function withDefaultValue (f, value) {
