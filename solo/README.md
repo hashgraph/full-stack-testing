@@ -13,8 +13,8 @@ An opinionated CLI tool to deploy and manage private Hedera Networks.
 * Install [Node](https://nodejs.org/en/download). You may also use [nvm](https://github.com/nvm-sh/nvm) to manage different Node versions locally:
 
 ```
-nvm install lts/hydrogen
-nvm use lts/hydrogen 
+$ nvm install lts/hydrogen
+$ nvm use lts/hydrogen 
 ```
 
 * Install [kubectl](https://kubernetes.io/docs/tasks/tools/)
