@@ -35,7 +35,7 @@ export const devMode = {
   name: 'dev',
   definition: {
     describe: 'Enable developer mode',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -45,7 +45,7 @@ export const clusterName = {
   name: 'cluster-name',
   definition: {
     describe: 'Cluster name',
-    default: '',
+    defaultValue: '',
     alias: 'c',
     type: 'string'
   }
@@ -55,7 +55,7 @@ export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    default: '',
+    defaultValue: '',
     alias: 'n',
     type: 'string'
   }
@@ -65,7 +65,7 @@ export const kubeContext = {
   name: 'kube-context',
   definition: {
     describe: 'Kube context',
-    default: '',
+    defaultValue: '',
     type: 'string'
   }
 }
@@ -74,7 +74,7 @@ export const deployMirrorNode = {
   name: 'mirror-node',
   definition: {
     describe: 'Deploy mirror node',
-    default: true,
+    defaultValue: true,
     alias: 'm',
     type: 'boolean'
   }
@@ -84,7 +84,7 @@ export const deployHederaExplorer = {
   name: 'hedera-explorer',
   definition: {
     describe: 'Deploy hedera explorer',
-    default: true,
+    defaultValue: true,
     alias: 'x',
     type: 'boolean'
   }
@@ -94,7 +94,7 @@ export const valuesFile = {
   name: 'values-file',
   definition: {
     describe: 'Comma separated chart values files',
-    default: '',
+    defaultValue: '',
     alias: 'f',
     type: 'string'
   }
@@ -104,7 +104,7 @@ export const deployPrometheusStack = {
   name: 'prometheus-stack',
   definition: {
     describe: 'Deploy prometheus stack',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -113,7 +113,7 @@ export const enablePrometheusSvcMonitor = {
   name: 'enable-prometheus-svc-monitor',
   definition: {
     describe: 'Enable prometheus service monitor for the network nodes',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -122,7 +122,7 @@ export const deployMinio = {
   name: 'minio',
   definition: {
     describe: 'Deploy minio operator',
-    default: true,
+    defaultValue: true,
     type: 'boolean'
   }
 }
@@ -131,7 +131,7 @@ export const deployCertManager = {
   name: 'cert-manager',
   definition: {
     describe: 'Deploy cert manager, also deploys acme-cluster-issuer',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -144,7 +144,7 @@ export const deployCertManagerCrds = {
   name: 'cert-manager-crds',
   definition: {
     describe: 'Deploy cert manager CRDs',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -153,7 +153,7 @@ export const deployJsonRpcRelay = {
   name: 'json-rpc-relay',
   definition: {
     describe: 'Deploy JSON RPC Relay',
-    default: false,
+    defaultValue: false,
     alias: 'j',
     type: 'boolean'
   }
@@ -163,7 +163,7 @@ export const releaseTag = {
   name: 'release-tag',
   definition: {
     describe: 'Release tag to be used (e.g. v0.42.5)',
-    default: '',
+    defaultValue: '',
     alias: 't',
     type: 'string'
   }
@@ -173,7 +173,7 @@ export const relayReleaseTag = {
   name: 'relay-release',
   definition: {
     describe: 'Relay release tag to be used (e.g. v0.39.1)',
-    default: '',
+    defaultValue: '',
     type: 'string'
   }
 }
@@ -182,7 +182,7 @@ export const cacheDir = {
   name: 'cache-dir',
   definition: {
     describe: 'Local cache directory',
-    default: core.constants.SOLO_CACHE_DIR,
+    defaultValue: core.constants.SOLO_CACHE_DIR,
     type: 'string'
   }
 }
@@ -191,7 +191,7 @@ export const nodeIDs = {
   name: 'node-ids',
   definition: {
     describe: 'Comma separated node IDs (empty means all nodes)',
-    default: '',
+    defaultValue: '',
     alias: 'i',
     type: 'string'
   }
@@ -201,7 +201,7 @@ export const force = {
   name: 'force',
   definition: {
     describe: 'Force actions even if those can be skipped',
-    default: false,
+    defaultValue: false,
     alias: 'f',
     type: 'boolean'
   }
@@ -211,7 +211,7 @@ export const chartDirectory = {
   name: 'chart-dir',
   definition: {
     describe: 'Local chart directory path (e.g. ~/full-stack-testing/charts',
-    default: '',
+    defaultValue: '',
     alias: 'd',
     type: 'string'
   }
@@ -221,7 +221,7 @@ export const replicaCount = {
   name: 'replica-count',
   definition: {
     describe: 'Replica count',
-    default: 1,
+    defaultValue: 1,
     alias: '',
     type: 'number'
   }
@@ -231,7 +231,7 @@ export const chainId = {
   name: 'ledger-id',
   definition: {
     describe: 'Ledger ID (a.k.a. Chain ID)',
-    default: '298', // Ref: https://github.com/hashgraph/hedera-json-rpc-relay#configuration
+    defaultValue: '298', // Ref: https://github.com/hashgraph/hedera-json-rpc-relay#configuration
     alias: 'l',
     type: 'string'
   }
@@ -242,7 +242,7 @@ export const operatorId = {
   name: 'operator-id',
   definition: {
     describe: 'Operator ID',
-    default: constants.OPERATOR_ID,
+    defaultValue: constants.OPERATOR_ID,
     type: 'string'
   }
 }
@@ -252,7 +252,7 @@ export const operatorKey = {
   name: 'operator-key',
   definition: {
     describe: 'Operator Key',
-    default: constants.OPERATOR_KEY,
+    defaultValue: constants.OPERATOR_KEY,
     type: 'string'
   }
 }
@@ -261,7 +261,7 @@ export const generateGossipKeys = {
   name: 'gossip-keys',
   definition: {
     describe: 'Generate gossip keys for nodes',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -270,7 +270,7 @@ export const generateTlsKeys = {
   name: 'tls-keys',
   definition: {
     describe: 'Generate gRPC TLS keys for nodes',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -279,7 +279,7 @@ export const keyFormat = {
   name: 'key-format',
   definition: {
     describe: 'Public and Private key file format (pem or pfx)',
-    default: 'pfx',
+    defaultValue: 'pfx',
     type: 'string'
   }
 }
@@ -288,7 +288,7 @@ export const tlsClusterIssuerType = {
   name: 'tls-cluster-issuer-type',
   definition: {
     describe: 'The TLS cluster issuer type to use for hedera explorer, defaults to "self-signed", the available options are: "acme-staging", "acme-prod", or "self-signed"',
-    default: 'self-signed',
+    defaultValue: 'self-signed',
     type: 'string'
   }
 }
@@ -297,7 +297,7 @@ export const enableHederaExplorerTls = { // KEEP
   name: 'enable-hedera-explorer-tls',
   definition: {
     describe: 'Enable the Hedera Explorer TLS, defaults to false',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -306,7 +306,7 @@ export const hederaExplorerTlsLoadBalancerIp = {
   name: 'hedera-explorer-tls-load-balancer-ip',
   definition: {
     describe: 'The static IP address to use for the Hedera Explorer TLS load balancer, defaults to ""',
-    default: '',
+    defaultValue: '',
     type: 'string'
   }
 }
@@ -315,7 +315,7 @@ export const hederaExplorerTlsHostName = {
   name: 'hedera-explorer-tls-host-name',
   definition: {
     describe: 'The host name to use for the Hedera Explorer TLS, defaults to "explorer.fst.local"',
-    default: 'explorer.fst.local',
+    defaultValue: 'explorer.fst.local',
     type: 'string'
   }
 }
@@ -324,7 +324,7 @@ export const deletePvcs = {
   name: 'delete-pvcs',
   definition: {
     describe: 'Delete the persistent volume claims',
-    default: false,
+    defaultValue: false,
     type: 'boolean'
   }
 }
@@ -333,7 +333,7 @@ export const fstChartVersion = {
   name: 'fst-chart-version',
   definition: {
     describe: 'Fullstack testing chart version',
-    default: helpers.packageVersion(),
+    defaultValue: helpers.packageVersion(),
     type: 'string'
   }
 }
@@ -371,3 +371,5 @@ export const allFlags = [
   deletePvcs,
   fstChartVersion
 ]
+
+export const allFlagsMap = new Map(allFlags.map(f => [f.name, f]))

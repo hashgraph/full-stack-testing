@@ -34,7 +34,7 @@ export function main (argv) {
     const kubeConfig = k8.getKubeConfig()
     const context = kubeConfig.getContextObject(kubeConfig.getCurrentContext())
     const cluster = kubeConfig.getCurrentCluster()
-    configManager.load()
+    const config = configManager.load()
     configManager.setFlag(flags.clusterName, cluster.name)
     if (context.namespace) {
       configManager.setFlag(flags.namespace, context.namespace)
@@ -60,6 +60,22 @@ export function main (argv) {
       keyManager
     }
 
+    const processArguments = (args, yargs) => {
+      for (const key of Object.keys(yargs.parsed.aliases)) {
+        const flag = flags.allFlagsMap.get(key)
+        if (flag) {
+          if (args[key]) {
+            // argv takes precedence
+          } else if (config.flags[key]) {
+            args[key] = config.flags[key]
+          } else {
+            args[key] = flag.definition.defaultValue
+          }
+        }
+      }
+      return args
+    }
+
     return yargs(hideBin(argv))
       .usage('Usage:\n  $0 <command> [options]')
       .alias('h', 'help')
@@ -69,6 +85,7 @@ export function main (argv) {
       .option(flags.devMode.name, flags.devMode.definition)
       .wrap(120)
       .demand(1, 'Select a command')
+      .middleware(processArguments, true)
       .parse()
   } catch (e) {
     logger.showUserError(e)
