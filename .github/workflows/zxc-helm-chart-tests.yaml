@@ -138,8 +138,9 @@ jobs:
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Setting up environment variables"
           SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
-
+          
           CUR_DIR="scripts"
+          mkdir -p $TMP_DIR
           source "${CUR_DIR}/env.sh"
 
 

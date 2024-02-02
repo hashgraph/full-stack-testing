@@ -135,7 +135,7 @@ readonly PROMETHEUS_RBAC_YAML="${PROMETHEUS_DIR}/prometheus-rbac.yaml"
 readonly PROMETHEUS_EXAMPLE_APP_YAML="${PROMETHEUS_DIR}/example-app.yaml"
 
 # docker build related env variables
-readonly DOCKERFILE_DIR="${SCRIPT_DIR}/../../docker"
+readonly DOCKERFILE_DIR="${SCRIPT_DIR}/../../../docker"
 readonly LOCAL_DOCKER_REGISTRY="docker.fst.local" # same as in dev/ci/ci-values.yaml
 readonly LOCAL_DOCKER_IMAGE_TAG="local"
 
