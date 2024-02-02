@@ -62,7 +62,7 @@ Have a nice day! 👋
 namespace/solo created
 ```
 
-You may now view pods in your cluster using `k9s` as below:
+You may now view pods in your cluster using `k9s -A` as below:
 
 ```
  Context: kind-solo                                <0> all       <a>      Attac… ____  __.________
