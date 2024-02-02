@@ -41,10 +41,10 @@ $ kubectx <context-name>
   * In this case, ensure your Docker has enough resources (e.g. Memory >=8Gb, CPU: >=4).
 
 ```
-export SOLO_CLUSTER_NAME=solo
-export SOLO_NAMESPACE=solo
-kind create cluster -n "${SOLO_CLUSTER_NAME}" 
-kubectl create ns "${SOLO_NAMESPACE}" 
+$ export SOLO_CLUSTER_NAME=solo
+$ export SOLO_NAMESPACE=solo
+$ kind create cluster -n "${SOLO_CLUSTER_NAME}" 
+$ kubectl create ns "${SOLO_NAMESPACE}" 
 
 Creating cluster "solo" ...
  ✓ Ensuring node image (kindest/node:v1.27.3) 🖼
