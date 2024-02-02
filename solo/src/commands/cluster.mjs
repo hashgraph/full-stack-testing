@@ -53,11 +53,9 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load()
-          const prevNamespace = self.configManager.getFlag(flags.namespace)
-
           self.configManager.load(argv)
           await prompts.execute(task, self.configManager, [
+            flags.clusterSetupNamespace,
             flags.chartDirectory,
             flags.fstChartVersion,
             flags.deployPrometheusStack,
@@ -68,20 +66,13 @@ export class ClusterCommand extends BaseCommand {
 
           // prepare config
           ctx.config = {
-            namespace: argv[flags.namespace.name] || constants.DEFAULT_NAMESPACE,
+            clusterSetupNamespace: self.configManager.getFlag(flags.clusterSetupNamespace),
             chartDir: self.configManager.getFlag(flags.chartDirectory),
             deployPrometheusStack: self.configManager.getFlag(flags.deployPrometheusStack),
             deployMinio: self.configManager.getFlag(flags.deployMinio),
             deployCertManager: self.configManager.getFlag(flags.deployCertManager),
             deployCertManagerCrds: self.configManager.getFlag(flags.deployCertManagerCrds),
             fstChartVersion: self.configManager.getFlag(flags.fstChartVersion)
-          }
-
-          if (prevNamespace && prevNamespace !== argv[flags.namespace.name]) {
-            // reset to previous namespace
-            // this is needed to restore the namespace which user might have set during init
-            self.configManager.setFlag(flags.namespace, prevNamespace)
-            self.configManager.persist()
           }
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
@@ -248,7 +239,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Setup cluster with shared components',
             builder: y => flags.setCommandFlags(y,
               flags.clusterName,
-              flags.namespace,
+              flags.clusterSetupNamespace,
               flags.chartDirectory,
               flags.deployPrometheusStack,
               flags.deployMinio,
@@ -274,7 +265,7 @@ export class ClusterCommand extends BaseCommand {
             desc: 'Uninstall shared components from cluster',
             builder: y => flags.setCommandFlags(y,
               flags.clusterName,
-              flags.namespace
+              flags.clusterSetupNamespace
             ),
             handler: argv => {
               clusterCmd.logger.debug("==== Running 'cluster reset' ===", { argv })

@@ -10,25 +10,8 @@ import * as helpers from '../core/helpers.mjs'
  */
 export function setCommandFlags (y, ...commandFlags) {
   commandFlags.forEach(flag => {
-    setCommandFlag(y, flag, false)
-  })
-}
-
-export function setCommandFlag (y, flag, demand = false) {
-  if (demand) {
-    const def = JSON.parse(JSON.stringify(flag.definition))
-    delete (def.default)
-    def.demand = demand
-    y.option(flag.name, def)
-  } else {
     y.option(flag.name, flag.definition)
-  }
-}
-
-export function withDefaultValue (f, value) {
-  const clone = JSON.parse(JSON.stringify(f))
-  clone.definition.default = value
-  return clone
+  })
 }
 
 export const devMode = {
@@ -51,11 +34,19 @@ export const clusterName = {
   }
 }
 
+export const clusterSetupNamespace = {
+  name: 'cluster-setup-namespace',
+  definition: {
+    describe: 'Cluster Setup Namespace',
+    alias: 's',
+    type: 'string'
+  }
+}
+
 export const namespace = {
   name: 'namespace',
   definition: {
     describe: 'Namespace',
-    defaultValue: '',
     alias: 'n',
     type: 'string'
   }
@@ -163,7 +154,6 @@ export const releaseTag = {
   name: 'release-tag',
   definition: {
     describe: 'Release tag to be used (e.g. v0.42.5)',
-    defaultValue: '',
     alias: 't',
     type: 'string'
   }
@@ -191,7 +181,6 @@ export const nodeIDs = {
   name: 'node-ids',
   definition: {
     describe: 'Comma separated node IDs (empty means all nodes)',
-    defaultValue: '',
     alias: 'i',
     type: 'string'
   }
@@ -341,6 +330,7 @@ export const fstChartVersion = {
 export const allFlags = [
   devMode,
   clusterName,
+  clusterSetupNamespace,
   namespace,
   kubeContext,
   deployMirrorNode,
