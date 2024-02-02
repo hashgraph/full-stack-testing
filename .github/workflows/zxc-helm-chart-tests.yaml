@@ -137,7 +137,7 @@ jobs:
 
           CUR_DIR="scripts"
           source "${CUR_DIR}/env.sh"
-          cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
+          
 
           CHART_VALUES_FILES=ci/ci-values.yaml
           SCRIPTS_DIR=scripts
