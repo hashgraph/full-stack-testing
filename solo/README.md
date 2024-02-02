@@ -34,7 +34,7 @@ $ nvm use lts/hydrogen
   Check and select appropriate kubernetes context using `kubectx` command as below:
 
 ```
-kubectx <context-name>
+$ kubectx <context-name>
 ```
 
 * For a local cluster, you may use [kind](https://kind.sigs.k8s.io/) and [kubectl](https://kubernetes.io/docs/tasks/tools/) to create a cluster and namespace as below.
