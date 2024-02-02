@@ -133,60 +133,60 @@ jobs:
         run: |
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Setting up environment variables"
-          
-          
+          SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+
           CUR_DIR="scripts"
           source "${CUR_DIR}/env.sh"
           cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
-          
+
           set -a
           source "${TMP_DIR}/.env"
 
           CHART_VALUES_FILES=ci/ci-values.yaml
           SCRIPTS_DIR=scripts
-          SCRIPT_NAME=direct-install.sh
+
           TELEMETRY_SCRIPT="telemetry.sh"
           GATEWAY_API_SCRIPT="gateway.sh"
           DOCKER_SCRIPT="docker.sh"
 
           echo "-----------------------------------------------------------------------------------------------------"
-          echo "Creating cluster and namespace"          
+          echo "Creating cluster and namespace"
           kind create cluster -n "${CLUSTER_NAME}" --config=dev-cluster.yaml
-          
+
           kubectl create ns "${NAMESPACE}"
           kubectl get ns
           kubectl config use-context "kind-${CLUSTER_NAME}"
           kubectl config set-context --current --namespace="${NAMESPACE}"
           kubectl config get-contexts
-          
+
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Building kubectl-bats image"
           KUBECTL_BATS_IMAGE="${LOCAL_DOCKER_REGISTRY}/kubectl-bats:${LOCAL_DOCKER_IMAGE_TAG}"
           cd "${DOCKERFILE_DIR}/kubectl-bats" && docker build -t "${KUBECTL_BATS_IMAGE}" .
           kind load docker-image "${KUBECTL_BATS_IMAGE}" -n "${CLUSTER_NAME}"
           cd -
-          
-          
+
+
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Helm dependency update"
 
           echo "cloud:" > ${CLUSTER_SETUP_VALUES_FILE}
           echo "  prometheusStack:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
-          echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};         
+          echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
           echo "  minio:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
           echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
-          
+
           helm dependency update ../charts/fullstack-deployment
           helm dependency update ../charts/fullstack-cluster-setup
-          
+
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Helm cluster setup"
-          
+
           helm install -n "${NAMESPACE}" "fullstack-cluster-setup" "${SETUP_CHART_DIR}" --values "${CLUSTER_SETUP_VALUES_FILE}"
           echo "-----------------------Shared Resources------------------------------------------------------------------------------"
           kubectl get clusterrole "${POD_MONITOR_ROLE}" -o wide
-  
-          
+
+
           echo ""
           echo "Installing helm chart... "
           echo "SCRIPT_NAME: ${SCRIPT_NAME}"
@@ -201,49 +201,49 @@ jobs:
               helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}"
             fi
           fi
-          
+
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Get service and pod information"
 
           kubectl get svc -o wide && \
           kubectl get pods -o wide && \
-          
-          echo "Waiting for network-node pods to be active (first deployment takes ~10m)...." 
+
+          echo "Waiting for network-node pods to be active (first deployment takes ~10m)...."
           kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
-          
+
           echo "Service Information...."
           kubectl get svc -o wide
-          
-          echo "Waiting for pods to be up (timeout 600s)" 
+
+          echo "Waiting for pods to be up (timeout 600s)"
           kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
-  
+
 
           echo "Running helm chart tests (takes ~5m, timeout 15m)... "
           echo "-----------------------------------------------------------------------------------------------------"
-          
+
           helm test "${RELEASE_NAME}" --filter name=network-test --timeout 15m
-          
+
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Setup and start nodes"
-          source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all          
+          source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
           source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
-          
+
           echo "-----------------------------------------------------------------------------------------------------"
           echo "Tear down cluster"
-  
-          kubectl delete pod network-test -n "${NAMESPACE}" || true          
-  
+
+          kubectl delete pod network-test -n "${NAMESPACE}" || true
+
           echo "Uninstalling helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}... "
           echo "-----------------------------------------------------------------------------------------------------"
           helm uninstall -n "${NAMESPACE}" "${RELEASE_NAME}"
           sleep 10
           echo "Uninstalled helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}"
 
-          echo "Removing postgres pvc"         
+          echo "Removing postgres pvc"
           has_postgres_pvc=$(kubectl get pvc --no-headers -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}" | wc -l)
           if [[ $has_postgres_pvc ]]; then
             kubectl delete pvc -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}"
           fi
-          
-          echo "Workflow finished successfully"" 
+
+          echo "Workflow finished successfully"
           echo "-----------------------------------------------------------------------------------------------------"
