@@ -136,9 +136,9 @@ Kubernetes Namespace    : solo
 * Generate `pfx` node keys (You will need `curl`, `keytool` and `openssl`)
 
 ```
-curl https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/solo/test/scripts/gen-legacy-keys.sh -o gen-legacy-keys.sh
-chmod +x gen-legacy-keys.sh
-./gen-legacy-keys.sh node0,node1,node2
+$ curl https://raw.githubusercontent.com/hashgraph/full-stack-testing/main/solo/test/scripts/gen-legacy-keys.sh -o gen-legacy-keys.sh
+$ chmod +x gen-legacy-keys.sh
+$ ./gen-legacy-keys.sh node0,node1,node2
 
 # view the list of generated keys in the cache folder
 $ ls ~/.solo/cache/keys                                                                    
