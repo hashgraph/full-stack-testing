@@ -385,7 +385,7 @@ a-private-node2.pem a-public-node2.pem  hedera-node1.crt    hedera-node2.key    
 * Setup cluster with shared components (by default it is installed in the `default` namespace)
 
 ```
-solo cluster setup
+$ solo cluster setup
 
 # output is similar to example-1 
 ```
