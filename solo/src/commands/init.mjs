@@ -78,14 +78,11 @@ export class InitCommand extends BaseCommand {
         title: 'Setup chart manager',
         task: async (ctx, _) => {
           ctx.repoURLs = await this.chartManager.setup()
-        }
-      },
-      {
-        title: 'Generate status report',
-        task: (ctx, _) => {
-          self.logger.showList('Home Directories', ctx.dirs)
-          self.logger.showList('Chart Repository', ctx.repoURLs)
-          self.logger.showJSON('Cached Config', ctx.config)
+          if (argv.dev) {
+            self.logger.showList('Home Directories', ctx.dirs)
+            self.logger.showList('Chart Repository', ctx.repoURLs)
+            self.logger.showJSON('Cached Config', ctx.config)
+          }
         }
       }
     ], {

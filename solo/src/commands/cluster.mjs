@@ -53,7 +53,9 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.load()
+          const prevNamespace = self.configManager.getFlag(flags.namespace)
+
           await prompts.execute(task, self.configManager, [
             flags.chartDirectory,
             flags.fstChartVersion,
@@ -65,13 +67,20 @@ export class ClusterCommand extends BaseCommand {
 
           // prepare config
           ctx.config = {
-            namespace: self.configManager.getFlag(flags.namespace) || constants.DEFAULT_NAMESPACE,
+            namespace: argv[flags.namespace.name] || constants.DEFAULT_NAMESPACE,
             chartDir: self.configManager.getFlag(flags.chartDirectory),
             deployPrometheusStack: self.configManager.getFlag(flags.deployPrometheusStack),
             deployMinio: self.configManager.getFlag(flags.deployMinio),
             deployCertManager: self.configManager.getFlag(flags.deployCertManager),
             deployCertManagerCrds: self.configManager.getFlag(flags.deployCertManagerCrds),
             fstChartVersion: self.configManager.getFlag(flags.fstChartVersion)
+          }
+
+          if (prevNamespace && prevNamespace !== argv[flags.namespace.name]) {
+            // reset to previous namespace
+            // this is needed to restore the namespace which user might have set during init
+            self.configManager.setFlag(flags.namespace, prevNamespace)
+            self.configManager.persist()
           }
 
           self.logger.debug('Prepare ctx.config', { config: ctx.config, argv })
@@ -116,7 +125,9 @@ export class ClusterCommand extends BaseCommand {
             throw e
           }
 
-          await self.showInstalledChartList(namespace)
+          if (argv.dev) {
+            await self.showInstalledChartList(namespace)
+          }
         },
         skip: (ctx, _) => ctx.isChartInstalled
       }
@@ -158,7 +169,7 @@ export class ClusterCommand extends BaseCommand {
 
           self.configManager.load(argv)
           const clusterName = self.configManager.getFlag(flags.clusterName)
-          const namespace = argv.namespace || constants.DEFAULT_NAMESPACE
+          const namespace = argv[flags.namespace.name] || constants.DEFAULT_NAMESPACE
           ctx.config = {
             clusterName,
             namespace

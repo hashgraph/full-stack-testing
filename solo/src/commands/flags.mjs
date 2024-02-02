@@ -180,7 +180,7 @@ export const nodeIDs = {
   name: 'node-ids',
   definition: {
     describe: 'Comma separated node IDs (empty means all nodes)',
-    default: 'node0,node1,node2',
+    default: '',
     alias: 'i',
     type: 'string'
   }
@@ -268,7 +268,8 @@ export const keyFormat = {
   name: 'key-format',
   definition: {
     describe: 'Public and Private key file format (pem or pfx)',
-    default: 'pfx'
+    default: 'pfx',
+    type: 'string'
   }
 }
 
@@ -311,7 +312,7 @@ export const hederaExplorerTlsHostName = {
 export const deletePvcs = {
   name: 'delete-pvcs',
   definition: {
-    describe: 'Delete the persistent volume claims, defaults to false',
+    describe: 'Delete the persistent volume claims',
     default: false,
     type: 'boolean'
   }

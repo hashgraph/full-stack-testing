@@ -68,7 +68,7 @@ export const Logger = class {
   }
 
   setDevMode (devMode) {
-    this.debug(`setting dev mode: ${devMode}`)
+    this.debug(`dev mode logging: ${devMode}`)
     this.devMode = devMode
   }
 

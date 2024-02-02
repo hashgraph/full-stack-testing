@@ -52,29 +52,35 @@ export class NetworkCommand extends BaseCommand {
     return valuesArg
   }
 
-  prepareValuesArg (chartDir, valuesFile, deployMirrorNode, deployHederaExplorer, tlsClusterIssuerType,
-    enableHederaExplorerTls, namespace, hederaExplorerTlsLoadBalancerIp, hederaExplorerTlsHostName,
-    enablePrometheusSvcMonitor, releaseTag) {
+  prepareValuesArg (config = {}) {
     let valuesArg = ''
-    if (chartDir) {
-      valuesArg = `-f ${chartDir}/fullstack-deployment/values.yaml`
+    if (config.chartDir) {
+      valuesArg = `-f ${config.chartDir}/fullstack-deployment/values.yaml`
     }
 
-    valuesArg += this.prepareValuesFiles(valuesFile)
+    valuesArg += this.prepareValuesFiles(config.valuesFile)
 
-    valuesArg += ` --set hedera-mirror-node.enabled=${deployMirrorNode} --set hedera-explorer.enabled=${deployHederaExplorer}`
-    valuesArg += ` --set telemetry.prometheus.svcMonitor.enabled=${enablePrometheusSvcMonitor}`
+    valuesArg += ` --set hedera-mirror-node.enabled=${config.deployMirrorNode} --set hedera-explorer.enabled=${config.deployHederaExplorer}`
+    valuesArg += ` --set telemetry.prometheus.svcMonitor.enabled=${config.enablePrometheusSvcMonitor}`
 
-    if (enableHederaExplorerTls) {
-      valuesArg += this.getTlsValueArguments(tlsClusterIssuerType, enableHederaExplorerTls, namespace,
-        hederaExplorerTlsLoadBalancerIp, hederaExplorerTlsHostName)
+    if (config.enableHederaExplorerTls) {
+      valuesArg += this.getTlsValueArguments(config.tlsClusterIssuerType, config.enableHederaExplorerTls, config.namespace,
+        config.hederaExplorerTlsLoadBalancerIp, config.hederaExplorerTlsHostName)
     }
 
-    if (releaseTag) {
-      const rootImage = helpers.getRootImageRepository(releaseTag)
+    if (config.releaseTag) {
+      const rootImage = helpers.getRootImageRepository(config.releaseTag)
       valuesArg += ` --set defaults.root.image.repository=${rootImage}`
     }
 
+    // prepare name and account IDs for nodes
+    let i = 0
+    let accountId = 3
+    config.nodeIds.forEach(nodeId => {
+      valuesArg += ` --set hedera.nodes[${i}].name=${nodeId},hedera.nodes[${i++}].accountId=0.0.${accountId++}`
+    })
+
+    this.logger.debug('Prepared helm chart values', { valuesArg })
     return valuesArg
   }
 
@@ -95,13 +101,14 @@ export class NetworkCommand extends BaseCommand {
     ]
 
     this.configManager.load(argv)
+    this.logger.debug('Loaded cached config', { config: this.configManager.config })
     await prompts.execute(task, this.configManager, flagList)
 
     // create a config object for subsequent steps
     const config = {
       releaseTag: this.configManager.getFlag(flags.releaseTag),
       namespace: this.configManager.getFlag(flags.namespace),
-      nodeIds: this.configManager.getFlag(flags.nodeIDs),
+      nodeIds: helpers.parseNodeIDs(this.configManager.getFlag(flags.nodeIDs)),
       chartDir: this.configManager.getFlag(flags.chartDirectory),
       fstChartVersion: this.configManager.getFlag(flags.fstChartVersion),
       valuesFile: this.configManager.getFlag(flags.valuesFile),
@@ -118,12 +125,7 @@ export class NetworkCommand extends BaseCommand {
     config.chartPath = await this.prepareChartPath(config.chartDir,
       constants.FULLSTACK_TESTING_CHART, constants.FULLSTACK_DEPLOYMENT_CHART)
 
-    config.valuesArg = this.prepareValuesArg(config.chartDir,
-      config.valuesFile, config.deployMirrorNode, config.deployHederaExplorer,
-      config.tlsClusterIssuerType, config.enableHederaExplorerTls, config.namespace,
-      config.hederaExplorerTlsLoadBalancerIp, config.hederaExplorerTlsHostName, config.enablePrometheusSvcMonitor,
-      config.releaseTag
-    )
+    config.valuesArg = this.prepareValuesArg(config)
 
     this.logger.debug('Prepared config', { config, cachedConfig: this.configManager.config })
     return config

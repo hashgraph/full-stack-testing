@@ -27,9 +27,7 @@ export async function promptNamespace (task, input) {
 
 export async function promptNodeIds (task, input) {
   try {
-    let nodeIds = []
     if (!input) {
-      nodeIds = []
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'input',
         default: 'node0,node1,node2',
@@ -37,16 +35,7 @@ export async function promptNodeIds (task, input) {
       })
     }
 
-    if (input) {
-      input.split(',').forEach(item => {
-        const nodeId = item.trim()
-        if (nodeId) {
-          nodeIds.push(nodeId)
-        }
-      })
-    }
-
-    return nodeIds
+    return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.nodeIDs.name}`, e)
   }
