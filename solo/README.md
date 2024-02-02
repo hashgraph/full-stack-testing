@@ -350,7 +350,7 @@ Once the nodes are up, you may now expose various services (using `k9s` (shift-f
 
 ## Example - 2: Deploy a private Hedera network (version `0.47.0-alpha.0`)
 
-* Initialize `solo` with tag `v0.42.5` and list of node names `node0,node1,node2`:
+* Initialize `solo` with tag `v0.47.0-alpha.0` and list of node names `node0,node1,node2`:
 
 ```
 $ solo init -t v0.47.0-alpha.0 -i node0,node1,node2 -n "${SOLO_NAMESPACE}" 
