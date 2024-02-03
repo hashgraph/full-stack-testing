@@ -10,7 +10,7 @@ export async function promptNamespace (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.namespace.definition.default,
+        default: 'solo',
         message: 'Enter namespace name: '
       })
     }
@@ -25,11 +25,29 @@ export async function promptNamespace (task, input) {
   }
 }
 
+export async function promptClusterSetupNamespace (task, input) {
+  try {
+    if (!input) {
+      input = await task.prompt(ListrEnquirerPromptAdapter).run({
+        type: 'text',
+        default: 'solo-cluster',
+        message: 'Enter cluster setup namespace name: '
+      })
+    }
+
+    if (!input) {
+      throw new FullstackTestingError('cluster setup namespace cannot be empty')
+    }
+
+    return input
+  } catch (e) {
+    throw new FullstackTestingError(`input failed: ${flags.clusterSetupNamespace.name}: ${e.message}`, e)
+  }
+}
+
 export async function promptNodeIds (task, input) {
   try {
-    let nodeIds = []
     if (!input) {
-      nodeIds = []
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'input',
         default: 'node0,node1,node2',
@@ -37,16 +55,7 @@ export async function promptNodeIds (task, input) {
       })
     }
 
-    if (input) {
-      input.split(',').forEach(item => {
-        const nodeId = item.trim()
-        if (nodeId) {
-          nodeIds.push(nodeId)
-        }
-      })
-    }
-
-    return nodeIds
+    return input
   } catch (e) {
     throw new FullstackTestingError(`input failed: ${flags.nodeIDs.name}`, e)
   }
@@ -57,7 +66,7 @@ export async function promptReleaseTag (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.releaseTag.definition.default,
+        default: 'v0.42.5',
         message: 'Enter release version:'
       })
 
@@ -79,7 +88,7 @@ export async function promptRelayReleaseTag (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.relayReleaseTag.definition.default,
+        default: flags.relayReleaseTag.definition.defaultValue,
         message: 'Enter relay release version:'
       })
     }
@@ -90,7 +99,7 @@ export async function promptRelayReleaseTag (task, input) {
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed for '${flags.releaseTag.name}': ${e.message}`, e)
+    throw new FullstackTestingError(`input failed for '${flags.relayReleaseTag.name}': ${e.message}`, e)
   }
 }
 
@@ -115,7 +124,7 @@ export async function promptForce (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.force.definition.default,
+        default: flags.force.definition.defaultValue,
         message: 'Would you like to force changes?'
       })
     }
@@ -131,7 +140,7 @@ export async function promptChainId (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.chainId.definition.default,
+        default: flags.chainId.definition.defaultValue,
         message: 'Enter chain ID: '
       })
     }
@@ -147,7 +156,7 @@ export async function promptChartDir (task, input) {
     if (input && !fs.existsSync(input)) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.chartDirectory.definition.default,
+        default: flags.chartDirectory.definition.defaultValue,
         message: 'Enter local charts directory path: '
       })
 
@@ -167,7 +176,7 @@ export async function promptValuesFile (task, input) {
     if (input && !fs.existsSync(input)) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.valuesFile.definition.default,
+        default: flags.valuesFile.definition.defaultValue,
         message: 'Enter path to values.yaml: '
       })
 
@@ -187,7 +196,7 @@ export async function promptDeployPrometheusStack (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployPrometheusStack.definition.default,
+        default: flags.deployPrometheusStack.definition.defaultValue,
         message: 'Would you like to deploy prometheus stack?'
       })
     }
@@ -203,7 +212,7 @@ export async function promptEnablePrometheusSvcMonitor (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.enablePrometheusSvcMonitor.definition.default,
+        default: flags.enablePrometheusSvcMonitor.definition.defaultValue,
         message: 'Would you like to enable the Prometheus service monitor for the network nodes?'
       })
     }
@@ -219,7 +228,7 @@ export async function promptDeployMinio (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployMinio.definition.default,
+        default: flags.deployMinio.definition.defaultValue,
         message: 'Would you like to deploy MinIO?'
       })
     }
@@ -235,7 +244,7 @@ export async function promptDeployCertManager (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployCertManager.definition.default,
+        default: flags.deployCertManager.definition.defaultValue,
         message: 'Would you like to deploy Cert Manager?'
       })
     }
@@ -251,7 +260,7 @@ export async function promptDeployCertManagerCrds (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployCertManagerCrds.definition.default,
+        default: flags.deployCertManagerCrds.definition.defaultValue,
         message: 'Would you like to deploy Cert Manager CRDs?'
       })
     }
@@ -267,7 +276,7 @@ export async function promptDeployMirrorNode (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployMirrorNode.definition.default,
+        default: flags.deployMirrorNode.definition.defaultValue,
         message: 'Would you like to deploy Hedera Mirror Node?'
       })
     }
@@ -283,7 +292,7 @@ export async function promptDeployHederaExplorer (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deployHederaExplorer.definition.default,
+        default: flags.deployHederaExplorer.definition.defaultValue,
         message: 'Would you like to deploy Hedera Explorer?'
       })
     }
@@ -299,7 +308,7 @@ export async function promptTlsClusterIssuerType (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.tlsClusterIssuerType.definition.default,
+        default: flags.tlsClusterIssuerType.definition.defaultValue,
         message: 'Enter TLS cluster issuer type, available options are: "acme-staging", "acme-prod", or "self-signed":'
       })
     }
@@ -319,7 +328,7 @@ export async function promptEnableHederaExplorerTls (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.enableHederaExplorerTls.definition.default,
+        default: flags.enableHederaExplorerTls.definition.defaultValue,
         message: 'Would you like to enable the Hedera Explorer TLS?'
       })
     }
@@ -335,7 +344,7 @@ export async function promptHederaExplorerTlsHostName (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.hederaExplorerTlsHostName.definition.default,
+        default: flags.hederaExplorerTlsHostName.definition.defaultValue,
         message: 'Enter the host name to use for the Hedera Explorer TLS:'
       })
     }
@@ -351,7 +360,7 @@ export async function promptOperatorId (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.operatorId.definition.default,
+        default: flags.operatorId.definition.defaultValue,
         message: 'Enter operator ID: '
       })
     }
@@ -367,7 +376,7 @@ export async function promptOperatorKey (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.operatorKey.definition.default,
+        default: flags.operatorKey.definition.defaultValue,
         message: 'Enter operator ID: '
       })
     }
@@ -383,7 +392,7 @@ export async function promptReplicaCount (task, input) {
     if (typeof input !== 'number') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'number',
-        default: flags.replicaCount.definition.default,
+        default: flags.replicaCount.definition.defaultValue,
         message: 'How many replica do you want?'
       })
     }
@@ -399,7 +408,7 @@ export async function promptGenerateGossipKeys (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.generateGossipKeys.definition.default,
+        default: flags.generateGossipKeys.definition.defaultValue,
         message: `Would you like to generate Gossip keys? ${typeof input} ${input}`
       })
     }
@@ -415,7 +424,7 @@ export async function promptGenerateTLSKeys (task, input) {
     if (typeof input !== 'boolean') {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.generateTlsKeys.definition.default,
+        default: flags.generateTlsKeys.definition.defaultValue,
         message: 'Would you like to generate TLS keys?'
       })
     }
@@ -431,7 +440,7 @@ export async function promptDeletePvcs (task, input) {
     if (input === undefined) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'toggle',
-        default: flags.deletePvcs.definition.default,
+        default: flags.deletePvcs.definition.defaultValue,
         message: 'Would you like to delete persistent volume claims upon uninstall?'
       })
     }
@@ -448,7 +457,7 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
     if (initial < 0) {
       const input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'select',
-        initial: choices.indexOf(flags.keyFormat.definition.default),
+        initial: choices.indexOf(flags.keyFormat.definition.defaultValue),
         message: 'Select key format',
         choices: helpers.cloneArray(choices)
       })
@@ -471,7 +480,7 @@ export async function promptFstChartVersion (task, input) {
     if (!input) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
         type: 'text',
-        default: flags.fstChartVersion.definition.default,
+        default: flags.fstChartVersion.definition.defaultValue,
         message: 'Enter fullstack testing chart version: '
       })
     }
@@ -487,6 +496,7 @@ export function getPromptMap () {
     .set(flags.nodeIDs.name, promptNodeIds)
     .set(flags.releaseTag.name, promptReleaseTag)
     .set(flags.relayReleaseTag.name, promptRelayReleaseTag)
+    .set(flags.clusterSetupNamespace.name, promptClusterSetupNamespace)
     .set(flags.namespace.name, promptNamespace)
     .set(flags.cacheDir.name, promptCacheDir)
     .set(flags.force.name, promptForce)

@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import { Listr } from 'listr2'
 import path from 'path'
 import { FullstackTestingError, IllegalArgumentError } from '../core/errors.mjs'
+import * as helpers from '../core/helpers.mjs'
 import { sleep } from '../core/helpers.mjs'
 import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
@@ -156,7 +157,7 @@ export class NodeCommand extends BaseCommand {
 
           const config = {
             namespace: self.configManager.getFlag(flags.namespace),
-            nodeIds: self.configManager.getFlag(flags.nodeIDs),
+            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs)),
             releaseTag: self.configManager.getFlag(flags.releaseTag),
             cacheDir: self.configManager.getFlag(flags.cacheDir),
             force: self.configManager.getFlag(flags.force),
@@ -394,7 +395,7 @@ export class NodeCommand extends BaseCommand {
 
           ctx.config = {
             namespace: self.configManager.getFlag(flags.namespace),
-            nodeIds: self.configManager.getFlag(flags.nodeIDs)
+            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs))
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -480,7 +481,7 @@ export class NodeCommand extends BaseCommand {
 
           ctx.config = {
             namespace: self.configManager.getFlag(flags.namespace),
-            nodeIds: self.configManager.getFlag(flags.nodeIDs)
+            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs))
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -544,7 +545,7 @@ export class NodeCommand extends BaseCommand {
           ])
 
           const config = {
-            nodeIds: self.configManager.getFlag(flags.nodeIDs),
+            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs)),
             cacheDir: self.configManager.getFlag(flags.cacheDir),
             generateGossipKeys: self.configManager.getFlag(flags.generateGossipKeys),
             generateTlsKeys: self.configManager.getFlag(flags.generateTlsKeys),
@@ -584,21 +585,23 @@ export class NodeCommand extends BaseCommand {
               })
             }
 
-            self.logger.showUser(chalk.green('*** Generated Node Gossip Keys ***'))
-            for (const entry of nodeKeyFiles.entries()) {
-              const nodeId = entry[0]
-              const fileList = entry[1]
+            if (argv.dev) {
+              self.logger.showUser(chalk.green('*** Generated Node Gossip Keys ***'))
+              for (const entry of nodeKeyFiles.entries()) {
+                const nodeId = entry[0]
+                const fileList = entry[1]
+                self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
+                self.logger.showUser(chalk.cyan(`Node ID: ${nodeId}`))
+                self.logger.showUser(chalk.cyan('==========================='))
+                self.logger.showUser(chalk.green('Signing key\t\t:'), chalk.yellow(fileList.signingKeyFiles.privateKeyFile))
+                self.logger.showUser(chalk.green('Signing certificate\t:'), chalk.yellow(fileList.signingKeyFiles.certificateFile))
+                self.logger.showUser(chalk.green('Agreement key\t\t:'), chalk.yellow(fileList.agreementKeyFiles.privateKeyFile))
+                self.logger.showUser(chalk.green('Agreement certificate\t:'), chalk.yellow(fileList.agreementKeyFiles.certificateFile))
+                self.logger.showUser(chalk.blue('Inspect certificate\t: '), chalk.yellow(`openssl storeutl -noout -text -certs ${fileList.agreementKeyFiles.certificateFile}`))
+                self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.signingKeyFiles.certificateFile} ${fileList.agreementKeyFiles.certificateFile}`))
+              }
               self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
-              self.logger.showUser(chalk.cyan(`Node ID: ${nodeId}`))
-              self.logger.showUser(chalk.cyan('==========================='))
-              self.logger.showUser(chalk.green('Signing key\t\t:'), chalk.yellow(fileList.signingKeyFiles.privateKeyFile))
-              self.logger.showUser(chalk.green('Signing certificate\t:'), chalk.yellow(fileList.signingKeyFiles.certificateFile))
-              self.logger.showUser(chalk.green('Agreement key\t\t:'), chalk.yellow(fileList.agreementKeyFiles.privateKeyFile))
-              self.logger.showUser(chalk.green('Agreement certificate\t:'), chalk.yellow(fileList.agreementKeyFiles.certificateFile))
-              self.logger.showUser(chalk.blue('Inspect certificate\t: '), chalk.yellow(`openssl storeutl -noout -text -certs ${fileList.agreementKeyFiles.certificateFile}`))
-              self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.signingKeyFiles.certificateFile} ${fileList.agreementKeyFiles.certificateFile}`))
             }
-            self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
           }
         },
         skip: (ctx, _) => !ctx.config.generateGossipKeys
@@ -617,19 +620,21 @@ export class NodeCommand extends BaseCommand {
               })
             }
 
-            self.logger.showUser(chalk.green('*** Generated Node TLS Keys ***'))
-            for (const entry of nodeKeyFiles.entries()) {
-              const nodeId = entry[0]
-              const fileList = entry[1]
+            if (argv.dev) {
+              self.logger.showUser(chalk.green('*** Generated Node TLS Keys ***'))
+              for (const entry of nodeKeyFiles.entries()) {
+                const nodeId = entry[0]
+                const fileList = entry[1]
+                self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
+                self.logger.showUser(chalk.cyan(`Node ID: ${nodeId}`))
+                self.logger.showUser(chalk.cyan('==========================='))
+                self.logger.showUser(chalk.green('TLS key\t\t:'), chalk.yellow(fileList.tlsKeyFiles.privateKeyFile))
+                self.logger.showUser(chalk.green('TLS certificate\t:'), chalk.yellow(fileList.tlsKeyFiles.certificateFile))
+                self.logger.showUser(chalk.blue('Inspect certificate\t: '), chalk.yellow(`openssl storeutl -noout -text -certs ${fileList.tlsKeyFiles.certificateFile}`))
+                self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.tlsKeyFiles.certificateFile} ${fileList.tlsKeyFiles.certificateFile}`))
+              }
               self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
-              self.logger.showUser(chalk.cyan(`Node ID: ${nodeId}`))
-              self.logger.showUser(chalk.cyan('==========================='))
-              self.logger.showUser(chalk.green('TLS key\t\t:'), chalk.yellow(fileList.tlsKeyFiles.privateKeyFile))
-              self.logger.showUser(chalk.green('TLS certificate\t:'), chalk.yellow(fileList.tlsKeyFiles.certificateFile))
-              self.logger.showUser(chalk.blue('Inspect certificate\t: '), chalk.yellow(`openssl storeutl -noout -text -certs ${fileList.tlsKeyFiles.certificateFile}`))
-              self.logger.showUser(chalk.blue('Verify certificate\t: '), chalk.yellow(`openssl verify -CAfile ${fileList.tlsKeyFiles.certificateFile} ${fileList.tlsKeyFiles.certificateFile}`))
             }
-            self.logger.showUser(chalk.cyan('---------------------------------------------------------------------------------------------'))
           }
         },
         skip: (ctx, _) => !ctx.config.generateTlsKeys

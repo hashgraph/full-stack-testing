@@ -77,6 +77,7 @@ export const LISTR_DEFAULT_RENDERER_TIMER_OPTION = {
 }
 
 export const LISTR_DEFAULT_RENDERER_OPTION = {
+  collapseSubtasks: false,
   timer: LISTR_DEFAULT_RENDERER_TIMER_OPTION
 }
 

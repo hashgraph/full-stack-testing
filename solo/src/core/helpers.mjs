@@ -5,10 +5,27 @@ import { fileURLToPath } from 'url'
 
 // cache current directory
 const CUR_FILE_DIR = paths.dirname(fileURLToPath(import.meta.url))
+
 export function sleep (ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+}
+
+export function parseNodeIDs (input) {
+  if (typeof input === 'string') {
+    const nodeIds = []
+    input.split(',').forEach(item => {
+      const nodeId = item.trim()
+      if (nodeId) {
+        nodeIds.push(nodeId)
+      }
+    })
+
+    return nodeIds
+  }
+
+  throw new FullstackTestingError('node IDs is not a comma separated string')
 }
 
 export function cloneArray (arr) {

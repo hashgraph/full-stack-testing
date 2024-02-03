@@ -98,13 +98,29 @@ export class ConfigManager {
 
           if (argv[flag.name] !== undefined) {
             let val = argv[flag.name]
-            if (val && (flag.name === flags.chartDirectory.name || flag.name === flags.cacheDir.name)) {
-              this.logger.debug(`Resolving directory path for '${flag.name}': ${val}`)
-              val = paths.resolve(val)
-            }
+            switch (flag.definition.type) {
+              case 'string':
+                if (val) {
+                  if (flag.name === flags.chartDirectory.name || flag.name === flags.cacheDir.name) {
+                    this.logger.debug(`Resolving directory path for '${flag.name}': ${val}`)
+                    val = paths.resolve(val)
+                  }
+                  this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
+                  config.flags[flag.name] = val
+                  writeConfig = true
+                }
+                break
 
-            config.flags[flag.name] = val
-            writeConfig = true
+              case 'number':
+              case 'boolean':
+                this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
+                config.flags[flag.name] = val
+                writeConfig = true
+                break
+
+              default:
+                throw new FullstackTestingError(`Unsupported field type for flag '${flag.name}': ${flag.definition.type}`)
+            }
           }
         }
 
