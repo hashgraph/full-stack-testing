@@ -496,7 +496,7 @@ export function getPromptMap () {
     .set(flags.nodeIDs.name, promptNodeIds)
     .set(flags.releaseTag.name, promptReleaseTag)
     .set(flags.relayReleaseTag.name, promptRelayReleaseTag)
-    .set(flags.clusterSetupNamespace, promptClusterSetupNamespace)
+    .set(flags.clusterSetupNamespace.name, promptClusterSetupNamespace)
     .set(flags.namespace.name, promptNamespace)
     .set(flags.cacheDir.name, promptCacheDir)
     .set(flags.force.name, promptForce)
