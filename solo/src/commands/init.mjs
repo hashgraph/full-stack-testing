@@ -108,14 +108,7 @@ export class InitCommand extends BaseCommand {
       command: 'init',
       desc: 'Initialize local environment and default flags',
       builder: y => {
-        const requiredFlags = [flags.namespace.name, flags.releaseTag.name, flags.nodeIDs.name]
-        for (const flag of flags.allFlags) {
-          if (requiredFlags.includes(flag.name)) {
-            flags.setCommandFlag(y, flag, true)
-          } else {
-            flags.setCommandFlag(y, flag, false)
-          }
-        }
+        flags.setCommandFlags(y, ...flags.allFlags)
       },
       handler: (argv) => {
         initCmd.init(argv).then(r => {
