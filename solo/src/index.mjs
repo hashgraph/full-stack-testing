@@ -68,7 +68,7 @@ export function main (argv) {
             // argv takes precedence
           } else if (config.flags[key]) {
             args[key] = config.flags[key]
-          } else {
+          } else if (args._[0] !== "init") {
             args[key] = flag.definition.defaultValue
           }
         }

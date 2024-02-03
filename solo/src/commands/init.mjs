@@ -108,7 +108,7 @@ export class InitCommand extends BaseCommand {
       command: 'init',
       desc: 'Initialize local environment and default flags',
       builder: y => {
-        flags.setCommandFlags(y, flags.allFlags)
+        flags.setCommandFlags(y, ...flags.allFlags)
       },
       handler: (argv) => {
         initCmd.init(argv).then(r => {
