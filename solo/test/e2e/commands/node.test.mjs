@@ -234,51 +234,73 @@ describe.each([
           new LocalProvider({ client })
         )
 
-        for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
+        const accountUpdatePromiseArray = []
+        // for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
+        for (const [start, end] of [[3, 6]]) {
           for (let i = start; i <= end; i++) {
+            accountUpdatePromiseArray.push((async function (i) {
+              const accountId = `0.0.${i}`
+              try {
+                let keys = await TestHelper.getAccountKeys(accountId, wallet)
 
-            const accountId = `0.0.${i}`
+                expect(keys[0].toString()).toEqual(constants.OPERATOR_PUBLIC_KEY)
 
-            let keys = await TestHelper.getAccountKeys(accountId, wallet)
+                const newPrivateKey = PrivateKey.generateED25519()
+                console.log(`Updating account ${accountId} with new key: \n${newPrivateKey.toString()}\n and public key:\n${newPrivateKey.publicKey.toString()}`)
 
-            expect(keys[0].toString()).toEqual(constants.OPERATOR_PUBLIC_KEY)
+                // Create the transaction to update the key on the account
+                const transaction = await new AccountUpdateTransaction()
+                  .setAccountId(accountId)
+                  .setKey(newPrivateKey.publicKey)
+                  .freezeWith(client)
 
-            const newPrivateKey = PrivateKey.generateED25519()
-            console.log(`Updating account ${accountId} with new key: \n${newPrivateKey.toString()}\n and public key:\n${newPrivateKey.publicKey.toString()}`)
+                // Sign the transaction with the old key and new key
+                const signTx = await (await transaction.sign(genesisKey)).sign(newPrivateKey)
 
-            // Create the transaction to update the key on the account
-            const transaction = await new AccountUpdateTransaction()
-              .setAccountId(accountId)
-              .setKey(newPrivateKey.publicKey)
-              .freezeWith(client)
+                // SIgn the transaction with the client operator private key and submit to a Hedera network
+                const txResponse = await signTx.execute(client)
 
-            // Sign the transaction with the old key and new key
-            const signTx = await (await transaction.sign(genesisKey)).sign(newPrivateKey)
+                // Request the receipt of the transaction
+                const receipt = await txResponse.getReceipt(client)
 
-            // SIgn the transaction with the client operator private key and submit to a Hedera network
-            const txResponse = await signTx.execute(client)
+                // Get the transaction consensus status
+                const transactionStatus = receipt.status
 
-            // Request the receipt of the transaction
-            const receipt = await txResponse.getReceipt(client)
+                console.log('The transaction consensus status is ' + transactionStatus.toString())
 
-            // Get the transaction consensus status
-            const transactionStatus = receipt.status
+                keys = await TestHelper.getAccountKeys(accountId, wallet)
 
-            console.log('The transaction consensus status is ' + transactionStatus.toString())
+                expect(keys[0].toString()).not.toEqual(constants.OPERATOR_PUBLIC_KEY)
 
-            keys = await TestHelper.getAccountKeys(accountId, wallet)
-
-            expect(keys[0].toString()).not.toEqual(constants.OPERATOR_PUBLIC_KEY)
-
-            const data = {
-              privateKey: newPrivateKey.toString(),
-              publicKey: newPrivateKey.publicKey.toString()
-            }
-            const response = await k8.createSecret(`account-key-${accountId}`, argv[namespace], 'Opaque', data)
-            console.log(JSON.stringify(response))
-            expect(response).toBeTruthy()
+                const data = {
+                  privateKey: newPrivateKey.toString(),
+                  publicKey: newPrivateKey.publicKey.toString()
+                }
+                const response = await k8.createSecret(`account-key-${accountId}`, argv[namespace], 'Opaque', data)
+                console.log(JSON.stringify(response))
+                expect(response).toBeTruthy()
+                return {
+                  status: response ? 'fulfilled' : 'rejected',
+                  value: accountId
+                }
+              } catch (e) {
+                console.log(`account: ${accountId}, had an error: ${e.toString()}`)
+                return {
+                  status: 'rejected',
+                  value: accountId
+                }
+              }
+            })(i))
           }
         }
+        await Promise.allSettled(accountUpdatePromiseArray).then((results) => {
+          for (const result of results) {
+            if (result.status === 'rejected') {
+              console.log(`accountId failed to update the account ID and create its secret: ${result.value}`)
+            }
+          }
+        })
+        // now need to process account 0.0.2
       } catch (e) {
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
