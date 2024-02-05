@@ -16,8 +16,8 @@
  */
 import {
   AccountBalanceQuery,
-  AccountCreateTransaction, Client,
-  Hbar,
+  AccountCreateTransaction, AccountInfoQuery, AccountUpdateTransaction, Client,
+  Hbar, KeyList,
   LocalProvider,
   PrivateKey,
   Wallet
@@ -105,6 +105,23 @@ class TestHelper {
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
     }
+  }
+
+  static getAccountKeys = async function (accountId, wallet) {
+    console.log(`Get key for account ${accountId}`)
+    const accountInfo = await new AccountInfoQuery()
+      .setAccountId(accountId)
+      .executeWithSigner(wallet)
+
+    let keys
+    if (accountInfo.key instanceof KeyList) {
+      keys = accountInfo.key.toArray()
+    } else {
+      keys = []
+      keys.push(accountInfo.key)
+    }
+
+    return keys
   }
 }
 
@@ -201,6 +218,70 @@ describe.each([
         await nodeCmd.run(`tail ${constants.SOLO_LOGS_DIR}/solo.log`)
       }
     }, 60000)
+
+    it('only genesis account should have genesis key', async () => {
+      expect.hasAssertions()
+      let client = null
+      const genesisKey = PrivateKey.fromStringED25519(constants.OPERATOR_KEY)
+
+      try {
+        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
+        client.setOperator(constants.OPERATOR_ID, constants.OPERATOR_KEY)
+
+        const wallet = new Wallet(
+          constants.OPERATOR_ID,
+          constants.OPERATOR_KEY,
+          new LocalProvider({ client })
+        )
+
+        // for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
+        for (const [start, end] of [[3, 3]]) {
+          for (let i = start; i <= end; i++) {
+            const accountId = `0.0.${i}`
+
+            let keys = await TestHelper.getAccountKeys(accountId, wallet)
+
+            expect(keys[0].toString()).toEqual(constants.OPERATOR_PUBLIC_KEY)
+
+            const newPrivateKey = PrivateKey.generateED25519()
+            console.log(`Updating account ${accountId} with new key: \n${newPrivateKey.toString()}\n and public key:\n${newPrivateKey.publicKey.toString()}`)
+
+            // Create the transaction to update the key on the account
+            const transaction = await new AccountUpdateTransaction()
+              .setAccountId(accountId)
+              .setKey(newPrivateKey.publicKey)
+              .freezeWith(client)
+
+            // Sign the transaction with the old key and new key
+            const signTx = await (await transaction.sign(genesisKey)).sign(newPrivateKey)
+
+            // SIgn the transaction with the client operator private key and submit to a Hedera network
+            const txResponse = await signTx.execute(client)
+
+            // Request the receipt of the transaction
+            const receipt = await txResponse.getReceipt(client)
+
+            // Get the transaction consensus status
+            const transactionStatus = receipt.status
+
+            console.log('The transaction consensus status is ' + transactionStatus.toString())
+
+            keys = await TestHelper.getAccountKeys(accountId, wallet)
+
+            expect(keys[0].toString()).not.toEqual(constants.OPERATOR_PUBLIC_KEY)
+
+
+          }
+        }
+      } catch (e) {
+        nodeCmd.logger.showUserError(e)
+        expect(e).toBeNull()
+      }
+
+      if (client) {
+        client.close()
+      }
+    }, 90000)
 
     it('balance query should succeed', async () => {
       expect.assertions(1)
