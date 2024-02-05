@@ -234,9 +234,9 @@ describe.each([
           new LocalProvider({ client })
         )
 
-        // for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
-        for (const [start, end] of [[3, 3]]) {
+        for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
           for (let i = start; i <= end; i++) {
+
             const accountId = `0.0.${i}`
 
             let keys = await TestHelper.getAccountKeys(accountId, wallet)
@@ -270,7 +270,13 @@ describe.each([
 
             expect(keys[0].toString()).not.toEqual(constants.OPERATOR_PUBLIC_KEY)
 
-
+            const data = {
+              privateKey: newPrivateKey.toString(),
+              publicKey: newPrivateKey.publicKey.toString()
+            }
+            const response = await k8.createSecret(`account-key-${accountId}`, argv[namespace], 'Opaque', data)
+            console.log(JSON.stringify(response))
+            expect(response).toBeTruthy()
           }
         }
       } catch (e) {
@@ -281,7 +287,7 @@ describe.each([
       if (client) {
         client.close()
       }
-    }, 90000)
+    }, 900000)
 
     it('balance query should succeed', async () => {
       expect.assertions(1)

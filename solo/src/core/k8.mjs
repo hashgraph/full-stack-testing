@@ -24,6 +24,7 @@ import { FullstackTestingError, MissingArgumentError } from './errors.mjs'
 import * as sb from 'stream-buffers'
 import * as tar from 'tar'
 import { v4 as uuid4 } from 'uuid'
+import { V1ObjectMeta, V1Secret } from '@kubernetes/client-node'
 
 /**
  * A kubernetes API wrapper class providing custom functionalities required by solo
@@ -684,6 +685,18 @@ export class K8 {
     )
 
     return resp.response.statusCode === 200.0
+  }
+
+  async createSecret (name, namespace, secretType, data) {
+    const v1Secret = new V1Secret()
+    v1Secret.apiVersion = 'v1'
+    v1Secret.kind = 'Secret'
+    v1Secret.metadata = new V1ObjectMeta()
+    v1Secret.metadata.name = name
+    v1Secret.type = secretType
+    v1Secret.data = data
+    const resp = await this.kubeClient.createNamespacedSecret(namespace, v1Secret)
+    return resp.response.statusCode === 201
   }
 
   _getNamespace () {

@@ -76,7 +76,7 @@ export const DEFAULT_CHART_REPO = new Map()
 export const OPERATOR_ID = process.env.SOLO_OPERATOR_ID || '0.0.2'
 export const OPERATOR_KEY = process.env.SOLO_OPERATOR_KEY || '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
 export const OPERATOR_PUBLIC_KEY = process.env.SOLO_OPERATOR_PUBLIC_KEY || '302a300506032b65700321000aa8e21064c61eab86e2a9c164565b4e7a9a4146106e0a6cd03a8c395a110e92'
-export const SYSTEM_ACCOUNTS = [[3, 100], [200, 349], [400, 750], [900, 1000], [2, 2]]
+export const SYSTEM_ACCOUNTS = [[3, 100], [200, 349], [400, 750], [900, 1000]] // do account 0.0.2 last and outside the loop
 
 export const POD_STATUS_RUNNING = 'Running'
 export const POD_STATUS_READY = 'Ready'
