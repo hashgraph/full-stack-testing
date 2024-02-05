@@ -50,7 +50,6 @@ export function main (argv) {
     const kubeConfig = k8.getKubeConfig()
     const context = kubeConfig.getContextObject(kubeConfig.getCurrentContext())
     const cluster = kubeConfig.getCurrentCluster()
-    const config = configManager.load()
     configManager.setFlag(flags.clusterName, cluster.name)
     if (context.namespace) {
       configManager.setFlag(flags.namespace, context.namespace)
@@ -77,13 +76,19 @@ export function main (argv) {
     }
 
     const processArguments = (args, yargs) => {
+      if (args._[0] === 'init') {
+        configManager.load({}, true) // reset cached config
+      } else {
+        configManager.load()
+      }
+
       for (const key of Object.keys(yargs.parsed.aliases)) {
         const flag = flags.allFlagsMap.get(key)
         if (flag) {
-          if (args[key]) {
-            // argv takes precedence
-          } else if (config.flags[key]) {
-            args[key] = config.flags[key]
+          if (args[key] !== undefined) {
+            // argv takes precedence, nothing to do
+          } else if (configManager.hasFlag(flag)) {
+            args[key] = configManager.getFlag(flag)
           } else if (args._[0] !== 'init') {
             args[key] = flag.definition.defaultValue
           }

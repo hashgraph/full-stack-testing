@@ -164,6 +164,15 @@ export class ConfigManager {
   }
 
   /**
+   * Check if a flag value is set
+   * @param flag flag object
+   * @return {boolean}
+   */
+  hasFlag (flag) {
+    return this.config.flags[flag.name] !== undefined
+  }
+
+  /**
    * Return the value of the given flag
    *
    * @param flag flag object
