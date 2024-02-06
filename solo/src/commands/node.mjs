@@ -270,10 +270,16 @@ export class NodeCommand extends BaseCommand {
           const config = ctx.config
           const subTasks = [
             {
-              title: 'Copy default files and templates',
+              title: 'Copy configuration files',
               task: () => {
-                for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.txt']) {
-                  fs.cpSync(`${config.cacheDir}/templates/${item}`, `${config.stagingDir}/templates/${item}`, { recursive: true })
+                for (const flag of flags.nodeConfigFileFlags.values()) {
+                  const filePath = self.configManager.getFlag(flag)
+                  if (!filePath) {
+                    throw new FullstackTestingError(`Configuration file path is missing for: ${flag.name}`)
+                  }
+
+                  const fileName = path.basename(filePath)
+                  fs.cpSync(`${filePath}`, `${config.stagingDir}/templates/${fileName}`, { recursive: true })
                 }
               }
             },
@@ -323,7 +329,7 @@ export class NodeCommand extends BaseCommand {
               task: async (ctx, _) => {
                 const config = ctx.config
                 const configTxtPath = `${config.stagingDir}/config.txt`
-                const template = `${config.stagingDir}/templates/config.template`
+                const template = `${constants.RESOURCES_DIR}/templates/config.template`
                 await self.plaformInstaller.prepareConfigTxt(config.nodeIds, configTxtPath, config.releaseTag, config.chainId, template)
               }
             }
@@ -688,7 +694,12 @@ export class NodeCommand extends BaseCommand {
               flags.cacheDir,
               flags.chainId,
               flags.force,
-              flags.keyFormat
+              flags.keyFormat,
+              flags.applicationProperties,
+              flags.apiPermissionProperties,
+              flags.bootstrapProperties,
+              flags.settingTxt,
+              flags.log4j2Xml
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node setup' ===")

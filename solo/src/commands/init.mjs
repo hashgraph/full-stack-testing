@@ -15,6 +15,7 @@
  *
  */
 import { Listr } from 'listr2'
+import path from 'path'
 import { BaseCommand } from './base.mjs'
 import * as core from '../core/index.mjs'
 import { constants } from '../core/index.mjs'
@@ -98,7 +99,7 @@ export class InitCommand extends BaseCommand {
         }
       },
       {
-        title: 'Copy default files and templates',
+        title: 'Copy configuration file templates',
         task: (ctx, _) => {
           let cacheDir = this.configManager.getFlag(flags.cacheDir)
           if (!cacheDir) {
@@ -110,8 +111,17 @@ export class InitCommand extends BaseCommand {
             fs.mkdirSync(templatesDir)
           }
 
-          for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.txt']) {
-            fs.cpSync(`${constants.RESOURCES_DIR}/templates/${item}`, `${templatesDir}/${item}`, { recursive: true })
+          const configFiles = [
+            `${constants.RESOURCES_DIR}/templates/application.properties`,
+            `${constants.RESOURCES_DIR}/templates/api-permission.properties`,
+            `${constants.RESOURCES_DIR}/templates/bootstrap.properties`,
+            `${constants.RESOURCES_DIR}/templates/settings.txt`,
+            `${constants.RESOURCES_DIR}/templates/log4j2.xml`
+          ]
+
+          for (const filePath of configFiles) {
+            const fileName = path.basename(filePath)
+            fs.cpSync(`${filePath}`, `${templatesDir}/${fileName}`, { recursive: true })
           }
 
           if (argv.dev) {
