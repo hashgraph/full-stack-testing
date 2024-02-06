@@ -91,9 +91,9 @@ export function main (argv) {
       }
 
       // Update config manager and persist the config.
-      // Note: Because of this centralized loading, we really don't need to load argv in configManager later during
-      // the command execution handlers. However, we are loading argv again in the command handlers for consistency and
-      // facilitate testing with argv injection into the command handlers.
+      // Note: Because of this centralized loading, we really don't need to load argv in configManager later in
+      // the command execution handlers. However, we are loading argv again in the command handlers to facilitate testing
+      // with argv injection into the command handlers.
       configManager.load(argv)
       configManager.persist()
 
