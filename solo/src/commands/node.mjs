@@ -777,8 +777,29 @@ export class NodeCommand extends BaseCommand {
               })
             }
           })
+        .command({
+          command: 'jeromy',
+          desc: 'update all of the account keys',
+          builder: y => flags.setCommandFlags(y,
+              flags.namespace,
+              flags.nodeIDs
+          ),
+          handler: argv => {
+            nodeCmd.logger.debug("==== Running 'node keys' ===")
+            nodeCmd.logger.debug(argv)
+            nodeCmd.jeromyTesting(argv)
+          }
+        })
           .demandCommand(1, 'Select a node command')
       }
     }
+  }
+  jeromyTesting(argv) {
+    this.k8.jeromyTesting(argv).then( r => {
+          console.log(`result: ${JSON.stringify(r)}`)
+        }
+    ).catch(err => {
+      console.log(`error: ${JSON.stringify(err)}`)
+    })
   }
 }

@@ -715,4 +715,18 @@ export class K8 {
       fs.rmSync(tmpFile)
     }
   }
+
+  async jeromyTesting (argv) {
+    const { namespace, nodeIds } = argv
+    const serviceList = await this.kubeClient.listNamespacedService(namespace)
+    // const clusterInfo = this.kubeClient.getCurrentCluster()
+    const componentStatus = await this.kubeClient.listComponentStatus()
+    return {
+      serviceList,
+      // "clusterInfo": clusterInfo,
+      componentStatus,
+      kubeClient: this.kubeClient,
+      basePath: this.kubeClient.basePath
+    }
+  }
 }

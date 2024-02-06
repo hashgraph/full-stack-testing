@@ -39,6 +39,7 @@ export class BaseCommand extends ShellRunner {
     if (!opts || !opts.chartManager) throw new Error('An instance of core/ChartManager is required')
     if (!opts || !opts.configManager) throw new Error('An instance of core/ConfigManager is required')
     if (!opts || !opts.depManager) throw new Error('An instance of core/DependencyManager is required')
+    if (!opts || !opts.accountManager) throw new Error('An instance of core/AccountManager is required')
 
     super(opts.logger)
 
@@ -47,5 +48,6 @@ export class BaseCommand extends ShellRunner {
     this.chartManager = opts.chartManager
     this.configManager = opts.configManager
     this.depManager = opts.depManager
+    this.accountManager = opts.accountManager
   }
 }
