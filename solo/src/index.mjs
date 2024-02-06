@@ -50,6 +50,7 @@ export function main (argv) {
     const kubeConfig = k8.getKubeConfig()
     const context = kubeConfig.getContextObject(kubeConfig.getCurrentContext())
     const cluster = kubeConfig.getCurrentCluster()
+    configManager.load()
     configManager.setFlag(flags.clusterName, cluster.name)
     if (context.namespace) {
       configManager.setFlag(flags.namespace, context.namespace)
