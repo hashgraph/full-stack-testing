@@ -67,12 +67,6 @@ export class InitCommand extends BaseCommand {
         }
       },
       {
-        title: 'Setup config manager',
-        task: async (ctx, _) => {
-          ctx.config = this.configManager.load(argv, true)
-        }
-      },
-      {
         title: 'Check dependencies',
         task: async (_, task) => {
           const deps = [
