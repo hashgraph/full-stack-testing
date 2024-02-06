@@ -21,6 +21,7 @@ import { constants } from '../core/index.mjs'
 import * as fs from 'fs'
 import { FullstackTestingError } from '../core/errors.mjs'
 import * as flags from './flags.mjs'
+import chalk from 'chalk'
 
 /**
  * Defines the core functionalities of 'init' command
@@ -69,7 +70,7 @@ export class InitCommand extends BaseCommand {
       {
         title: 'Setup config manager',
         task: async (ctx, _) => {
-          ctx.config = this.configManager.load(argv, true)
+          this.configManager.load(argv, true)
         }
       },
       {
@@ -94,11 +95,34 @@ export class InitCommand extends BaseCommand {
         title: 'Setup chart manager',
         task: async (ctx, _) => {
           ctx.repoURLs = await this.chartManager.setup()
+        }
+      },
+      {
+        title: 'Copy default files and templates',
+        task: (ctx, _) => {
+          let cacheDir = this.configManager.getFlag(flags.cacheDir)
+          if (!cacheDir) {
+            cacheDir = constants.SOLO_CACHE_DIR
+          }
+
+          const templatesDir = `${cacheDir}/templates`
+          if (!fs.existsSync(templatesDir)) {
+            fs.mkdirSync(templatesDir)
+          }
+
+          for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.txt']) {
+            fs.cpSync(`${constants.RESOURCES_DIR}/templates/${item}`, `${templatesDir}/${item}`, { recursive: true })
+          }
+
           if (argv.dev) {
             self.logger.showList('Home Directories', ctx.dirs)
             self.logger.showList('Chart Repository', ctx.repoURLs)
-            self.logger.showJSON('Cached Config', ctx.config)
           }
+
+          self.logger.showUser(chalk.grey('\n***************************************************************************************'))
+          self.logger.showUser(chalk.grey(`Note: solo stores various artifacts (config, logs, keys etc.) in its home directory: ${constants.SOLO_HOME_DIR}\n` +
+            'If a full reset is needed, delete the directory before running \'solo init\'.'))
+          self.logger.showUser(chalk.grey('***************************************************************************************'))
         }
       }
     ], {

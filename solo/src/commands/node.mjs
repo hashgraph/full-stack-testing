@@ -273,7 +273,7 @@ export class NodeCommand extends BaseCommand {
               title: 'Copy default files and templates',
               task: () => {
                 for (const item of ['properties', 'config.template', 'log4j2.xml', 'settings.txt']) {
-                  fs.cpSync(`${constants.RESOURCES_DIR}/templates/${item}`, `${config.stagingDir}/templates/${item}`, { recursive: true })
+                  fs.cpSync(`${config.cacheDir}/templates/${item}`, `${config.stagingDir}/templates/${item}`, { recursive: true })
                 }
               }
             },
