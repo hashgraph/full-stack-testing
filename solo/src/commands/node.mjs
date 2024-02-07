@@ -475,6 +475,12 @@ export class NodeCommand extends BaseCommand {
             }
           })
         }
+      },
+      {
+        title: 'Update special account keys',
+        task: async (ctx, task) => {
+          await self.accountManager.prepareAccount(ctx.config.namespace)
+        }
       }
     ], {
       concurrent: false,
@@ -798,12 +804,17 @@ export class NodeCommand extends BaseCommand {
   }
 
   jeromyTesting (argv) {
-    this.accountManager.jeromyTesting(argv).then(r => {
-      r.serviceMap.forEach(value => console.log(JSON.stringify(value)))
-      console.log(`basePath: ${JSON.stringify(r.basePath)}`)
-    }
+    // this.accountManager.jeromyTesting(argv).then(r => {
+    //   r.serviceMap.forEach(value => console.log(JSON.stringify(value)))
+    //   console.log(`basePath: ${JSON.stringify(r.basePath)}`)
+    // }
+    // ).catch(err => {
+    //   console.log(`error: ${JSON.stringify(err)}`)
+    // })
+    this.accountManager.prepareAccount(argv.namespace).then(
+      this.logger.debug('prepareAccount successful')
     ).catch(err => {
-      console.log(`error: ${JSON.stringify(err)}`)
+      this.logger.error(`error: ${JSON.stringify(err)}`)
     })
   }
 }

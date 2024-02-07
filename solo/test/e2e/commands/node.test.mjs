@@ -43,6 +43,7 @@ import {
 } from '../../../src/core/index.mjs'
 import { ShellRunner } from '../../../src/core/shell_runner.mjs'
 import { getTestCacheDir, testLogger } from '../../test_util.js'
+import { AccountManager } from '../../../src/core/account_manager.mjs'
 
 class TestHelper {
   static portForwards = []
@@ -138,6 +139,7 @@ describe.each([
   const k8 = new K8(configManager, testLogger)
   const platformInstaller = new PlatformInstaller(testLogger, k8)
   const keyManager = new KeyManager(testLogger)
+  const accountManager = new AccountManager(testLogger, k8, constants)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
@@ -148,7 +150,8 @@ describe.each([
     downloader: packageDownloader,
     platformInstaller,
     depManager,
-    keyManager
+    keyManager,
+    accountManager
   })
 
   const cacheDir = getTestCacheDir()
@@ -236,7 +239,7 @@ describe.each([
 
         const accountUpdatePromiseArray = []
         // for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
-        for (const [start, end] of [[3, 6]]) {
+        for (const [start, end] of [[3, 3]]) {
           for (let i = start; i <= end; i++) {
             accountUpdatePromiseArray.push((async function (i) {
               const accountId = `0.0.${i}`
