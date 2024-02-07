@@ -68,15 +68,6 @@ export const namespace = {
   }
 }
 
-export const kubeContext = {
-  name: 'kube-context',
-  definition: {
-    describe: 'Kube context',
-    defaultValue: '',
-    type: 'string'
-  }
-}
-
 export const deployMirrorNode = {
   name: 'mirror-node',
   definition: {
@@ -343,12 +334,56 @@ export const fstChartVersion = {
   }
 }
 
+export const applicationProperties = {
+  name: 'application-properties',
+  definition: {
+    describe: 'application.properties file for node',
+    defaultValue: `${constants.SOLO_CACHE_DIR}/templates/application.properties`,
+    type: 'string'
+  }
+}
+
+export const apiPermissionProperties = {
+  name: 'api-permission-properties',
+  definition: {
+    describe: 'api-permission.properties file for node',
+    defaultValue: `${constants.SOLO_CACHE_DIR}/templates/api-permission.properties`,
+    type: 'string'
+  }
+}
+
+export const bootstrapProperties = {
+  name: 'bootstrap-properties',
+  definition: {
+    describe: 'bootstrap.properties file for node',
+    defaultValue: `${constants.SOLO_CACHE_DIR}/templates/bootstrap.properties`,
+    type: 'string'
+  }
+}
+
+export const settingTxt = {
+  name: 'settings-txt',
+  definition: {
+    describe: 'settings.txt file for node',
+    defaultValue: `${constants.SOLO_CACHE_DIR}/templates/settings.txt`,
+    type: 'string'
+  }
+}
+
+export const log4j2Xml = {
+  name: 'log4j2-xml',
+  definition: {
+    describe: 'log4j2.xml file for node',
+    defaultValue: `${constants.SOLO_CACHE_DIR}/templates/log4j2.xml`,
+    type: 'string'
+  }
+}
+
 export const allFlags = [
   devMode,
   clusterName,
   clusterSetupNamespace,
   namespace,
-  kubeContext,
   deployMirrorNode,
   deployHederaExplorer,
   deployJsonRpcRelay,
@@ -375,7 +410,19 @@ export const allFlags = [
   hederaExplorerTlsLoadBalancerIp,
   hederaExplorerTlsHostName,
   deletePvcs,
-  fstChartVersion
+  fstChartVersion,
+  applicationProperties,
+  apiPermissionProperties,
+  bootstrapProperties,
+  settingTxt,
+  log4j2Xml
 ]
 
 export const allFlagsMap = new Map(allFlags.map(f => [f.name, f]))
+export const nodeConfigFileFlags = new Map([
+  applicationProperties,
+  apiPermissionProperties,
+  bootstrapProperties,
+  settingTxt,
+  log4j2Xml
+].map(f => [f.name, f]))

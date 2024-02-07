@@ -15,12 +15,14 @@
  *
  */
 import { Listr } from 'listr2'
+import path from 'path'
 import { BaseCommand } from './base.mjs'
 import * as core from '../core/index.mjs'
 import { constants } from '../core/index.mjs'
 import * as fs from 'fs'
 import { FullstackTestingError } from '../core/errors.mjs'
 import * as flags from './flags.mjs'
+import chalk from 'chalk'
 
 /**
  * Defines the core functionalities of 'init' command
@@ -69,7 +71,7 @@ export class InitCommand extends BaseCommand {
       {
         title: 'Setup config manager',
         task: async (ctx, _) => {
-          ctx.config = this.configManager.load(argv, true)
+          this.configManager.load(argv, true)
         }
       },
       {
@@ -94,11 +96,43 @@ export class InitCommand extends BaseCommand {
         title: 'Setup chart manager',
         task: async (ctx, _) => {
           ctx.repoURLs = await this.chartManager.setup()
+        }
+      },
+      {
+        title: 'Copy configuration file templates',
+        task: (ctx, _) => {
+          let cacheDir = this.configManager.getFlag(flags.cacheDir)
+          if (!cacheDir) {
+            cacheDir = constants.SOLO_CACHE_DIR
+          }
+
+          const templatesDir = `${cacheDir}/templates`
+          if (!fs.existsSync(templatesDir)) {
+            fs.mkdirSync(templatesDir)
+          }
+
+          const configFiles = [
+            `${constants.RESOURCES_DIR}/templates/application.properties`,
+            `${constants.RESOURCES_DIR}/templates/api-permission.properties`,
+            `${constants.RESOURCES_DIR}/templates/bootstrap.properties`,
+            `${constants.RESOURCES_DIR}/templates/settings.txt`,
+            `${constants.RESOURCES_DIR}/templates/log4j2.xml`
+          ]
+
+          for (const filePath of configFiles) {
+            const fileName = path.basename(filePath)
+            fs.cpSync(`${filePath}`, `${templatesDir}/${fileName}`, { recursive: true })
+          }
+
           if (argv.dev) {
             self.logger.showList('Home Directories', ctx.dirs)
             self.logger.showList('Chart Repository', ctx.repoURLs)
-            self.logger.showJSON('Cached Config', ctx.config)
           }
+
+          self.logger.showUser(chalk.grey('\n***************************************************************************************'))
+          self.logger.showUser(chalk.grey(`Note: solo stores various artifacts (config, logs, keys etc.) in its home directory: ${constants.SOLO_HOME_DIR}\n` +
+            'If a full reset is needed, delete the directory or relevant sub-directories before running \'solo init\'.'))
+          self.logger.showUser(chalk.grey('***************************************************************************************'))
         }
       }
     ], {

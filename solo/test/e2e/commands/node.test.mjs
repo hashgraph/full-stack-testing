@@ -151,6 +151,11 @@ describe.each([
     argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
     argv[flags.generateGossipKeys.name] = false
     argv[flags.generateTlsKeys.name] = true
+    argv[flags.applicationProperties.name] = flags.applicationProperties.definition.defaultValue
+    argv[flags.apiPermissionProperties.name] = flags.apiPermissionProperties.definition.defaultValue
+    argv[flags.bootstrapProperties.name] = flags.bootstrapProperties.definition.defaultValue
+    argv[flags.settingTxt.name] = flags.settingTxt.definition.defaultValue
+    argv[flags.log4j2Xml.name] = flags.log4j2Xml.definition.defaultValue
 
     const nodeIds = argv[flags.nodeIDs.name].split(',')
 
