@@ -27,11 +27,18 @@ export class AccountManager {
 
   }
 
+  /**
+   * Gets a Map of the Hedera node services and the attributes needed
+   * @param namespace the namespace of the fullstack network deployment
+   * @returns {Map<any, any>} the Map of <nodeName:string, serviceObject>
+   */
   async getNodeServiceMap (namespace) {
     const labelSelector = 'fullstack.hedera.com/node-name,fullstack.hedera.com/type=haproxy-svc'
     const serviceList = await this.k8.kubeClient.listNamespacedService(
       namespace, undefined, undefined, undefined, undefined, labelSelector)
     const serviceMap = new Map()
+
+    // retrieve the list of services and build custom objects for the attributes we need
     for (const service of serviceList.body.items) {
       const serviceObject = {}
       serviceObject.name = service.metadata.name
@@ -42,12 +49,15 @@ export class AccountManager {
       serviceObject.selector = service.spec.selector.app
       serviceMap.set(serviceObject.node, serviceObject)
     }
+
+    // get the pod name for the service to use with portForward if needed
     for (const serviceObject of serviceMap.values()) {
       const labelSelector = `app=${serviceObject.selector}`
       const podList = await this.k8.kubeClient.listNamespacedPod(
         namespace, null, null, null, null, labelSelector)
       serviceObject.podName = podList.body.items[0].metadata.name
     }
+
     return serviceMap
   }
 
