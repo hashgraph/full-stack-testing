@@ -189,7 +189,7 @@ export class ClusterCommand extends BaseCommand {
       {
         title: `Uninstall '${constants.FULLSTACK_CLUSTER_SETUP_CHART}' chart`,
         task: async (ctx, _) => {
-          const namespace = ctx.config.namespace
+          const namespace = ctx.config.clusterSetupNamespace
           await self.chartManager.uninstall(namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART)
           if (argv.dev) {
             await self.showInstalledChartList(namespace)
