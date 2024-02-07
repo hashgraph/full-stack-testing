@@ -27,18 +27,35 @@ export class AccountManager {
 
   }
 
-  async jeromyTesting (argv) {
-    const { namespace, nodeIds } = argv
-    const labelSelector = ''
+  async getNodeServiceMap (namespace) {
+    const labelSelector = 'fullstack.hedera.com/node-name,fullstack.hedera.com/type=haproxy-svc'
     const serviceList = await this.k8.kubeClient.listNamespacedService(
       namespace, undefined, undefined, undefined, undefined, labelSelector)
-    // const clusterInfo = this.kubeClient.getCurrentCluster()
-    const componentStatus = await this.k8.kubeClient.listComponentStatus()
+    const serviceMap = new Map()
+    for (const service of serviceList.body.items) {
+      const serviceObject = {}
+      serviceObject.name = service.metadata.name
+      serviceObject.loadBalancerIp = service.status.loadBalancer.ingress ? service.status.loadBalancer.ingress[0].ip : undefined
+      serviceObject.grpcPort = service.spec.ports.filter(port => port.name === 'non-tls-grpc-client-port')[0].nodePort
+      serviceObject.grpcsPort = service.spec.ports.filter(port => port.name === 'tls-grpc-client-port')[0].nodePort
+      serviceObject.node = service.metadata.labels['fullstack.hedera.com/node-name']
+      serviceObject.selector = service.spec.selector.app
+      serviceMap.set(serviceObject.node, serviceObject)
+    }
+    for (const serviceObject of serviceMap.values()) {
+      const labelSelector = `app=${serviceObject.selector}`
+      const podList = await this.k8.kubeClient.listNamespacedPod(
+        namespace, null, null, null, null, labelSelector)
+      serviceObject.podName = podList.body.items[0].metadata.name
+    }
+    return serviceMap
+  }
+
+  async jeromyTesting (argv) {
+    const { namespace } = argv
+    const serviceMap = await this.getNodeServiceMap(namespace)
     return {
-      serviceList,
-      // "clusterInfo": clusterInfo,
-      componentStatus,
-      kubeClient: this.k8.kubeClient,
+      serviceMap,
       basePath: this.k8.kubeClient.basePath
     }
   }

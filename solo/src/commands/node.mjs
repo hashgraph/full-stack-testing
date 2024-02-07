@@ -799,7 +799,8 @@ export class NodeCommand extends BaseCommand {
 
   jeromyTesting (argv) {
     this.accountManager.jeromyTesting(argv).then(r => {
-      console.log(`result: ${JSON.stringify(r)}`)
+      r.serviceMap.forEach(value => console.log(JSON.stringify(value)))
+      console.log(`basePath: ${JSON.stringify(r.basePath)}`)
     }
     ).catch(err => {
       console.log(`error: ${JSON.stringify(err)}`)
