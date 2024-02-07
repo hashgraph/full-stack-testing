@@ -218,16 +218,16 @@ export class PlatformInstaller {
       const fileList1 = await self.copyFiles(podName, srcFilesSet1, constants.HEDERA_HAPI_PATH)
 
       const srcFilesSet2 = [
-        `${stagingDir}/templates/properties/api-permission.properties`,
-        `${stagingDir}/templates/properties/application.properties`,
-        `${stagingDir}/templates/properties/bootstrap.properties`
+        `${stagingDir}/templates/api-permission.properties`,
+        `${stagingDir}/templates/application.properties`,
+        `${stagingDir}/templates/bootstrap.properties`
       ]
 
       const fileList2 = await self.copyFiles(podName, srcFilesSet2, `${constants.HEDERA_HAPI_PATH}/data/config`)
 
       return fileList1.concat(fileList2)
     } catch (e) {
-      throw new FullstackTestingError(`failed to copy config files to pod '${podName}'`, e)
+      throw new FullstackTestingError(`failed to copy config files to pod '${podName}': ${e.message}`, e)
     }
   }
 
