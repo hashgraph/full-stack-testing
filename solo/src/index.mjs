@@ -50,19 +50,6 @@ export function main (argv) {
     const kubeConfig = k8.getKubeConfig()
     const context = kubeConfig.getContextObject(kubeConfig.getCurrentContext())
     const cluster = kubeConfig.getCurrentCluster()
-    const config = configManager.load()
-    configManager.setFlag(flags.clusterName, cluster.name)
-    if (context.namespace) {
-      configManager.setFlag(flags.namespace, context.namespace)
-    }
-    configManager.persist()
-
-    logger.showUser(chalk.cyan('\n******************************* Solo *********************************************'))
-    logger.showUser(chalk.cyan('Version\t\t\t:'), chalk.yellow(configManager.getVersion()))
-    logger.showUser(chalk.cyan('Kubernetes Context\t:'), chalk.yellow(context.name))
-    logger.showUser(chalk.cyan('Kubernetes Cluster\t:'), chalk.yellow(configManager.getFlag(flags.clusterName)))
-    logger.showUser(chalk.cyan('Kubernetes Namespace\t:'), chalk.yellow(configManager.getFlag(flags.namespace)))
-    logger.showUser(chalk.cyan('**********************************************************************************'))
 
     const opts = {
       logger,
@@ -76,20 +63,48 @@ export function main (argv) {
       keyManager
     }
 
-    const processArguments = (args, yargs) => {
+    const processArguments = (argv, yargs) => {
+      if (argv._[0] === 'init') {
+        configManager.load({}, true) // reset cached config
+      } else {
+        configManager.load()
+      }
+
+      // load cluster name and namespace from kubernetes context
+      configManager.setFlag(flags.clusterName, cluster.name)
+      if (context.namespace) {
+        // this will be overwritten if user has passed --namespace flag
+        configManager.setFlag(flags.namespace, context.namespace)
+      }
+
       for (const key of Object.keys(yargs.parsed.aliases)) {
         const flag = flags.allFlagsMap.get(key)
         if (flag) {
-          if (args[key]) {
-            // argv takes precedence
-          } else if (config.flags[key]) {
-            args[key] = config.flags[key]
-          } else if (args._[0] !== 'init') {
-            args[key] = flag.definition.defaultValue
+          if (argv[key] !== undefined) {
+            // argv takes precedence, nothing to do
+          } else if (configManager.hasFlag(flag)) {
+            argv[key] = configManager.getFlag(flag)
+          } else if (argv._[0] !== 'init') {
+            argv[key] = flag.definition.defaultValue
           }
         }
       }
-      return args
+
+      // Update config manager and persist the config.
+      // Note: Because of this centralized loading, we really don't need to load argv in configManager later in
+      // the command execution handlers. However, we are loading argv again in the command handlers to facilitate testing
+      // with argv injection into the command handlers.
+      configManager.load(argv)
+      configManager.persist()
+
+      logger.showUser(chalk.cyan('\n******************************* Solo *********************************************'))
+      logger.showUser(chalk.cyan('Version\t\t\t:'), chalk.yellow(configManager.getVersion()))
+      logger.showUser(chalk.cyan('Kubernetes Context\t:'), chalk.yellow(context.name))
+      logger.showUser(chalk.cyan('Kubernetes Cluster\t:'), chalk.yellow(configManager.getFlag(flags.clusterName)))
+      logger.showUser(chalk.cyan('Kubernetes Namespace\t:'), chalk.yellow(configManager.getFlag(flags.namespace)))
+      logger.showUser(chalk.cyan('**********************************************************************************'))
+
+      return argv
     }
 
     return yargs(hideBin(argv))

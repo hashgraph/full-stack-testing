@@ -191,7 +191,9 @@ export class ClusterCommand extends BaseCommand {
         task: async (ctx, _) => {
           const namespace = ctx.config.clusterSetupNamespace
           await self.chartManager.uninstall(namespace, constants.FULLSTACK_CLUSTER_SETUP_CHART)
-          await self.showInstalledChartList(namespace)
+          if (argv.dev) {
+            await self.showInstalledChartList(namespace)
+          }
         },
         skip: (ctx, _) => !ctx.isChartInstalled
       }

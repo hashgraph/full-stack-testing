@@ -98,6 +98,7 @@ export class ChartManager {
   }
 
   async isChartInstalled (namespaceName, chartName) {
+    this.logger.debug(`> checking if chart is installed [ chart: ${chartName}, namespace: ${namespaceName} ]`)
     const charts = await this.getInstalledCharts(namespaceName)
     for (const item of charts) {
       if (item.startsWith(chartName)) {
@@ -110,7 +111,6 @@ export class ChartManager {
 
   async uninstall (namespaceName, chartName) {
     try {
-      this.logger.debug(`> checking chart release: ${chartName}`)
       const isInstalled = await this.isChartInstalled(namespaceName, chartName)
       if (isInstalled) {
         this.logger.debug(`uninstalling chart release: ${chartName}`)
