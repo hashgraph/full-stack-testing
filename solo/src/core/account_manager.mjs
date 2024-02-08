@@ -107,6 +107,7 @@ export class AccountManager {
           accountIdNum++
         }
       } else {
+        // TODO test GKE account update
         // TODO need to use the account keys from the node metadata
         for (const serviceObject of serviceMap.values()) {
           if (!serviceObject.loadBalancerIp) {
@@ -175,6 +176,7 @@ export class AccountManager {
       }
     }
     await Promise.allSettled(accountUpdatePromiseArray).then((results) => {
+      // TODO write a better summary here, and use info messages (fulfilled counts, rejects, skips, etc.)
       for (const result of results) {
         if (result.status === 'rejected') {
           this.logger.error(`accountId failed to update the account ID and create its secret: ${result.value}`)
