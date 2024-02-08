@@ -173,6 +173,8 @@ export class AccountManager {
       for (let i = start; i <= end; i++) {
         accountUpdatePromiseArray.push(this.updateAccountKeys(
           namespace, nodeClient, `${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${i}`, genesisKey))
+        // TODO make this a flag that can be passed in, or a constant / environment variable
+        await sleep(5) // sleep a little to prevent overwhelming the servers
       }
     }
     await Promise.allSettled(accountUpdatePromiseArray).then((results) => {
