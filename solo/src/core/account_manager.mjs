@@ -16,6 +16,7 @@
  */
 import * as constants from './constants.mjs'
 import {
+  AccountId,
   AccountInfoQuery, AccountUpdateTransaction,
   Client,
   KeyList,
@@ -52,6 +53,7 @@ export class AccountManager {
     this.portForwards = []
   }
 
+  // TODO why does it prompt me for the chart directory during cluster setup even though I specified during init?
   // TODO add jsdoc
   async prepareAccount (namespace) {
     // TODO add disable account key update flag to node start commands
@@ -59,6 +61,7 @@ export class AccountManager {
 
     const nodeClient = await this.getNodeClient(namespace, serviceMap)
     nodeClient.setOperator(constants.OPERATOR_ID, constants.OPERATOR_KEY)
+    // nodeClient.setTransportSecurity(true)
 
     await this.updateSpecialAccountsKeys(namespace, nodeClient, constants.SYSTEM_ACCOUNTS)
     // update the treasury 0.0.2 account last
@@ -83,7 +86,7 @@ export class AccountManager {
         for (const serviceObject of serviceMap.values()) {
           this.portForwards.push(await this.k8.portForward(serviceObject.podName, localPort, serviceObject.grpcPort))
 
-          nodes[`127.0.0.1:${localPort}`] = `${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`
+          nodes[`127.0.0.1:${localPort}`] = AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`)
           // check if the port is actually accessible
           let attempt = 1
           let socket = null
@@ -114,12 +117,33 @@ export class AccountManager {
                 `Expected service ${serviceObject.name} to have a loadBalancerIP set for basepath ${this.k8.kubeClient.basePath}`)
           }
 
-          nodes[`${serviceObject.loadBalancerIp}:${serviceObject.grpcPort}`] = `${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`
+          // TODO DRY
+          nodes[`${serviceObject.loadBalancerIp}:${serviceObject.grpcPort}`] = AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`)
+          // check if the port is actually accessible
+          let attempt = 1
+          let socket = null
+          while (attempt < 10) {
+            try {
+              await sleep(250)
+              this.logger.debug(`Checking exposed port '${serviceObject.grpcPort}' of pod ${serviceObject.podName} at IP address ${serviceObject.loadBalancerIp}`)
+              socket = net.createConnection({ host: serviceObject.loadBalancerIp, port: serviceObject.grpcPort })
+              this.logger.debug(`Connected to port '${serviceObject.grpcPort}' of pod ${serviceObject.podName} at IP address ${serviceObject.loadBalancerIp}`)
+              break
+            } catch (e) {
+              attempt += 1
+            }
+          }
+          if (!socket) {
+            throw new FullstackTestingError(`failed to connect to port '${serviceObject.grpcPort}' of pod ${serviceObject.podName} at IP address ${serviceObject.loadBalancerIp}`)
+          }
+
+          socket.destroy()
           accountIdNum++
         }
       }
-      // TODO test Client.setTransportSecurity(true) with grpcs
+
       this.logger.debug(`creating client from network configuration: ${JSON.stringify(nodes)}`)
+
       return Client.fromConfig({ network: nodes })
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
@@ -172,7 +196,7 @@ export class AccountManager {
     for (const [start, end] of accounts) {
       for (let i = start; i <= end; i++) {
         accountUpdatePromiseArray.push(this.updateAccountKeys(
-          namespace, nodeClient, `${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${i}`, genesisKey))
+          namespace, nodeClient, AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${i}`), genesisKey))
         // TODO make this a flag that can be passed in, or a constant / environment variable
         await sleep(5) // sleep a little to prevent overwhelming the servers
       }
@@ -189,44 +213,71 @@ export class AccountManager {
 
   async updateAccountKeys (namespace, nodeClient, accountId, genesisKey) {
     try {
-      const keys = await this.getAccountKeys(accountId, nodeClient)
-      this.logger.debug(`retrieved keys for account ${accountId}`)
+      let keys
+      try {
+        keys = await this.getAccountKeys(accountId, nodeClient)
+        this.logger.debug(`retrieved keys for account ${accountId.toString()}`)
+      } catch (e) {
+        this.logger.error(`failed to get keys for accountId ${accountId.toString()}, e: ${e.toString()}\n  ${e.stack}`)
+        return {
+          status: 'rejected',
+          value: accountId.toString()
+        }
+      }
 
       if (constants.OPERATOR_PUBLIC_KEY !== keys[0].toString()) {
-        this.logger.debug(`account ${accountId} can be skipped since it does not have a genesis key`)
+        this.logger.debug(`account ${accountId.toString()} can be skipped since it does not have a genesis key`)
         return {
           status: 'skipped',
-          value: accountId
+          value: accountId.toString()
         }
       }
 
       const newPrivateKey = PrivateKey.generateED25519()
-      await this.sendAccountKeyUpdate(accountId, newPrivateKey, nodeClient, genesisKey)
-      this.logger.debug(`sent account key update for account ${accountId}`)
+      try {
+        await this.sendAccountKeyUpdate(accountId, newPrivateKey, nodeClient, genesisKey)
+        this.logger.debug(`sent account key update for account ${accountId.toString()}`)
+      } catch (e) {
+        this.logger.error(`failed to update account keys for accountId ${accountId.toString()}, e: ${e.toString()}`)
+        return {
+          status: 'rejected',
+          value: accountId.toString()
+        }
+      }
 
       const data = {
         privateKey: newPrivateKey.toString(),
         publicKey: newPrivateKey.publicKey.toString()
       }
 
-      if (!(await this.k8.createSecret(`account-key-${accountId}`, namespace, 'Opaque', data))) {
-        this.logger.error(`failed to create secret for accountId ${accountId}`)
+      // TODO secrets didn't delete when chart was uninstalled.  this okay? rerun to see if it overlays correctly?
+      // TODO what happens if secret fails to create?  alter name and try again?  revert to genesis key?
+      try {
+        if (!(await this.k8.createSecret(`account-key-${accountId.toString()}`, namespace, 'Opaque', data))) {
+          this.logger.error(`failed to create secret for accountId ${accountId.toString()}`)
+          return {
+            status: 'rejected',
+            value: accountId.toString()
+          }
+        }
+        this.logger.debug(`created k8s secret for account ${accountId.toString()}`)
+      } catch (e) {
+        this.logger.error(`failed to create secret for accountId ${accountId.toString()}, e: ${e.toString()}`)
         return {
           status: 'rejected',
-          value: accountId
+          value: accountId.toString()
         }
       }
-      this.logger.debug(`created k8s secret for account ${accountId}`)
 
       return {
         status: 'fulfilled',
-        value: accountId
+        value: accountId.toString()
       }
     } catch (e) {
-      console.log(`account: ${accountId}, had an error: ${e.toString()}`)
+      this.logger.error(`account: ${accountId.toString()}, had an error: ${e.toString()}`)
       return {
         status: 'rejected',
-        value: accountId
+        value: accountId.toString()
       }
     }
   }
@@ -249,7 +300,7 @@ export class AccountManager {
 
   async sendAccountKeyUpdate (accountId, newPrivateKey, nodeClient, genesisKey) {
     this.logger.debug(
-        `Updating account ${accountId} with new public and private keys`)
+        `Updating account ${accountId.toString()} with new public and private keys`)
 
     // Create the transaction to update the key on the account
     const transaction = await new AccountUpdateTransaction()
@@ -271,7 +322,7 @@ export class AccountManager {
     const transactionStatus = receipt.status
 
     this.logger.debug(
-        `The transaction consensus status for update of accountId ${accountId} is ${transactionStatus.toString()}`)
+        `The transaction consensus status for update of accountId ${accountId.toString()} is ${transactionStatus.toString()}`)
     // TODO check status is correct before continuing
   }
 

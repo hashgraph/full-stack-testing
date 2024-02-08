@@ -785,7 +785,7 @@ export class NodeCommand extends BaseCommand {
               })
             }
           })
-          .command({
+          .command({ // TODO remove
             command: 'jeromy',
             desc: 'update all of the account keys',
             builder: y => flags.setCommandFlags(y,
@@ -803,6 +803,7 @@ export class NodeCommand extends BaseCommand {
     }
   }
 
+  // TODO remove
   jeromyTesting (argv) {
     // this.accountManager.jeromyTesting(argv).then(r => {
     //   r.serviceMap.forEach(value => console.log(JSON.stringify(value)))

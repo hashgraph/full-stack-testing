@@ -109,6 +109,7 @@ class TestHelper {
   }
 
   static getAccountKeys = async function (accountId, wallet) {
+    // TODO update to get secret from k8s
     console.log(`Get key for account ${accountId}`)
     const accountInfo = await new AccountInfoQuery()
       .setAccountId(accountId)
@@ -223,6 +224,7 @@ describe.each([
     }, 60000)
 
     it('only genesis account should have genesis key', async () => {
+      // TODO update only check keys are not equal
       expect.hasAssertions()
       let client = null
       const genesisKey = PrivateKey.fromStringED25519(constants.OPERATOR_KEY)
