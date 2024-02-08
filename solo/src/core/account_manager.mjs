@@ -52,9 +52,9 @@ export class AccountManager {
     this.portForwards = []
   }
 
-  // TODO what needs to move into k8.mjs?
-
+  // TODO add jsdoc
   async prepareAccount (namespace) {
+    // TODO add disable account key update flag to node start commands
     const serviceMap = await this.getNodeServiceMap(namespace)
 
     const nodeClient = await this.getNodeClient(namespace, serviceMap)
@@ -107,7 +107,6 @@ export class AccountManager {
           accountIdNum++
         }
       } else {
-        // TODO test GKE account update
         // TODO need to use the account keys from the node metadata
         for (const serviceObject of serviceMap.values()) {
           if (!serviceObject.loadBalancerIp) {
@@ -138,6 +137,7 @@ export class AccountManager {
    */
   async getNodeServiceMap (namespace) {
     const labelSelector = 'fullstack.hedera.com/node-name,fullstack.hedera.com/type=haproxy-svc'
+    // TODO move to K8
     const serviceList = await this.k8.kubeClient.listNamespacedService(
       namespace, undefined, undefined, undefined, undefined, labelSelector)
     const serviceMap = new Map()
