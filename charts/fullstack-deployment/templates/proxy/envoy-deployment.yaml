@@ -1,7 +1,7 @@
 {{ range $index, $node := ($.Values.hedera.nodes) }}
-{{- $envoyProxy := $node.envoyProxy | default dict -}}
+{{- $envoyProxy := $node.envoyProxy | default $.Values.defaults.envoyProxy -}}
 {{- $defaults := $.Values.defaults.envoyProxy }}
-{{- if default $defaults.enabled $envoyProxy.enabled | eq "true" }}
+{{- if $envoyProxy.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment

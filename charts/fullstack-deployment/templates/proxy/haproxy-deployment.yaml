@@ -1,7 +1,7 @@
 {{ range $index, $node := ($.Values.hedera.nodes) }}
-{{- $haproxy := $node.haproxy | default dict -}}
+{{- $haproxy := $node.haproxy | default $.Values.defaults.haproxy -}}
 {{- $defaults := $.Values.defaults.haproxy }}
-{{- if default $defaults.enabled $haproxy.enabled | eq "true" }}
+{{- if $haproxy.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment

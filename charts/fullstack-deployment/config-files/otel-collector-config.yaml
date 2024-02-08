@@ -22,7 +22,7 @@ exporters:
     const_labels:
       source: p-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="p-otel-collector"}
 
-  {{- if eq .otelDefaults.exporters.prometheusRemoteWrite.enabled "true" }}
+  {{- if .otelDefaults.exporters.prometheusRemoteWrite.enabled }}
   prometheusremotewrite:
     endpoint: "{{ .otelDefaults.exporters.prometheusRemoteWrite.endpoint }}"
     tls:
@@ -55,6 +55,6 @@ service:
       processors: [batch]
       exporters:
         - prometheus
-        {{- if eq .otelDefaults.exporters.prometheusRemoteWrite.enabled "true" }}
+        {{- if .otelDefaults.exporters.prometheusRemoteWrite.enabled }}
         - prometheusremotewrite
         {{- end }}
