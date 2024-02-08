@@ -1,5 +1,3 @@
-# WARNING: Use double quotes for all values. This is because we need to be careful about booleans.
-
 global:
   namespaceOverride: ""
   ingressClassName: "hedera-explorer-ingress-class" # override for multiple deployments within the same cluster and make unique per cluster
@@ -22,14 +20,14 @@ cloud:
 telemetry:
   prometheus:
     svcMonitor:
-      enabled: "true"
+      enabled: true
 
 # reduce default termination grace period
 terminationGracePeriodSeconds: 10
 
 # helm test container
 tester:
-  deployPodMonitor: "true"
+  deployPodMonitor: true
   clusterRoleName: "pod-monitor-role" # this is a shared cluster role for all namespaces
   image:
     registry: "ghcr.io"
@@ -69,7 +67,7 @@ defaults:
       pullPolicy: "IfNotPresent"
     resources: {}
   haproxy:
-    enabled: "true"
+    enabled: true
     nameOverride: "haproxy"
     image:
       registry: "docker.io"
@@ -79,7 +77,7 @@ defaults:
     resources: {}
     serviceType: "LoadBalancer"
   envoyProxy:
-    enabled: "true"
+    enabled: true
     nameOverride: "envoy-proxy"
     image:
       registry: "docker.io"
@@ -87,10 +85,10 @@ defaults:
       tag: "v1.21.1"
       pullPolicy: "IfNotPresent"
     resources: {}
-    loadBalancerEnabled: "false"
+    loadBalancerEnabled: false
   sidecars:
     recordStreamUploader:
-      enabled: "true"
+      enabled: true
       nameOverride: "record-stream-uploader"
       image:
         registry: "gcr.io"
@@ -98,20 +96,20 @@ defaults:
         tag: "1.3.0"
         pullPolicy: "IfNotPresent"
       config:
-        debug: "true"
-        compression: "true"
-        sidecar: "true"
+        debug: true
+        compression: true
+        sidecar: true
         reaper:
-          enabled: "true"
+          enabled: true
           minKeep: 1
           interval: 1
           defaultBackoff: 1
         signature:
-          require: "true"
-          prioritize: "true"
+          require: true
+          prioritize: true
       resources: {}
     eventStreamUploader:
-      enabled: "true"
+      enabled: true
       nameOverride: "event-stream-uploader"
       image:
         registry: "gcr.io"
@@ -119,19 +117,19 @@ defaults:
         tag: "1.3.0"
         pullPolicy: "IfNotPresent"
       config:
-        debug: "true"
-        compression: "true"
+        debug: true
+        compression: true
         reaper:
-          enabled: "true"
+          enabled: true
           minKeep: 1
           interval: 1
           defaultBackoff: 1
         signature:
-          require: "true"
-          prioritize: "true"
+          require: true
+          prioritize: true
       resources: {}
     accountBalanceUploader:
-      enabled: "true"
+      enabled: true
       nameOverride: "account-balance-uploader"
       image:
         registry: gcr.io
@@ -139,19 +137,19 @@ defaults:
         tag: "1.3.0"  # Defaults to the chart's app version if empty
         pullPolicy: "IfNotPresent"
       config:
-        debug: "true"
-        compression: "true"
+        debug: true
+        compression: true
         reaper:
-          enabled: "true"
+          enabled: true
           minKeep: 1
           interval: 1
           defaultBackoff: 1
         signature:
-          require: "true"
-          prioritize: "true"
+          require: true
+          prioritize: true
       resources: {}
     backupUploader:
-      enabled: "true"
+      enabled: true
       nameOverride: "backup-uploader"
       image:
         registry: "gcr.io"
@@ -162,7 +160,7 @@ defaults:
         backupBucket: "backup"
       resources: {}
     otelCollector:
-      enabled: "true"
+      enabled: true
       nameOverride: ""
       image:
         registry: "docker.io"
@@ -183,7 +181,7 @@ defaults:
           tls:
             insecure: true
         prometheusRemoteWrite:
-          enabled: "false"
+          enabled: false
           endpoint: "" # e.g. http://prometheus.<NAMESPACE>.svc:9090/api/v1/write
           tls:
             insecure: true

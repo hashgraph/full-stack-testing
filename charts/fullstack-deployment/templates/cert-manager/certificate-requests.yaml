@@ -1,5 +1,5 @@
 {{- if or $.Values.cloud.selfSignedClusterIssuer.enabled (index $.Values "hedera-explorer" "certClusterIssuerType" | ne "self-signed" ) }}
-{{- if index $.Values "hedera-explorer" "enabled" | eq true }}
+{{- if index $.Values "hedera-explorer" "enabled" }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:

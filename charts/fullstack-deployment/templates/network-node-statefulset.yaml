@@ -58,7 +58,7 @@ spec:
       volumes:
         - name: hgcapp-storage # change me
           emptyDir: {}
-        {{- if default $defaults.sidecars.otelCollector.enabled $otelCollector.enabled | eq "true" }}
+        {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm
@@ -90,6 +90,7 @@ spec:
             mountPath: /opt/hgcapp/
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
+      {{- if $balanceUploader.enabled }}
       # Sidecar: {{ $node.name }}-account-balance-uploader
       - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $balanceUploader.image "Chart" $.Chart "defaults" $defaults.sidecars.accountBalanceUploader ) }}
@@ -125,9 +126,9 @@ spec:
           - name: STREAM_SIG_EXTENSION
             value: "pb_sig"
           - name: STREAM_EXTENSION
-            value: {{ default $defaults.sidecars.accountBalanceUploader.config.compression ($balanceUploader.config).compression | eq "true" | ternary "pb.gz" "pb" | quote }}
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.compression ($balanceUploader.config).compression | ternary "pb.gz" "pb" | quote }}
           - name: SIG_EXTENSION
-            value: {{ default $defaults.sidecars.accountBalanceUploader.config.compression ($balanceUploader.config).compression | eq "true" | ternary "pb_sig.gz" "pb_sig" | quote }}
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.compression ($balanceUploader.config).compression | ternary "pb_sig.gz" "pb_sig" | quote }}
           - name: SIG_REQUIRE
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.signature.require (($balanceUploader.config).signature).require | quote }}
           - name: SIG_PRIORITIZE
@@ -147,6 +148,8 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+      {{- end }}
+      {{- if $recordStream.enabled }}
       # Sidecar: {{ $node.name }}-record-stream-uploader
       - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $.Chart "defaults" $defaults.sidecars.recordStreamUploader) }}
@@ -184,7 +187,7 @@ spec:
           - name: STREAM_SIG_EXTENSION
             value: "rcd_sig"
           - name: STREAM_EXTENSION
-            value: {{ default $defaults.sidecars.recordStreamUploader.config.compression ($recordStream.config).compression | eq "true" | ternary "rcd.gz" "rcd" | quote }}
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.compression ($recordStream.config).compression | ternary "rcd.gz" "rcd" | quote }}
           - name: SIG_EXTENSION
             value: "rcd_sig"
           - name: RECORD_STREAM_COMPRESSION
@@ -206,10 +209,12 @@ spec:
         envFrom:
           - secretRef:
               name: uploader-mirror-secrets
-      {{- with default $defaults.sidecars.recordStreamUploader.resources $recordStream.resources }}
+        {{- with default $defaults.sidecars.recordStreamUploader.resources $recordStream.resources }}
         resources:
-        {{- toYaml . | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
       {{- end }}
+      {{- if $eventStream.enabled }}
       # Sidecar: {{ $node.name }}-event-stream-uploader
       - name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $eventStream.image "Chart" $.Chart "defaults" $defaults.sidecars.eventStreamUploader) }}
@@ -246,9 +251,9 @@ spec:
           - name: STREAM_SIG_EXTENSION
             value: "evts_sig"
           - name: STREAM_EXTENSION
-            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | eq "true" | ternary "evts.gz" "evts" | quote }}
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts.gz" "evts" | quote }}
           - name: SIG_EXTENSION
-            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | eq "true" | ternary "evts_sig.gz" "evts_sig" | quote }}
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts_sig.gz" "evts_sig" | quote }}
           - name: SIG_REQUIRE
             value: {{ default $defaults.sidecars.eventStreamUploader.config.signature.require (($eventStream.config).signature).require | quote }}
           - name: SIG_PRIORITIZE
@@ -268,6 +273,8 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+      {{- end }}
+      {{- if $backupUploader.enabled }}
       # Sidecar: {{ $node.name }}-backup-uploader
       - name: {{ default "backup-uploader" $backupUploader.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $backupUploader.image "Chart" $.Chart "defaults" $defaults.sidecars.backupUploader) }}
@@ -288,7 +295,8 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-      {{- if (default $defaults.sidecars.otelCollector.enabled $otelCollector.enabled | eq "true") }}
+      {{- end }}
+      {{- if $otelCollector.enabled }}
       # Sidecar: {{ $node.name }}-otel-collector
       - name: {{ default "otel-collector" $otelCollector.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $otelCollector.image "Chart" $.Chart "defaults" $defaults.sidecars.otelCollector) }}
