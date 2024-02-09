@@ -31,7 +31,7 @@ import { Templates } from './templates.mjs'
 const REASON_FAILED_TO_GET_KEYS = 'failed to get keys for accountId'
 const REASON_SKIPPED = 'skipped since it does not have a genesis key'
 const REASON_FAILED_TO_UPDATE_ACCOUNT = 'failed to update account keys'
-const REASON_FAILED_TO_CREATE_SECRET = 'failed to create secret'
+const REASON_FAILED_TO_CREATE_K8S_S_KEY = 'failed to create k8s scrt key'
 
 /**
  * Copyright (C) 2024 Hedera Hashgraph, LLC
@@ -251,7 +251,7 @@ export class AccountManager {
         this.logger.error(`failed to create secret for accountId ${accountId.toString()}`)
         return {
           status: 'rejected',
-          reason: REASON_FAILED_TO_CREATE_SECRET,
+          reason: REASON_FAILED_TO_CREATE_K8S_S_KEY,
           value: accountId.toString()
         }
       }
@@ -260,7 +260,7 @@ export class AccountManager {
       this.logger.error(`failed to create secret for accountId ${accountId.toString()}, e: ${e.toString()}`)
       return {
         status: 'rejected',
-        reason: REASON_FAILED_TO_CREATE_SECRET,
+        reason: REASON_FAILED_TO_CREATE_K8S_S_KEY,
         value: accountId.toString()
       }
     }
