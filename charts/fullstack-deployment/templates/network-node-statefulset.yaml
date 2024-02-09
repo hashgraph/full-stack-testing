@@ -56,8 +56,6 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
-        - name: hgcapp-storage # change me
-          emptyDir: {}
         - name: hgcapp-account-balances
           emptyDir: {}
         - name: hgcapp-record-streams
