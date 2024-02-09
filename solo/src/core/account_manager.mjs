@@ -82,74 +82,39 @@ export class AccountManager {
     try {
       let localPort = LOCAL_NODE_START_PORT
       let accountIdNum = parseInt(constants.HEDERA_NODE_ACCOUNT_ID_START.num.toString(), 10)
-      if (this.isLocalhost()) {
-        for (const serviceObject of serviceMap.values()) {
-          this.portForwards.push(await this.k8.portForward(serviceObject.podName, localPort, serviceObject.grpcPort))
 
-          nodes[`127.0.0.1:${localPort}`] = AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`)
-          // check if the port is actually accessible
-          let attempt = 1
-          let socket = null
-          while (attempt < 10) {
-            try {
-              await sleep(250)
-              this.logger.debug(`Checking exposed port '${localPort}' of pod ${serviceObject.podName}`)
-              socket = net.createConnection({ port: localPort })
-              this.logger.debug(`Connected to exposed port '${localPort}' of pod ${serviceObject.podName}`)
-              break
-            } catch (e) {
-              attempt += 1
-            }
-          }
-          if (!socket) {
-            throw new FullstackTestingError(`failed to expose port '${serviceObject.grpcPort}' of pod '${serviceObject.podName}'`)
-          }
-
-          socket.destroy()
-          localPort++
-          accountIdNum++
-        }
-      } else {
+      for (const serviceObject of serviceMap.values()) {
         // TODO need to use the account keys from the node metadata
-        for (const serviceObject of serviceMap.values()) {
-          if (!serviceObject.loadBalancerIp) {
-            throw new Error(
-                `Expected service ${serviceObject.name} to have a loadBalancerIP set for basepath ${this.k8.kubeClient.basePath}`)
-          }
-
-          // TODO DRY
-          nodes[`${serviceObject.loadBalancerIp}:${serviceObject.grpcPort}`] = AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`)
-          // check if the port is actually accessible
-          let attempt = 1
-          let socket = null
-          while (attempt < 10) {
-            try {
-              await sleep(250)
-              this.logger.debug(`Checking exposed port '${serviceObject.grpcPort}' of pod ${serviceObject.podName} at IP address ${serviceObject.loadBalancerIp}`)
-              socket = net.createConnection({ host: serviceObject.loadBalancerIp, port: serviceObject.grpcPort })
-              this.logger.debug(`Connected to port '${serviceObject.grpcPort}' of pod ${serviceObject.podName} at IP address ${serviceObject.loadBalancerIp}`)
-              break
-            } catch (e) {
-              attempt += 1
-            }
-          }
-          if (!socket) {
-            throw new FullstackTestingError(`failed to connect to port '${serviceObject.grpcPort}' of pod ${serviceObject.podName} at IP address ${serviceObject.loadBalancerIp}`)
-          }
-
-          socket.destroy()
-          accountIdNum++
+        const isLocalHost = this.isLocalhost()
+        if (!isLocalHost && !serviceObject.loadBalancerIp) {
+          throw new Error(
+              `Expected service ${serviceObject.name} to have a loadBalancerIP set for basepath ${this.k8.kubeClient.basePath}`)
         }
+        const host = isLocalHost ? '127.0.0.1' : serviceObject.loadBalancerIp
+        const port = serviceObject.grpcPort // TODO add grpcs logic
+        const accountId = AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`)
+        const targetPort = isLocalHost ? localPort : port
+
+        if (isLocalHost) {
+          this.portForwards.push(await this.k8.portForward(serviceObject.podName, localPort, port))
+        }
+
+        nodes[`${host}:${targetPort}`] = accountId
+        this.testConnection(serviceObject.podName, host, targetPort)
+
+        localPort++
+        accountIdNum++
       }
 
       this.logger.debug(`creating client from network configuration: ${JSON.stringify(nodes)}`)
       const nodeClient = Client.fromConfig({ network: nodes })
       nodeClient.setOperator(constants.OPERATOR_ID, constants.OPERATOR_KEY)
-      if (this.isLocalhost()) {
-        // const nodeAddressBook = new NodeAddressBook()
-        // nodeClient.setNetworkFromAddressBook(nodeAddressBook)
-        nodeClient.setTransportSecurity(true)
-      }
+      // TODO add grpcs logic
+      // if (this.isLocalhost()) {
+      //   // const nodeAddressBook = new NodeAddressBook()
+      //   // nodeClient.setNetworkFromAddressBook(nodeAddressBook)
+      //   nodeClient.setTransportSecurity(true)
+      // }
       return nodeClient
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
@@ -339,5 +304,26 @@ export class AccountManager {
       serviceMap,
       basePath: this.k8.kubeClient.basePath
     }
+  }
+
+  async testConnection (podName, host, port) {
+    // check if the port is actually accessible
+    let attempt = 1
+    let socket = null
+    while (attempt < 10) {
+      try {
+        await sleep(250)
+        this.logger.debug(`Checking exposed port '${port}' of pod ${podName} at IP address ${host}`)
+        socket = net.createConnection({ host, port })
+        this.logger.debug(`Connected to port '${port}' of pod ${podName} at IP address ${host}`)
+        break
+      } catch (e) {
+        attempt += 1
+      }
+    }
+    if (!socket) {
+      throw new FullstackTestingError(`failed to connect to port '${port}' of pod ${podName} at IP address ${host}`)
+    }
+    socket.destroy()
   }
 }
