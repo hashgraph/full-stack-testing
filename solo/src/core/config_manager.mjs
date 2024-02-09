@@ -80,25 +80,24 @@ export class ConfigManager {
    */
   load (argv = {}, reset = false, flagList = flags.allFlags) {
     try {
-      let config = {}
       let writeConfig = false
       const packageJSON = helpers.loadPackageJSON()
 
-      this.logger.debug('Start: load config', { argv, cachedConfig: config })
+      this.logger.debug('Start: load config', { argv, cachedConfig: this.config })
 
       // if config exist, then load it first
       if (!reset && fs.existsSync(this.fstConfigFile)) {
         const configJSON = fs.readFileSync(this.fstConfigFile)
-        config = JSON.parse(configJSON.toString())
-        this.logger.debug(`Loaded cached config from ${this.fstConfigFile}`, { cachedConfig: config })
+        this.config = JSON.parse(configJSON.toString())
+        this.logger.debug(`Loaded cached config from ${this.fstConfigFile}`, { cachedConfig: this.config })
       }
 
-      if (!config.flags) {
-        config.flags = {}
+      if (!this.config.flags) {
+        this.config.flags = {}
       }
 
       // we always use packageJSON version as the version, so overwrite.
-      config.version = packageJSON.version
+      this.config.version = packageJSON.version
 
       // extract flags from argv
       if (argv && Object.keys(argv).length > 0) {
@@ -122,7 +121,7 @@ export class ConfigManager {
                     val = paths.resolve(val)
                   }
                   this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
-                  config.flags[flag.name] = val
+                  this.config.flags[flag.name] = val
                   writeConfig = true
                 }
                 break
@@ -130,7 +129,7 @@ export class ConfigManager {
               case 'number':
               case 'boolean':
                 this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
-                config.flags[flag.name] = val
+                this.config.flags[flag.name] = val
                 writeConfig = true
                 break
 
@@ -142,17 +141,16 @@ export class ConfigManager {
 
         // store last command that was run
         if (argv._) {
-          config.lastCommand = argv._
+          this.config.lastCommand = argv._
         }
       }
 
       // store CLI config
-      this.config = config
       if (reset || writeConfig) {
         this.persist()
       }
 
-      this.logger.debug('Finish: load config', { argv, cachedConfig: config })
+      this.logger.debug('Finish: load config', { argv, cachedConfig: this.config })
 
       // set dev mode for logger if necessary
       this.logger.setDevMode(this.getFlag(flags.devMode))

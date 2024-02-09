@@ -90,12 +90,11 @@ export function main (argv) {
         }
       }
 
-      // Update config manager and persist the config.
+      // Update config manager and persist the config using the argv
       // Note: Because of this centralized loading, we really don't need to load argv in configManager later in
       // the command execution handlers. However, we are loading argv again in the command handlers to facilitate testing
       // with argv injection into the command handlers.
-      configManager.load(argv)
-      configManager.persist()
+      configManager.load(argv, true) // here reset = true means it won't reload cached config file and persist the new config
 
       logger.showUser(chalk.cyan('\n******************************* Solo *********************************************'))
       logger.showUser(chalk.cyan('Version\t\t\t:'), chalk.yellow(configManager.getVersion()))
