@@ -66,7 +66,7 @@ class TestHelper {
       const grpcPort = constants.HEDERA_NODE_GRPC_PORT.toString()
       const network = {}
 
-      let accountIdNum = parseInt(constants.HEDERA_NODE_ACCOUNT_ID_START.num.toString(), 10)
+      let accountIdNum = constants.HEDERA_NODE_ACCOUNT_ID_START.num
       for (let nodeId of nodeIds) {
         nodeId = nodeId.trim()
         const podName = Templates.renderNetworkPodName(nodeId)
