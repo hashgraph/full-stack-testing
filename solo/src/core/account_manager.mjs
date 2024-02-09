@@ -71,6 +71,7 @@ export class AccountManager {
       return null
     }
   }
+  // TODO remember to retest GKE once all of the e2e test cases are passing
 
   // TODO why does it prompt me for the chart directory during cluster setup even though I specified during init?
   // TODO add jsdoc
