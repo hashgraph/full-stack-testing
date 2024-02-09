@@ -60,12 +60,12 @@ export class AccountManager {
     const serviceMap = await this.getNodeServiceMap(namespace)
 
     const nodeClient = await this.getNodeClient(namespace, serviceMap)
-    nodeClient.setOperator(constants.OPERATOR_ID, constants.OPERATOR_KEY)
-    // nodeClient.setTransportSecurity(true)
 
-    await this.updateSpecialAccountsKeys(namespace, nodeClient, constants.SYSTEM_ACCOUNTS)
+    // TODO update before PR merge
+    // await this.updateSpecialAccountsKeys(namespace, nodeClient, constants.SYSTEM_ACCOUNTS)
     // update the treasury 0.0.2 account last
-    await this.updateSpecialAccountsKeys(namespace, nodeClient, [[2, 2]])
+    // await this.updateSpecialAccountsKeys(namespace, nodeClient, [[2, 2]])
+    await this.updateSpecialAccountsKeys(namespace, nodeClient, [[4, 4]])
     nodeClient.close()
     await this.stopPortForwards()
   }
@@ -143,8 +143,14 @@ export class AccountManager {
       }
 
       this.logger.debug(`creating client from network configuration: ${JSON.stringify(nodes)}`)
-
-      return Client.fromConfig({ network: nodes })
+      const nodeClient = Client.fromConfig({ network: nodes })
+      nodeClient.setOperator(constants.OPERATOR_ID, constants.OPERATOR_KEY)
+      if (this.isLocalhost()) {
+        // const nodeAddressBook = new NodeAddressBook()
+        // nodeClient.setNetworkFromAddressBook(nodeAddressBook)
+        nodeClient.setTransportSecurity(true)
+      }
+      return nodeClient
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
     }
