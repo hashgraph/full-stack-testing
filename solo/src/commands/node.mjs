@@ -67,6 +67,8 @@ export class NodeCommand extends BaseCommand {
     let attempt = 0
     let isActive = false
 
+    await sleep(10000) // sleep in case this the user ran the start command again at a later time
+
     // check log file is accessible
     let logFileAccessible = false
     while (attempt++ < maxAttempt) {
@@ -88,7 +90,7 @@ export class NodeCommand extends BaseCommand {
     while (attempt < maxAttempt) {
       try {
         const output = await this.k8.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
-        if (output.indexOf(`Terminating Netty = ${status}`) < 0 &&
+        if (output.indexOf(`Terminating Netty = ${status}`) < 0 && // make sure we are not at the beginning of a restart
             output.indexOf(`Now current platform status = ${status}`) > 0) {
           this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}]`)
           isActive = true
@@ -107,6 +109,8 @@ export class NodeCommand extends BaseCommand {
       attempt += 1
       await sleep(1000)
     }
+
+    this.logger.info(`!> -- Node ${nodeId} is ${status} -- <!`)
 
     if (!isActive) {
       throw new FullstackTestingError(`node '${nodeId}' is not ${status} [ attempt = ${attempt}/${maxAttempt} ]`)

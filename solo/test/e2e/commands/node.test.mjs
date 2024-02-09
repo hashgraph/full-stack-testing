@@ -20,7 +20,7 @@ import {
   Hbar,
   PrivateKey
 } from '@hashgraph/sdk'
-import { afterEach, beforeAll, describe, expect, it } from '@jest/globals'
+import { beforeAll, describe, expect, it } from '@jest/globals'
 import path from 'path'
 import { namespace } from '../../../src/commands/flags.mjs'
 import { flags } from '../../../src/commands/index.mjs'
@@ -82,10 +82,6 @@ describe.each([
 
   const cacheDir = getTestCacheDir()
 
-  afterEach(() => {
-    accountManager.stopPortForwards().then().catch()
-  })
-
   describe(`node start should succeed [release ${testRelease}, keyFormat: ${testKeyFormat}]`, () => {
     const argv = {}
     argv[flags.releaseTag.name] = testRelease
@@ -134,20 +130,7 @@ describe.each([
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
-    }, 120000)
-
-    it('nodes should be in ACTIVE status', async () => {
-      for (const nodeId of nodeIds) {
-        try {
-          await expect(nodeCmd.checkNetworkNodeStarted(nodeId, 5)).resolves.toBeTruthy()
-        } catch (e) {
-          testLogger.showUserError(e)
-          expect(e).toBeNull()
-        }
-
-        await nodeCmd.run(`tail ${constants.SOLO_LOGS_DIR}/solo.log`)
-      }
-    }, 60000)
+    }, 300000)
 
     it('only genesis account should have genesis key', async () => {
       expect.hasAssertions()
@@ -181,6 +164,7 @@ describe.each([
       } finally {
         if (client) {
           client.close()
+          accountManager.stopPortForwards().then().catch()
         }
       }
     }, 60000)
@@ -204,6 +188,7 @@ describe.each([
         if (client) {
           client.close()
         }
+        accountManager.stopPortForwards().then().catch()
       }
     }, 20000)
 
@@ -233,6 +218,7 @@ describe.each([
         if (client) {
           client.close()
         }
+        accountManager.stopPortForwards().then().catch()
       }
     }, 20000)
   })

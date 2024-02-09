@@ -79,7 +79,7 @@ export const OPERATOR_PUBLIC_KEY = process.env.SOLO_OPERATOR_PUBLIC_KEY || '302a
 export const SYSTEM_ACCOUNTS = [[3, 100], [200, 349], [400, 750], [900, 1000]] // do account 0.0.2 last and outside the loop
 export const TREASURY_ACCOUNT = [[2, 2]]
 export const LOCAL_NODE_START_PORT = process.env.LOCAL_NODE_START_PORT || 30212
-export const ACCOUNT_KEYS_UPDATE_PAUSE = process.env.ACCOUNT_KEYS_UPDATE_PAUSE || 3
+export const ACCOUNT_KEYS_UPDATE_PAUSE = process.env.ACCOUNT_KEYS_UPDATE_PAUSE || 5
 
 export const POD_STATUS_RUNNING = 'Running'
 export const POD_STATUS_READY = 'Ready'
