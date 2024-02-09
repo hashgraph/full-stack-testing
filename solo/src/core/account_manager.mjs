@@ -20,12 +20,18 @@ import {
   AccountInfoQuery, AccountUpdateTransaction,
   Client,
   KeyList,
-  PrivateKey
+  PrivateKey, Status
 } from '@hashgraph/sdk'
 import { FullstackTestingError } from './errors.mjs'
 import { sleep } from './helpers.mjs'
 import net from 'net'
 import { LOCAL_NODE_START_PORT } from './constants.mjs'
+import chalk from 'chalk'
+
+const REASON_FAILED_TO_GET_KEYS = 'failed to get keys for accountId'
+const REASON_SKIPPED = 'skipped since it does not have a genesis key'
+const REASON_FAILED_TO_UPDATE_ACCOUNT = 'failed to update account keys'
+const REASON_FAILED_TO_CREATE_SECRET = 'failed to create secret'
 
 /**
  * Copyright (C) 2024 Hedera Hashgraph, LLC
@@ -56,7 +62,7 @@ export class AccountManager {
   // TODO why does it prompt me for the chart directory during cluster setup even though I specified during init?
   // TODO add jsdoc
   async prepareAccount (namespace) {
-    // TODO add disable account key update flag to node start commands
+    // TODO add disable account key update flag to node start commands or future GH Issue?
     const serviceMap = await this.getNodeServiceMap(namespace)
 
     const nodeClient = await this.getNodeClient(namespace, serviceMap)
@@ -80,27 +86,28 @@ export class AccountManager {
   async getNodeClient (namespace, serviceMap) {
     const nodes = {}
     try {
-      let localPort = LOCAL_NODE_START_PORT
+      const realm = constants.HEDERA_NODE_ACCOUNT_ID_START.realm
+      const shard = constants.HEDERA_NODE_ACCOUNT_ID_START.shard
       let accountIdNum = parseInt(constants.HEDERA_NODE_ACCOUNT_ID_START.num.toString(), 10)
+      let localPort = LOCAL_NODE_START_PORT
 
       for (const serviceObject of serviceMap.values()) {
         // TODO need to use the account keys from the node metadata
-        const isLocalHost = this.isLocalhost()
-        if (!isLocalHost && !serviceObject.loadBalancerIp) {
+        if (!this.isLocalhost() && !serviceObject.loadBalancerIp) {
           throw new Error(
               `Expected service ${serviceObject.name} to have a loadBalancerIP set for basepath ${this.k8.kubeClient.basePath}`)
         }
-        const host = isLocalHost ? '127.0.0.1' : serviceObject.loadBalancerIp
+        const host = this.isLocalhost() ? '127.0.0.1' : serviceObject.loadBalancerIp
         const port = serviceObject.grpcPort // TODO add grpcs logic
-        const accountId = AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`)
-        const targetPort = isLocalHost ? localPort : port
+        const accountId = AccountId.fromString(`${realm}.${shard}.${accountIdNum}`)
+        const targetPort = this.isLocalhost() ? localPort : port
 
-        if (isLocalHost) {
+        if (this.isLocalhost()) {
           this.portForwards.push(await this.k8.portForward(serviceObject.podName, localPort, port))
         }
 
         nodes[`${host}:${targetPort}`] = accountId
-        this.testConnection(serviceObject.podName, host, targetPort)
+        await this.testConnection(serviceObject.podName, host, targetPort)
 
         localPort++
         accountIdNum++
@@ -109,12 +116,7 @@ export class AccountManager {
       this.logger.debug(`creating client from network configuration: ${JSON.stringify(nodes)}`)
       const nodeClient = Client.fromConfig({ network: nodes })
       nodeClient.setOperator(constants.OPERATOR_ID, constants.OPERATOR_KEY)
-      // TODO add grpcs logic
-      // if (this.isLocalhost()) {
-      //   // const nodeAddressBook = new NodeAddressBook()
-      //   // nodeClient.setNetworkFromAddressBook(nodeAddressBook)
-      //   nodeClient.setTransportSecurity(true)
-      // }
+
       return nodeClient
     } catch (e) {
       throw new FullstackTestingError('failed to setup node client', e)
@@ -132,10 +134,10 @@ export class AccountManager {
    */
   async getNodeServiceMap (namespace) {
     const labelSelector = 'fullstack.hedera.com/node-name,fullstack.hedera.com/type=haproxy-svc'
-    // TODO move to K8
+    const serviceMap = new Map()
+
     const serviceList = await this.k8.kubeClient.listNamespacedService(
       namespace, undefined, undefined, undefined, undefined, labelSelector)
-    const serviceMap = new Map()
 
     // retrieve the list of services and build custom objects for the attributes we need
     for (const service of serviceList.body.items) {
@@ -168,88 +170,109 @@ export class AccountManager {
       for (let i = start; i <= end; i++) {
         accountUpdatePromiseArray.push(this.updateAccountKeys(
           namespace, nodeClient, AccountId.fromString(`${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${i}`), genesisKey))
-        // TODO make this a flag that can be passed in, or a constant / environment variable
-        await sleep(5) // sleep a little to prevent overwhelming the servers
+
+        await sleep(constants.ACCOUNT_KEYS_UPDATE_PAUSE) // sleep a little to prevent overwhelming the servers
       }
     }
+
     await Promise.allSettled(accountUpdatePromiseArray).then((results) => {
-      // TODO write a better summary here, and use info messages (fulfilled counts, rejects, skips, etc.)
+      let rejectedCount = 0
+      let fulfilledCount = 0
+      let skippedCount = 0
+
       for (const result of results) {
-        if (result.status === 'rejected') {
-          this.logger.error(`accountId failed to update the account ID and create its secret: ${result.value}`)
+        switch (result.status) {
+          case 'rejected':
+            if (result.reason === REASON_SKIPPED) {
+              skippedCount++
+            } else {
+              this.logger.error(`REJECT: ${result.reason}: ${result.value}`)
+              rejectedCount++
+            }
+            break
+          case 'fulfilled':
+            fulfilledCount++
+            break
         }
       }
+      this.logger.showUser(chalk.green(`Account keys updated SUCCESSFULLY: ${fulfilledCount}`))
+      if (skippedCount > 0) this.logger.showUser(chalk.cyan(`Account keys updates SKIPPED: ${skippedCount}`))
+      if (rejectedCount > 0) this.logger.showUser(chalk.yellowBright(`Account keys updates with ERROR: ${rejectedCount}`))
     })
   }
 
   async updateAccountKeys (namespace, nodeClient, accountId, genesisKey) {
+    let keys
     try {
-      let keys
-      try {
-        keys = await this.getAccountKeys(accountId, nodeClient)
-        this.logger.debug(`retrieved keys for account ${accountId.toString()}`)
-      } catch (e) {
-        this.logger.error(`failed to get keys for accountId ${accountId.toString()}, e: ${e.toString()}\n  ${e.stack}`)
-        return {
-          status: 'rejected',
-          value: accountId.toString()
-        }
-      }
-
-      if (constants.OPERATOR_PUBLIC_KEY !== keys[0].toString()) {
-        this.logger.debug(`account ${accountId.toString()} can be skipped since it does not have a genesis key`)
-        return {
-          status: 'skipped',
-          value: accountId.toString()
-        }
-      }
-
-      const newPrivateKey = PrivateKey.generateED25519()
-      try {
-        await this.sendAccountKeyUpdate(accountId, newPrivateKey, nodeClient, genesisKey)
-        this.logger.debug(`sent account key update for account ${accountId.toString()}`)
-      } catch (e) {
-        this.logger.error(`failed to update account keys for accountId ${accountId.toString()}, e: ${e.toString()}`)
-        return {
-          status: 'rejected',
-          value: accountId.toString()
-        }
-      }
-
-      const data = {
-        privateKey: newPrivateKey.toString(),
-        publicKey: newPrivateKey.publicKey.toString()
-      }
-
-      // TODO secrets didn't delete when chart was uninstalled.  this okay? rerun to see if it overlays correctly?
-      // TODO what happens if secret fails to create?  alter name and try again?  revert to genesis key?
-      try {
-        if (!(await this.k8.createSecret(`account-key-${accountId.toString()}`, namespace, 'Opaque', data))) {
-          this.logger.error(`failed to create secret for accountId ${accountId.toString()}`)
-          return {
-            status: 'rejected',
-            value: accountId.toString()
-          }
-        }
-        this.logger.debug(`created k8s secret for account ${accountId.toString()}`)
-      } catch (e) {
-        this.logger.error(`failed to create secret for accountId ${accountId.toString()}, e: ${e.toString()}`)
-        return {
-          status: 'rejected',
-          value: accountId.toString()
-        }
-      }
-
-      return {
-        status: 'fulfilled',
-        value: accountId.toString()
-      }
+      keys = await this.getAccountKeys(accountId, nodeClient)
+      this.logger.debug(`retrieved keys for account ${accountId.toString()}`)
     } catch (e) {
-      this.logger.error(`account: ${accountId.toString()}, had an error: ${e.toString()}`)
+      this.logger.error(`failed to get keys for accountId ${accountId.toString()}, e: ${e.toString()}\n  ${e.stack}`)
       return {
         status: 'rejected',
+        reason: REASON_FAILED_TO_GET_KEYS,
         value: accountId.toString()
       }
+    }
+
+    if (constants.OPERATOR_PUBLIC_KEY !== keys[0].toString()) {
+      this.logger.debug(`account ${accountId.toString()} can be skipped since it does not have a genesis key`)
+      return {
+        status: 'rejected',
+        reason: REASON_SKIPPED,
+        value: accountId.toString()
+      }
+    }
+
+    const newPrivateKey = PrivateKey.generateED25519()
+    try {
+      if (!(await this.sendAccountKeyUpdate(accountId, newPrivateKey, nodeClient, genesisKey))) {
+        this.logger.error(`failed to update account keys for accountId ${accountId.toString()}`)
+        return {
+          status: 'rejected',
+          reason: REASON_FAILED_TO_UPDATE_ACCOUNT,
+          value: accountId.toString()
+        }
+      }
+      this.logger.debug(`sent account key update for account ${accountId.toString()}`)
+    } catch (e) {
+      this.logger.error(`failed to update account keys for accountId ${accountId.toString()}, e: ${e.toString()}`)
+      return {
+        status: 'rejected',
+        reason: REASON_FAILED_TO_UPDATE_ACCOUNT,
+        value: accountId.toString()
+      }
+    }
+
+    const data = {
+      privateKey: newPrivateKey.toString(),
+      publicKey: newPrivateKey.publicKey.toString()
+    }
+
+    // TODO secrets didn't delete when chart was uninstalled.  this okay? rerun to see if it overlays correctly?
+    // TODO what happens if secret fails to create?  alter name and try again?  revert to genesis key?
+    try {
+      if (!(await this.k8.createSecret(`account-key-${accountId.toString()}`, namespace, 'Opaque', data))) {
+        this.logger.error(`failed to create secret for accountId ${accountId.toString()}`)
+        return {
+          status: 'rejected',
+          reason: REASON_FAILED_TO_CREATE_SECRET,
+          value: accountId.toString()
+        }
+      }
+      this.logger.debug(`created k8s secret for account ${accountId.toString()}`)
+    } catch (e) {
+      this.logger.error(`failed to create secret for accountId ${accountId.toString()}, e: ${e.toString()}`)
+      return {
+        status: 'rejected',
+        reason: REASON_FAILED_TO_CREATE_SECRET,
+        value: accountId.toString()
+      }
+    }
+
+    return {
+      status: 'fulfilled',
+      value: accountId.toString()
     }
   }
 
@@ -289,12 +312,10 @@ export class AccountManager {
     // Request the receipt of the transaction
     const receipt = await txResponse.getReceipt(nodeClient)
 
-    // Get the transaction consensus status
-    const transactionStatus = receipt.status
-
     this.logger.debug(
-        `The transaction consensus status for update of accountId ${accountId.toString()} is ${transactionStatus.toString()}`)
-    // TODO check status is correct before continuing
+        `The transaction consensus status for update of accountId ${accountId.toString()} is ${receipt.status}`)
+
+    return receipt.status === Status.Success
   }
 
   async jeromyTesting (argv) {
