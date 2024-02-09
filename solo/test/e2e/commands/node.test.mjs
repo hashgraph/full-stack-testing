@@ -243,6 +243,7 @@ describe.each([
         )
 
         let transaction = await new AccountCreateTransaction()
+          .setNodeAccountIds([constants.HEDERA_NODE_ACCOUNT_ID_START])
           .setInitialBalance(new Hbar(0))
           .setKey(accountKey.publicKey)
           .freezeWithSigner(wallet)
