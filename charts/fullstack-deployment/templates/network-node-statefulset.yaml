@@ -37,6 +37,7 @@ spec:
         app: network-{{ $node.name }}
         fullstack.hedera.com/type: network-node
         fullstack.hedera.com/node-name: {{ $node.name }}
+        fullstack.hedera.com/account-id: {{ $node.accountId }}
         {{- include "fullstack.testLabels" $ | nindent 8 }}
     spec:
       {{- if $.Values.deployment.nodeSelector }}

@@ -78,6 +78,20 @@ export class Templates {
     return `${parsed[0]}.${parsed[1]}`
   }
 
+  static renderAccountKeySecretName (accountId) {
+    return `account-key-${accountId.toString()}`
+  }
+
+  static renderAccountKeySecretLabelSelector (accountId) {
+    return `fullstack.hedera.com/account-id=${accountId.toString()}`
+  }
+
+  static renderAccountKeySecretLabelObject (accountId) {
+    return {
+      'fullstack.hedera.com/account-id': accountId.toString()
+    }
+  }
+
   static renderDistinguishedName (nodeId,
     state = 'TX',
     locality = 'Richardson',

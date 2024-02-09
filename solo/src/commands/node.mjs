@@ -88,7 +88,8 @@ export class NodeCommand extends BaseCommand {
     while (attempt < maxAttempt) {
       try {
         const output = await this.k8.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
-        if (output.indexOf(`Now current platform status = ${status}`) > 0) {
+        if (output.indexOf(`Terminating Netty = ${status}`) < 0 &&
+            output.indexOf(`Now current platform status = ${status}`) > 0) {
           this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}]`)
           isActive = true
           break
@@ -479,7 +480,7 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Update special account keys',
         task: async (ctx, task) => {
-          await self.accountManager.prepareAccount(ctx.config.namespace)
+          await self.accountManager.prepareAccounts(ctx.config.namespace)
         }
       }
     ], {
@@ -785,37 +786,8 @@ export class NodeCommand extends BaseCommand {
               })
             }
           })
-          .command({ // TODO remove
-            command: 'jeromy',
-            desc: 'update all of the account keys',
-            builder: y => flags.setCommandFlags(y,
-              flags.namespace,
-              flags.nodeIDs
-            ),
-            handler: argv => {
-              nodeCmd.logger.debug("==== Running 'node keys' ===")
-              nodeCmd.logger.debug(argv)
-              nodeCmd.jeromyTesting(argv)
-            }
-          })
           .demandCommand(1, 'Select a node command')
       }
     }
-  }
-
-  // TODO remove
-  jeromyTesting (argv) {
-    // this.accountManager.jeromyTesting(argv).then(r => {
-    //   r.serviceMap.forEach(value => console.log(JSON.stringify(value)))
-    //   console.log(`basePath: ${JSON.stringify(r.basePath)}`)
-    // }
-    // ).catch(err => {
-    //   console.log(`error: ${JSON.stringify(err)}`)
-    // })
-    this.accountManager.prepareAccount(argv.namespace).then(
-      this.logger.debug('prepareAccount successful')
-    ).catch(err => {
-      this.logger.error(`error: ${JSON.stringify(err)}`)
-    })
   }
 }

@@ -687,15 +687,43 @@ export class K8 {
     return resp.response.statusCode === 200.0
   }
 
-  async createSecret (name, namespace, secretType, data) {
+  async getSecret (namespace, labelSelector) {
+    const result = await this.kubeClient.listNamespacedSecret(
+      namespace, null, null, null, null, labelSelector)
+    if (result.response.statusCode === 200 && result.body.items && result.body.items.length > 0) {
+      const secretObject = result.body.items[0]
+      return {
+        name: secretObject.metadata.name,
+        labels: secretObject.metadata.labels,
+        namespace: secretObject.metadata.namespace,
+        type: secretObject.type,
+        data: secretObject.data
+      }
+    } else {
+      return null
+    }
+  }
+
+  async createSecret (name, namespace, secretType, data, labels, recreate) {
+    if (recreate) {
+      try {
+        await this.kubeClient.deleteNamespacedSecret(name, namespace)
+      } catch (e) {
+        // do nothing
+      }
+    }
+
     const v1Secret = new V1Secret()
     v1Secret.apiVersion = 'v1'
     v1Secret.kind = 'Secret'
-    v1Secret.metadata = new V1ObjectMeta()
-    v1Secret.metadata.name = name
     v1Secret.type = secretType
     v1Secret.data = data
+    v1Secret.metadata = new V1ObjectMeta()
+    v1Secret.metadata.name = name
+    v1Secret.metadata.labels = labels
+
     const resp = await this.kubeClient.createNamespacedSecret(namespace, v1Secret)
+
     return resp.response.statusCode === 201
   }
 
