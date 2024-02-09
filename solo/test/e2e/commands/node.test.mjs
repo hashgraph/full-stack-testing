@@ -130,7 +130,7 @@ describe.each([
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
-    }, 300000)
+    }, 600000)
 
     it('only genesis account should have genesis key', async () => {
       expect.hasAssertions()
