@@ -96,6 +96,7 @@ export class AccountManager {
         server.close()
       })
       this.portForwards = []
+      await sleep(1) // give a tick for connections to close
     }
   }
 
@@ -361,5 +362,6 @@ export class AccountManager {
       throw new FullstackTestingError(`failed to connect to port '${port}' of pod ${podName} at IP address ${host}`)
     }
     socket.destroy()
+    await sleep(1) // gives a few ticks for connections to close
   }
 }

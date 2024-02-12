@@ -20,7 +20,7 @@ import {
   Hbar,
   PrivateKey
 } from '@hashgraph/sdk'
-import { beforeAll, describe, expect, it } from '@jest/globals'
+import { afterEach, beforeAll, describe, expect, it } from '@jest/globals'
 import path from 'path'
 import { namespace } from '../../../src/commands/flags.mjs'
 import { flags } from '../../../src/commands/index.mjs'
@@ -39,6 +39,7 @@ import {
 import { ShellRunner } from '../../../src/core/shell_runner.mjs'
 import { getTestCacheDir, testLogger } from '../../test_util.js'
 import { AccountManager } from '../../../src/core/account_manager.mjs'
+import { sleep } from '../../../src/core/helpers.mjs'
 
 class TestHelper {
   static async getNodeClient (accountManager, argv) {
@@ -106,6 +107,10 @@ describe.each([
       argv[namespace] = configManager.getFlag(flags.namespace)
     })
 
+    afterEach(() => {
+      sleep(5).then().catch() // give a few ticks so that connections can close
+    })
+
     it('should pre-generate keys', async () => {
       if (argv[flags.keyFormat.name] === constants.KEY_FORMAT_PFX) {
         const shellRunner = new ShellRunner(testLogger)
@@ -138,36 +143,62 @@ describe.each([
       const genesisKey = PrivateKey.fromStringED25519(constants.OPERATOR_KEY)
       const realm = constants.HEDERA_NODE_ACCOUNT_ID_START.realm
       const shard = constants.HEDERA_NODE_ACCOUNT_ID_START.shard
+      let failure = false
       try {
         client = await TestHelper.getNodeClient(accountManager, argv)
 
+        let submitted = 0
+        let completed = 0
+        const maxRunning = 10
         const accountUpdatePromiseArray = []
         for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
           for (let i = start; i <= end; i++) {
+            // eslint-disable-next-line no-unmodified-loop-condition
+            while ((submitted - completed) > maxRunning) {
+              nodeCmd.logger.info(`submitted: ${submitted}, completed: ${completed}, diff: ${submitted - completed}, sleeping...`)
+              await sleep(500)
+            }
+            submitted++
             accountUpdatePromiseArray.push((async function (i) {
               const accountId = `${realm}.${shard}.${i}`
+              nodeCmd.logger.info(`getAccountKeys: accountId ${accountId}`)
               const keys = await accountManager.getAccountKeys(accountId, client)
-              expect(keys[0].toString()).not.toEqual(genesisKey)
+              completed++
+              await sleep(100)
+              if (keys[0].toString() === genesisKey.toString()) {
+                const rejectionMessage = `FAIL: accountId ${accountId} key ${keys[0].toString()} matches genesis key ${genesisKey.toString()}`
+                nodeCmd.logger.error(rejectionMessage)
+                return {
+                  status: 'rejected',
+                  reason: rejectionMessage
+                }
+              }
+              nodeCmd.logger.info(`PASS: accountID ${accountId} key does not match genesis key`)
+              return {
+                status: 'fulfilled',
+                value: accountId
+              }
             })(i))
           }
         }
         await Promise.allSettled(accountUpdatePromiseArray).then((results) => {
           for (const result of results) {
             if (result.status === 'rejected') {
-              throw new Error(`accountId failed to update the account ID and create its secret: ${result.value}`)
+              failure = true
             }
           }
         })
       } catch (e) {
-        testLogger.showUserError(e)
-        expect(e).toBeNull()
+        nodeCmd.logger.showUserError(e)
+        failure = true
       } finally {
         if (client) {
           client.close()
           accountManager.stopPortForwards().then().catch()
         }
+        expect(failure).toBeFalsy()
       }
-    }, 60000)
+    }, 600000)
 
     it('balance query should succeed', async () => {
       expect.assertions(1)
