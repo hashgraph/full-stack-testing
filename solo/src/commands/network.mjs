@@ -90,10 +90,12 @@ export class NetworkCommand extends BaseCommand {
     }
 
     // prepare name and account IDs for nodes
+    const realm = constants.HEDERA_NODE_ACCOUNT_ID_START.realm
+    const shard = constants.HEDERA_NODE_ACCOUNT_ID_START.shard
+    let accountId = constants.HEDERA_NODE_ACCOUNT_ID_START.num
     let i = 0
-    let accountId = Number.parseInt(constants.HEDERA_NODE_ACCOUNT_ID_START)
     config.nodeIds.forEach(nodeId => {
-      valuesArg += ` --set hedera.nodes[${i}].name=${nodeId},hedera.nodes[${i++}].accountId=0.0.${accountId++}`
+      valuesArg += ` --set hedera.nodes[${i}].name=${nodeId},hedera.nodes[${i++}].accountId=${realm}.${shard}.${accountId++}`
     })
 
     this.logger.debug('Prepared helm chart values', { valuesArg })

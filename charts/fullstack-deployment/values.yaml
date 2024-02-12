@@ -149,7 +149,7 @@ defaults:
           prioritize: true
       resources: {}
     backupUploader:
-      enabled: true
+      enabled: false
       nameOverride: "backup-uploader"
       image:
         registry: "gcr.io"
