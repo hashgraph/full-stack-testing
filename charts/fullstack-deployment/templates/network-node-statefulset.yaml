@@ -56,24 +56,19 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
-        - name: hgcapp-storage # change me
+        - name: hgcapp-account-balances
+          emptyDir: {}
+        - name: hgcapp-record-streams
+          emptyDir: {}
+        - name: hgcapp-event-streams
+          emptyDir: {}
+        - name: hgcapp-services-hedera
           emptyDir: {}
         {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm
         {{- end }}
-      initContainers:
-      # Init Container: {{ $node.name }}-init-container
-      - name: init-container
-        image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
-        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
-        command: [ "/bin/sh", "-c", "mkdir -p /opt/hgcapp/hedera-backups /opt/hgcapp/accountBalances /opt/hgcapp/events /opt/hgcapp/recordStreams /opt/hgcapp/sidecar /opt/hgcapp/recordStreams/uploader-stats/" ]
-        securityContext:
-        {{- include "fullstack.hedera.security.context" . | nindent 10 }}
-        volumeMounts:
-          - name: hgcapp-storage
-            mountPath: /opt/hgcapp/
       containers:
       # Root Container: {{ $node.name }}-root-container
       - name: {{ $root.nameOverride | default "root-container" }}
@@ -86,8 +81,14 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
-          - name: hgcapp-storage
-            mountPath: /opt/hgcapp/
+          - name: hgcapp-account-balances
+            mountPath: /opt/hgcapp/accountBalances
+          - name: hgcapp-record-streams
+            mountPath: /opt/hgcapp/recordStreams
+          - name: hgcapp-event-streams
+            mountPath: /opt/hgcapp/eventsStreams
+          - name: hgcapp-services-hedera
+            mountPath: opt/hgcapp/services-hedera
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       {{- if $balanceUploader.enabled }}
@@ -107,9 +108,9 @@ spec:
           - --s3-endpoint
           - "http://{{ $minioserver.tenant.name }}-hl:9000"
         volumeMounts:
-          - name: hgcapp-storage
+          - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
-            subPath: accountBalances/balance{{ $node.accountId }}
+            subPath: balance{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.debug ($balanceUploader.config).debug | quote }}
@@ -168,9 +169,9 @@ spec:
           - --s3-endpoint
           - http://{{ $minioserver.tenant.name }}-hl:9000
         volumeMounts:
-          - name: hgcapp-storage
+          - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
-            subPath: recordStreams/record{{ $node.accountId }}
+            subPath: record{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.recordStreamUploader.config.debug ($recordStream.config).debug | quote }}
@@ -227,14 +228,14 @@ spec:
           - /usr/local/bin/mirror.py
           - --linux
           - --watch-directory
-          - /opt/hgcapp/events
+          - /opt/hgcapp/eventStreams
           - --debug
           - --s3-endpoint
           - http://{{ $minioserver.tenant.name }}-hl:9000
         volumeMounts:
-          - name: hgcapp-storage
-            mountPath: /opt/hgcapp/events
-            subPath: events/balance{{ $node.accountId }}
+          - name: hgcapp-event-streams
+            mountPath: /opt/hgcapp/eventStreams
+            subPath: balance{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.eventStreamUploader.config.debug ($eventStream.config).debug | quote}}
@@ -282,9 +283,9 @@ spec:
         securityContext:
           {{- include "fullstack.hedera.security.context" . | nindent 10 }}
         volumeMounts:
-          - name: hgcapp-storage
-            mountPath: /opt/hgcapp/
-            readOnly: true
+          - name: hgcapp-services-hedera
+            mountPath: opt/hgcapp/services-hedera
+            subPath: data
         env:
           - name: BACKUP_UPLOADER_BUCKET_1
             value: {{ default $defaults.sidecars.backupUploader.config.backupBucket ($backupUploader.config).backupBucket | quote }}

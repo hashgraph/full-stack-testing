@@ -40,7 +40,7 @@ export class PlatformInstaller {
 
     try {
       // reset HAPI_PATH
-      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}`)
+      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}/HapiApp2.0`)
 
       const paths = [
         `${constants.HEDERA_HAPI_PATH}/data/keys`,
@@ -55,7 +55,7 @@ export class PlatformInstaller {
 
       return true
     } catch (e) {
-      throw new FullstackTestingError(`failed to setup directories in pod '${podName}' at ${constants.HAPI_PATH}`, e)
+      throw new FullstackTestingError(`failed to setup directories in pod '${podName}': ${e.message}`, e)
     }
   }
 
