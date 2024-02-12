@@ -50,9 +50,7 @@ async function promptToggle (task, input, defaultValue, promptMessage, emptyChec
 }
 
 export async function promptNamespace (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     'solo',
     'Enter namespace name: ',
     'namespace cannot be empty',
@@ -60,9 +58,7 @@ export async function promptNamespace (task, input) {
 }
 
 export async function promptClusterSetupNamespace (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     'solo-cluster',
     'Enter cluster setup namespace name: ',
     'cluster setup namespace cannot be empty',
@@ -70,10 +66,7 @@ export async function promptClusterSetupNamespace (task, input) {
 }
 
 export async function promptNodeIds (task, input) {
-  return await prompt(
-    'input',
-    task,
-    input,
+  return await prompt('input', task, input,
     'node0,node1,node2',
     'Enter list of node IDs (comma separated list): ',
     null,
@@ -81,9 +74,7 @@ export async function promptNodeIds (task, input) {
 }
 
 export async function promptReleaseTag (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     'v0.42.5',
     'Enter release version: ',
     'release tag cannot be empty',
@@ -91,9 +82,7 @@ export async function promptReleaseTag (task, input) {
 }
 
 export async function promptRelayReleaseTag (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     flags.relayReleaseTag.definition.defaultValue,
     'Enter relay release version: ',
     'relay-release-tag cannot be empty',
@@ -101,9 +90,7 @@ export async function promptRelayReleaseTag (task, input) {
 }
 
 export async function promptCacheDir (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     constants.SOLO_CACHE_DIR,
     'Enter local cache directory path: ',
     null,
@@ -111,9 +98,7 @@ export async function promptCacheDir (task, input) {
 }
 
 export async function promptForce (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.force.definition.defaultValue,
     'Would you like to force changes? ',
     null,
@@ -121,9 +106,7 @@ export async function promptForce (task, input) {
 }
 
 export async function promptChainId (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     flags.chainId.definition.defaultValue,
     'Enter chain ID: ',
     null,
@@ -171,9 +154,7 @@ export async function promptValuesFile (task, input) {
 }
 
 export async function promptDeployPrometheusStack (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deployPrometheusStack.definition.defaultValue,
     'Would you like to deploy prometheus stack? ',
     null,
@@ -181,9 +162,7 @@ export async function promptDeployPrometheusStack (task, input) {
 }
 
 export async function promptEnablePrometheusSvcMonitor (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.enablePrometheusSvcMonitor.definition.defaultValue,
     'Would you like to enable the Prometheus service monitor for the network nodes? ',
     null,
@@ -191,9 +170,7 @@ export async function promptEnablePrometheusSvcMonitor (task, input) {
 }
 
 export async function promptDeployMinio (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deployMinio.definition.defaultValue,
     'Would you like to deploy MinIO? ',
     null,
@@ -201,9 +178,7 @@ export async function promptDeployMinio (task, input) {
 }
 
 export async function promptDeployCertManager (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deployCertManager.definition.defaultValue,
     'Would you like to deploy Cert Manager? ',
     null,
@@ -211,9 +186,7 @@ export async function promptDeployCertManager (task, input) {
 }
 
 export async function promptDeployCertManagerCrds (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deployCertManagerCrds.definition.defaultValue,
     'Would you like to deploy Cert Manager CRDs? ',
     null,
@@ -221,9 +194,7 @@ export async function promptDeployCertManagerCrds (task, input) {
 }
 
 export async function promptDeployMirrorNode (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deployMirrorNode.definition.defaultValue,
     'Would you like to deploy Hedera Mirror Node? ',
     null,
@@ -231,9 +202,7 @@ export async function promptDeployMirrorNode (task, input) {
 }
 
 export async function promptDeployHederaExplorer (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deployHederaExplorer.definition.defaultValue,
     'Would you like to deploy Hedera Explorer? ',
     null,
@@ -261,9 +230,7 @@ export async function promptTlsClusterIssuerType (task, input) {
 }
 
 export async function promptEnableHederaExplorerTls (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.enableHederaExplorerTls.definition.defaultValue,
     'Would you like to enable the Hedera Explorer TLS? ',
     null,
@@ -271,9 +238,7 @@ export async function promptEnableHederaExplorerTls (task, input) {
 }
 
 export async function promptHederaExplorerTlsHostName (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     flags.hederaExplorerTlsHostName.definition.defaultValue,
     'Enter the host name to use for the Hedera Explorer TLS: ',
     null,
@@ -281,9 +246,7 @@ export async function promptHederaExplorerTlsHostName (task, input) {
 }
 
 export async function promptOperatorId (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     flags.operatorId.definition.defaultValue,
     'Enter operator ID: ',
     null,
@@ -291,9 +254,7 @@ export async function promptOperatorId (task, input) {
 }
 
 export async function promptOperatorKey (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     flags.operatorKey.definition.defaultValue,
     'Enter operator private key: ',
     null,
@@ -317,9 +278,7 @@ export async function promptReplicaCount (task, input) {
 }
 
 export async function promptGenerateGossipKeys (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.generateGossipKeys.definition.defaultValue,
     `Would you like to generate Gossip keys? ${typeof input} ${input} `,
     null,
@@ -327,9 +286,7 @@ export async function promptGenerateGossipKeys (task, input) {
 }
 
 export async function promptGenerateTLSKeys (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.generateTlsKeys.definition.defaultValue,
     'Would you like to generate TLS keys? ',
     null,
@@ -337,9 +294,7 @@ export async function promptGenerateTLSKeys (task, input) {
 }
 
 export async function promptDeletePvcs (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.deletePvcs.definition.defaultValue,
     'Would you like to delete persistent volume claims upon uninstall? ',
     null,
@@ -371,9 +326,7 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
 }
 
 export async function promptFstChartVersion (task, input) {
-  return await promptText(
-    task,
-    input,
+  return await promptText(task, input,
     flags.fstChartVersion.definition.defaultValue,
     'Enter fullstack testing chart version: ',
     null,
@@ -381,9 +334,7 @@ export async function promptFstChartVersion (task, input) {
 }
 
 export async function promptUpdateAccountKeys (task, input) {
-  return await promptToggle(
-    task,
-    input,
+  return await promptToggle(task, input,
     flags.updateAccountKeys.definition.defaultValue,
     'Would you like to updates the special account keys to new keys and stores their keys in a corresponding Kubernetes secret? ',
     null,
