@@ -90,7 +90,6 @@ export class AccountManager {
    * @returns {Promise<void>}
    */
   async prepareAccounts (namespace) {
-    // TODO add disable account key update flag to node start commands or future GH Issue?
     const serviceMap = await this.getNodeServiceMap(namespace)
 
     const nodeClient = await this.getNodeClient(
@@ -137,7 +136,7 @@ export class AccountManager {
               `Expected service ${serviceObject.name} to have a loadBalancerIP set for basepath ${this.k8.kubeClient.basePath}`)
         }
         const host = this.isLocalhost() ? '127.0.0.1' : serviceObject.loadBalancerIp
-        const port = serviceObject.grpcPort // TODO add grpcs logic
+        const port = serviceObject.grpcPort // TODO: add grpcs logic in https://github.com/hashgraph/full-stack-testing/issues/752
         const targetPort = this.isLocalhost() ? localPort : port
 
         if (this.isLocalhost()) {

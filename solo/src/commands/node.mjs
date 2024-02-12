@@ -25,7 +25,6 @@ import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as prompts from './prompts.mjs'
-import { updateAccountKeys } from './flags.mjs'
 
 /**
  * Defines the core functionalities of 'node' command
@@ -489,6 +488,9 @@ export class NodeCommand extends BaseCommand {
         task: async (ctx, task) => {
           if (ctx.config.updateAccountKeys) {
             await self.accountManager.prepareAccounts(ctx.config.namespace)
+          } else {
+            this.logger.showUser(chalk.yellowBright('> WARNING:'), chalk.yellow(
+              'skipping special account keys update, special accounts will retain genesis private keys'))
           }
         }
       }
