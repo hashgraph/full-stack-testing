@@ -110,7 +110,7 @@ spec:
         volumeMounts:
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
-            subPath: accountBalances/balance{{ $node.accountId }}
+            subPath: balance{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.debug ($balanceUploader.config).debug | quote }}
@@ -171,7 +171,7 @@ spec:
         volumeMounts:
           - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
-            subPath: recordStreams/record{{ $node.accountId }}
+            subPath: record{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.recordStreamUploader.config.debug ($recordStream.config).debug | quote }}
@@ -235,7 +235,7 @@ spec:
         volumeMounts:
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventStreams
-            subPath: eventStreams/balance{{ $node.accountId }}
+            subPath: balance{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.eventStreamUploader.config.debug ($eventStream.config).debug | quote}}
@@ -285,7 +285,7 @@ spec:
         volumeMounts:
           - name: hgcapp-services-hedera
             mountPath: opt/hgcapp/services-hedera
-            subPath: services-hedera/data
+            subPath: data
         env:
           - name: BACKUP_UPLOADER_BUCKET_1
             value: {{ default $defaults.sidecars.backupUploader.config.backupBucket ($backupUploader.config).backupBucket | quote }}
