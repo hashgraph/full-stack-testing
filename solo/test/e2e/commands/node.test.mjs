@@ -65,7 +65,7 @@ describe.each([
 ])('NodeCommand', (testRelease, testKeyFormat) => {
   const helm = new Helm(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
-  const configManager = new ConfigManager(testLogger)
+  const configManager = new ConfigManager(testLogger, path.join(getTestCacheDir(), 'solo.config'))
   const packageDownloader = new PackageDownloader(testLogger)
   const depManager = new DependencyManager(testLogger)
   const k8 = new K8(configManager, testLogger)
@@ -104,8 +104,10 @@ describe.each([
     argv[flags.bootstrapProperties.name] = flags.bootstrapProperties.definition.defaultValue
     argv[flags.settingTxt.name] = flags.settingTxt.definition.defaultValue
     argv[flags.log4j2Xml.name] = flags.log4j2Xml.definition.defaultValue
-    configManager.load()
-    argv[flags.namespace.name] = configManager.getFlag(flags.namespace)
+    argv[flags.namespace.name] = 'solo-e2e'
+    argv[flags.clusterName] = 'kind-solo-e2e'
+    argv[flags.clusterSetupNamespace] = 'solo-e2e-cluster'
+    configManager.update(argv, true)
 
     const nodeIds = argv[flags.nodeIDs.name].split(',')
 
