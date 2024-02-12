@@ -105,8 +105,9 @@ describe.each([
     argv[flags.settingTxt.name] = flags.settingTxt.definition.defaultValue
     argv[flags.log4j2Xml.name] = flags.log4j2Xml.definition.defaultValue
     argv[flags.namespace.name] = 'solo-e2e'
-    argv[flags.clusterName] = 'kind-solo-e2e'
-    argv[flags.clusterSetupNamespace] = 'solo-e2e-cluster'
+    argv[flags.clusterName.name] = 'kind-solo-e2e'
+    argv[flags.clusterSetupNamespace.name] = 'solo-e2e-cluster'
+    argv[flags.updateAccountKeys.name] = true
     configManager.update(argv, true)
 
     const nodeIds = argv[flags.nodeIDs.name].split(',')
