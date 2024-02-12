@@ -426,3 +426,5 @@ export const nodeConfigFileFlags = new Map([
   settingTxt,
   log4j2Xml
 ].map(f => [f.name, f]))
+
+export const integerFlags = new Map([replicaCount].map(f => [f.name, f]))

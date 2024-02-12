@@ -65,37 +65,23 @@ export function main (argv) {
 
     const processArguments = (argv, yargs) => {
       if (argv._[0] === 'init') {
-        configManager.load({}, true) // reset cached config
+        configManager.reset()
       } else {
         configManager.load()
       }
 
-      // load cluster name and namespace from kubernetes context
+      // Set default cluster name and namespace from kubernetes context
+      // these will be overwritten if user has entered the flag values explicitly
       configManager.setFlag(flags.clusterName, cluster.name)
       if (context.namespace) {
-        // this will be overwritten if user has passed --namespace flag
         configManager.setFlag(flags.namespace, context.namespace)
       }
 
-      for (const key of Object.keys(yargs.parsed.aliases)) {
-        const flag = flags.allFlagsMap.get(key)
-        if (flag) {
-          if (argv[key] !== undefined) {
-            // argv takes precedence, nothing to do
-          } else if (configManager.hasFlag(flag)) {
-            argv[key] = configManager.getFlag(flag)
-          } else if (argv._[0] !== 'init') {
-            argv[key] = flag.definition.defaultValue
-          }
-        }
-      }
+      // apply precedence for flags
+      argv = configManager.applyPrecedence(argv, yargs.parsed.aliases)
 
-      // Update config manager and persist the config.
-      // Note: Because of this centralized loading, we really don't need to load argv in configManager later in
-      // the command execution handlers. However, we are loading argv again in the command handlers to facilitate testing
-      // with argv injection into the command handlers.
-      configManager.load(argv)
-      configManager.persist()
+      // update and persist config
+      configManager.update(argv, true)
 
       logger.showUser(chalk.cyan('\n******************************* Solo *********************************************'))
       logger.showUser(chalk.cyan('Version\t\t\t:'), chalk.yellow(configManager.getVersion()))
@@ -116,7 +102,7 @@ export function main (argv) {
       .option(flags.devMode.name, flags.devMode.definition)
       .wrap(120)
       .demand(1, 'Select a command')
-      .middleware(processArguments, true)
+      .middleware(processArguments, false) // applyBeforeValidate = false as otherwise middleware is called twice
       .parse()
   } catch (e) {
     logger.showUserError(e)

@@ -22,144 +22,157 @@ import * as flags from '../commands/flags.mjs'
 import * as paths from 'path'
 import * as helpers from './helpers.mjs'
 
+/**
+ * ConfigManager cache command flag values so that user doesn't need to enter the same values repeatedly.
+ *
+ * For example, 'namespace' is usually remains the same across commands once it is entered, and therefore user
+ * doesn't need to enter it repeatedly. However, user should still be able to specify the flag explicitly for any command.
+ */
 export class ConfigManager {
-  constructor (logger, fstConfigFile = constants.SOLO_CONFIG_FILE, persistMode = true) {
+  constructor (logger, cachedConfigFile = constants.SOLO_CONFIG_FILE) {
     if (!logger || !(logger instanceof Logger)) throw new MissingArgumentError('An instance of core/Logger is required')
-
-    if (fstConfigFile === constants.SOLO_CONFIG_FILE) {
-      this.fstConfigFile = fstConfigFile
-    } else {
-      if (this.verifyConfigFile(fstConfigFile)) {
-        this.fstConfigFile = fstConfigFile
-      } else {
-        throw new FullstackTestingError(`Invalid config file: ${fstConfigFile}`)
-      }
-    }
-
-    this.persistMode = persistMode === true
+    if (!cachedConfigFile) throw new MissingArgumentError('cached config file path is required')
 
     this.logger = logger
-    this.config = {
-      flags: {},
-      version: '',
-      updatedAt: ''
-    }
+    this.cachedConfigFile = cachedConfigFile
+    this.reset()
   }
 
-  verifyConfigFile (fstConfigFile) {
+  /**
+   * Load the cached config
+   */
+  load () {
     try {
-      if (fs.existsSync(fstConfigFile)) {
-        const configJSON = fs.readFileSync(fstConfigFile)
-        JSON.parse(configJSON.toString())
+      if (fs.existsSync(this.cachedConfigFile)) {
+        const configJSON = fs.readFileSync(this.cachedConfigFile)
+        this.config = JSON.parse(configJSON.toString())
       }
-      return true
     } catch (e) {
-      return false
-    }
-  }
-
-  persist () {
-    this.config.updatedAt = new Date().toISOString()
-    if (this.persistMode) {
-      let configJSON = JSON.stringify(this.config)
-      fs.writeFileSync(`${this.fstConfigFile}`, configJSON)
-      configJSON = fs.readFileSync(this.fstConfigFile)
-      this.config = JSON.parse(configJSON.toString())
+      throw new FullstackTestingError(`failed to initialize config manager: ${e.message}`, e)
     }
   }
 
   /**
-   * Load and cache config on disk
-   *
-   * It overwrites previous config values using argv and store in the cached config file if any value has been changed.
-   *
-   * @param argv object containing various config related fields (e.g. argv)
-   * @param reset if we should reset old values
-   * @param flagList list of flags to be processed
-   * @returns {*} config object
+   * Reset config
    */
-  load (argv = {}, reset = false, flagList = flags.allFlags) {
-    try {
-      let config = {}
-      let writeConfig = false
-      const packageJSON = helpers.loadPackageJSON()
+  reset () {
+    this.config = {
+      flags: {},
+      version: helpers.packageVersion(),
+      updatedAt: new Date().toISOString()
+    }
+  }
 
-      this.logger.debug('Start: load config', { argv, cachedConfig: config })
-
-      // if config exist, then load it first
-      if (!reset && fs.existsSync(this.fstConfigFile)) {
-        const configJSON = fs.readFileSync(this.fstConfigFile)
-        config = JSON.parse(configJSON.toString())
-        this.logger.debug(`Loaded cached config from ${this.fstConfigFile}`, { cachedConfig: config })
+  /**
+   * Apply the command flags precedence
+   *
+   * It uses the below precedence for command flag values:
+   *  1. User input of the command flag
+   *  2. Cached config value of the command flag.
+   *  3. Default value of the command flag if the command is not 'init'.
+   *
+   * @param argv yargs.argv
+   * @param aliases yargv.parsed.aliases
+   * @return {*} updated argv
+   */
+  applyPrecedence (argv, aliases) {
+    for (const key of Object.keys(aliases)) {
+      const flag = flags.allFlagsMap.get(key)
+      if (flag) {
+        if (argv[key] !== undefined) {
+          // argv takes precedence, nothing to do
+        } else if (this.hasFlag(flag)) {
+          argv[key] = this.getFlag(flag)
+        } else if (argv._[0] !== 'init') {
+          argv[key] = flag.definition.defaultValue
+        }
       }
+    }
 
-      if (!config.flags) {
-        config.flags = {}
-      }
+    return argv
+  }
 
-      // we always use packageJSON version as the version, so overwrite.
-      config.version = packageJSON.version
+  /**
+   * Update the config using the argv
+   *
+   * @param argv list of yargs argv
+   * @param persist
+   */
+  update (argv = {}, persist = false) {
+    if (argv && Object.keys(argv).length > 0) {
+      for (const flag of flags.allFlags) {
+        if (flag.name === flags.force.name) {
+          continue // we don't want to cache force flag
+        }
 
-      // extract flags from argv
-      if (argv && Object.keys(argv).length > 0) {
-        for (const flag of flagList) {
-          if (flag.name === flags.force.name) {
-            continue // we don't want to cache force flag
-          }
+        if (argv[flag.name] === '' &&
+          [flags.namespace.name, flags.clusterName.name, flags.chartDirectory.name].includes(flag.name)) {
+          continue // don't cache empty namespace, clusterName, or chartDirectory
+        }
 
-          if (argv[flag.name] === '' &&
-            [flags.namespace.name, flags.clusterName.name, flags.chartDirectory.name].includes(flag.name)) {
-            continue // don't cache empty namespace, clusterName, or chartDirectory
-          }
+        if (argv[flag.name] !== undefined) {
+          let val = argv[flag.name]
+          switch (flag.definition.type) {
+            case 'string':
+              if (flag.name === flags.chartDirectory.name || flag.name === flags.cacheDir.name) {
+                this.logger.debug(`Resolving directory path for '${flag.name}': ${val}`)
+                val = paths.resolve(val)
+              }
+              this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
+              this.config.flags[flag.name] = `${val}` // force convert to string
+              break
 
-          if (argv[flag.name] !== undefined) {
-            let val = argv[flag.name]
-            switch (flag.definition.type) {
-              case 'string':
-                if (val) {
-                  if (flag.name === flags.chartDirectory.name || flag.name === flags.cacheDir.name) {
-                    this.logger.debug(`Resolving directory path for '${flag.name}': ${val}`)
-                    val = paths.resolve(val)
-                  }
-                  this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
-                  config.flags[flag.name] = val
-                  writeConfig = true
+            case 'number':
+              this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
+              try {
+                if (flags.integerFlags.has(flag.name)) {
+                  this.config.flags[flag.name] = Number.parseInt(val)
+                } else {
+                  this.config.flags[flag.name] = Number.parseFloat(val)
                 }
-                break
+              } catch (e) {
+                throw new FullstackTestingError(`invalid number value '${val}': ${e.message}`, e)
+              }
+              break
 
-              case 'number':
-              case 'boolean':
-                this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
-                config.flags[flag.name] = val
-                writeConfig = true
-                break
+            case 'boolean':
+              this.logger.debug(`Setting flag '${flag.name}' of type '${flag.definition.type}': ${val}`)
+              this.config.flags[flag.name] = (val === true) || (val === 'true') // use comparison to enforce boolean value
+              break
 
-              default:
-                throw new FullstackTestingError(`Unsupported field type for flag '${flag.name}': ${flag.definition.type}`)
-            }
+            default:
+              throw new FullstackTestingError(`Unsupported field type for flag '${flag.name}': ${flag.definition.type}`)
           }
-        }
-
-        // store last command that was run
-        if (argv._) {
-          config.lastCommand = argv._
         }
       }
 
-      // store CLI config
-      this.config = config
-      if (reset || writeConfig) {
+      // store last command that was run
+      if (argv._) {
+        this.config.lastCommand = argv._
+      }
+
+      this.config.updatedAt = new Date().toISOString()
+
+      if (persist) {
         this.persist()
       }
+    }
+  }
 
-      this.logger.debug('Finish: load config', { argv, cachedConfig: config })
+  /**
+   * Persist the config in the cached config file
+   */
+  persist () {
+    try {
+      this.config.updatedAt = new Date().toISOString()
+      let configJSON = JSON.stringify(this.config)
+      fs.writeFileSync(`${this.cachedConfigFile}`, configJSON)
 
-      // set dev mode for logger if necessary
-      this.logger.setDevMode(this.getFlag(flags.devMode))
-
-      return this.config
+      // refresh config with the file contents
+      configJSON = fs.readFileSync(this.cachedConfigFile)
+      this.config = JSON.parse(configJSON.toString())
     } catch (e) {
-      throw new FullstackTestingError(`failed to load config: ${e.message}`, e)
+      throw new FullstackTestingError(`failed to persis config: ${e.message}`, e)
     }
   }
 
@@ -211,13 +224,5 @@ export class ConfigManager {
    */
   getUpdatedAt () {
     return this.config.updatedAt
-  }
-
-  /**
-   * Get last command
-   * @return {*}
-   */
-  getLastCommand () {
-    return this.config.lastCommand
   }
 }
