@@ -25,6 +25,7 @@ import { constants, Templates } from '../core/index.mjs'
 import { BaseCommand } from './base.mjs'
 import * as flags from './flags.mjs'
 import * as prompts from './prompts.mjs'
+import { updateAccountKeys } from './flags.mjs'
 
 /**
  * Defines the core functionalities of 'node' command
@@ -419,12 +420,14 @@ export class NodeCommand extends BaseCommand {
           self.configManager.load(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
-            flags.nodeIDs
+            flags.nodeIDs,
+            flags.updateAccountKeys
           ])
 
           ctx.config = {
             namespace: self.configManager.getFlag(flags.namespace),
-            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs))
+            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs)),
+            updateAccountKeys: self.configManager.getFlag(flags.updateAccountKeys)
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -484,7 +487,9 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Update special account keys',
         task: async (ctx, task) => {
-          await self.accountManager.prepareAccounts(ctx.config.namespace)
+          if (ctx.config.updateAccountKeys) {
+            await self.accountManager.prepareAccounts(ctx.config.namespace)
+          }
         }
       }
     ], {
@@ -732,7 +737,8 @@ export class NodeCommand extends BaseCommand {
             desc: 'Start a node',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
-              flags.nodeIDs
+              flags.nodeIDs,
+              flags.updateAccountKeys
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node start' ===")
