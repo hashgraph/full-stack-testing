@@ -78,14 +78,29 @@ export class Templates {
     return `${parsed[0]}.${parsed[1]}`
   }
 
+  /**
+   * renders the name to be used to store the new account key as a Kubernetes secret
+   * @param accountId the account ID, string or AccountId type
+   * @returns {string} the name of the Kubernetes secret to store the account key
+   */
   static renderAccountKeySecretName (accountId) {
     return `account-key-${accountId.toString()}`
   }
 
+  /**
+   * renders the label selector to be used to fetch the new account key from the Kubernetes secret
+   * @param accountId the account ID, string or AccountId type
+   * @returns {string} the label selector of the Kubernetes secret to retrieve the account key   */
   static renderAccountKeySecretLabelSelector (accountId) {
     return `fullstack.hedera.com/account-id=${accountId.toString()}`
   }
 
+  /**
+   * renders the label object to be used to store the new account key in the Kubernetes secret
+   * @param accountId the account ID, string or AccountId type
+   * @returns {{"fullstack.hedera.com/account-id": string}} the label object to be used to
+   * store the new account key in the Kubernetes secret
+   */
   static renderAccountKeySecretLabelObject (accountId) {
     return {
       'fullstack.hedera.com/account-id': accountId.toString()

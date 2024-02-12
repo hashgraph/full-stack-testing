@@ -687,6 +687,13 @@ export class K8 {
     return resp.response.statusCode === 200.0
   }
 
+  /**
+   * retrieve the secret of the given namespace and label selector, if there is more than one, it returns the first
+   * @param namespace the namespace of the secret to search for
+   * @param labelSelector the label selector used to fetch the Kubernetes secret
+   * @returns {Promise<null|{data: {[p: string]: string}, name: string, namespace: string, type: string, labels: {[p: string]: string}}>} a
+   * custom secret object with the relevant attributes
+   */
   async getSecret (namespace, labelSelector) {
     const result = await this.kubeClient.listNamespacedSecret(
       namespace, null, null, null, null, labelSelector)
@@ -704,6 +711,16 @@ export class K8 {
     }
   }
 
+  /**
+   * creates a new Kubernetes secret with the provided attributes
+   * @param name the name of the new secret
+   * @param namespace the namespace to store the secret
+   * @param secretType the secret type
+   * @param data the secret
+   * @param labels the label to use for future label selector queries
+   * @param recreate if we should first run delete in the case that there the secret exists from a previous install
+   * @returns {Promise<boolean>} whether the secret was created successfully
+   */
   async createSecret (name, namespace, secretType, data, labels, recreate) {
     if (recreate) {
       try {

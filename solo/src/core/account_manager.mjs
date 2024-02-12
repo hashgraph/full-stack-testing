@@ -50,7 +50,12 @@ const REASON_FAILED_TO_CREATE_K8S_S_KEY = 'failed to create k8s scrt key'
  *
  */
 export class AccountManager {
-  constructor (logger, k8, constants) {
+  /**
+   * creates a new AccountManager instance
+   * @param logger the logger to use
+   * @param k8 the K8 instance
+   */
+  constructor (logger, k8) {
     if (!logger) throw new Error('An instance of core/Logger is required')
     if (!k8) throw new Error('An instance of core/K8 is required')
 
@@ -59,6 +64,13 @@ export class AccountManager {
     this.portForwards = []
   }
 
+  /**
+   * Gets the account keys from the Kubernetes secret from which it is stored
+   * @param accountId the account ID for which we want its keys
+   * @param namespace the namespace that is storing the secret
+   * @returns {Promise<{accountId: string, privateKey: string, publicKey: string}|null>} a
+   * custom object with the account id, private key, and public key
+   */
   async getAccountKeysFromSecret (accountId, namespace) {
     const secret = await this.k8.getSecret(namespace, Templates.renderAccountKeySecretLabelSelector(accountId))
     if (secret) {
@@ -71,10 +83,12 @@ export class AccountManager {
       return null
     }
   }
-  // TODO remember to retest GKE once all of the e2e test cases are passing
 
-  // TODO why does it prompt me for the chart directory during cluster setup even though I specified during init?
-  // TODO add jsdoc
+  /**
+   * Prepares the accounts with updated keys so that they do not contain the default genesis keys
+   * @param namespace the namespace to run the update of account keys for
+   * @returns {Promise<void>}
+   */
   async prepareAccounts (namespace) {
     // TODO add disable account key update flag to node start commands or future GH Issue?
     const serviceMap = await this.getNodeServiceMap(namespace)
@@ -90,6 +104,10 @@ export class AccountManager {
     await this.stopPortForwards()
   }
 
+  /**
+   * stops and closes all of the port forwards that are running
+   * @returns {Promise<void>}
+   */
   async stopPortForwards () {
     if (this.portForwards) {
       this.portForwards.forEach(server => {
@@ -100,6 +118,14 @@ export class AccountManager {
     }
   }
 
+  /**
+   * Returns a node client that can be used to make calls against
+   * @param namespace the namespace for which the node client resides
+   * @param serviceMap a map of the service objects that proxy the nodes
+   * @param operatorId the account id of the operator of the transactions
+   * @param operatorKey the private key of the operator of the transactions
+   * @returns {Promise<NodeClient>} a node client that can be used to call transactions
+   */
   async getNodeClient (namespace, serviceMap, operatorId, operatorKey) {
     const nodes = {}
     try {
@@ -134,6 +160,10 @@ export class AccountManager {
     }
   }
 
+  /**
+   * returns true if we detect that we are running against a local Kubernetes cluster
+   * @returns boolean true if we are running against a local Kubernetes cluster, else false
+   */
   isLocalhost () {
     return this.k8.kubeClient.basePath.includes('127.0.0.1')
   }
@@ -174,6 +204,14 @@ export class AccountManager {
     return serviceMap
   }
 
+  /**
+   * updates a set of special accounts keys with a newly generated key and stores them in a
+   * Kubernetes secret
+   * @param namespace the namespace of the nodes network
+   * @param nodeClient the active node client configured to point at the network
+   * @param accounts the accounts to update
+   * @returns {Promise<void>}
+   */
   async updateSpecialAccountsKeys (namespace, nodeClient, accounts) {
     const genesisKey = PrivateKey.fromStringED25519(constants.OPERATOR_KEY)
     const accountUpdatePromiseArray = []
@@ -215,6 +253,15 @@ export class AccountManager {
     })
   }
 
+  /**
+   * update the account keys for a given account and store its new key in a Kubernetes
+   * secret
+   * @param namespace the namespace of the nodes network
+   * @param nodeClient the active node client configured to point at the network
+   * @param accountId the account that will get its keys updated
+   * @param genesisKey the genesis key to compare against
+   * @returns {Promise<{value: string, status: string}|{reason: string, value: string, status: string}>} the result of the call
+   */
   async updateAccountKeys (namespace, nodeClient, accountId, genesisKey) {
     let keys
     try {
@@ -292,6 +339,12 @@ export class AccountManager {
     }
   }
 
+  /**
+   * gets the account private and public key from the Kubernetes secret from which it is stored
+   * @param accountId the account
+   * @param nodeClient the active and configured node client
+   * @returns {Promise<Key[]>} the private key of the account
+   */
   async getAccountKeys (accountId, nodeClient) {
     const accountInfo = await new AccountInfoQuery()
       .setAccountId(accountId)
@@ -308,6 +361,14 @@ export class AccountManager {
     return keys
   }
 
+  /**
+   * send an account key update transaction to the network of nodes
+   * @param accountId the account that will get it's keys updated
+   * @param newPrivateKey the new private key
+   * @param nodeClient the active and configured node client
+   * @param genesisKey the genesis key that is the current key
+   * @returns {Promise<boolean>} whether the update was successful
+   */
   async sendAccountKeyUpdate (accountId, newPrivateKey, nodeClient, genesisKey) {
     this.logger.debug(
         `Updating account ${accountId.toString()} with new public and private keys`)
@@ -334,15 +395,13 @@ export class AccountManager {
     return receipt.status === Status.Success
   }
 
-  async jeromyTesting (argv) {
-    const { namespace } = argv
-    const serviceMap = await this.getNodeServiceMap(namespace)
-    return {
-      serviceMap,
-      basePath: this.k8.kubeClient.basePath
-    }
-  }
-
+  /**
+   * to test the connection to the node within the network
+   * @param podName the podName is only used for logging messages and errors
+   * @param host the host of the target connection
+   * @param port the port of the target connection
+   * @returns {Promise<void>}
+   */
   async testConnection (podName, host, port) {
     // check if the port is actually accessible
     let attempt = 1
