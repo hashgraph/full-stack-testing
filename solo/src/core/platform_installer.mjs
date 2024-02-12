@@ -35,20 +35,32 @@ export class PlatformInstaller {
     this.k8 = k8
   }
 
+  /**
+   * Setup directories
+   * @param podName
+   * @param containerName
+   * @return {Promise<boolean>}
+   */
   async setupHapiDirectories (podName, containerName = constants.ROOT_CONTAINER) {
     if (!podName) throw new MissingArgumentError('podName is required')
 
     try {
       // reset HAPI_PATH
-      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_SERVICES_PATH}/HapiApp2.0`)
+      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_HAPI_PATH}`)
 
       const paths = [
-        `${constants.HEDERA_HAPI_PATH}/data/keys`,
-        `${constants.HEDERA_HAPI_PATH}/data/config`
+        constants.HEDERA_HAPI_PATH,
+        `${constants.HEDERA_HAPI_PATH}/data`,
+        `${constants.HEDERA_HAPI_PATH}/data/apps`,
+        `${constants.HEDERA_HAPI_PATH}/data/config``${constants.HEDERA_HAPI_PATH}/data/keys`,
+        `${constants.HEDERA_HAPI_PATH}/data/lib`,
+        `${constants.HEDERA_HAPI_PATH}/data/stats`,
+        `${constants.HEDERA_HAPI_PATH}/data/saved`,
+        `${constants.HEDERA_HAPI_PATH}/data/upgrade`
       ]
 
       for (const p of paths) {
-        await this.k8.execContainer(podName, containerName, `mkdir -p ${p}`)
+        await this.k8.execContainer(podName, containerName, `mkdir ${p}`)
       }
 
       await this.setPathPermission(podName, constants.HEDERA_SERVICES_PATH)
@@ -122,7 +134,6 @@ export class PlatformInstaller {
     try {
       await this.copyFiles(podName, [extractScriptSrc], constants.HEDERA_USER_HOME_DIR)
       await this.k8.execContainer(podName, constants.ROOT_CONTAINER, `chmod +x ${extractScript}`)
-      await this.setupHapiDirectories(podName)
       await this.k8.execContainer(podName, constants.ROOT_CONTAINER, [extractScript, buildZip, constants.HEDERA_HAPI_PATH])
 
       return true
