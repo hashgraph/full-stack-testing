@@ -371,16 +371,11 @@ export class K8 {
    * @return {Promise<boolean>}
    */
   async hasDir (podName, containerName, destPath) {
-    const parentDir = path.dirname(destPath)
-    const dirName = path.basename(destPath)
-    const entries = await this.listDir(podName, containerName, parentDir)
-    for (const item of entries) {
-      if (item.name === dirName && item.directory) {
-        return true
-      }
-    }
-
-    return false
+    return await this.execContainer(
+      podName,
+      containerName,
+      ['bash', '-c', '[[ -d "' + destPath + '" ]] && echo -n "true" || echo -n "false"']
+    ) === 'true'
   }
 
   /**
@@ -420,23 +415,16 @@ export class K8 {
         const command = ['tar', 'xf', '-', '-C', destDir]
         const readStream = fs.createReadStream(tmpFile)
         const errStream = new sb.WritableStreamBuffer()
-        const fileStat = fs.statSync(srcPath)
-        let statusError = null
 
-        execInstance.exec(namespace, podName, containerName, command, null, errStream, readStream, false, async ({ status }) => {
-          if (status === 'Failure' || errStream.size()) {
-            statusError = new Error(`Error from copyToPod - details: \n ${errStream.getContentsAsString()}`)
-          }
-        }).then(conn => {
-          conn.on('close', async () => {
-            self._deleteTempFile(tmpFile)
-
-            if (statusError) {
-              return reject(new FullstackTestingError(`failed to copy because of error: ${statusError.message}`, statusError))
+        execInstance.exec(namespace, podName, containerName, command, null, errStream, readStream, false,
+          async ({ status }) => {
+            if (status === 'Failure' || errStream.size()) {
+              self._deleteTempFile(tmpFile)
             }
-
-            if (!await self.hasFile(podName, containerName, destPath, { size: fileStat.size })) {
-              return reject(new FullstackTestingError(`failed to find file after copy: ${destPath}`))
+          }).then(conn => {
+          conn.on('close', async (code, reason) => {
+            if (code !== 1000) { // code 1000 is the success code
+              return reject(new FullstackTestingError(`failed to copy because of error (${code}): ${reason}`))
             }
 
             return resolve(true)
@@ -494,44 +482,54 @@ export class K8 {
         const command = ['tar', 'zcf', '-', '-C', srcDir, srcFile]
         const writerStream = fs.createWriteStream(tmpFile)
         const errStream = new sb.WritableStreamBuffer()
-        let statusError = null
 
-        execInstance.exec(namespace, podName, containerName, command, writerStream, errStream, null, false, async ({ status }) => {
-          writerStream.close()
-          if (status === 'Failure' || errStream.size()) {
-            statusError = new Error(`Error from copyFromPod - details: \n ${errStream.getContentsAsString()}`)
-            self._deleteTempFile(tmpFile)
-          }
-        }).then(conn => {
-          conn.on('close', async () => {
-            if (statusError) {
-              return reject(new FullstackTestingError(`failed to copy because of error: ${statusError.message}`, statusError))
+        execInstance.exec(
+          namespace,
+          podName,
+          containerName,
+          command,
+          writerStream,
+          errStream,
+          null,
+          false,
+          async ({ status }) => {
+            writerStream.close()
+            if (status === 'Failure' || errStream.size()) {
+              self._deleteTempFile(tmpFile)
             }
+          })
+          .then(conn => {
+            conn.on('close', async (code, reason) => {
+              if (code !== 1000) { // code 1000 is the success code
+                return reject(new FullstackTestingError(`failed to copy because of error (${code}): ${reason}`))
+              }
 
-            // extract the downloaded file
-            await tar.x({
-              file: tmpFile,
-              cwd: destDir
+              // extract the downloaded file
+              await tar.x({
+                file: tmpFile,
+                cwd: destDir
+              })
+
+              self._deleteTempFile(tmpFile)
+
+              const stat = fs.statSync(destPath)
+              if (stat && stat.size === srcFileSize) {
+                return resolve(true)
+              }
+
+              return reject(new FullstackTestingError(`failed to download file completely: ${destPath}`))
             })
 
-            self._deleteTempFile(tmpFile)
-
-            const stat = fs.statSync(destPath)
-            if (stat && stat.size === srcFileSize) {
-              return resolve(true)
-            }
-
-            return reject(new FullstackTestingError(`failed to download file completely: ${destPath}`))
+            conn.on('error', (e) => {
+              self._deleteTempFile(tmpFile)
+              return reject(new FullstackTestingError(
+                `failed to copy file ${destPath} because of connection error: ${e.message}`, e))
+            })
           })
-
-          conn.on('error', (e) => {
-            self._deleteTempFile(tmpFile)
-            return reject(new FullstackTestingError(`failed to copy file ${destPath} because of connection error: ${e.message}`, e))
-          })
-        })
       })
     } catch (e) {
-      throw new FullstackTestingError(`failed to download file from ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
+      throw new FullstackTestingError(
+        `failed to download file from ${podName}:${containerName} [${srcPath} -> ${destDir}]: ${e.message}`, e)
     }
   }
 
