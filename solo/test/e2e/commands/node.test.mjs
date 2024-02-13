@@ -16,20 +16,20 @@
  */
 import {
   AccountBalanceQuery,
-  AccountCreateTransaction, Client,
+  AccountCreateTransaction,
   Hbar,
-  LocalProvider,
-  PrivateKey,
-  Wallet
+  PrivateKey
 } from '@hashgraph/sdk'
-import { afterEach, beforeAll, describe, expect, it } from '@jest/globals'
-import net from 'net'
+import {
+  afterAll,
+  afterEach, beforeAll,
+  describe,
+  expect,
+  it
+} from '@jest/globals'
 import path from 'path'
-import { namespace } from '../../../src/commands/flags.mjs'
 import { flags } from '../../../src/commands/index.mjs'
 import { NodeCommand } from '../../../src/commands/node.mjs'
-import { FullstackTestingError, MissingArgumentError } from '../../../src/core/errors.mjs'
-import { sleep } from '../../../src/core/helpers.mjs'
 import {
   ChartManager,
   ConfigManager,
@@ -39,72 +39,22 @@ import {
   PlatformInstaller,
   constants,
   DependencyManager,
-  Templates, KeyManager
+  KeyManager
 } from '../../../src/core/index.mjs'
 import { ShellRunner } from '../../../src/core/shell_runner.mjs'
 import { getTestCacheDir, testLogger } from '../../test_util.js'
+import { AccountManager } from '../../../src/core/account_manager.mjs'
+import { sleep } from '../../../src/core/helpers.mjs'
 
 class TestHelper {
-  static portForwards = []
-
-  static stopPortForwards () {
-    TestHelper.portForwards.forEach(server => {
-      server.close()
-    })
-
-    TestHelper.portForwards = []
-  }
-
-  static prepareNodeClient = async function (nodeCmd, nodeIds) {
-    if (!nodeCmd || !(nodeCmd instanceof NodeCommand)) throw new MissingArgumentError('An instance of command/NodeCommand is required')
-    try {
-      if (typeof nodeIds === 'string') {
-        nodeIds = nodeIds.split(',')
-      }
-
-      let localPort = 30212
-      const grpcPort = constants.HEDERA_NODE_GRPC_PORT.toString()
-      const network = {}
-
-      let accountIdNum = constants.HEDERA_NODE_ACCOUNT_ID_START.num
-      for (let nodeId of nodeIds) {
-        nodeId = nodeId.trim()
-        const podName = Templates.renderNetworkPodName(nodeId)
-        const server = await nodeCmd.k8.portForward(podName, localPort, grpcPort)
-        TestHelper.portForwards.push(server)
-
-        // check if the port is actually accessible
-        let attempt = 1
-        let socket = null
-        while (attempt < 10) {
-          try {
-            await sleep(1000)
-            nodeCmd.logger.debug(`Checking exposed port '${localPort}' of node ${nodeId}`)
-            // `nc -zv 127.0.0.1 ${localPort}`
-            socket = net.createConnection({ port: localPort })
-            nodeCmd.logger.debug(`Connected to exposed port '${localPort}' of node ${nodeId}`)
-            break
-          } catch (e) {
-            attempt += 1
-          }
-        }
-
-        if (!socket) {
-          throw new FullstackTestingError(`failed to expose port '${grpcPort}' of node '${nodeId}'`)
-        }
-
-        socket.destroy()
-
-        network[`127.0.0.1:${localPort}`] = `${constants.HEDERA_NODE_ACCOUNT_ID_START.realm}.${constants.HEDERA_NODE_ACCOUNT_ID_START.shard}.${accountIdNum}`
-
-        accountIdNum += 1
-        localPort += 1
-      }
-
-      return Client.fromConfig({ network })
-    } catch (e) {
-      throw new FullstackTestingError('failed to setup node client', e)
+  static async getNodeClient (accountManager, argv) {
+    const operator = await accountManager.getAccountKeysFromSecret(constants.OPERATOR_ID, argv[flags.namespace.name])
+    if (!operator) {
+      throw new Error(`account key not found for operator ${constants.OPERATOR_ID} during getNodeClient()\n` +
+    'this implies that node start did not finish the accountManager.prepareAccounts successfully')
     }
+    const serviceMap = await accountManager.getNodeServiceMap(argv[flags.namespace.name])
+    return await accountManager.getNodeClient(argv[flags.namespace.name], serviceMap, operator.accountId, operator.privateKey)
   }
 }
 
@@ -115,12 +65,13 @@ describe.each([
 ])('NodeCommand', (testRelease, testKeyFormat) => {
   const helm = new Helm(testLogger)
   const chartManager = new ChartManager(helm, testLogger)
-  const configManager = new ConfigManager(testLogger)
+  const configManager = new ConfigManager(testLogger, path.join(getTestCacheDir(), 'solo.config'))
   const packageDownloader = new PackageDownloader(testLogger)
   const depManager = new DependencyManager(testLogger)
   const k8 = new K8(configManager, testLogger)
   const platformInstaller = new PlatformInstaller(testLogger, k8)
   const keyManager = new KeyManager(testLogger)
+  const accountManager = new AccountManager(testLogger, k8, constants)
 
   const nodeCmd = new NodeCommand({
     logger: testLogger,
@@ -131,14 +82,11 @@ describe.each([
     downloader: packageDownloader,
     platformInstaller,
     depManager,
-    keyManager
+    keyManager,
+    accountManager
   })
 
   const cacheDir = getTestCacheDir()
-
-  afterEach(() => {
-    TestHelper.stopPortForwards()
-  })
 
   describe(`node start should succeed [release ${testRelease}, keyFormat: ${testKeyFormat}]`, () => {
     const argv = {}
@@ -156,12 +104,16 @@ describe.each([
     argv[flags.bootstrapProperties.name] = flags.bootstrapProperties.definition.defaultValue
     argv[flags.settingTxt.name] = flags.settingTxt.definition.defaultValue
     argv[flags.log4j2Xml.name] = flags.log4j2Xml.definition.defaultValue
+    argv[flags.namespace.name] = 'solo-e2e'
+    argv[flags.clusterName.name] = 'kind-solo-e2e'
+    argv[flags.clusterSetupNamespace.name] = 'solo-e2e-cluster'
+    argv[flags.updateAccountKeys.name] = true
+    configManager.update(argv, true)
 
     const nodeIds = argv[flags.nodeIDs.name].split(',')
 
-    beforeAll(() => {
-      configManager.load()
-      argv[namespace] = configManager.getFlag(flags.namespace)
+    afterEach(() => {
+      sleep(5).then().catch() // give a few ticks so that connections can close
     })
 
     it('should pre-generate keys', async () => {
@@ -188,44 +140,59 @@ describe.each([
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
       }
-    }, 60000)
+    }, 600000)
 
-    it('nodes should be in ACTIVE status', async () => {
-      for (const nodeId of nodeIds) {
-        try {
-          await expect(nodeCmd.checkNetworkNodeStarted(nodeId, 5)).resolves.toBeTruthy()
-        } catch (e) {
-          testLogger.showUserError(e)
+    describe('only genesis account should have genesis key for all special accounts', () => {
+      let client = null
+      const genesisKey = PrivateKey.fromStringED25519(constants.OPERATOR_KEY)
+      const realm = constants.HEDERA_NODE_ACCOUNT_ID_START.realm
+      const shard = constants.HEDERA_NODE_ACCOUNT_ID_START.shard
+
+      beforeAll(async () => {
+        client = await TestHelper.getNodeClient(accountManager, argv)
+      })
+
+      afterAll(() => {
+        if (client) {
+          client.close()
         }
+        accountManager.stopPortForwards().then().catch()
+        sleep(100).then().catch()
+      })
 
-        await nodeCmd.run(`tail ${constants.SOLO_LOGS_DIR}/solo.log`)
+      for (const [start, end] of constants.SYSTEM_ACCOUNTS) {
+        for (let i = start; i <= end; i++) {
+          it(`special account ${i} should not have genesis key`, async () => {
+            const accountId = `${realm}.${shard}.${i}`
+            nodeCmd.logger.info(`getAccountKeys: accountId ${accountId}`)
+            const keys = await accountManager.getAccountKeys(accountId, client)
+            expect(keys[0].toString()).not.toEqual(genesisKey.toString())
+          }, 60000)
+        }
       }
-    }, 60000)
+    })
 
     it('balance query should succeed', async () => {
       expect.assertions(1)
       let client = null
 
       try {
-        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
-        const wallet = new Wallet(
-          constants.OPERATOR_ID,
-          constants.OPERATOR_KEY,
-          new LocalProvider({ client })
-        )
+        client = await TestHelper.getNodeClient(accountManager, argv)
 
         const balance = await new AccountBalanceQuery()
-          .setAccountId(wallet.accountId)
-          .executeWithSigner(wallet)
+          .setAccountId(client.getOperator().accountId)
+          .execute(client)
 
         expect(balance.hbars).not.toBeNull()
       } catch (e) {
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
-      }
-
-      if (client) {
-        client.close()
+      } finally {
+        if (client) {
+          client.close()
+        }
+        await accountManager.stopPortForwards()
+        await sleep(100)
       }
     }, 20000)
 
@@ -234,32 +201,28 @@ describe.each([
       let client = null
 
       try {
-        client = await TestHelper.prepareNodeClient(nodeCmd, argv[flags.nodeIDs.name])
+        client = await TestHelper.getNodeClient(accountManager, argv)
         const accountKey = PrivateKey.generate()
-        const wallet = new Wallet(
-          constants.OPERATOR_ID,
-          constants.OPERATOR_KEY,
-          new LocalProvider({ client })
-        )
 
         let transaction = await new AccountCreateTransaction()
           .setNodeAccountIds([constants.HEDERA_NODE_ACCOUNT_ID_START])
           .setInitialBalance(new Hbar(0))
           .setKey(accountKey.publicKey)
-          .freezeWithSigner(wallet)
+          .freezeWith(client)
 
-        transaction = await transaction.signWithSigner(wallet)
-        const response = await transaction.executeWithSigner(wallet)
-        const receipt = await response.getReceiptWithSigner(wallet)
+        transaction = await transaction.sign(accountKey)
+        const response = await transaction.execute(client)
+        const receipt = await response.getReceipt(client)
 
         expect(receipt.accountId).not.toBeNull()
       } catch (e) {
         nodeCmd.logger.showUserError(e)
         expect(e).toBeNull()
-      }
-
-      if (client) {
-        client.close()
+      } finally {
+        if (client) {
+          client.close()
+        }
+        await accountManager.stopPortForwards()
       }
     }, 20000)
   })

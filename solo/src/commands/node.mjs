@@ -36,10 +36,12 @@ export class NodeCommand extends BaseCommand {
     if (!opts || !opts.downloader) throw new IllegalArgumentError('An instance of core/PackageDowner is required', opts.downloader)
     if (!opts || !opts.platformInstaller) throw new IllegalArgumentError('An instance of core/PlatformInstaller is required', opts.platformInstaller)
     if (!opts || !opts.keyManager) throw new IllegalArgumentError('An instance of core/KeyManager is required', opts.keyManager)
+    if (!opts || !opts.accountManager) throw new IllegalArgumentError('An instance of core/AccountManager is required', opts.accountManager)
 
     this.downloader = opts.downloader
     this.plaformInstaller = opts.platformInstaller
     this.keyManager = opts.keyManager
+    this.accountManager = opts.accountManager
   }
 
   async checkNetworkNodePod (namespace, nodeId) {
@@ -65,6 +67,8 @@ export class NodeCommand extends BaseCommand {
     let attempt = 0
     let isActive = false
 
+    await sleep(10000) // sleep in case this the user ran the start command again at a later time
+
     // check log file is accessible
     let logFileAccessible = false
     while (attempt++ < maxAttempt) {
@@ -86,7 +90,8 @@ export class NodeCommand extends BaseCommand {
     while (attempt < maxAttempt) {
       try {
         const output = await this.k8.execContainer(podName, constants.ROOT_CONTAINER, ['tail', '-10', logfilePath])
-        if (output.indexOf(`Now current platform status = ${status}`) > 0) {
+        if (output.indexOf(`Terminating Netty = ${status}`) < 0 && // make sure we are not at the beginning of a restart
+            output.indexOf(`Now current platform status = ${status}`) > 0) {
           this.logger.debug(`Node ${nodeId} is ${status} [ attempt: ${attempt}/${maxAttempt}]`)
           isActive = true
           break
@@ -104,6 +109,8 @@ export class NodeCommand extends BaseCommand {
       attempt += 1
       await sleep(1000)
     }
+
+    this.logger.info(`!> -- Node ${nodeId} is ${status} -- <!`)
 
     if (!isActive) {
       throw new FullstackTestingError(`node '${nodeId}' is not ${status} [ attempt = ${attempt}/${maxAttempt} ]`)
@@ -412,12 +419,14 @@ export class NodeCommand extends BaseCommand {
           self.configManager.load(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
-            flags.nodeIDs
+            flags.nodeIDs,
+            flags.updateAccountKeys
           ])
 
           ctx.config = {
             namespace: self.configManager.getFlag(flags.namespace),
-            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs))
+            nodeIds: helpers.parseNodeIDs(self.configManager.getFlag(flags.nodeIDs)),
+            updateAccountKeys: self.configManager.getFlag(flags.updateAccountKeys)
           }
 
           if (!await this.k8.hasNamespace(ctx.config.namespace)) {
@@ -472,6 +481,17 @@ export class NodeCommand extends BaseCommand {
               collapseSubtasks: false
             }
           })
+        }
+      },
+      {
+        title: 'Update special account keys',
+        task: async (ctx, task) => {
+          if (ctx.config.updateAccountKeys) {
+            await self.accountManager.prepareAccounts(ctx.config.namespace)
+          } else {
+            this.logger.showUser(chalk.yellowBright('> WARNING:'), chalk.yellow(
+              'skipping special account keys update, special accounts will retain genesis private keys'))
+          }
         }
       }
     ], {
@@ -719,7 +739,8 @@ export class NodeCommand extends BaseCommand {
             desc: 'Start a node',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
-              flags.nodeIDs
+              flags.nodeIDs,
+              flags.updateAccountKeys
             ),
             handler: argv => {
               nodeCmd.logger.debug("==== Running 'node start' ===")

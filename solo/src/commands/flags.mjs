@@ -379,6 +379,15 @@ export const log4j2Xml = {
   }
 }
 
+export const updateAccountKeys = {
+  name: 'update-account-keys',
+  definition: {
+    describe: 'Updates the special account keys to new keys and stores their keys in a corresponding Kubernetes secret',
+    defaultValue: true,
+    type: 'boolean'
+  }
+}
+
 export const allFlags = [
   devMode,
   clusterName,
@@ -415,7 +424,8 @@ export const allFlags = [
   apiPermissionProperties,
   bootstrapProperties,
   settingTxt,
-  log4j2Xml
+  log4j2Xml,
+  updateAccountKeys
 ]
 
 export const allFlagsMap = new Map(allFlags.map(f => [f.name, f]))

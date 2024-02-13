@@ -31,6 +31,7 @@ import {
 } from './core/index.mjs'
 import 'dotenv/config'
 import { K8 } from './core/k8.mjs'
+import { AccountManager } from './core/account_manager.mjs'
 
 export function main (argv) {
   const logger = logging.NewLogger('debug')
@@ -44,6 +45,7 @@ export function main (argv) {
     const k8 = new K8(configManager, logger)
     const platformInstaller = new PlatformInstaller(logger, k8)
     const keyManager = new KeyManager(logger)
+    const accountManager = new AccountManager(logger, k8)
 
     // set cluster and namespace in the global configManager from kubernetes context
     // so that we don't need to prompt the user
@@ -60,7 +62,8 @@ export function main (argv) {
       chartManager,
       configManager,
       depManager,
-      keyManager
+      keyManager,
+      accountManager
     }
 
     const processArguments = (argv, yargs) => {
