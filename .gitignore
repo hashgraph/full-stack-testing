@@ -514,5 +514,8 @@ dev/local-node/config.txt
 dev/temp/.env
 charts/deleteme.yaml
 node_modules
-fullstack-network-manager/coverage
+solo/coverage
 dev/resources/nmt/version.properties
+solo/test/scripts/backup
+fullstack-network-manager/test/data/tmp
+*.pfx

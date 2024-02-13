@@ -1,7 +1,7 @@
 {{ range $index, $node := ($.Values.hedera.nodes) }}
-{{- $envoyProxy := $node.envoyProxy | default dict -}}
+{{- $envoyProxy := $node.envoyProxy | default $.Values.defaults.envoyProxy -}}
 {{- $defaults := $.Values.defaults.envoyProxy }}
-{{- if default $defaults.enabled $envoyProxy.enabled | eq "true" }}
+{{- if $envoyProxy.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -14,7 +14,7 @@ metadata:
     fullstack.hedera.com/prometheus-endpoint: active
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
-  {{- if default $defaults.loadBalancerEnabled $envoyProxy.loadBalancerEnabled | eq "true" }}
+  {{- if $envoyProxy.loadBalancerEnabled }}
   type: LoadBalancer
   {{- end }}
   selector:

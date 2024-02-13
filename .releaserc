@@ -10,7 +10,7 @@
     [
       "@semantic-release/npm",
       {
-        "pkgRoot": "fullstack-network-manager"
+        "pkgRoot": "solo"
       }
     ],
     "@semantic-release/git",
@@ -30,7 +30,7 @@
     [
       "@semantic-release/npm",
       {
-        "pkgRoot": "fullstack-network-manager"
+        "pkgRoot": "solo"
       }
     ],
     [
@@ -40,8 +40,8 @@
           "gradle.properties",
           "charts/fullstack-deployment/Chart.yaml",
           "charts/fullstack-cluster-setup/Chart.yaml",
-          "fullstack-network-manager/package.json",
-          "fullstack-network-manager/package-lock.json"
+          "solo/package.json",
+          "solo/package-lock.json"
         ]
       }
     ]

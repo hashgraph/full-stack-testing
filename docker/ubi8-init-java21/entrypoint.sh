@@ -18,8 +18,12 @@
 
 set -eo pipefail
 
-SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-cd "${SCRIPT_PATH}" || exit 64
+if [[ -z "${APP_HOME}" ]]; then
+  echo "ERROR: APP_HOME is not defined, but is required!"
+  exit 63
+fi
+
+cd "${APP_HOME}" || exit 64
 
 if [[ -z "${JAVA_OPTS}" ]]; then
   JAVA_OPTS=""
@@ -55,8 +59,8 @@ fi
 LOG_DIR_NAME="${LOG_DIR_NAME:-output}"
 
 # Ensure the log directory exists
-if [[ ! -d "${SCRIPT_PATH}/${LOG_DIR_NAME}" ]]; then
- mkdir -p "${SCRIPT_PATH}/${LOG_DIR_NAME}"
+if [[ ! -d "${APP_HOME}/${LOG_DIR_NAME}" ]]; then
+ mkdir -p "${APP_HOME}/${LOG_DIR_NAME}"
 fi
 
 cat <<EOF
@@ -100,6 +104,7 @@ echo
 
 set +e
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BEGIN NODE OUTPUT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+echo "command: /usr/bin/env java ${JAVA_HEAP_OPTS} ${JAVA_OPTS} -cp """${JAVA_CLASS_PATH}""" """${JAVA_MAIN_CLASS}""""
 /usr/bin/env java ${JAVA_HEAP_OPTS} ${JAVA_OPTS} -cp "${JAVA_CLASS_PATH}" "${JAVA_MAIN_CLASS}"
 EC="${?}"
 echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END NODE OUTPUT   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"

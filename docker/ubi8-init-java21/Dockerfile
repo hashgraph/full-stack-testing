@@ -24,6 +24,7 @@ ENV JAVA_HOME /usr/local/java
 ENV PATH ${JAVA_HOME}/bin:${PATH}
 
 # Define Application Environment Variables
+ENV APP_HOME="/opt/hgcapp/services-hedera/HapiApp2.0"
 ENV JAVA_HEAP_MIN=""
 ENV JAVA_HEAP_MAX=""
 ENV JAVA_OPTS=""

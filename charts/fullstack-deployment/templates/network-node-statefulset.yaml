@@ -9,6 +9,7 @@
 {{- $resources := $node.resources | default $.Values.defaults.resources }}
 {{- $cloud := $.Values.cloud }}
 {{- $defaults := $.Values.defaults }}
+{{- $minioserver := (index $.Values "minio-server") }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -36,6 +37,7 @@ spec:
         app: network-{{ $node.name }}
         fullstack.hedera.com/type: network-node
         fullstack.hedera.com/node-name: {{ $node.name }}
+        fullstack.hedera.com/account-id: {{ $node.accountId }}
         {{- include "fullstack.testLabels" $ | nindent 8 }}
     spec:
       {{- if $.Values.deployment.nodeSelector }}
@@ -55,26 +57,21 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
-        - name: hgcapp-storage # change me
+        - name: hgcapp-account-balances
           emptyDir: {}
-        {{- if default $defaults.sidecars.otelCollector.enabled $otelCollector.enabled | eq "true" }}
+        - name: hgcapp-record-streams
+          emptyDir: {}
+        - name: hgcapp-event-streams
+          emptyDir: {}
+        - name: hgcapp-services-hedera
+          emptyDir: {}
+        {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
             name: otel-collector-cm
         {{- end }}
-      initContainers:
-      # Init Container
-      - name: init-container
-        image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
-        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
-        command: [ "/bin/sh", "-c", "mkdir -p /opt/hgcapp/hedera-backups /opt/hgcapp/accountBalances /opt/hgcapp/events /opt/hgcapp/recordStreams /opt/hgcapp/sidecar /opt/hgcapp/recordStreams/uploader-stats/" ]
-        securityContext:
-          {{- include "fullstack.hedera.security.context" . | nindent 10 }}
-        volumeMounts:
-          - name: hgcapp-storage
-            mountPath: /opt/hgcapp/
       containers:
-      # Root Container
+      # Root Container: {{ $node.name }}-root-container
       - name: {{ $root.nameOverride | default "root-container" }}
         image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
@@ -85,22 +82,258 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
-          - name: hgcapp-storage
-            mountPath: /opt/hgcapp/
+          - name: hgcapp-account-balances
+            mountPath: /opt/hgcapp/accountBalances
+          - name: hgcapp-record-streams
+            mountPath: /opt/hgcapp/recordStreams
+          - name: hgcapp-event-streams
+            mountPath: /opt/hgcapp/eventsStreams
+          - name: hgcapp-services-hedera
+            mountPath: opt/hgcapp/services-hedera
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
-      # Sidecars
-      {{- include "fullstack.sidecars" (dict
-        "recordStream" $recordStream
-        "backupUploader" $backupUploader
-        "balanceUploader" $balanceUploader
-        "eventStream" $eventStream
-        "recordStream" $recordStream
-        "otelCollector" $otelCollector
-        "cloud" $.Values.cloud
-        "chart" $.Chart
-        "node" $node
-        "defaults" $defaults
-        "minioserver" (index $.Values "minio-server")
-        ) | nindent 6 }}
+      {{- if $balanceUploader.enabled }}
+      # Sidecar: {{ $node.name }}-account-balance-uploader
+      - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
+        image: {{ include "fullstack.container.image" (dict "image" $balanceUploader.image "Chart" $.Chart "defaults" $defaults.sidecars.accountBalanceUploader ) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $balanceUploader.image "defaults" $defaults.sidecars.accountBalanceUploader ) }}
+        securityContext:
+          {{- include "fullstack.hedera.security.context" . | nindent 10 }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - /opt/hgcapp/accountBalances
+          - --s3-endpoint
+          - "http://{{ $minioserver.tenant.name }}-hl:9000"
+        volumeMounts:
+          - name: hgcapp-account-balances
+            mountPath: /opt/hgcapp/accountBalances
+            subPath: balance{{ $node.accountId }}
+        env:
+          - name: DEBUG
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.debug ($balanceUploader.config).debug | quote }}
+          - name: REAPER_ENABLE
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.reaper.enabled (($balanceUploader.config).reaper).enabled | quote  }}
+          - name: REAPER_MIN_KEEP
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.reaper.minKeep (($balanceUploader.config).reaper).minKeep | quote }}
+          - name: REAPER_INTERVAL
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.reaper.interval (($balanceUploader.config).reaper).interval  | quote }}
+          - name: REAPER_DEFAULT_BACKOFF
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.reaper.defaultBackoff (($balanceUploader.config).reaper).defaultBackoff | quote }}
+          - name: STREAM_FILE_EXTENSION
+            value: "pb"
+          - name: STREAM_SIG_EXTENSION
+            value: "pb_sig"
+          - name: STREAM_EXTENSION
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.compression ($balanceUploader.config).compression | ternary "pb.gz" "pb" | quote }}
+          - name: SIG_EXTENSION
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.compression ($balanceUploader.config).compression | ternary "pb_sig.gz" "pb_sig" | quote }}
+          - name: SIG_REQUIRE
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.signature.require (($balanceUploader.config).signature).require | quote }}
+          - name: SIG_PRIORITIZE
+            value: {{ default $defaults.sidecars.accountBalanceUploader.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
+          - name: BUCKET_PATH
+            value: "accountBalances/balance{{ $node.accountId }}"
+          - name: BUCKET_NAME
+            value: {{ $cloud.buckets.streamBucket | quote }}
+          - name: S3_ENABLE
+            value: "true"
+          - name: GCS_ENABLE
+            value: "false"
+        envFrom:
+          - secretRef:
+              name: uploader-mirror-secrets
+        {{- with default $defaults.sidecars.accountBalanceUploader.resources $balanceUploader.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- if $recordStream.enabled }}
+      # Sidecar: {{ $node.name }}-record-stream-uploader
+      - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
+        image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $.Chart "defaults" $defaults.sidecars.recordStreamUploader) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStream.image "defaults" $defaults.sidecars.recordStreamUploader) }}
+        securityContext:
+          {{- include "fullstack.hedera.security.context" . | nindent 10 }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - /opt/hgcapp/recordStreams
+          - --csv-stats-directory
+          - /opt/hgcapp/recordStreams/uploader-stats
+          - --s3-endpoint
+          - http://{{ $minioserver.tenant.name }}-hl:9000
+        volumeMounts:
+          - name: hgcapp-record-streams
+            mountPath: /opt/hgcapp/recordStreams
+            subPath: record{{ $node.accountId }}
+        env:
+          - name: DEBUG
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.debug ($recordStream.config).debug | quote }}
+          - name: REAPER_ENABLE
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.enabled (($recordStream.config).reaper).enabled | quote }}
+          - name: REAPER_MIN_KEEP
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.minKeep (($recordStream.config).reaper).minKeep | quote }}
+          - name: REAPER_INTERVAL
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.interval (($recordStream.config).reaper).interval | quote }}
+          - name: REAPER_DEFAULT_BACKOFF
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.defaultBackoff (($recordStream.config).reaper).defaultBackoff | quote }}
+          - name: STREAM_FILE_EXTENSION
+            value: "rcd"
+          - name: STREAM_SIG_EXTENSION
+            value: "rcd_sig"
+          - name: STREAM_EXTENSION
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.compression ($recordStream.config).compression | ternary "rcd.gz" "rcd" | quote }}
+          - name: SIG_EXTENSION
+            value: "rcd_sig"
+          - name: RECORD_STREAM_COMPRESSION
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.compression ($recordStream.config).compression | quote }}
+          - name: RECORD_STREAM_SIDECAR
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.sidecar ($recordStream.config).sidecar | quote }}
+          - name: SIG_REQUIRE
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.signature.require (($recordStream.config).signature).require | quote }}
+          - name: SIG_PRIORITIZE
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
+          - name: BUCKET_PATH
+            value: "recordstreams/record{{ $node.accountId }}"
+          - name: BUCKET_NAME
+            value: {{ $cloud.buckets.streamBucket | quote }}
+          - name: S3_ENABLE
+            value: "true"
+          - name: GCS_ENABLE
+            value: "false"
+        envFrom:
+          - secretRef:
+              name: uploader-mirror-secrets
+        {{- with default $defaults.sidecars.recordStreamUploader.resources $recordStream.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- if $eventStream.enabled }}
+      # Sidecar: {{ $node.name }}-event-stream-uploader
+      - name: {{ default "event-stream-uploader" $eventStream.nameOverride }}
+        image: {{ include "fullstack.container.image" (dict "image" $eventStream.image "Chart" $.Chart "defaults" $defaults.sidecars.eventStreamUploader) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $eventStream.image "defaults" $defaults.sidecars.eventStreamUploader) }}
+        securityContext:
+          {{- include "fullstack.hedera.security.context" . | nindent 10 }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - /opt/hgcapp/eventStreams
+          - --debug
+          - --s3-endpoint
+          - http://{{ $minioserver.tenant.name }}-hl:9000
+        volumeMounts:
+          - name: hgcapp-event-streams
+            mountPath: /opt/hgcapp/eventStreams
+            subPath: balance{{ $node.accountId }}
+        env:
+          - name: DEBUG
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.debug ($eventStream.config).debug | quote}}
+          - name: REAPER_ENABLE
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.reaper.enabled (($eventStream.config).reaper).enabled | quote }}
+          - name: REAPER_MIN_KEEP
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.reaper.minKeep (($eventStream.config).reaper).minKeep | quote }}
+          - name: REAPER_INTERVAL
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.reaper.interval (($eventStream.config).reaper).interval | quote }}
+          - name: REAPER_DEFAULT_BACKOFF
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.reaper.defaultBackoff (($eventStream.config).reaper).defaultBackoff | quote }}
+          - name: STREAM_FILE_EXTENSION
+            value: "evts"
+          - name: STREAM_SIG_EXTENSION
+            value: "evts_sig"
+          - name: STREAM_EXTENSION
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts.gz" "evts" | quote }}
+          - name: SIG_EXTENSION
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts_sig.gz" "evts_sig" | quote }}
+          - name: SIG_REQUIRE
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.signature.require (($eventStream.config).signature).require | quote }}
+          - name: SIG_PRIORITIZE
+            value: {{ default $defaults.sidecars.eventStreamUploader.config.signature.prioritize (($eventStream.config).signature).prioritize | quote }}
+          - name: BUCKET_PATH
+            value: "eventsStreams/events_{{ $node.accountId }}"
+          - name: BUCKET_NAME
+            value: {{ $cloud.buckets.streamBucket | quote }}
+          - name: S3_ENABLE
+            value: "true"
+          - name: GCS_ENABLE
+            value: "false"
+        envFrom:
+          - secretRef:
+              name: uploader-mirror-secrets
+        {{- with default $defaults.sidecars.eventStreamUploader.resources $eventStream.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- if $backupUploader.enabled }}
+      # Sidecar: {{ $node.name }}-backup-uploader
+      - name: {{ default "backup-uploader" $backupUploader.nameOverride }}
+        image: {{ include "fullstack.container.image" (dict "image" $backupUploader.image "Chart" $.Chart "defaults" $defaults.sidecars.backupUploader) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $backupUploader.image "defaults" $defaults.sidecars.backupUploader ) }}
+        securityContext:
+          {{- include "fullstack.hedera.security.context" . | nindent 10 }}
+        volumeMounts:
+          - name: hgcapp-services-hedera
+            mountPath: opt/hgcapp/services-hedera
+            subPath: data
+        env:
+          - name: BACKUP_UPLOADER_BUCKET_1
+            value: {{ default $defaults.sidecars.backupUploader.config.backupBucket ($backupUploader.config).backupBucket | quote }}
+        envFrom:
+          - secretRef:
+              name: backup-uploader-secrets
+        {{- with default $defaults.sidecars.backupUploader.resources $backupUploader.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      {{- if $otelCollector.enabled }}
+      # Sidecar: {{ $node.name }}-otel-collector
+      - name: {{ default "otel-collector" $otelCollector.nameOverride }}
+        image: {{ include "fullstack.container.image" (dict "image" $otelCollector.image "Chart" $.Chart "defaults" $defaults.sidecars.otelCollector) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $otelCollector.image "defaults" $defaults.sidecars.otelCollector) }}
+        securityContext:
+          {{- include "fullstack.root.security.context" . | nindent 10 }}
+        ports:
+          - name: otlp # otel port defined in otel-collector config
+            containerPort: 4317
+            protocol: TCP
+          - name: prometheus
+            containerPort: 9090
+            protocol: TCP
+          - name: health # for otel-collector liveness check
+            containerPort: 13133
+            protocol: TCP
+          - name: metrics # default metrics port exposed by the otel-collector itself
+            containerPort: 8888
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /
+            port: health
+        readinessProbe:
+          httpGet:
+            path: /
+            port: health
+        volumeMounts:
+          - name: otel-collector-volume
+            mountPath: /etc/otelcol-contrib/config.yaml
+            subPath: config.yaml #key in the configmap
+            readOnly: true
+        {{- with default $defaults.sidecars.otelCollector.resources $otelCollector.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
 {{ end }}

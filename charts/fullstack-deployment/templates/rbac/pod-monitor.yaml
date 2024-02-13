@@ -1,4 +1,4 @@
-{{- if $.Values.tester.deployPodMonitor | eq "true" }}
+{{- if $.Values.tester.deployPodMonitor }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:

@@ -133,10 +133,6 @@ jobs:
         uses: gradle/gradle-build-action@a8f75513eafdebd8141bd1cd4e30fcd194af8dfa # v2.12.0
         with:
           gradle-version: ${{ inputs.gradle-version }}
-          gradle-home-cache-includes: |
-            caches
-            notifications
-            dependency-check-data
 
       # This step is used to update the version number in the build.properties file.
       - name: Apply Version Number Update (Explicit)
