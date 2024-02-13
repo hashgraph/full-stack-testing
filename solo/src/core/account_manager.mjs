@@ -16,9 +16,10 @@
  */
 import * as constants from './constants.mjs'
 import {
+  AccountCreateTransaction,
   AccountId,
   AccountInfoQuery, AccountUpdateTransaction,
-  Client,
+  Client, Hbar, HbarUnit,
   KeyList,
   PrivateKey, Status
 } from '@hashgraph/sdk'
@@ -97,7 +98,7 @@ export class AccountManager {
 
     await this.updateSpecialAccountsKeys(namespace, nodeClient, constants.SYSTEM_ACCOUNTS)
     // update the treasury account last
-    await this.updateSpecialAccountsKeys(namespace, nodeClient, constants.TREASURY_ACCOUNT)
+    await this.updateSpecialAccountsKeys(namespace, nodeClient, constants.TREASURY_ACCOUNTS)
 
     nodeClient.close()
     await this.stopPortForwards()
@@ -421,5 +422,45 @@ export class AccountManager {
     }
     socket.destroy()
     await sleep(1) // gives a few ticks for connections to close
+  }
+
+  /**
+   * creates a new Hedera account
+   * @param namespace the namespace to store the Kubernetes key secret into
+   * @param nodeClient the active and network configured node client
+   * @param privateKey the private key of type PrivateKey
+   * @param amount the amount of HBAR to add to the account
+   * @returns {Promise<{accountId: AccountId, privateKey: string, publicKey: string}>} a
+   * custom object with the account information in it
+   */
+  async createNewAccount (namespace, nodeClient, privateKey, amount) {
+    const newAccount = await new AccountCreateTransaction()
+      .setKey(privateKey)
+      .setInitialBalance(Hbar.from(amount, HbarUnit.Hbar))
+      .execute(nodeClient)
+
+    // Get the new account ID
+    const getReceipt = await newAccount.getReceipt(nodeClient)
+    const accountInfo = {
+      accountId: getReceipt.accountId,
+      privateKey: privateKey.toString(),
+      publicKey: privateKey.publicKey.toString()
+    }
+
+    if (!(await this.k8.createSecret(
+      Templates.renderAccountKeySecretName(accountInfo.accountId),
+      namespace, 'Opaque', {
+        privateKey: accountInfo.privateKey,
+        publicKey: accountInfo.publicKey
+      },
+      Templates.renderAccountKeySecretLabelObject(accountInfo.accountId), true))
+    ) {
+      this.logger.error(`new account created [accountId=${accountInfo.accountId}, amount=${amount} HBAR, publicKey=${accountInfo.publicKey}, privateKey=${accountInfo.privateKey}] but failed to create secret in Kubernetes`)
+
+      throw new FullstackTestingError(`failed to create secret for accountId ${accountInfo.accountId.toString()}, keys were sent to log file`)
+    }
+    this.logger.debug(`created k8s secret for account ${accountInfo.accountId}`)
+
+    return accountInfo
   }
 }

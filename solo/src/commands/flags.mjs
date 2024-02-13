@@ -388,6 +388,51 @@ export const updateAccountKeys = {
   }
 }
 
+export const privateKey = {
+  name: 'private-key',
+  definition: {
+    describe: 'private key for the Hedera account',
+    defaultValue: '',
+    type: 'string'
+  }
+}
+
+export const accountId = {
+  name: 'account-id',
+  definition: {
+    describe: 'The Hedera account id, e.g.: 0.0.1001',
+    defaultValue: '',
+    type: 'string'
+  }
+}
+
+export const newPrivateKey = {
+  name: 'new-private-key',
+  definition: {
+    describe: 'Private key to assign to the Hedera account',
+    defaultValue: '',
+    type: 'string'
+  }
+}
+
+export const amount = {
+  name: 'amount',
+  definition: {
+    describe: 'Amount of HBAR to add',
+    defaultValue: 100,
+    type: 'number'
+  }
+}
+
+export const stdout = {
+  name: 'stdout',
+  definition: {
+    describe: 'Send the account keys to stdout for the user',
+    defaultValue: false,
+    type: 'boolean'
+  }
+}
+
 export const allFlags = [
   devMode,
   clusterName,
@@ -425,7 +470,12 @@ export const allFlags = [
   bootstrapProperties,
   settingTxt,
   log4j2Xml,
-  updateAccountKeys
+  updateAccountKeys,
+  privateKey,
+  accountId,
+  newPrivateKey,
+  amount,
+  stdout
 ]
 
 export const allFlagsMap = new Map(allFlags.map(f => [f.name, f]))
