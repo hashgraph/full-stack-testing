@@ -45,14 +45,14 @@ export class PlatformInstaller {
     if (!podName) throw new MissingArgumentError('podName is required')
 
     try {
-      // reset HAPI_PATH
-      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_HAPI_PATH}`)
+      // reset data directory
+      await this.k8.execContainer(podName, containerName, `rm -rf ${constants.HEDERA_HAPI_PATH}/data`)
 
       const paths = [
-        constants.HEDERA_HAPI_PATH,
         `${constants.HEDERA_HAPI_PATH}/data`,
         `${constants.HEDERA_HAPI_PATH}/data/apps`,
-        `${constants.HEDERA_HAPI_PATH}/data/config``${constants.HEDERA_HAPI_PATH}/data/keys`,
+        `${constants.HEDERA_HAPI_PATH}/data/config`,
+        `${constants.HEDERA_HAPI_PATH}/data/keys`,
         `${constants.HEDERA_HAPI_PATH}/data/lib`,
         `${constants.HEDERA_HAPI_PATH}/data/stats`,
         `${constants.HEDERA_HAPI_PATH}/data/saved`,
