@@ -65,5 +65,9 @@ describe('Helpers', () => {
     it('should fail with minor version lower than target', () => {
       expect(helpers.compareVersion('v3.14.0', 'v3.11.0')).toBe(-1)
     })
+
+    it('should succeed with a later version', () => {
+      expect(helpers.compareVersion('v3.12.3', 'v3.14.0')).toBe(1)
+    })
   })
 })

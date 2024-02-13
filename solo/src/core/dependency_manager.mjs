@@ -40,6 +40,7 @@ export class DependencyManager extends ShellRunner {
     try {
       const output = await this.run(`${core.constants.HELM} version --short`)
       const parts = output[0].split('+')
+      this.logger.debug(`Found dependency ${constants.HELM}:${parts[0]}`)
       return helpers.compareVersion(DependencyManager.depVersions.get(constants.HELM), parts[0]) >= 0
     } catch (e) {
       this.logger.error(`failed to check helm dependency:${e.message}`, e)
@@ -63,8 +64,6 @@ export class DependencyManager extends ShellRunner {
     }
 
     if (!status) {
-
-      this.logger.warn(`Dependency ${dep}:${DependencyManager.depVersions.get(dep)} is not found`)
       throw new FullstackTestingError(`${dep}:^${DependencyManager.depVersions.get(dep)} is not found`)
     }
 

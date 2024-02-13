@@ -102,11 +102,17 @@ export function parseSemver (semver) {
  * @return {number}
  */
 export function compareVersion (target, candidate) {
-  if (target === candidate) return 0
-
   const v1 = parseSemver(target)
   const v2 = parseSemver(candidate)
-  if (v2.major >= v1.major && v2.minor >= v1.minor && v2.patch >= v1.patch) {
+
+  if (v2.major === v1.major && v2.minor === v1.minor && v2.patch === v1.patch) {
+    return 0
+  }
+
+  if ((v2.major > v1.major) ||
+    (v2.major >= v1.major && v2.minor > v1.minor) ||
+    (v2.major >= v1.major && v2.minor >= v1.minor && v2.patch >= v1.patch)
+  ) {
     return 1
   }
 
