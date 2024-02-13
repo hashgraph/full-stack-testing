@@ -15,10 +15,15 @@
  *
  */
 import { FullstackTestingError } from './errors.mjs'
+import { constants } from './index.mjs'
 import * as core from './index.mjs'
+import * as helpers from './helpers.mjs'
 import { ShellRunner } from './shell_runner.mjs'
 
 export class DependencyManager extends ShellRunner {
+  static depVersions = new Map()
+    .set(constants.HELM, 'v3.12.3')
+
   constructor (logger) {
     super(logger)
 
@@ -27,23 +32,21 @@ export class DependencyManager extends ShellRunner {
       .set(core.constants.HELM, () => this.checkHelm())
   }
 
-  async runCheck (cmdString) {
-    try {
-      await this.run(cmdString)
-    } catch (e) {
-      this.logger.error(e)
-      return false
-    }
-
-    return true
-  }
-
   /**
    * Check if 'helm' CLI program is installed or not
    * @returns {Promise<boolean>}
    */
   async checkHelm () {
-    return this.runCheck(`${core.constants.HELM} version`)
+    try {
+      const output = await this.run(`${core.constants.HELM} version --short`)
+      const parts = output[0].split('+')
+      this.logger.debug(`Found dependency ${constants.HELM}:${parts[0]}`)
+      return helpers.compareVersion(DependencyManager.depVersions.get(constants.HELM), parts[0]) >= 0
+    } catch (e) {
+      this.logger.error(`failed to check helm dependency:${e.message}`, e)
+    }
+
+    return false
   }
 
   /**
@@ -61,8 +64,7 @@ export class DependencyManager extends ShellRunner {
     }
 
     if (!status) {
-      this.logger.warn(`Dependency ${dep} is not found`)
-      throw new FullstackTestingError(`${dep} is not found`)
+      throw new FullstackTestingError(`${dep}:^${DependencyManager.depVersions.get(dep)} is not found`)
     }
 
     this.logger.debug(`Dependency ${dep} is found`)
