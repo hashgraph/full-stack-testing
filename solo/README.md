@@ -4,9 +4,9 @@ An opinionated CLI tool to deploy and manage private Hedera Networks.
 
 ## Requirements
 
-* Node(^18.19.0) (*lts/hydrogen*)
-* Helm(^3.14.0)
-* Kubectl(^1.28.2)
+* Node(^v18.19.0) (*lts/hydrogen*)
+* Helm(^v3.12.3)
+* Kubectl(^v1.28.2)
 
 ## Setup
 

@@ -22,7 +22,7 @@ import { ShellRunner } from './shell_runner.mjs'
 
 export class DependencyManager extends ShellRunner {
   static depVersions = new Map()
-    .set(constants.HELM, 'v3.14.0')
+    .set(constants.HELM, 'v3.12.3')
 
   constructor (logger) {
     super(logger)
