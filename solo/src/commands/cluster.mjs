@@ -69,7 +69,7 @@ export class ClusterCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.clusterSetupNamespace,
             flags.chartDirectory,
@@ -175,7 +175,7 @@ export class ClusterCommand extends BaseCommand {
             process.exit(0)
           }
 
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           const clusterName = self.configManager.getFlag(flags.clusterName)
           const clusterSetupNamespace = self.configManager.getFlag(flags.clusterSetupNamespace)
           ctx.config = {

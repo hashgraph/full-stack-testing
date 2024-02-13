@@ -148,7 +148,6 @@ describe.each([
     argv[flags.cacheDir.name] = cacheDir
     argv[flags.force.name] = false
     argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
-    argv[flags.chainId.name] = constants.HEDERA_CHAIN_ID
     argv[flags.generateGossipKeys.name] = false
     argv[flags.generateTlsKeys.name] = true
     argv[flags.applicationProperties.name] = flags.applicationProperties.definition.defaultValue
@@ -161,6 +160,7 @@ describe.each([
 
     beforeAll(() => {
       configManager.load()
+      configManager.update(argv)
       argv[namespace] = configManager.getFlag(flags.namespace)
     })
 
@@ -170,6 +170,7 @@ describe.each([
         await shellRunner.run(`test/scripts/gen-legacy-keys.sh ${nodeIds.join(',')} ${path.join(cacheDir, 'keys')}`)
       }
     }, 60000)
+
     it('node setup should succeed', async () => {
       expect.assertions(1)
       try {
