@@ -63,8 +63,9 @@ export class DependencyManager extends ShellRunner {
     }
 
     if (!status) {
-      this.logger.warn(`Dependency ${dep} is not found`)
-      throw new FullstackTestingError(`${dep} is not found`)
+
+      this.logger.warn(`Dependency ${dep}:${DependencyManager.depVersions.get(dep)} is not found`)
+      throw new FullstackTestingError(`${dep}:^${DependencyManager.depVersions.get(dep)} is not found`)
     }
 
     this.logger.debug(`Dependency ${dep} is found`)
