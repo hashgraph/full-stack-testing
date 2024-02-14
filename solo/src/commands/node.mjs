@@ -166,7 +166,7 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
             flags.nodeIDs,
@@ -416,7 +416,7 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
             flags.nodeIDs,
@@ -515,7 +515,7 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
             flags.nodeIDs
@@ -577,7 +577,7 @@ export class NodeCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.nodeIDs,
             flags.cacheDir,
