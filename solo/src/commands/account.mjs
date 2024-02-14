@@ -93,6 +93,21 @@ export class AccountCommand extends BaseCommand {
     return true
   }
 
+  async buildAccountInfo (accountInfo, namespace, shouldRetrievePrivateKey) {
+    const newAccountInfo = {
+      accountId: accountInfo.accountId.toString(),
+      publicKey: accountInfo.key.toString(),
+      balance: accountInfo.balance.to(HbarUnit.Hbar).toNumber()
+    }
+
+    if (shouldRetrievePrivateKey) {
+      const accountKeys = await this.accountManager.getAccountKeysFromSecret(newAccountInfo.accountId, namespace)
+      newAccountInfo.privateKey = accountKeys.privateKey
+    }
+
+    return newAccountInfo
+  }
+
   async createNewAccount (ctx) {
     if (ctx.config.privateKey) {
       ctx.privateKey = PrivateKey.fromStringED25519(ctx.config.privateKey)
@@ -136,8 +151,97 @@ export class AccountCommand extends BaseCommand {
     return this.accountManager.accountInfoQuery(ctx.config.accountId, ctx.nodeClient)
   }
 
+  async updateAccountInfo (ctx) {
+    let amount = ctx.config.amount
+    if (ctx.config.newPrivateKey) {
+      if (!(await this.accountManager.sendAccountKeyUpdate(ctx.accountInfo.accountId, ctx.config.newPrivateKey, ctx.nodeClient, ctx.accountInfo.privateKey))) {
+        this.logger.error(`failed to update account keys for accountId ${ctx.accountInfo.accountId}`)
+        return false
+      }
+      this.logger.debug(`sent account key update for account ${ctx.accountInfo.accountId}`)
+    } else {
+      amount = amount || flags.amount.definition.defaultValue
+    }
+
+    if (amount) {
+      if (!(await this.transferAmountFromOperator(ctx.nodeClient, ctx.accountInfo.accountId, amount))) {
+        this.logger.error(`failed to transfer amount for accountId ${ctx.accountInfo.accountId}`)
+        return false
+      }
+      this.logger.debug(`sent transfer amount for account ${ctx.accountInfo.accountId}`)
+    }
+    return true
+  }
+
   async update (argv) {
     const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          self.ctx = ctx // useful for validation in e2e testing
+          self.configManager.update(argv)
+          await prompts.execute(task, self.configManager, [
+            flags.namespace,
+            flags.accountId
+          ])
+
+          const config = {
+            namespace: self.configManager.getFlag(flags.namespace),
+            accountId: self.configManager.getFlag(flags.accountId),
+            newPrivateKey: self.configManager.getFlag(flags.newPrivateKey),
+            amount: self.configManager.getFlag(flags.amount),
+            stdout: self.configManager.getFlag(flags.stdout)
+          }
+
+          if (!await this.k8.hasNamespace(config.namespace)) {
+            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
+          }
+
+          // set config in the context for later tasks to use
+          ctx.config = config
+
+          self.logger.debug('Initialized config', { config })
+        }
+      },
+      {
+        title: 'get the account info',
+        task: async (ctx, task) => {
+          await self.loadTreasuryAccount(ctx)
+          await self.loadNodeClient(ctx)
+          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.newPrivateKey)
+        }
+      },
+      {
+        title: 'update the account',
+        task: async (ctx, task) => {
+          if (!(await self.updateAccountInfo(ctx))) {
+            throw new FullstackTestingError(`An error occurred updating account ${ctx.accountInfo.accountId}`)
+          }
+        }
+      },
+      {
+        title: 'get the updated account info',
+        task: async (ctx, task) => {
+          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.newPrivateKey)
+          this.logger.showJSON('account info', ctx.accountInfo)
+        }
+      }
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError(`Error in updating account: ${e.message}`, e)
+    } finally {
+      await this.closeConnections()
+    }
+
+    return true
   }
 
   async get (argv) {
@@ -175,17 +279,7 @@ export class AccountCommand extends BaseCommand {
         task: async (ctx, task) => {
           await self.loadTreasuryAccount(ctx)
           await self.loadNodeClient(ctx)
-          const accountInfo = await self.getAccountInfo(ctx)
-          ctx.accountInfo = {
-            accountId: accountInfo.accountId.toString(),
-            publicKey: accountInfo.key.toString(),
-            balance: accountInfo.balance.to(HbarUnit.Hbar).toNumber()
-          }
-
-          if (ctx.config.stdout) {
-            const accountKeys = await this.accountManager.getAccountKeysFromSecret(ctx.accountInfo.accountId, ctx.config.namespace)
-            ctx.accountInfo.privateKey = accountKeys.privateKey
-          }
+          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.stdout)
           this.logger.showJSON('account info', ctx.accountInfo)
         }
       }
@@ -197,7 +291,7 @@ export class AccountCommand extends BaseCommand {
     try {
       await tasks.run()
     } catch (e) {
-      throw new FullstackTestingError(`Error in creating account: ${e.message}`, e)
+      throw new FullstackTestingError(`Error in getting account info: ${e.message}`, e)
     } finally {
       await this.closeConnections()
     }
@@ -293,5 +387,9 @@ export class AccountCommand extends BaseCommand {
     }
     await this.accountManager.stopPortForwards()
     await sleep(5) // sleep a couple of ticks for connections to close
+  }
+
+  async transferAmountFromOperator (nodeClient, toAccountId, amount) {
+    return await this.accountManager.transferAmount(nodeClient, constants.TREASURY_ACCOUNT_ID, toAccountId, amount)
   }
 }

@@ -21,7 +21,7 @@ import {
   AccountInfoQuery, AccountUpdateTransaction,
   Client, Hbar, HbarUnit,
   KeyList,
-  PrivateKey, Status
+  PrivateKey, Status, TransferTransaction
 } from '@hashgraph/sdk'
 import { FullstackTestingError } from './errors.mjs'
 import { sleep } from './helpers.mjs'
@@ -156,7 +156,7 @@ export class AccountManager {
 
       return nodeClient
     } catch (e) {
-      throw new FullstackTestingError('failed to setup node client', e)
+      throw new FullstackTestingError(`failed to setup node client: ${e.message}`, e)
     }
   }
 
@@ -376,12 +376,20 @@ export class AccountManager {
    * @param accountId the account that will get it's keys updated
    * @param newPrivateKey the new private key
    * @param nodeClient the active and configured node client
-   * @param genesisKey the genesis key that is the current key
+   * @param oldPrivateKey the genesis key that is the current key
    * @returns {Promise<boolean>} whether the update was successful
    */
-  async sendAccountKeyUpdate (accountId, newPrivateKey, nodeClient, genesisKey) {
+  async sendAccountKeyUpdate (accountId, newPrivateKey, nodeClient, oldPrivateKey) {
     this.logger.debug(
         `Updating account ${accountId.toString()} with new public and private keys`)
+
+    if (typeof newPrivateKey === 'string') {
+      newPrivateKey = PrivateKey.fromStringED25519(newPrivateKey)
+    }
+
+    if (typeof oldPrivateKey === 'string') {
+      oldPrivateKey = PrivateKey.fromStringED25519(oldPrivateKey)
+    }
 
     // Create the transaction to update the key on the account
     const transaction = await new AccountUpdateTransaction()
@@ -390,7 +398,7 @@ export class AccountManager {
       .freezeWith(nodeClient)
 
     // Sign the transaction with the old key and new key
-    const signTx = await (await transaction.sign(genesisKey)).sign(
+    const signTx = await (await transaction.sign(oldPrivateKey)).sign(
       newPrivateKey)
 
     // SIgn the transaction with the client operator private key and submit to a Hedera network
@@ -440,7 +448,7 @@ export class AccountManager {
    * @param nodeClient the active and network configured node client
    * @param privateKey the private key of type PrivateKey
    * @param amount the amount of HBAR to add to the account
-   * @returns {Promise<{accountId: AccountId, privateKey: string, publicKey: string}>} a
+   * @returns {{accountId: AccountId, privateKey: string, publicKey: string, balance: number}} a
    * custom object with the account information in it
    */
   async createNewAccount (namespace, nodeClient, privateKey, amount) {
@@ -455,7 +463,7 @@ export class AccountManager {
       accountId: getReceipt.accountId.toString(),
       privateKey: privateKey.toString(),
       publicKey: privateKey.publicKey.toString(),
-      amount
+      balance: amount
     }
 
     if (!(await this.k8.createSecret(
@@ -473,5 +481,25 @@ export class AccountManager {
     this.logger.debug(`created k8s secret for account ${accountInfo.accountId}`)
 
     return accountInfo
+  }
+
+  async transferAmount (nodeClient, fromAccountId, toAccountId, hbarAmount) {
+    try {
+      const transaction = new TransferTransaction()
+        .addHbarTransfer(fromAccountId, new Hbar(-1 * hbarAmount))
+        .addHbarTransfer(toAccountId, new Hbar(hbarAmount))
+
+      const txResponse = await transaction.execute(nodeClient)
+
+      const receipt = await txResponse.getReceipt(nodeClient)
+
+      this.logger.debug(`The transfer from account ${fromAccountId} to account ${toAccountId} for amount ${hbarAmount} was ${receipt.status.toString()} `)
+
+      return receipt.status === Status.Success
+    } catch (e) {
+      const errorMessage = `transfer amount failed with an error: ${e.toString()}`
+      this.logger.error(errorMessage)
+      throw new FullstackTestingError(errorMessage, e)
+    }
   }
 }
