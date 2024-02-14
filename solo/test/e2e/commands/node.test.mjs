@@ -107,15 +107,8 @@ describe.each([
     argv[flags.clusterName.name] = 'kind-solo-e2e'
     argv[flags.clusterSetupNamespace.name] = 'solo-e2e-cluster'
     argv[flags.updateAccountKeys.name] = true
-    configManager.update(argv, true)
-
+    configManager.update(argv)
     const nodeIds = argv[flags.nodeIDs.name].split(',')
-
-    beforeAll(() => {
-      configManager.load()
-      configManager.update(argv)
-      argv[flags.namespace.name] = configManager.getFlag(flags.namespace)
-    })
 
     afterEach(() => {
       sleep(5).then().catch() // give a few ticks so that connections can close
