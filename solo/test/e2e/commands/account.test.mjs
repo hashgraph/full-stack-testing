@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-import { beforeAll, describe, expect, it } from '@jest/globals'
+import { beforeAll, beforeEach, describe, expect, it } from '@jest/globals'
 import {
   ChartManager,
   ConfigManager,
@@ -37,7 +37,7 @@ describe('account commands should work correctly', () => {
   let helm
   let chartManager
   let depManager
-  const argv = {}
+  let argv = {}
 
   beforeAll(() => {
     configManager = new ConfigManager(testLogger, path.join(getTestCacheDir('accountCmd'), 'solo.config'))
@@ -55,7 +55,11 @@ describe('account commands should work correctly', () => {
       depManager,
       accountManager
     })
+  })
 
+  beforeEach(() => {
+    configManager.reset()
+    argv = {}
     argv[flags.cacheDir.name] = getTestCacheDir('accountCmd')
     argv[flags.namespace.name] = 'solo-e2e'
     argv[flags.clusterName.name] = 'kind-solo-e2e'
@@ -74,8 +78,20 @@ describe('account commands should work correctly', () => {
     expect(accountInfo.amount).toEqual(flags.amount.definition.defaultValue)
   })
 
-  it('account create with private key, amount, and stdout options', () => {
+  it('account create with private key, amount, and stdout options', async () => {
+    argv[flags.privateKey.name] = constants.GENESIS_KEY
+    argv[flags.amount.name] = 777
+    argv[flags.stdout.name] = true
+    configManager.update(argv, true)
 
+    await expect(accountCmd.create(argv)).resolves.toBeTruthy()
+
+    const accountInfo = accountCmd.ctx.accountInfo
+    expect(accountInfo).not.toBeNull()
+    expect(accountInfo.accountId).not.toBeNull()
+    expect(accountInfo.privateKey.toString()).toEqual(constants.GENESIS_KEY)
+    expect(accountInfo.publicKey).not.toBeNull()
+    expect(accountInfo.amount).toEqual(777)
   })
 
   it('account update with account and amount options', () => {
@@ -88,10 +104,28 @@ describe('account commands should work correctly', () => {
 
   it('account get with account option', async () => {
     argv[flags.accountId.name] = `${HEDERA_NODE_ACCOUNT_ID_START.realm}.${HEDERA_NODE_ACCOUNT_ID_START.shard}.1001`
+    configManager.update(argv, true)
+
     await expect(accountCmd.get(argv)).resolves.toBeTruthy()
+    const accountInfo = accountCmd.ctx.accountInfo
+    expect(accountInfo).not.toBeNull()
+    expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
+    expect(accountInfo.privateKey).toBeUndefined()
+    expect(accountInfo.publicKey).toBeTruthy()
+    expect(accountInfo.balance).toEqual(100)
   })
 
-  it('account get with account id and private key options', () => {
+  it('account get with account id and stdout private key options', async () => {
+    argv[flags.accountId.name] = `${HEDERA_NODE_ACCOUNT_ID_START.realm}.${HEDERA_NODE_ACCOUNT_ID_START.shard}.1001`
+    argv[flags.stdout.name] = true
+    configManager.update(argv, true)
 
+    await expect(accountCmd.get(argv)).resolves.toBeTruthy()
+    const accountInfo = accountCmd.ctx.accountInfo
+    expect(accountInfo).not.toBeNull()
+    expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
+    expect(accountInfo.privateKey).toBeTruthy()
+    expect(accountInfo.publicKey).toBeTruthy()
+    expect(accountInfo.balance).toEqual(100)
   })
 })

@@ -157,7 +157,7 @@ export class AccountCommand extends BaseCommand {
           const config = {
             namespace: self.configManager.getFlag(flags.namespace),
             accountId: self.configManager.getFlag(flags.accountId),
-            privateKey: self.configManager.getFlag(flags.privateKey)
+            stdout: self.configManager.getFlag(flags.stdout)
           }
 
           if (!await this.k8.hasNamespace(config.namespace)) {
@@ -181,7 +181,11 @@ export class AccountCommand extends BaseCommand {
             publicKey: accountInfo.key.toString(),
             balance: accountInfo.balance.to(HbarUnit.Hbar).toNumber()
           }
-          // TODO private key requires k8 secret
+
+          if (ctx.config.stdout) {
+            const accountKeys = await this.accountManager.getAccountKeysFromSecret(ctx.accountInfo.accountId, ctx.config.namespace)
+            ctx.accountInfo.privateKey = accountKeys.privateKey
+          }
           this.logger.showJSON('account info', ctx.accountInfo)
         }
       }
@@ -262,7 +266,7 @@ export class AccountCommand extends BaseCommand {
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.accountId,
-              flags.privateKey
+              flags.stdout
             ),
             handler: argv => {
               accountCmd.logger.debug("==== Running 'account get' ===")

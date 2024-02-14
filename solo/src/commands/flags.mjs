@@ -425,7 +425,7 @@ export const amount = {
 }
 
 export const stdout = {
-  name: 'stdout',
+  name: 'stdout-private-key',
   definition: {
     describe: 'Send the account keys to stdout for the user',
     defaultValue: false,
