@@ -14,21 +14,20 @@
  * limitations under the License.
  *
  */
-const config = {
-  moduleFileExtensions: ['js', 'mjs'],
-  verbose: true,
-  testSequencer: './test/e2e/jestCustomSequencer.cjs',
-  projects: [
-    {
-      rootDir: '<rootDir>/test/e2e',
-      displayName: 'end-to-end',
-      testMatch: ['<rootDir>/**/*.test.mjs']
-    },
-    {
-      rootDir: '<rootDir>/test/unit',
-      displayName: 'unit',
-      testMatch: ['<rootDir>/**/*.test.mjs']
-    }
-  ]
+const Sequencer = require('@jest/test-sequencer').default
+
+const isEndToEnd = (test) => {
+  const contextConfig = test.context.config
+  return contextConfig.displayName.name === 'end-to-end'
 }
-export default config
+
+class CustomSequencer extends Sequencer {
+  sort (tests) {
+    const copyTests = Array.from(tests)
+    const normalTests = copyTests.filter((t) => !isEndToEnd(t))
+    const endToEndTests = copyTests.filter((t) => isEndToEnd(t))
+    return super.sort(normalTests).concat(endToEndTests.sort((a, b) => (a.path > b.path ? 1 : -1)))
+  }
+}
+
+module.exports = CustomSequencer
