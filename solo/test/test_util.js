@@ -22,10 +22,9 @@ import { logging } from '../src/core/index.mjs'
 export const testLogger = logging.NewLogger('debug')
 
 export function getTestCacheDir (appendDir) {
-  let d = 'test/data/tmp'
-  if (appendDir) {
-    d = path.join(d, appendDir)
-  }
+  const baseDir = 'test/data/tmp'
+  const d = appendDir ? path.join(baseDir, appendDir) : baseDir
+
   if (!fs.existsSync(d)) {
     fs.mkdirSync(d)
   }

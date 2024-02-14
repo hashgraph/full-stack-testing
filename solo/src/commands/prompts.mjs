@@ -351,14 +351,6 @@ export async function promptAccountId (task, input) {
     flags.accountId.name)
 }
 
-export async function promptNewPrivateKey (task, input) {
-  return await promptText(task, input,
-    flags.newPrivateKey.definition.defaultValue,
-    'Enter the new private key: ',
-    null,
-    flags.newPrivateKey.name)
-}
-
 export async function promptAmount (task, input) {
   return await prompt('number', task, input,
     flags.amount.definition.defaultValue,
@@ -408,7 +400,6 @@ export function getPromptMap () {
     .set(flags.updateAccountKeys.name, promptUpdateAccountKeys)
     .set(flags.privateKey.name, promptPrivateKey)
     .set(flags.accountId.name, promptAccountId)
-    .set(flags.newPrivateKey.name, promptNewPrivateKey)
     .set(flags.amount.name, promptAmount)
     .set(flags.stdout.name, promptStdout)
 }

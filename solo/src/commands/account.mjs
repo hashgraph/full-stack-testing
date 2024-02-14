@@ -34,63 +34,13 @@ export class AccountCommand extends BaseCommand {
     this.ctx = null
   }
 
-  async create (argv) {
-    const self = this
-
-    const tasks = new Listr([
-      {
-        title: 'Initialize',
-        task: async (ctx, task) => {
-          self.ctx = ctx // useful for validation in e2e testing
-          self.configManager.update(argv)
-          await prompts.execute(task, self.configManager, [
-            flags.namespace
-          ])
-
-          const config = {
-            namespace: self.configManager.getFlag(flags.namespace),
-            privateKey: self.configManager.getFlag(flags.privateKey),
-            amount: self.configManager.getFlag(flags.amount),
-            stdout: self.configManager.getFlag(flags.stdout)
-          }
-
-          if (!config.amount) {
-            config.amount = flags.amount.definition.defaultValue
-          }
-
-          if (!await this.k8.hasNamespace(config.namespace)) {
-            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
-          }
-
-          // set config in the context for later tasks to use
-          ctx.config = config
-
-          self.logger.debug('Initialized config', { config })
-
-          await self.loadTreasuryAccount(ctx)
-          await self.loadNodeClient(ctx)
-        }
-      },
-      {
-        title: 'create the new account',
-        task: async (ctx, task) => {
-          await self.createNewAccount(ctx)
-        }
-      }
-    ], {
-      concurrent: false,
-      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
-    })
-
-    try {
-      await tasks.run()
-    } catch (e) {
-      throw new FullstackTestingError(`Error in creating account: ${e.message}`, e)
-    } finally {
-      await this.closeConnections()
+  async closeConnections () {
+    if (this.nodeClient) {
+      this.nodeClient.close()
+      await sleep(5) // sleep a couple of ticks for connections to close
     }
-
-    return true
+    await this.accountManager.stopPortForwards()
+    await sleep(5) // sleep a couple of ticks for connections to close
   }
 
   async buildAccountInfo (accountInfo, namespace, shouldRetrievePrivateKey) {
@@ -153,8 +103,8 @@ export class AccountCommand extends BaseCommand {
 
   async updateAccountInfo (ctx) {
     let amount = ctx.config.amount
-    if (ctx.config.newPrivateKey) {
-      if (!(await this.accountManager.sendAccountKeyUpdate(ctx.accountInfo.accountId, ctx.config.newPrivateKey, ctx.nodeClient, ctx.accountInfo.privateKey))) {
+    if (ctx.config.privateKey) {
+      if (!(await this.accountManager.sendAccountKeyUpdate(ctx.accountInfo.accountId, ctx.config.privateKey, ctx.nodeClient, ctx.accountInfo.privateKey))) {
         this.logger.error(`failed to update account keys for accountId ${ctx.accountInfo.accountId}`)
         return false
       }
@@ -170,6 +120,69 @@ export class AccountCommand extends BaseCommand {
       }
       this.logger.debug(`sent transfer amount for account ${ctx.accountInfo.accountId}`)
     }
+    return true
+  }
+
+  async transferAmountFromOperator (nodeClient, toAccountId, amount) {
+    return await this.accountManager.transferAmount(nodeClient, constants.TREASURY_ACCOUNT_ID, toAccountId, amount)
+  }
+
+  async create (argv) {
+    const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          self.ctx = ctx // useful for validation in e2e testing
+          self.configManager.update(argv)
+          await prompts.execute(task, self.configManager, [
+            flags.namespace
+          ])
+
+          const config = {
+            namespace: self.configManager.getFlag(flags.namespace),
+            privateKey: self.configManager.getFlag(flags.privateKey),
+            amount: self.configManager.getFlag(flags.amount),
+            stdout: self.configManager.getFlag(flags.stdout)
+          }
+
+          if (!config.amount) {
+            config.amount = flags.amount.definition.defaultValue
+          }
+
+          if (!await this.k8.hasNamespace(config.namespace)) {
+            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
+          }
+
+          // set config in the context for later tasks to use
+          ctx.config = config
+
+          self.logger.debug('Initialized config', { config })
+
+          await self.loadTreasuryAccount(ctx)
+          await self.loadNodeClient(ctx)
+        }
+      },
+      {
+        title: 'create the new account',
+        task: async (ctx, task) => {
+          await self.createNewAccount(ctx)
+        }
+      }
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError(`Error in creating account: ${e.message}`, e)
+    } finally {
+      await this.closeConnections()
+    }
+
     return true
   }
 
@@ -190,7 +203,7 @@ export class AccountCommand extends BaseCommand {
           const config = {
             namespace: self.configManager.getFlag(flags.namespace),
             accountId: self.configManager.getFlag(flags.accountId),
-            newPrivateKey: self.configManager.getFlag(flags.newPrivateKey),
+            privateKey: self.configManager.getFlag(flags.privateKey),
             amount: self.configManager.getFlag(flags.amount),
             stdout: self.configManager.getFlag(flags.stdout)
           }
@@ -210,7 +223,7 @@ export class AccountCommand extends BaseCommand {
         task: async (ctx, task) => {
           await self.loadTreasuryAccount(ctx)
           await self.loadNodeClient(ctx)
-          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.newPrivateKey)
+          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.privateKey)
         }
       },
       {
@@ -224,7 +237,7 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'get the updated account info',
         task: async (ctx, task) => {
-          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.newPrivateKey)
+          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.privateKey)
           this.logger.showJSON('account info', ctx.accountInfo)
         }
       }
@@ -337,7 +350,7 @@ export class AccountCommand extends BaseCommand {
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.accountId,
-              flags.newPrivateKey,
+              flags.privateKey,
               flags.amount,
               flags.stdout
             ),
@@ -378,18 +391,5 @@ export class AccountCommand extends BaseCommand {
           .demandCommand(1, 'Select an account command')
       }
     }
-  }
-
-  async closeConnections () {
-    if (this.nodeClient) {
-      this.nodeClient.close()
-      await sleep(5) // sleep a couple of ticks for connections to close
-    }
-    await this.accountManager.stopPortForwards()
-    await sleep(5) // sleep a couple of ticks for connections to close
-  }
-
-  async transferAmountFromOperator (nodeClient, toAccountId, amount) {
-    return await this.accountManager.transferAmount(nodeClient, constants.TREASURY_ACCOUNT_ID, toAccountId, amount)
   }
 }

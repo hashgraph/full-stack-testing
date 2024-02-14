@@ -148,7 +148,7 @@ describe('account commands should work correctly', () => {
   it('account update with account, amount, new private key, and standard out options', async () => {
     try {
       argv[flags.accountId.name] = accountId2
-      argv[flags.newPrivateKey.name] = constants.GENESIS_KEY
+      argv[flags.privateKey.name] = constants.GENESIS_KEY
       argv[flags.amount.name] = 333
       argv[flags.stdout.name] = true
       configManager.update(argv, true)

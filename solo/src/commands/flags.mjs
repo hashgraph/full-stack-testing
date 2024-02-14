@@ -406,17 +406,8 @@ export const accountId = {
   }
 }
 
-export const newPrivateKey = {
-  name: 'new-private-key',
-  definition: {
-    describe: 'Private key to assign to the Hedera account',
-    defaultValue: '',
-    type: 'string'
-  }
-}
-
 export const amount = {
-  name: 'amount',
+  name: 'hbar-amount',
   definition: {
     describe: 'Amount of HBAR to add',
     defaultValue: 100,
@@ -473,7 +464,6 @@ export const allFlags = [
   updateAccountKeys,
   privateKey,
   accountId,
-  newPrivateKey,
   amount,
   stdout
 ]

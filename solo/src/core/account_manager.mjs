@@ -18,10 +18,15 @@ import * as constants from './constants.mjs'
 import {
   AccountCreateTransaction,
   AccountId,
-  AccountInfoQuery, AccountUpdateTransaction,
-  Client, Hbar, HbarUnit,
+  AccountInfoQuery,
+  AccountUpdateTransaction,
+  Client,
+  Hbar,
+  HbarUnit,
   KeyList,
-  PrivateKey, Status, TransferTransaction
+  PrivateKey,
+  Status,
+  TransferTransaction
 } from '@hashgraph/sdk'
 import { FullstackTestingError } from './errors.mjs'
 import { sleep } from './helpers.mjs'
@@ -483,6 +488,14 @@ export class AccountManager {
     return accountInfo
   }
 
+  /**
+   * transfer the specified amount of HBAR from one account to another
+   * @param nodeClient the configured and active network node client
+   * @param fromAccountId the account to pull the HBAR from
+   * @param toAccountId the account to put the HBAR
+   * @param hbarAmount the amount of HBAR
+   * @returns {Promise<boolean>} if the transaction was successfully posted
+   */
   async transferAmount (nodeClient, fromAccountId, toAccountId, hbarAmount) {
     try {
       const transaction = new TransferTransaction()
