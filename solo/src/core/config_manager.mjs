@@ -83,7 +83,7 @@ export class ConfigManager {
           // argv takes precedence, nothing to do
         } else if (this.hasFlag(flag)) {
           argv[key] = this.getFlag(flag)
-        } else if (argv._[0] !== 'init') {
+        } else {
           argv[key] = flag.definition.defaultValue
         }
       }

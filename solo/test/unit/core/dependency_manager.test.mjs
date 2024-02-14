@@ -31,7 +31,7 @@ describe('DependencyManager', () => {
 
   describe('checkDependency', () => {
     it('should fail during invalid dependency check', async () => {
-      await expect(depManager.checkDependency('INVALID_PROGRAM')).rejects.toThrowError(new FullstackTestingError('INVALID_PROGRAM is not found'))
+      await expect(depManager.checkDependency('INVALID_PROGRAM')).rejects.toThrowError(new FullstackTestingError('INVALID_PROGRAM:^undefined is not found'))
     })
     it('should succeed during kubectl dependency check', async () => {
       await expect(depManager.checkDependency(constants.HELM)).resolves.toBe(true)

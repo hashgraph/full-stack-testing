@@ -86,7 +86,7 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
 
           // extract config values
           const valuesFile = self.configManager.getFlag(flags.valuesFile)
@@ -176,7 +176,7 @@ export class RelayCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.configManager.update(argv)
 
           // extract config values
           const nodeIds = self.configManager.getFlag(flags.nodeIDs)

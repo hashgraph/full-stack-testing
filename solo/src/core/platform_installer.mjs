@@ -327,7 +327,7 @@ export class PlatformInstaller {
     const appName = constants.HEDERA_APP_NAME
     const nodeStakeAmount = constants.HEDERA_NODE_DEFAULT_STAKE_AMOUNT
 
-    const releaseVersion = helpers.parseReleaseTag(releaseTag)
+    const releaseVersion = helpers.parseSemver(releaseTag)
 
     try {
       const configLines = []

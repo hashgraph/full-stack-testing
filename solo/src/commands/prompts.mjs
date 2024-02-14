@@ -21,150 +21,96 @@ import { constants } from '../core/index.mjs'
 import * as flags from './flags.mjs'
 import * as helpers from '../core/helpers.mjs'
 
-export async function promptNamespace (task, input) {
+async function prompt (type, task, input, defaultValue, promptMessage, emptyCheckMessage, flagName) {
   try {
-    if (!input) {
+    const needsPrompt = type === 'toggle' ? (input === undefined || typeof input !== 'boolean') : !input
+    if (needsPrompt) {
       input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: 'solo',
-        message: 'Enter namespace name: '
+        type,
+        default: defaultValue,
+        message: promptMessage
       })
     }
 
-    if (!input) {
-      throw new FullstackTestingError('namespace cannot be empty')
+    if (emptyCheckMessage && !input) {
+      throw new FullstackTestingError(emptyCheckMessage)
     }
 
     return input
   } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.namespace.name}: ${e.message}`, e)
+    throw new FullstackTestingError(`input failed: ${flagName}: ${e.message}`, e)
   }
+}
+async function promptText (task, input, defaultValue, promptMessage, emptyCheckMessage, flagName) {
+  return await prompt('text', task, input, defaultValue, promptMessage, emptyCheckMessage, flagName)
+}
+
+async function promptToggle (task, input, defaultValue, promptMessage, emptyCheckMessage, flagName) {
+  return await prompt('toggle', task, input, defaultValue, promptMessage, emptyCheckMessage, flagName)
+}
+
+export async function promptNamespace (task, input) {
+  return await promptText(task, input,
+    'solo',
+    'Enter namespace name: ',
+    'namespace cannot be empty',
+    flags.namespace.name)
 }
 
 export async function promptClusterSetupNamespace (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: 'solo-cluster',
-        message: 'Enter cluster setup namespace name: '
-      })
-    }
-
-    if (!input) {
-      throw new FullstackTestingError('cluster setup namespace cannot be empty')
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.clusterSetupNamespace.name}: ${e.message}`, e)
-  }
+  return await promptText(task, input,
+    'solo-cluster',
+    'Enter cluster setup namespace name: ',
+    'cluster setup namespace cannot be empty',
+    flags.clusterSetupNamespace.name)
 }
 
 export async function promptNodeIds (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'input',
-        default: 'node0,node1,node2',
-        message: 'Enter list of node IDs (comma separated list):'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.nodeIDs.name}`, e)
-  }
+  return await prompt('input', task, input,
+    'node0,node1,node2',
+    'Enter list of node IDs (comma separated list): ',
+    null,
+    flags.nodeIDs.name)
 }
 
 export async function promptReleaseTag (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: 'v0.42.5',
-        message: 'Enter release version:'
-      })
-
-      if (!input) throw new IllegalArgumentError('release tag cannot be empty')
-    }
-
-    if (!input) {
-      throw new FullstackTestingError('release-tag cannot be empty')
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.releaseTag.name}`, e)
-  }
+  return await promptText(task, input,
+    'v0.42.5',
+    'Enter release version: ',
+    'release tag cannot be empty',
+    flags.releaseTag.name)
 }
 
 export async function promptRelayReleaseTag (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.relayReleaseTag.definition.defaultValue,
-        message: 'Enter relay release version:'
-      })
-    }
-
-    if (!input) {
-      throw new FullstackTestingError('relay-release-tag cannot be empty')
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed for '${flags.relayReleaseTag.name}': ${e.message}`, e)
-  }
+  return await promptText(task, input,
+    flags.relayReleaseTag.definition.defaultValue,
+    'Enter relay release version: ',
+    'relay-release-tag cannot be empty',
+    flags.relayReleaseTag.name)
 }
 
 export async function promptCacheDir (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: constants.SOLO_CACHE_DIR,
-        message: 'Enter local cache directory path:'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.cacheDir.name}`, e)
-  }
+  return await promptText(task, input,
+    constants.SOLO_CACHE_DIR,
+    'Enter local cache directory path: ',
+    null,
+    flags.cacheDir.name)
 }
 
 export async function promptForce (task, input) {
-  try {
-    if (typeof input !== 'boolean') {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.force.definition.defaultValue,
-        message: 'Would you like to force changes?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.force.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.force.definition.defaultValue,
+    'Would you like to force changes? ',
+    null,
+    flags.force.name)
 }
 
 export async function promptChainId (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.chainId.definition.defaultValue,
-        message: 'Enter chain ID: '
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.chainId.name}`, e)
-  }
+  return await promptText(task, input,
+    flags.chainId.definition.defaultValue,
+    'Enter chain ID: ',
+    null,
+    flags.chainId.name)
 }
 
 export async function promptChartDir (task, input) {
@@ -208,115 +154,59 @@ export async function promptValuesFile (task, input) {
 }
 
 export async function promptDeployPrometheusStack (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployPrometheusStack.definition.defaultValue,
-        message: 'Would you like to deploy prometheus stack?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployPrometheusStack.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deployPrometheusStack.definition.defaultValue,
+    'Would you like to deploy prometheus stack? ',
+    null,
+    flags.deployPrometheusStack.name)
 }
 
 export async function promptEnablePrometheusSvcMonitor (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.enablePrometheusSvcMonitor.definition.defaultValue,
-        message: 'Would you like to enable the Prometheus service monitor for the network nodes?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.enablePrometheusSvcMonitor.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.enablePrometheusSvcMonitor.definition.defaultValue,
+    'Would you like to enable the Prometheus service monitor for the network nodes? ',
+    null,
+    flags.enablePrometheusSvcMonitor.name)
 }
 
 export async function promptDeployMinio (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployMinio.definition.defaultValue,
-        message: 'Would you like to deploy MinIO?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployMinio.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deployMinio.definition.defaultValue,
+    'Would you like to deploy MinIO? ',
+    null,
+    flags.deployMinio.name)
 }
 
 export async function promptDeployCertManager (task, input) {
-  try {
-    if (typeof input !== 'boolean') {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployCertManager.definition.defaultValue,
-        message: 'Would you like to deploy Cert Manager?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployCertManager.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deployCertManager.definition.defaultValue,
+    'Would you like to deploy Cert Manager? ',
+    null,
+    flags.deployCertManager.name)
 }
 
 export async function promptDeployCertManagerCrds (task, input) {
-  try {
-    if (typeof input !== 'boolean') {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployCertManagerCrds.definition.defaultValue,
-        message: 'Would you like to deploy Cert Manager CRDs?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCrds.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deployCertManagerCrds.definition.defaultValue,
+    'Would you like to deploy Cert Manager CRDs? ',
+    null,
+    flags.deployCertManagerCrds.name)
 }
 
 export async function promptDeployMirrorNode (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployMirrorNode.definition.defaultValue,
-        message: 'Would you like to deploy Hedera Mirror Node?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployMirrorNode.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deployMirrorNode.definition.defaultValue,
+    'Would you like to deploy Hedera Mirror Node? ',
+    null,
+    flags.deployMirrorNode.name)
 }
 
 export async function promptDeployHederaExplorer (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deployHederaExplorer.definition.defaultValue,
-        message: 'Would you like to deploy Hedera Explorer?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployHederaExplorer.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deployHederaExplorer.definition.defaultValue,
+    'Would you like to deploy Hedera Explorer? ',
+    null,
+    flags.deployHederaExplorer.name)
 }
 
 export async function promptTlsClusterIssuerType (task, input) {
@@ -340,67 +230,35 @@ export async function promptTlsClusterIssuerType (task, input) {
 }
 
 export async function promptEnableHederaExplorerTls (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.enableHederaExplorerTls.definition.defaultValue,
-        message: 'Would you like to enable the Hedera Explorer TLS?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.enableHederaExplorerTls.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.enableHederaExplorerTls.definition.defaultValue,
+    'Would you like to enable the Hedera Explorer TLS? ',
+    null,
+    flags.enableHederaExplorerTls.name)
 }
 
 export async function promptHederaExplorerTlsHostName (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.hederaExplorerTlsHostName.definition.defaultValue,
-        message: 'Enter the host name to use for the Hedera Explorer TLS:'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.hederaExplorerTlsHostName.name}`, e)
-  }
+  return await promptText(task, input,
+    flags.hederaExplorerTlsHostName.definition.defaultValue,
+    'Enter the host name to use for the Hedera Explorer TLS: ',
+    null,
+    flags.hederaExplorerTlsHostName.name)
 }
 
 export async function promptOperatorId (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.operatorId.definition.defaultValue,
-        message: 'Enter operator ID: '
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.operatorId.name}`, e)
-  }
+  return await promptText(task, input,
+    flags.operatorId.definition.defaultValue,
+    'Enter operator ID: ',
+    null,
+    flags.operatorId.name)
 }
 
 export async function promptOperatorKey (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.operatorKey.definition.defaultValue,
-        message: 'Enter operator ID: '
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.operatorKey.name}`, e)
-  }
+  return await promptText(task, input,
+    flags.operatorKey.definition.defaultValue,
+    'Enter operator private key: ',
+    null,
+    flags.operatorKey.name)
 }
 
 export async function promptReplicaCount (task, input) {
@@ -420,51 +278,27 @@ export async function promptReplicaCount (task, input) {
 }
 
 export async function promptGenerateGossipKeys (task, input) {
-  try {
-    if (typeof input !== 'boolean') {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.generateGossipKeys.definition.defaultValue,
-        message: `Would you like to generate Gossip keys? ${typeof input} ${input}`
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deletePvcs.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.generateGossipKeys.definition.defaultValue,
+    `Would you like to generate Gossip keys? ${typeof input} ${input} `,
+    null,
+    flags.generateGossipKeys.name)
 }
 
 export async function promptGenerateTLSKeys (task, input) {
-  try {
-    if (typeof input !== 'boolean') {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.generateTlsKeys.definition.defaultValue,
-        message: 'Would you like to generate TLS keys?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deletePvcs.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.generateTlsKeys.definition.defaultValue,
+    'Would you like to generate TLS keys? ',
+    null,
+    flags.generateTlsKeys.name)
 }
 
 export async function promptDeletePvcs (task, input) {
-  try {
-    if (input === undefined) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'toggle',
-        default: flags.deletePvcs.definition.defaultValue,
-        message: 'Would you like to delete persistent volume claims upon uninstall?'
-      })
-    }
-
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.deployCertManagerCRDs.name}`, e)
-  }
+  return await promptToggle(task, input,
+    flags.deletePvcs.definition.defaultValue,
+    'Would you like to delete persistent volume claims upon uninstall? ',
+    null,
+    flags.deletePvcs.name)
 }
 
 export async function promptKeyFormat (task, input, choices = [constants.KEY_FORMAT_PFX, constants.KEY_FORMAT_PEM]) {
@@ -492,19 +326,19 @@ export async function promptKeyFormat (task, input, choices = [constants.KEY_FOR
 }
 
 export async function promptFstChartVersion (task, input) {
-  try {
-    if (!input) {
-      input = await task.prompt(ListrEnquirerPromptAdapter).run({
-        type: 'text',
-        default: flags.fstChartVersion.definition.defaultValue,
-        message: 'Enter fullstack testing chart version: '
-      })
-    }
+  return await promptText(task, input,
+    flags.fstChartVersion.definition.defaultValue,
+    'Enter fullstack testing chart version: ',
+    null,
+    flags.fstChartVersion.name)
+}
 
-    return input
-  } catch (e) {
-    throw new FullstackTestingError(`input failed: ${flags.fstChartVersion.name}`, e)
-  }
+export async function promptUpdateAccountKeys (task, input) {
+  return await promptToggle(task, input,
+    flags.updateAccountKeys.definition.defaultValue,
+    'Would you like to updates the special account keys to new keys and stores their keys in a corresponding Kubernetes secret? ',
+    null,
+    flags.updateAccountKeys.name)
 }
 
 export function getPromptMap () {
@@ -537,6 +371,7 @@ export function getPromptMap () {
     .set(flags.deletePvcs.name, promptDeletePvcs)
     .set(flags.keyFormat.name, promptKeyFormat)
     .set(flags.fstChartVersion.name, promptFstChartVersion)
+    .set(flags.updateAccountKeys.name, promptUpdateAccountKeys)
 }
 
 // build the prompt registry

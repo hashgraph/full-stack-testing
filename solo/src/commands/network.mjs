@@ -118,7 +118,7 @@ export class NetworkCommand extends BaseCommand {
       flags.enablePrometheusSvcMonitor
     ]
 
-    this.configManager.load(argv)
+    this.configManager.update(argv)
     this.logger.debug('Loaded cached config', { config: this.configManager.config })
     await prompts.execute(task, this.configManager, flagList)
 
@@ -243,7 +243,7 @@ export class NetworkCommand extends BaseCommand {
             }
           }
 
-          self.configManager.load(argv)
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
             flags.deletePvcs
