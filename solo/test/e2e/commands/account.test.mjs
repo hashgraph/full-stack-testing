@@ -27,6 +27,7 @@ import path from 'path'
 import { AccountManager } from '../../../src/core/account_manager.mjs'
 import { AccountCommand } from '../../../src/commands/account.mjs'
 import { flags } from '../../../src/commands/index.mjs'
+import { HEDERA_NODE_ACCOUNT_ID_START } from '../../../src/core/constants.mjs'
 
 describe('account commands should work correctly', () => {
   let accountCmd
@@ -64,6 +65,13 @@ describe('account commands should work correctly', () => {
 
   it('account create with no options', async () => {
     await expect(accountCmd.create(argv)).resolves.toBeTruthy()
+
+    const accountInfo = accountCmd.ctx.accountInfo
+    expect(accountInfo).not.toBeNull()
+    expect(accountInfo.accountId).not.toBeNull()
+    expect(accountInfo.privateKey).not.toBeNull()
+    expect(accountInfo.publicKey).not.toBeNull()
+    expect(accountInfo.amount).toEqual(flags.amount.definition.defaultValue)
   })
 
   it('account create with private key, amount, and stdout options', () => {
@@ -78,8 +86,9 @@ describe('account commands should work correctly', () => {
 
   })
 
-  it('account get with account option', () => {
-
+  it('account get with account option', async () => {
+    argv[flags.accountId.name] = `${HEDERA_NODE_ACCOUNT_ID_START.realm}.${HEDERA_NODE_ACCOUNT_ID_START.shard}.1001`
+    await expect(accountCmd.get(argv)).resolves.toBeTruthy()
   })
 
   it('account get with account id and private key options', () => {

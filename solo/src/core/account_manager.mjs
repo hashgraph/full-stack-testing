@@ -340,15 +340,25 @@ export class AccountManager {
   }
 
   /**
+   * gets the account info from Hedera network
+   * @param accountId the account
+   * @param nodeClient the active and configured node client
+   * @returns {AccountInfo} the private key of the account
+   */
+  async accountInfoQuery (accountId, nodeClient) {
+    return await new AccountInfoQuery()
+      .setAccountId(accountId)
+      .execute(nodeClient)
+  }
+
+  /**
    * gets the account private and public key from the Kubernetes secret from which it is stored
    * @param accountId the account
    * @param nodeClient the active and configured node client
    * @returns {Promise<Key[]>} the private key of the account
    */
   async getAccountKeys (accountId, nodeClient) {
-    const accountInfo = await new AccountInfoQuery()
-      .setAccountId(accountId)
-      .execute(nodeClient)
+    const accountInfo = await this.accountInfoQuery(accountId, nodeClient)
 
     let keys
     if (accountInfo.key instanceof KeyList) {
@@ -442,9 +452,10 @@ export class AccountManager {
     // Get the new account ID
     const getReceipt = await newAccount.getReceipt(nodeClient)
     const accountInfo = {
-      accountId: getReceipt.accountId,
+      accountId: getReceipt.accountId.toString(),
       privateKey: privateKey.toString(),
-      publicKey: privateKey.publicKey.toString()
+      publicKey: privateKey.publicKey.toString(),
+      amount
     }
 
     if (!(await this.k8.createSecret(

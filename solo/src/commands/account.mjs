@@ -20,9 +20,8 @@ import { flags } from './index.mjs'
 import { Listr } from 'listr2'
 import * as prompts from './prompts.mjs'
 import { constants } from '../core/index.mjs'
-import chalk from 'chalk'
 import { sleep } from '../core/helpers.mjs'
-import { PrivateKey } from '@hashgraph/sdk'
+import { HbarUnit, PrivateKey } from '@hashgraph/sdk'
 
 export class AccountCommand extends BaseCommand {
   constructor (opts) {
@@ -31,6 +30,8 @@ export class AccountCommand extends BaseCommand {
     if (!opts || !opts.accountManager) throw new IllegalArgumentError('An instance of core/AccountManager is required', opts.accountManager)
 
     this.accountManager = opts.accountManager
+    this.nodeClient = null
+    this.ctx = null
   }
 
   async create (argv) {
@@ -40,7 +41,8 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.configManager.load(argv)
+          self.ctx = ctx // useful for validation in e2e testing
+          self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace
           ])
@@ -50,6 +52,10 @@ export class AccountCommand extends BaseCommand {
             privateKey: self.configManager.getFlag(flags.privateKey),
             amount: self.configManager.getFlag(flags.amount),
             stdout: self.configManager.getFlag(flags.stdout)
+          }
+
+          if (!config.amount) {
+            config.amount = flags.amount.definition.defaultValue
           }
 
           if (!await this.k8.hasNamespace(config.namespace)) {
@@ -81,12 +87,7 @@ export class AccountCommand extends BaseCommand {
     } catch (e) {
       throw new FullstackTestingError(`Error in creating account: ${e.message}`, e)
     } finally {
-      if (this.nodeClient) {
-        this.nodeClient.close()
-        await sleep(5) // sleep a couple of ticks for connections to close
-      }
-      await this.accountManager.stopPortForwards()
-      await sleep(5) // sleep a couple of ticks for connections to close
+      await this.closeConnections()
     }
 
     return true
@@ -99,13 +100,15 @@ export class AccountCommand extends BaseCommand {
       ctx.privateKey = PrivateKey.generateED25519()
     }
 
-    const accountInfo = await this.accountManager.createNewAccount(ctx.config.namespace,
+    ctx.accountInfo = await this.accountManager.createNewAccount(ctx.config.namespace,
       ctx.nodeClient, ctx.privateKey, ctx.config.amount)
 
-    const userMessagePrefix = `new account created [accountId=${accountInfo.accountId}, amount=${ctx.config.amount} HBAR, publicKey=${accountInfo.publicKey}`
-    const userMessagePostfix = ctx.config.stdout ? `, privateKey=${accountInfo.privateKey}]` : ']'
+    const accountInfoCopy = { ...ctx.accountInfo }
+    if (!ctx.config.stdout) {
+      delete accountInfoCopy.privateKey
+    }
 
-    this.logger.showUser(chalk.cyan(userMessagePrefix + userMessagePostfix))
+    this.logger.showJSON('new account created', accountInfoCopy)
   }
 
   async loadNodeClient (ctx) {
@@ -129,12 +132,73 @@ export class AccountCommand extends BaseCommand {
     }
   }
 
+  async getAccountInfo (ctx) {
+    return this.accountManager.accountInfoQuery(ctx.config.accountId, ctx.nodeClient)
+  }
+
   async update (argv) {
     const self = this
   }
 
   async get (argv) {
     const self = this
+
+    const tasks = new Listr([
+      {
+        title: 'Initialize',
+        task: async (ctx, task) => {
+          self.ctx = ctx // useful for validation in e2e testing
+          self.configManager.update(argv)
+          await prompts.execute(task, self.configManager, [
+            flags.namespace,
+            flags.accountId
+          ])
+
+          const config = {
+            namespace: self.configManager.getFlag(flags.namespace),
+            accountId: self.configManager.getFlag(flags.accountId),
+            privateKey: self.configManager.getFlag(flags.privateKey)
+          }
+
+          if (!await this.k8.hasNamespace(config.namespace)) {
+            throw new FullstackTestingError(`namespace ${config.namespace} does not exist`)
+          }
+
+          // set config in the context for later tasks to use
+          ctx.config = config
+
+          self.logger.debug('Initialized config', { config })
+        }
+      },
+      {
+        title: 'get the account info',
+        task: async (ctx, task) => {
+          await self.loadTreasuryAccount(ctx)
+          await self.loadNodeClient(ctx)
+          const accountInfo = await self.getAccountInfo(ctx)
+          ctx.accountInfo = {
+            accountId: accountInfo.accountId.toString(),
+            publicKey: accountInfo.key.toString(),
+            balance: accountInfo.balance.to(HbarUnit.Hbar).toNumber()
+          }
+          // TODO private key requires k8 secret
+          this.logger.showJSON('account info', ctx.accountInfo)
+        }
+      }
+    ], {
+      concurrent: false,
+      rendererOptions: constants.LISTR_DEFAULT_RENDERER_OPTION
+    })
+
+    try {
+      await tasks.run()
+    } catch (e) {
+      throw new FullstackTestingError(`Error in creating account: ${e.message}`, e)
+    } finally {
+      await this.closeConnections()
+    }
+
+    return true
   }
 
   /**
@@ -216,5 +280,14 @@ export class AccountCommand extends BaseCommand {
           .demandCommand(1, 'Select an account command')
       }
     }
+  }
+
+  async closeConnections () {
+    if (this.nodeClient) {
+      this.nodeClient.close()
+      await sleep(5) // sleep a couple of ticks for connections to close
+    }
+    await this.accountManager.stopPortForwards()
+    await sleep(5) // sleep a couple of ticks for connections to close
   }
 }
