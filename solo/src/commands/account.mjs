@@ -237,7 +237,7 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'get the updated account info',
         task: async (ctx, task) => {
-          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.privateKey)
+          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.stdout)
           this.logger.showJSON('account info', ctx.accountInfo)
         }
       }

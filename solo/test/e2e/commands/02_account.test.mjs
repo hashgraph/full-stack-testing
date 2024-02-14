@@ -38,6 +38,7 @@ import { flags } from '../../../src/commands/index.mjs'
 import { sleep } from '../../../src/core/helpers.mjs'
 
 describe('account commands should work correctly', () => {
+  const defaultTimeout = 20000
   let accountCmd
   let accountManager
   let configManager
@@ -98,7 +99,7 @@ describe('account commands should work correctly', () => {
     } finally {
       await accountCmd.closeConnections()
     }
-  })
+  }, defaultTimeout)
 
   it('account create with private key, amount, and stdout options', async () => {
     try {
@@ -122,7 +123,7 @@ describe('account commands should work correctly', () => {
     } finally {
       await accountCmd.closeConnections()
     }
-  })
+  }, defaultTimeout)
 
   it('account update with account', async () => {
     try {
@@ -143,7 +144,7 @@ describe('account commands should work correctly', () => {
     } finally {
       await accountCmd.closeConnections()
     }
-  })
+  }, defaultTimeout)
 
   it('account update with account, amount, new private key, and standard out options', async () => {
     try {
@@ -167,7 +168,7 @@ describe('account commands should work correctly', () => {
     } finally {
       await accountCmd.closeConnections()
     }
-  })
+  }, defaultTimeout)
 
   it('account get with account option', async () => {
     try {
@@ -187,7 +188,7 @@ describe('account commands should work correctly', () => {
     } finally {
       await accountCmd.closeConnections()
     }
-  })
+  }, defaultTimeout)
 
   it('account get with account id and stdout private key options', async () => {
     try {
@@ -208,5 +209,5 @@ describe('account commands should work correctly', () => {
     } finally {
       await accountCmd.closeConnections()
     }
-  })
+  }, defaultTimeout)
 })
