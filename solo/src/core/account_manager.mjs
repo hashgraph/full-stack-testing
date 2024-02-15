@@ -142,7 +142,7 @@ export class AccountManager {
               `Expected service ${serviceObject.name} to have a loadBalancerIP set for basepath ${this.k8.kubeClient.basePath}`)
         }
         const host = this.isLocalhost() ? '127.0.0.1' : serviceObject.loadBalancerIp
-        const port = serviceObject.grpcPort // TODO: add grpcs logic in https://github.com/hashgraph/full-stack-testing/issues/752
+        const port = serviceObject.grpcPort
         const targetPort = this.isLocalhost() ? localPort : port
 
         if (this.isLocalhost()) {
