@@ -31,7 +31,7 @@ export class AccountCommand extends BaseCommand {
 
     this.accountManager = opts.accountManager
     this.nodeClient = null
-    this.ctx = null
+    this.accountInfo = null
   }
 
   async closeConnections () {
@@ -65,15 +65,8 @@ export class AccountCommand extends BaseCommand {
       ctx.privateKey = PrivateKey.generateED25519()
     }
 
-    ctx.accountInfo = await this.accountManager.createNewAccount(ctx.config.namespace,
+    return await this.accountManager.createNewAccount(ctx.config.namespace,
       ctx.nodeClient, ctx.privateKey, ctx.config.amount)
-
-    const accountInfoCopy = { ...ctx.accountInfo }
-    if (!ctx.config.stdout) {
-      delete accountInfoCopy.privateKey
-    }
-
-    this.logger.showJSON('new account created', accountInfoCopy)
   }
 
   async loadNodeClient (ctx) {
@@ -113,8 +106,13 @@ export class AccountCommand extends BaseCommand {
       amount = amount || flags.amount.definition.defaultValue
     }
 
-    if (amount) {
-      if (!(await this.transferAmountFromOperator(ctx.nodeClient, ctx.accountInfo.accountId, amount))) {
+    const hbarAmount = Number.parseFloat(amount)
+    if (amount && isNaN(hbarAmount)) {
+      throw new FullstackTestingError(`The HBAR amount was invalid: ${amount}`)
+    }
+
+    if (hbarAmount > 0) {
+      if (!(await this.transferAmountFromOperator(ctx.nodeClient, ctx.accountInfo.accountId, hbarAmount))) {
         this.logger.error(`failed to transfer amount for accountId ${ctx.accountInfo.accountId}`)
         return false
       }
@@ -134,7 +132,6 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.ctx = ctx // useful for validation in e2e testing
           self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace
@@ -143,8 +140,7 @@ export class AccountCommand extends BaseCommand {
           const config = {
             namespace: self.configManager.getFlag(flags.namespace),
             privateKey: self.configManager.getFlag(flags.privateKey),
-            amount: self.configManager.getFlag(flags.amount),
-            stdout: self.configManager.getFlag(flags.stdout)
+            amount: self.configManager.getFlag(flags.amount)
           }
 
           if (!config.amount) {
@@ -167,7 +163,11 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'create the new account',
         task: async (ctx, task) => {
-          await self.createNewAccount(ctx)
+          self.accountInfo = await self.createNewAccount(ctx)
+          const accountInfoCopy = { ...self.accountInfo }
+          delete accountInfoCopy.privateKey
+
+          this.logger.showJSON('new account created', accountInfoCopy)
         }
       }
     ], {
@@ -193,7 +193,6 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.ctx = ctx // useful for validation in e2e testing
           self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
@@ -204,8 +203,7 @@ export class AccountCommand extends BaseCommand {
             namespace: self.configManager.getFlag(flags.namespace),
             accountId: self.configManager.getFlag(flags.accountId),
             privateKey: self.configManager.getFlag(flags.privateKey),
-            amount: self.configManager.getFlag(flags.amount),
-            stdout: self.configManager.getFlag(flags.stdout)
+            amount: self.configManager.getFlag(flags.amount)
           }
 
           if (!await this.k8.hasNamespace(config.namespace)) {
@@ -237,8 +235,8 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'get the updated account info',
         task: async (ctx, task) => {
-          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.stdout)
-          this.logger.showJSON('account info', ctx.accountInfo)
+          self.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, false)
+          this.logger.showJSON('account info', self.accountInfo)
         }
       }
     ], {
@@ -264,7 +262,6 @@ export class AccountCommand extends BaseCommand {
       {
         title: 'Initialize',
         task: async (ctx, task) => {
-          self.ctx = ctx // useful for validation in e2e testing
           self.configManager.update(argv)
           await prompts.execute(task, self.configManager, [
             flags.namespace,
@@ -273,8 +270,7 @@ export class AccountCommand extends BaseCommand {
 
           const config = {
             namespace: self.configManager.getFlag(flags.namespace),
-            accountId: self.configManager.getFlag(flags.accountId),
-            stdout: self.configManager.getFlag(flags.stdout)
+            accountId: self.configManager.getFlag(flags.accountId)
           }
 
           if (!await this.k8.hasNamespace(config.namespace)) {
@@ -292,8 +288,8 @@ export class AccountCommand extends BaseCommand {
         task: async (ctx, task) => {
           await self.loadTreasuryAccount(ctx)
           await self.loadNodeClient(ctx)
-          ctx.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, ctx.config.stdout)
-          this.logger.showJSON('account info', ctx.accountInfo)
+          self.accountInfo = await self.buildAccountInfo(await self.getAccountInfo(ctx), ctx.config.namespace, false)
+          this.logger.showJSON('account info', self.accountInfo)
         }
       }
     ], {
@@ -328,8 +324,7 @@ export class AccountCommand extends BaseCommand {
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
               flags.privateKey,
-              flags.amount,
-              flags.stdout
+              flags.amount
             ),
             handler: argv => {
               accountCmd.logger.debug("==== Running 'account create' ===")
@@ -351,8 +346,7 @@ export class AccountCommand extends BaseCommand {
               flags.namespace,
               flags.accountId,
               flags.privateKey,
-              flags.amount,
-              flags.stdout
+              flags.amount
             ),
             handler: argv => {
               accountCmd.logger.debug("==== Running 'account update' ===")
@@ -372,8 +366,7 @@ export class AccountCommand extends BaseCommand {
             desc: 'Gets the account info including the current amount of HBAR',
             builder: y => flags.setCommandFlags(y,
               flags.namespace,
-              flags.accountId,
-              flags.stdout
+              flags.accountId
             ),
             handler: argv => {
               accountCmd.logger.debug("==== Running 'account get' ===")

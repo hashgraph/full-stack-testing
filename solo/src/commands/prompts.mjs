@@ -359,14 +359,6 @@ export async function promptAmount (task, input) {
     flags.amount.name)
 }
 
-export async function promptStdout (task, input) {
-  return await promptToggle(task, input,
-    flags.stdout.definition.defaultValue,
-    'Would you like to send account keys to stdout for the user? ',
-    null,
-    flags.stdout.name)
-}
-
 export function getPromptMap () {
   return new Map()
     .set(flags.nodeIDs.name, promptNodeIds)
@@ -401,7 +393,6 @@ export function getPromptMap () {
     .set(flags.privateKey.name, promptPrivateKey)
     .set(flags.accountId.name, promptAccountId)
     .set(flags.amount.name, promptAmount)
-    .set(flags.stdout.name, promptStdout)
 }
 
 // build the prompt registry

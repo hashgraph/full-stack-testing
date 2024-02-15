@@ -86,7 +86,7 @@ describe('account commands should work correctly', () => {
     try {
       await expect(accountCmd.create(argv)).resolves.toBeTruthy()
 
-      const accountInfo = accountCmd.ctx.accountInfo
+      const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).not.toBeNull()
       accountId1 = accountInfo.accountId
@@ -101,16 +101,15 @@ describe('account commands should work correctly', () => {
     }
   }, defaultTimeout)
 
-  it('account create with private key, amount, and stdout options', async () => {
+  it('account create with private key and hbar amount options', async () => {
     try {
       argv[flags.privateKey.name] = constants.GENESIS_KEY
       argv[flags.amount.name] = 777
-      argv[flags.stdout.name] = true
       configManager.update(argv, true)
 
       await expect(accountCmd.create(argv)).resolves.toBeTruthy()
 
-      const accountInfo = accountCmd.ctx.accountInfo
+      const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).not.toBeNull()
       accountId2 = accountInfo.accountId
@@ -132,7 +131,7 @@ describe('account commands should work correctly', () => {
 
       await expect(accountCmd.update(argv)).resolves.toBeTruthy()
 
-      const accountInfo = accountCmd.ctx.accountInfo
+      const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
       expect(accountInfo.privateKey).toBeUndefined()
@@ -151,12 +150,11 @@ describe('account commands should work correctly', () => {
       argv[flags.accountId.name] = accountId2
       argv[flags.privateKey.name] = constants.GENESIS_KEY
       argv[flags.amount.name] = 333
-      argv[flags.stdout.name] = true
       configManager.update(argv, true)
 
       await expect(accountCmd.update(argv)).resolves.toBeTruthy()
 
-      const accountInfo = accountCmd.ctx.accountInfo
+      const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
       expect(accountInfo.privateKey).toEqual(constants.GENESIS_KEY)
@@ -176,7 +174,7 @@ describe('account commands should work correctly', () => {
       configManager.update(argv, true)
 
       await expect(accountCmd.get(argv)).resolves.toBeTruthy()
-      const accountInfo = accountCmd.ctx.accountInfo
+      const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
       expect(accountInfo.privateKey).toBeUndefined()
@@ -190,14 +188,13 @@ describe('account commands should work correctly', () => {
     }
   }, defaultTimeout)
 
-  it('account get with account id and stdout private key options', async () => {
+  it('account get with account id option', async () => {
     try {
       argv[flags.accountId.name] = accountId2
-      argv[flags.stdout.name] = true
       configManager.update(argv, true)
 
       await expect(accountCmd.get(argv)).resolves.toBeTruthy()
-      const accountInfo = accountCmd.ctx.accountInfo
+      const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
       expect(accountInfo.privateKey).toBeTruthy()
