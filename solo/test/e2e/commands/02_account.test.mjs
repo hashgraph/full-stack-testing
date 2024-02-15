@@ -157,7 +157,7 @@ describe('account commands should work correctly', () => {
       const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
-      expect(accountInfo.privateKey).toEqual(constants.GENESIS_KEY)
+      expect(accountInfo.privateKey).toBeUndefined()
       expect(accountInfo.publicKey).not.toBeNull()
       expect(accountInfo.balance).toEqual(1110)
     } catch (e) {
@@ -197,7 +197,7 @@ describe('account commands should work correctly', () => {
       const accountInfo = accountCmd.accountInfo
       expect(accountInfo).not.toBeNull()
       expect(accountInfo.accountId).toEqual(argv[flags.accountId.name])
-      expect(accountInfo.privateKey).toBeTruthy()
+      expect(accountInfo.privateKey).toBeUndefined()
       expect(accountInfo.publicKey).toBeTruthy()
       expect(accountInfo.balance).toEqual(1110)
     } catch (e) {
