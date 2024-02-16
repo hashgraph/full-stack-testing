@@ -115,7 +115,7 @@ spec:
         volumeMounts:
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
-            subPath: balance{{ $node.accountId }}
+            subPath: balance_{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.debug ($balanceUploader.config).debug | quote }}
@@ -140,7 +140,7 @@ spec:
           - name: SIG_PRIORITIZE
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
           - name: BUCKET_PATH
-            value: "accountBalances/balance{{ $node.accountId }}"
+            value: "accountBalances/balance_{{ $node.accountId }}"
           - name: BUCKET_NAME
             value: {{ $cloud.buckets.streamBucket | quote }}
           - name: S3_ENABLE
@@ -176,7 +176,7 @@ spec:
         volumeMounts:
           - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
-            subPath: record{{ $node.accountId }}
+            subPath: record_{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.recordStreamUploader.config.debug ($recordStream.config).debug | quote }}
@@ -205,7 +205,7 @@ spec:
           - name: SIG_PRIORITIZE
             value: {{ default $defaults.sidecars.recordStreamUploader.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
           - name: BUCKET_PATH
-            value: "recordstreams/record{{ $node.accountId }}"
+            value: "recordstreams/record_{{ $node.accountId }}"
           - name: BUCKET_NAME
             value: {{ $cloud.buckets.streamBucket | quote }}
           - name: S3_ENABLE
@@ -240,7 +240,7 @@ spec:
         volumeMounts:
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventStreams
-            subPath: balance{{ $node.accountId }}
+            subPath: events_{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.eventStreamUploader.config.debug ($eventStream.config).debug | quote}}
