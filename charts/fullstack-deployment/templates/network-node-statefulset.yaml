@@ -257,9 +257,9 @@ spec:
           - name: STREAM_SIG_EXTENSION
             value: "evts_sig"
           - name: STREAM_EXTENSION
-            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts.gz" "evts" | quote }}
+            value: "evts"
           - name: SIG_EXTENSION
-            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts_sig.gz" "evts_sig" | quote }}
+            value: "evts_sig"
           - name: SIG_REQUIRE
             value: {{ default $defaults.sidecars.eventStreamUploader.config.signature.require (($eventStream.config).signature).require | quote }}
           - name: SIG_PRIORITIZE
