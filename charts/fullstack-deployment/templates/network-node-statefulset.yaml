@@ -140,7 +140,7 @@ spec:
           - name: SIG_PRIORITIZE
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.signature.prioritize (($balanceUploader.config).signature).prioritize | quote }}
           - name: BUCKET_PATH
-            value: "accountBalances/balance_{{ $node.accountId }}"
+            value: "accountBalances/balance{{ $node.accountId }}"
           - name: BUCKET_NAME
             value: {{ $cloud.buckets.streamBucket | quote }}
           - name: S3_ENABLE
@@ -205,7 +205,7 @@ spec:
           - name: SIG_PRIORITIZE
             value: {{ default $defaults.sidecars.recordStreamUploader.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
           - name: BUCKET_PATH
-            value: "recordStreams/record_{{ $node.accountId }}"
+            value: "recordstreams/record{{ $node.accountId }}"
           - name: BUCKET_NAME
             value: {{ $cloud.buckets.streamBucket | quote }}
           - name: S3_ENABLE
