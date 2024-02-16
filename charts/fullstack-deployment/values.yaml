@@ -223,6 +223,8 @@ minio-server:
       name: minio-secrets
     certificate:
       requestAutoCert: false
+  environment:
+    MINIO_BROWSER_LOGIN_ANIMATION: off # https://github.com/minio/console/issues/2539#issuecomment-1619211962
 
 # hedera mirror node configuration
 hedera-mirror-node:

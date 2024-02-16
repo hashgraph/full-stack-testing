@@ -44,7 +44,7 @@ dependencies:
 
   - name: tenant
     alias: minio-server
-    version: 5.0.7
+    version: 5.0.12
     repository: https://operator.min.io/
     condition: cloud.minio.enabled
 
