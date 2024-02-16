@@ -36,6 +36,10 @@ import { AccountManager } from '../../../src/core/account_manager.mjs'
 import { AccountCommand } from '../../../src/commands/account.mjs'
 import { flags } from '../../../src/commands/index.mjs'
 import { sleep } from '../../../src/core/helpers.mjs'
+import { FileContentsQuery, FileId } from '@hashgraph/sdk'
+import * as HashgraphProto from '@hashgraph/proto'
+import * as Base64 from 'js-base64'
+import fs from 'fs'
 
 describe('account commands should work correctly', () => {
   const defaultTimeout = 20000
@@ -207,4 +211,65 @@ describe('account commands should work correctly', () => {
       await accountCmd.closeConnections()
     }
   }, defaultTimeout)
+
+  it('get NodeAddressBook', async () => {
+    try {
+      const ctx = {
+        config: {}
+      }
+      ctx.config.namespace = configManager.getFlag(flags.namespace)
+      await accountCmd.loadTreasuryAccount(ctx)
+      await accountCmd.loadNodeClient(ctx)
+      // Create the query
+      const fileQuery = new FileContentsQuery()
+        .setFileId(FileId.ADDRESS_BOOK)
+
+      // Sign with the operator private key and submit to a Hedera network
+      const contents = await fileQuery.execute(ctx.nodeClient)
+      const nodeAddressBook = TestHelper.getFirstNodeAddress(contents)
+
+      // const secret = await k8.getSecret(ctx.config.namespace, 'app.kubernetes.io/component=importer')
+      const result = await k8.kubeClient.listNamespacedSecret(
+        ctx.config.namespace, null, null, null, null, 'app.kubernetes.io/component=importer')
+      if (result.response.statusCode === 200 && result.body.items && result.body.items.length > 0) {
+        const secretObject = result.body.items[0]
+        delete secretObject.metadata.creationTimestamp
+        delete secretObject.metadata.managedFields
+        delete secretObject.metadata.resourceVersion
+        delete secretObject.metadata.uid
+        secretObject.data['addressbook.bin'] = Base64.toBase64(nodeAddressBook.finish().toString())
+        const srcPath = path.join(argv[flags.cacheDir.name], 'addressbook.bin')
+        fs.writeFileSync(srcPath, nodeAddressBook.finish())
+        console.log(`srcPath: ${srcPath}`)
+        // patch is broke, need to use delete/create: https://github.com/kubernetes-client/javascript/issues/893
+        // await k8.kubeClient.patchNamespacedSecret(secret.name, ctx.config.namespace, secret.data)
+        await k8.kubeClient.deleteNamespacedSecret(secretObject.metadata.name, ctx.config.namespace)
+        await k8.kubeClient.createNamespacedSecret(ctx.config.namespace, secretObject)
+        console.log('done')
+      }
+
+      // const srcPath = path.join(argv[flags.cacheDir.name], 'addressbook.bin')
+      // fs.writeFileSync(srcPath, nodeAddressBook.finish())
+      // await k8.copyTo('fullstack-deployment-importer-645457bd57-58n94', 'importer', srcPath, '/usr/etc/hedera/..2024_02_16_17_29_09.4048515600')
+    } catch (e) {
+      testLogger.showUserError(e)
+      expect(e).toBeNull()
+    } finally {
+      await accountCmd.closeConnections()
+    }
+  }, defaultTimeout)
 })
+
+class TestHelper {
+  /**
+   * @internal
+   * @param {HashgraphProto.proto.INodeAddressBook} nodeAddressBook
+   * @returns {NodeAddressBook}
+   */
+  static getFirstNodeAddress (nodeAddressBook) {
+    // const nodeAddress = HashgraphProto.proto.NodeAddressBook.decode(nodeAddressBook).nodeAddress[0]
+    // return HashgraphProto.proto.NodeAddressBook.encode(HashgraphProto.proto.NodeAddressBook.create({ nodeAddress: [nodeAddress] }))
+    const nodeAddress = HashgraphProto.proto.NodeAddressBook.decode(nodeAddressBook).nodeAddress[0]
+    return HashgraphProto.proto.NodeAddress.encode(nodeAddress)
+  }
+}
