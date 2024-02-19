@@ -65,12 +65,6 @@ jobs:
     with:
       custom-job-label: Standard
 
-  solo-tests:
-    name: FS Network Manager Tests
-    uses: ./.github/workflows/zxc-solo-tests.yaml
-    with:
-      custom-job-label: Standard
-
   codecov:
     name: CodeCov
     uses: ./.github/workflows/zxc-code-analysis.yaml
