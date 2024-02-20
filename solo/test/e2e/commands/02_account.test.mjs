@@ -213,6 +213,13 @@ describe('account commands should work correctly', () => {
   }, defaultTimeout)
 
   it('get NodeAddressBook', async () => {
+    // const originalBase64 = 'CvYGCgwxMC45Ni4xMzEuMzYaBTAuMC4zIswGMzA4MjAxYTIzMDBkMDYwOTJhODY0ODg2ZjcwZDAxMDEwMTA1MDAwMzgyMDE4ZjAwMzA4MjAxOGEwMjgyMDE4MTAwYTEyMDA2ZjI1MjcyNDJjZDdmNTNiOWM0ZmQ1ZGU4NjljNTYyZmY0ZWQ4YTRhYjNhNjI5NjNmM2Y4MTg4YmU3OGYyNThlYWY0MmI5YzNlM2U4ZjU4Njk3MTYwNDEzYmJmNzdhYWRmYWYwZDlmZmQ4Njk4NGIzYmM0ZmI1ZjAyZTExZThhY2I2ZWM2N2U0MjY0YWRkY2ExM2ZmZGU4MzY3NTc4YzI3OTJmYzZhZTMyNmU3YjM0ODU2ZDIzZjAyNTc0ZjVhMjc0ODE1NjAwMzJkNzM3NDlkYWY5ZDMzMmE3ODgzNTEwZTYwZWEyMjI4ODlhM2JmYzNiZWRmMzUwZjNhMzZjYWRhMzliOTQ1MzljNzRmYjgyNjU2NzhiZDVjMTQ4ZmJjOTE2OWFkY2FjZjY3MTliOTJlZThkNDJhOWQyZjg5MjNjYzRmZTNiNDk0YzQ2N2Y0ZTk4YTJhNDllMGEwZWY1YWE0MzNjYmVjNDM4YmFhMjU2YWU2MWEwNTkwY2U0ZTY3ZDBiM2ZlNWYyZGE5YWQ5MGMyNmUyMjlkMjhkNjc5NDU2OTc4ZDY1NzM1NzNlYmI0NjIzOWJhZDRhYmZhYjRmZmU2NGVhNGEzOTdjNmJjNWY3MTc1ZTFhYzM2NDg4ZjE3YzY3NzNiNWVkOTM0MTVlNTdjNDFjNmNkODg2NmRiZDEyMzYwMDYyMzM5Y2IxNTRkODVhZDFhZWNkMWQ3NjBhMDk0MWQ4MGUyOGZlMjQ2MDMzYTg2OGRiYmM4OTc1ZjM2MDQ0MzFmY2U5YWY5MWRjNDI1NDBhYjA0YjFiYmVjMjFmMzVmNzVmMzBhZjZmMDVjODk4NjQyOTM4NmUyYjQzOWJmZDJmZDU5MTJjODI2MDA4MDFlOWMwODU3ZjE2NWU4ODdmMjIzM2RjMmMwOThiYTEyNjdiMDU5ZGI4YTJkYjcxNGZlNTA2NjhkYmYwOTM2MDRhNWRmM2MyMzIxNDY3MjMyMTFjZTU4NTUyNjM4ZmFlOWZjMDY0YTdmMDliMDIwMzAxMDAwMTICGANCCgoECmCDJBC/hwNQAQ=='
+    // const decodedOriginalAddressBook = Base64.atob(originalBase64)
+    // const protoOriginalAddressBook = TestHelper.getFirstNodeAddress(Uint8Array.from(Array.from(decodedOriginalAddressBook).map(letter => letter.charCodeAt(0))))
+    // // const readContents = fs.readFileSync('/Users/user/source/full-stack-testing/solo/secret-addressbook.bin')
+    // // Base64.btoa(Base64.atob(originalBase64)) // matches
+    // const recodedAddressBook = Base64.encode(protoOriginalAddressBook.finish()) // matches
+    // // console.log(`protoOriginalAddressBook:\n${protoOriginalAddressBook}`)
     try {
       const ctx = {
         config: {}
@@ -227,6 +234,12 @@ describe('account commands should work correctly', () => {
       // Sign with the operator private key and submit to a Hedera network
       const contents = await fileQuery.execute(ctx.nodeClient)
       const nodeAddressBook = TestHelper.getFirstNodeAddress(contents)
+      const base64NodeAddressBook = Base64.encode(nodeAddressBook.finish())
+      // const base64NodeAddressBook = Base64.btoa(contents.toString())
+      // const srcPath = path.join(argv[flags.cacheDir.name], 'addressbook.bin')
+      // fs.writeFileSync(srcPath, nodeAddressBook.finish())
+      // console.log(`srcPath: ${srcPath}`)
+      // console.log(`base64? ${base64NodeAddressBook}`)
 
       // const secret = await k8.getSecret(ctx.config.namespace, 'app.kubernetes.io/component=importer')
       const result = await k8.kubeClient.listNamespacedSecret(
@@ -237,15 +250,12 @@ describe('account commands should work correctly', () => {
         delete secretObject.metadata.managedFields
         delete secretObject.metadata.resourceVersion
         delete secretObject.metadata.uid
-        secretObject.data['addressbook.bin'] = Base64.toBase64(nodeAddressBook.finish().toString())
-        const srcPath = path.join(argv[flags.cacheDir.name], 'addressbook.bin')
-        fs.writeFileSync(srcPath, nodeAddressBook.finish())
-        console.log(`srcPath: ${srcPath}`)
+        secretObject.data['addressbook.bin'] = base64NodeAddressBook
         // patch is broke, need to use delete/create: https://github.com/kubernetes-client/javascript/issues/893
         // await k8.kubeClient.patchNamespacedSecret(secret.name, ctx.config.namespace, secret.data)
         await k8.kubeClient.deleteNamespacedSecret(secretObject.metadata.name, ctx.config.namespace)
         await k8.kubeClient.createNamespacedSecret(ctx.config.namespace, secretObject)
-        console.log('done')
+        // console.log('done')
       }
 
       // const srcPath = path.join(argv[flags.cacheDir.name], 'addressbook.bin')
@@ -267,9 +277,14 @@ class TestHelper {
    * @returns {NodeAddressBook}
    */
   static getFirstNodeAddress (nodeAddressBook) {
-    // const nodeAddress = HashgraphProto.proto.NodeAddressBook.decode(nodeAddressBook).nodeAddress[0]
-    // return HashgraphProto.proto.NodeAddressBook.encode(HashgraphProto.proto.NodeAddressBook.create({ nodeAddress: [nodeAddress] }))
     const nodeAddress = HashgraphProto.proto.NodeAddressBook.decode(nodeAddressBook).nodeAddress[0]
-    return HashgraphProto.proto.NodeAddress.encode(nodeAddress)
+    nodeAddress.serviceEndpoint[0].ipAddressV4 = Uint8Array.from(nodeAddress.serviceEndpoint[0].ipAddressV4.toString().split('.'))
+    // nodeAddress.ipAddress = new Uint8Array(nodeAddress.ipAddress)
+    // nodeAddress.memo = new Uint8Array(nodeAddress.memo)
+    // nodeAddress.ipAddress = Uint8Array.from(Array.from('').map(letter => letter.charCodeAt(0)))
+    return HashgraphProto.proto.NodeAddressBook.encode(HashgraphProto.proto.NodeAddressBook.create({ nodeAddress: [nodeAddress] }))
+    // const nodeAddress = HashgraphProto.proto.NodeAddressBook.decode(nodeAddressBook).nodeAddress[0]
+    // return HashgraphProto.proto.NodeAddress.encode(nodeAddress)
+    // return HashgraphProto.proto.NodeAddressBook.encode(HashgraphProto.proto.NodeAddressBook.decode(nodeAddressBook))
   }
 }
