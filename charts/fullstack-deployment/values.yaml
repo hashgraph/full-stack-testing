@@ -268,7 +268,7 @@ hedera-mirror-node:
       - secretRef:
           name: uploader-mirror-secrets
     # This is a corrupted addressbook to prevent mirror importer from starting correctly
-    # The addressbook.bin file updates and start will be handled by infrastructure code
+    # The addressbook.bin file updates will be handled by infrastructure code or solo
     addressBook: ZmFpbC1pbXBvcnRlci1zdGFydC11cAo=
     config:
       # importer is a springboot app, its application.yaml configuration starts here
