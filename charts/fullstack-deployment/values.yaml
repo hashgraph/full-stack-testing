@@ -228,7 +228,7 @@ minio-server:
 
 # hedera mirror node configuration
 hedera-mirror-node:
-  enabled: true
+  enabled: false # set to false during first deployment, then do an upgrade with it enabled and supply the base64 encoded addressbook
   labels:
     fullstack.hedera.com/testSuiteName: ""
     fullstack.hedera.com/testName: ""
@@ -267,9 +267,8 @@ hedera-mirror-node:
           name: "{{ .Release.Name }}-redis"
       - secretRef:
           name: uploader-mirror-secrets
-    # This is a corrupted addressbook to prevent mirror importer from starting correctly
     # The addressbook.bin file updates will be handled by infrastructure code or solo
-    addressBook: ZmFpbC1pbXBvcnRlci1zdGFydC11cAo=
+    addressBook: ""
     config:
       # importer is a springboot app, its application.yaml configuration starts here
       # This config is mounted at [/usr/etc/hedera/application.yaml] in the importer pod
@@ -363,7 +362,7 @@ haproxy-ingress:
 
 # hedera-mirror-node-explorer configuration
 hedera-explorer:
-  enabled: true
+  enabled: false # set to false during first deployment, then do an upgrade with it enabled and supply the base64 encoded addressbook
   # leave blank to use default, set if you have multiple deployments in a cluster to make it unique
   selfSignedCertClusterIssuer: '{{ .Values.global.namespaceOverride | default .Release.Namespace | printf "%s-self-signed-cluster-issuer" }}'
   certClusterIssuerType: "self-signed" # "acme-staging", "acme-prod", or "self-signed"
