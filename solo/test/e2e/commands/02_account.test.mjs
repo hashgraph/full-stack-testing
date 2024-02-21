@@ -209,7 +209,7 @@ describe('account commands should work correctly', () => {
     }
   }, defaultTimeout)
 
-  it('get NodeAddressBook', async () => {
+  it('update addressBook and restart importer', async () => {
     try {
       const ctx = {
         config: {}
@@ -238,7 +238,7 @@ describe('account commands should work correctly', () => {
       expect(pods.length).toBeGreaterThan(0)
       for (const pod of pods) {
         const resp = await k8.kubeClient.deleteNamespacedPod(pod.metadata.name, pod.metadata.namespace)
-        expect(resp.response.statusCode).toEqual(2000)
+        expect(resp.response.statusCode).toEqual(200)
       }
     } catch (e) {
       testLogger.showUserError(e)
