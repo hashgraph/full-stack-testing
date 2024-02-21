@@ -47,12 +47,6 @@ class Utils {
         }
 
         @JvmStatic
-        fun updateSoloVersion(project: Project, newVersion: SemVer) {
-            val manifestFile = File(project.rootProject.projectDir, "solo/package.json")
-            updateStringInFile(manifestFile, "\"version\":", "  \"version\": \"${newVersion}\",")
-        }
-
-        @JvmStatic
         fun updateHelmChartAppVersion(project: Project, newVersion: SemVer) {
             updateHelmCharts(project) {chart ->
                 updateHelmChartAppVersion(project, chart.name, newVersion)

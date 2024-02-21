@@ -7,12 +7,12 @@ dependencies:
   version: 0.86.0
 - name: tenant
   repository: https://operator.min.io/
-  version: 5.0.7
+  version: 5.0.12
 - name: acme-cluster-issuer
   repository: https://swirldslabs.github.io/swirldslabs-helm-charts
   version: 0.3.1
 - name: haproxy-ingress
   repository: https://haproxy-ingress.github.io/charts
   version: 0.14.5
-digest: sha256:a895d9b9235e22a469f2b274650fa25e2c7fd586eff205bfa473bdfd4cfd0f91
-generated: "2024-01-24T16:36:12.619906Z"
+digest: sha256:15d4cdc6b19e203dc139abc061425c2f31607c6067a260596c5354f6e9bb1cba
+generated: "2024-02-16T13:56:04.205158+11:00"

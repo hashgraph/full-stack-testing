@@ -63,7 +63,9 @@ spec:
           emptyDir: {}
         - name: hgcapp-event-streams
           emptyDir: {}
-        - name: hgcapp-services-hedera
+        - name: hgcapp-data-saved
+          emptyDir: {}
+        - name: hgcapp-data-stats
           emptyDir: {}
         {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
@@ -88,8 +90,10 @@ spec:
             mountPath: /opt/hgcapp/recordStreams
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventsStreams
-          - name: hgcapp-services-hedera
-            mountPath: opt/hgcapp/services-hedera
+          - name: hgcapp-data-saved
+            mountPath: opt/hgcapp/services-hedera/HapiApp2.0/data/saved
+          - name: hgcapp-data-stats
+            mountPath: opt/hgcapp/services-hedera/HapiApp2.0/data/stats
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       {{- if $balanceUploader.enabled }}
@@ -111,7 +115,7 @@ spec:
         volumeMounts:
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
-            subPath: balance{{ $node.accountId }}
+            subPath: balance_{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.accountBalanceUploader.config.debug ($balanceUploader.config).debug | quote }}
@@ -236,7 +240,7 @@ spec:
         volumeMounts:
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventStreams
-            subPath: balance{{ $node.accountId }}
+            subPath: events_{{ $node.accountId }}
         env:
           - name: DEBUG
             value: {{ default $defaults.sidecars.eventStreamUploader.config.debug ($eventStream.config).debug | quote}}
@@ -253,9 +257,9 @@ spec:
           - name: STREAM_SIG_EXTENSION
             value: "evts_sig"
           - name: STREAM_EXTENSION
-            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts.gz" "evts" | quote }}
+            value: "evts"
           - name: SIG_EXTENSION
-            value: {{ default $defaults.sidecars.eventStreamUploader.config.compression ($eventStream.config).compression | ternary "evts_sig.gz" "evts_sig" | quote }}
+            value: "evts_sig"
           - name: SIG_REQUIRE
             value: {{ default $defaults.sidecars.eventStreamUploader.config.signature.require (($eventStream.config).signature).require | quote }}
           - name: SIG_PRIORITIZE
@@ -284,9 +288,10 @@ spec:
         securityContext:
           {{- include "fullstack.hedera.security.context" . | nindent 10 }}
         volumeMounts:
-          - name: hgcapp-services-hedera
-            mountPath: opt/hgcapp/services-hedera
-            subPath: data
+          - name: hgcapp-data-saved
+            mountPath: opt/hgcapp/services-hedera/HapiApp2.0/data/saved
+          - name: hgcapp-data-stats
+            mountPath: opt/hgcapp/services-hedera/HapiApp2.0/data/stats
         env:
           - name: BACKUP_UPLOADER_BUCKET_1
             value: {{ default $defaults.sidecars.backupUploader.config.backupBucket ($backupUploader.config).backupBucket | quote }}

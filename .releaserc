@@ -7,12 +7,6 @@
         "preset": "conventionalcommits"
       }
     ],
-    [
-      "@semantic-release/npm",
-      {
-        "pkgRoot": "solo"
-      }
-    ],
     "@semantic-release/git",
     "@semantic-release/github"
   ],
@@ -28,20 +22,12 @@
       { "cmd": "./gradlew versionAsSpecified --scan -PnewVersion=${nextRelease.version}" }
     ],
     [
-      "@semantic-release/npm",
-      {
-        "pkgRoot": "solo"
-      }
-    ],
-    [
       "@semantic-release/git",
       {
         "assets": [
           "gradle.properties",
           "charts/fullstack-deployment/Chart.yaml",
-          "charts/fullstack-cluster-setup/Chart.yaml",
-          "solo/package.json",
-          "solo/package-lock.json"
+          "charts/fullstack-cluster-setup/Chart.yaml"
         ]
       }
     ]

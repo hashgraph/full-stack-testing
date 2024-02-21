@@ -98,16 +98,13 @@ RUN mkdir -p "/opt/hgcapp" && \
     mkdir -p "/opt/hgcapp/services-hedera/HapiApp2.0/data/upgrade"
 
 # Add the entrypoint script and systemd service file
-ADD entrypoint.sh /etc/network-node/
+ADD entrypoint.sh /opt/hgcapp/services-hedera/HapiApp2.0/
 ADD network-node.service /usr/lib/systemd/system/
 
 # Ensure proper file permissions
-RUN chmod -R +x /etc/network-node/entrypoint.sh && \
+RUN chmod -R +x /opt/hgcapp/services-hedera/HapiApp2.0/entrypoint.sh && \
+    touch /opt/hgcapp/services-hedera/HapiApp2.0/application.env && \
     chown -R 2000:2000 /opt/hgcapp/
-
-RUN mkdir -p /etc/network-node && \
-    touch /etc/network-node/application.env && \
-    chown -R 2000:2000 /etc/network-node
 
 # Expose TCP/UDP Port Definitions
 EXPOSE 50111/tcp 50211/tcp 50212/tcp
