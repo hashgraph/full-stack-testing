@@ -102,7 +102,7 @@ function prepare_platform_software_URL() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly CLUSTER_SETUP_VALUES_FILE="${TMP_DIR}/cluster-values.yaml"
-mkdir -p $TMP_DIR
+mkdir -p "$TMP_DIR"
 load_env_file
 
 USER="${USER:-changeme}"
@@ -125,9 +125,7 @@ readonly SETUP_CHART_DIR="../../../charts/fullstack-cluster-setup"
 readonly CHART_DIR="../../../charts/fullstack-deployment"
 
 # telemetry related env variables
-readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
-readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"
 
 # docker build related env variables
 readonly DOCKERFILE_DIR="../../../docker"
