@@ -12,10 +12,6 @@ source "${CUR_DIR}/env.sh"
 CHART_VALUES_FILES=ci/ci-values.yaml
 SCRIPTS_DIR=scripts
 
-TELEMETRY_SCRIPT="telemetry.sh"
-GATEWAY_API_SCRIPT="gateway.sh"
-DOCKER_SCRIPT="docker.sh"
-
 echo "-----------------------------------------------------------------------------------------------------"
 echo "Creating cluster and namespace"
 kind create cluster -n "${CLUSTER_NAME}" --config=dev-cluster.yaml
@@ -37,11 +33,11 @@ cd -
 echo "-----------------------------------------------------------------------------------------------------"
 echo "Helm dependency update"
 
-echo "cloud:" > ${CLUSTER_SETUP_VALUES_FILE}
-echo "  prometheusStack:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
-echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
-echo "  minio:" >> ${CLUSTER_SETUP_VALUES_FILE}; \
-echo "    enabled: true" >> ${CLUSTER_SETUP_VALUES_FILE};
+echo "cloud:" > "${CLUSTER_SETUP_VALUES_FILE}"
+echo "  prometheusStack:" >> "${CLUSTER_SETUP_VALUES_FILE}"; \
+echo "    enabled: true" >> "${CLUSTER_SETUP_VALUES_FILE}";
+echo "  minio:" >> "${CLUSTER_SETUP_VALUES_FILE}"; \
+echo "    enabled: true" >> "${CLUSTER_SETUP_VALUES_FILE}";
 
 helm dependency update ../../../charts/fullstack-deployment
 helm dependency update ../../../charts/fullstack-cluster-setup

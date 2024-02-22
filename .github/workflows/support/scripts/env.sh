@@ -126,14 +126,8 @@ readonly CHART_DIR="../../../charts/fullstack-deployment"
 
 # telemetry related env variables
 readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"
-readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
 readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"
-readonly PROMETHEUS_VERSION=v0.67.1
-readonly PROMETHEUS_OPERATOR_YAML="${PROMETHEUS_DIR}/prometheus-operator.yaml"
-readonly PROMETHEUS_YAML="${PROMETHEUS_DIR}/prometheus.yaml"
-readonly PROMETHEUS_RBAC_YAML="${PROMETHEUS_DIR}/prometheus-rbac.yaml"
-readonly PROMETHEUS_EXAMPLE_APP_YAML="${PROMETHEUS_DIR}/example-app.yaml"
 
 # docker build related env variables
 readonly DOCKERFILE_DIR="../../../docker"

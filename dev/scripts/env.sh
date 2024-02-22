@@ -124,7 +124,6 @@ readonly SETUP_CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-cluster-setup"
 readonly CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-deployment"
 
 # telemetry related env variables
-readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"
 readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
 readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"

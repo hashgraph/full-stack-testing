@@ -21,7 +21,6 @@ readonly HEDERA_HOME_DIR="/home/hedera"
 readonly RELEASE_NAME="${RELEASE_NAME:-fst}"
 
 readonly NMT_VERSION="${NMT_VERSION:-v2.0.0-alpha.0}"
-readonly NMT_RELEASE_URL="https://api.github.com/repos/swirlds/swirlds-docker/releases/tags/${NMT_VERSION}"
 readonly NMT_INSTALLER="node-mgmt-tools-installer-${NMT_VERSION}.run"
 readonly NMT_INSTALLER_DIR="${SCRIPT_DIR}/../resources/nmt"
 readonly NMT_INSTALLER_PATH="${NMT_INSTALLER_DIR}/${NMT_INSTALLER}"
@@ -292,7 +291,6 @@ function prep_address_book() {
   echo "-----------------------------------------------------------------------------------------------------"
 
   local config_file="${TMP_DIR}/config.txt"
-  local node_IP=""
   local node_seq="${NODE_SEQ:-0}" # this also used as the account ID suffix
   local account_id_prefix="${ACCOUNT_ID_PREFIX:-0.0}"
   local account_id_seq="${ACCOUNT_ID_SEQ:-3}"
@@ -308,7 +306,6 @@ function prep_address_book() {
   config_lines+=("app, ${app_jar_file}")
 
   # prepare address book lines
-  local addresses=()
   for node_name in "${NODE_NAMES[@]}"; do
     local pod="network-${node_name}-0" # pod name
     local max_attempts=$MAX_ATTEMPTS
@@ -457,7 +454,7 @@ function ls_path() {
   echo "Displaying contents of ${path} from ${pod}"
   echo "-----------------------------------------------------------------------------------------------------"
 
-  echo "Running: "${KCTL}" exec ${pod} -c root-container -- ls -al ${path}"
+  echo "Running: ${KCTL} exec ${pod} -c root-container -- ls -al ${path}"
   "${KCTL}" exec "${pod}" -c root-container -- ls -al "${path}"
 }
 
