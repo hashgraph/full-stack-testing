@@ -126,7 +126,7 @@ jobs:
           node-version: ${{ inputs.node-version }}
 
       - name: Download Coverage Reports
-        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         if: ${{ (inputs.enable-codecov-analysis || inputs.enable-sonar-analysis) && !cancelled() && !failure() }}
         with:
           name: Coverage Reports
