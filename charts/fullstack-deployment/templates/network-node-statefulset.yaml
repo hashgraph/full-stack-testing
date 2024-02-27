@@ -31,6 +31,62 @@ spec:
   selector:
     matchLabels:
       app: network-{{ $node.name }}
+  volumeClaimTemplates:
+    - metadata:
+        name: hgcapp-pvc
+        annotations:
+          helm.sh/resource-policy: keep
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.hgcapp }}
+    - metadata:
+        name: hgcapp-account-balances-pvc
+        annotations:
+          helm.sh/resource-policy: keep
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.accountBalances }}
+    - metadata:
+        name: hgcapp-record-streams-pvc
+        annotations:
+          helm.sh/resource-policy: keep
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.recordStreams }}
+    - metadata:
+        name: hgcapp-event-streams-pvc
+        annotations:
+          helm.sh/resource-policy: keep
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.eventStreams }}
+    - metadata:
+        name: hgcapp-data-saved-pvc
+        annotations:
+          helm.sh/resource-policy: keep
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.dataSaved }}
+    - metadata:
+        name: hgcapp-data-stats-pvc
+        annotations:
+          helm.sh/resource-policy: keep
+      spec:
+        storageClassName: {{ $.Values.defaults.resources.volumeClaims.storageClassName }}
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.dataStats }}
   template:
     metadata:
       labels:
@@ -57,16 +113,27 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
+        - name: node-shared
+          persistentVolumeClaim:
+            claimName: node-shared-pvc
+        - name: hgcapp
+          persistentVolumeClaim:
+            claimName: hgcapp-pvc-network-{{ $node.name }}-0
         - name: hgcapp-account-balances
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: hgcapp-account-balances-pvc-network-{{ $node.name }}-0
         - name: hgcapp-record-streams
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: hgcapp-record-streams-pvc-network-{{ $node.name }}-0
         - name: hgcapp-event-streams
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: hgcapp-event-streams-pvc-network-{{ $node.name }}-0
         - name: hgcapp-data-saved
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: hgcapp-data-saved-pvc-network-{{ $node.name }}-0
         - name: hgcapp-data-stats
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: hgcapp-data-stats-pvc-network-{{ $node.name }}-0
         {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
@@ -84,6 +151,10 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
+          - name: node-shared
+            mountPath: /opt/hgcapp/shared
+          - name: hgcapp
+            mountPath: opt/hgcapp
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
           - name: hgcapp-record-streams
