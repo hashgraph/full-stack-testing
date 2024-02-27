@@ -10,6 +10,7 @@
 {{- $cloud := $.Values.cloud }}
 {{- $defaults := $.Values.defaults }}
 {{- $minioserver := (index $.Values "minio-server") }}
+{{- $nodeStorage := $.Values.defaults.resources.volumeClaims.node }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -32,61 +33,12 @@ spec:
     matchLabels:
       app: network-{{ $node.name }}
   volumeClaimTemplates:
-    - metadata:
-        name: hgcapp-pvc
-        annotations:
-          helm.sh/resource-policy: keep
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.hgcapp }}
-    - metadata:
-        name: hgcapp-account-balances-pvc
-        annotations:
-          helm.sh/resource-policy: keep
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.accountBalances }}
-    - metadata:
-        name: hgcapp-record-streams-pvc
-        annotations:
-          helm.sh/resource-policy: keep
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.recordStreams }}
-    - metadata:
-        name: hgcapp-event-streams-pvc
-        annotations:
-          helm.sh/resource-policy: keep
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.eventStreams }}
-    - metadata:
-        name: hgcapp-data-saved-pvc
-        annotations:
-          helm.sh/resource-policy: keep
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.dataSaved }}
-    - metadata:
-        name: hgcapp-data-stats-pvc
-        annotations:
-          helm.sh/resource-policy: keep
-      spec:
-        storageClassName: {{ $.Values.defaults.resources.volumeClaims.storageClassName }}
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.node.dataStats }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-pvc" "storage" $nodeStorage.hgcapp) | nindent 4 }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-account-balances-pvc" "storage" $nodeStorage.accountBalances) | nindent 4 }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-record-streams-pvc" "storage" $nodeStorage.recordStreams) | nindent 4 }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-event-streams-pvc" "storage" $nodeStorage.eventStreams) | nindent 4 }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-saved-pvc" "storage" $nodeStorage.dataSaved) | nindent 4 }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-stats-pvc" "storage" $nodeStorage.dataStats) | nindent 4 }}
   template:
     metadata:
       labels:
