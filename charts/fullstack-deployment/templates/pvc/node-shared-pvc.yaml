@@ -14,5 +14,6 @@ spec:
   volumeMode: Filesystem
   resources:
     requests:
-      storage: {{ default "2Gi" $.Values.defaults.resources.volumeClaims.nodeSharedStorage }}
+      storage: {{ default "2Gi" $.Values.defaults.volumeClaims.nodeSharedStorage }}
   storageClassName: standard
+# TODO ephemeral shared
