@@ -53,7 +53,7 @@ acme-cluster-issuer:
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:
   volumeClaims:
-    enabled: true # TODO test both, but leave false when checked in
+    enabled: false
     storageClassName: ""
     nodeSharedStorage: "2Gi"
     node:
@@ -64,6 +64,7 @@ defaults:
       dataSaved: "500Gi"
       dataStats: "50Gi"
       dataUpgrade: "5Gi"
+      output: "5Gi"
   resources:
     requests:
       cpu: 100m

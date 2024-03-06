@@ -64,3 +64,13 @@ export MINIO_ROOT_PASSWORD={{ include "minio.secretKey" . }}
       requests:
         storage: {{ default "2Gi" .storage }}
 {{- end -}}
+
+{{- define "fullstack.volumeTemplate" -}}
+- name: {{ .name }}
+  {{- if .pvcEnabled }}
+  persistentVolumeClaim:
+    claimName: {{ .claimName }}
+  {{- else }}
+  emptyDir: {}
+  {{- end }}
+{{- end -}}

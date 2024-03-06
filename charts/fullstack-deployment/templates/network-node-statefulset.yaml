@@ -11,6 +11,7 @@
 {{- $defaults := $.Values.defaults }}
 {{- $minioserver := (index $.Values "minio-server") }}
 {{- $nodeStorage := $.Values.defaults.volumeClaims.node }}
+{{- $pvcEnabled := $.Values.defaults.volumeClaims.enabled }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -32,7 +33,7 @@ spec:
   selector:
     matchLabels:
       app: network-{{ $node.name }}
-  # TODO toggle if enabled
+  {{- if $pvcEnabled }}
   volumeClaimTemplates:
     {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-account-balances-pvc" "storage" $nodeStorage.accountBalances) | nindent 4 }}
     {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-event-streams-pvc" "storage" $nodeStorage.eventStreams) | nindent 4 }}
@@ -41,6 +42,8 @@ spec:
     {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-saved-pvc" "storage" $nodeStorage.dataSaved) | nindent 4 }}
     {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-stats-pvc" "storage" $nodeStorage.dataStats) | nindent 4 }}
     {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-upgrade-pvc" "storage" $nodeStorage.dataUpgrade) | nindent 4 }}
+    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-output-pvc" "storage" $nodeStorage.output) | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       labels:
@@ -66,32 +69,16 @@ spec:
       priorityClassName: {{ $.Values.deployment.priorityClassName }}
       {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
-      # TODO toggle settings based on if they are enabled
       volumes:
-        - name: node-shared
-          persistentVolumeClaim:
-            claimName: node-shared-pvc
-        - name: hgcapp-account-balances
-          persistentVolumeClaim:
-            claimName: hgcapp-account-balances-pvc-network-{{ $node.name }}-0
-        - name: hgcapp-event-streams
-          persistentVolumeClaim:
-            claimName: hgcapp-event-streams-pvc-network-{{ $node.name }}-0
-        - name: hgcapp-record-streams
-          persistentVolumeClaim:
-            claimName: hgcapp-record-streams-pvc-network-{{ $node.name }}-0
-        - name: hgcapp-data-onboard
-          persistentVolumeClaim:
-            claimName: hgcapp-data-onboard-pvc-network-{{ $node.name }}-0
-        - name: hgcapp-data-saved
-          persistentVolumeClaim:
-            claimName: hgcapp-data-saved-pvc-network-{{ $node.name }}-0
-        - name: hgcapp-data-stats
-          persistentVolumeClaim:
-            claimName: hgcapp-data-stats-pvc-network-{{ $node.name }}-0
-        - name: hgcapp-data-upgrade
-          persistentVolumeClaim:
-            claimName: hgcapp-data-upgrade-pvc-network-{{ $node.name }}-0
+        {{ include "fullstack.volumeTemplate" (dict "name" "node-shared" "claimName" "node-shared-pvc" "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-account-balances" "claimName" (printf "%s-%s-%s" "hgcapp-account-balances-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-event-streams" "claimName" (printf "%s-%s-%s" "hgcapp-event-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-record-streams" "claimName" (printf "%s-%s-%s" "hgcapp-record-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-onboard" "claimName" (printf "%s-%s-%s" "hgcapp-data-onboard-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-saved" "claimName" (printf "%s-%s-%s" "hgcapp-data-saved-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-stats" "claimName" (printf "%s-%s-%s" "hgcapp-data-stats-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-upgrade" "claimName" (printf "%s-%s-%s" "hgcapp-data-upgrade-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-output" "claimName" (printf "%s-%s-%s" "hgcapp-output-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
         {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
@@ -125,6 +112,8 @@ spec:
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/stats
           - name: hgcapp-data-upgrade
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/upgrade
+          - name: hgcapp-output
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/output
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       {{- if $balanceUploader.enabled }}
