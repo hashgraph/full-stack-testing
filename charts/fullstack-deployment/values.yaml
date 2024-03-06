@@ -54,8 +54,6 @@ acme-cluster-issuer:
 defaults:
   volumeClaims:
     enabled: false
-    storageClassName: ""
-    nodeSharedStorage: "2Gi"
     node:
       accountBalances: "100Gi"
       eventStreams: "100Gi"

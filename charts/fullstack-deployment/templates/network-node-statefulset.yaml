@@ -70,7 +70,6 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
-        {{ include "fullstack.volumeTemplate" (dict "name" "node-shared" "claimName" "node-shared-pvc" "pvcEnabled" true ) | nindent 8 }}
         {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-account-balances" "claimName" (printf "%s-%s-%s" "hgcapp-account-balances-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
         {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-event-streams" "claimName" (printf "%s-%s-%s" "hgcapp-event-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
         {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-record-streams" "claimName" (printf "%s-%s-%s" "hgcapp-record-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
@@ -96,8 +95,6 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
-          - name: node-shared
-            mountPath: /opt/hgcapp/shared
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
           - name: hgcapp-event-streams
