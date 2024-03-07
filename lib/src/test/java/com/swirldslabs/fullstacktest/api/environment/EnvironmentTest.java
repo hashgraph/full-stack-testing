@@ -1,5 +1,6 @@
 package com.swirldslabs.fullstacktest.api.environment;
 
+import com.swirldslabs.fullstacktest.api.Environment;
 import com.swirldslabs.fullstacktest.api.annotation.ExtendWithK8sNamespace;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.logging.Logger;

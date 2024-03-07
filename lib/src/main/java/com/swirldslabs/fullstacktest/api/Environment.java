@@ -1,4 +1,4 @@
-package com.swirldslabs.fullstacktest.api.environment;
+package com.swirldslabs.fullstacktest.api;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 
