@@ -5,7 +5,11 @@ package com.swirldslabs.fullstacktest.api.v2;
  *
  * Take as input annotation which may include other sources of additional input, URLs, files, executables...
  *
- * Produces EnvironmentContext
+ * implementation produces EnvironmentContext
+ *
+ * A context will be requested in each thread.
  * */
-public interface Environment {
+@FunctionalInterface
+public interface EnvironmentContextFactory {
+    EnvironmentContext getContext();
 }

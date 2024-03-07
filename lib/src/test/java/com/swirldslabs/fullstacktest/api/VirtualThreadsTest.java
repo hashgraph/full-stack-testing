@@ -1,15 +1,18 @@
 package com.swirldslabs.fullstacktest.api;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestReporter;
+import org.junit.platform.commons.util.ReflectionUtils;
 
-import java.lang.ref.ReferenceQueue;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -163,19 +166,19 @@ public class VirtualThreadsTest {
     }
 
     sealed interface Result {}
-    record Success() implements Result {}
-    record Failure(Exception exception) implements Result {}
+    record Successx() implements Result {}
+    record Failurex(Exception exception) implements Result {}
 
     Runnable run(Runnable runnable, BlockingQueue<Result> queue, boolean success) {
         return () -> {
             try {
                 runnable.run();
                 if (success) {
-                    queue.put(new Success());
+                    queue.put(new Successx());
                 }
             } catch (Exception exception) {
                 try {
-                    queue.put(new Failure(exception));
+                    queue.put(new Failurex(exception));
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -200,7 +203,13 @@ public class VirtualThreadsTest {
         executor.submit(run(task(9999, false, true), queue, false));
         executor.submit(run(task(999, true, false), queue, false));
         executor.submit(run(task(9999, true, true), queue, false));
-        executor.submit(run(task(3000, false, false), queue, true));
+        var future = executor.submit(run(task(3000, false, false), queue, true));
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        future.cancel(true);
         System.out.println("waiting... " + Thread.currentThread());
         Result result = null;
         try {
@@ -209,8 +218,128 @@ public class VirtualThreadsTest {
             // test may have timed out, perform immediate shutdown!
             throw new RuntimeException(e);
         }
-        System.out.println("got result: " + result);
+        switch (result) {
+            case Successx s -> System.out.println("got result: " + s.toString());
+            case Failurex f -> System.out.println("got result: " + f.exception);
+        }
         executor.shutdownNow(); // shutdown should also kill client
+    }
+
+//    static class Expiration implements Delayed, Comparable<Expiration> {
+//        Instant target;
+//
+//        public Expiration() {
+//            target = Instant.now();
+//        }
+//
+//        public Expiration(Instant target) {
+//            this.target = target;
+//        }
+//
+//        @Override
+//        public int compareTo(Expiration o) {
+//            return target.compareTo(o.target);
+//        }
+//
+//        @Override
+//        public long getDelay(TimeUnit unit) {
+//            return Instant.now().until(target, unit.toChronoUnit());
+//        }
+//    }
+    sealed interface Event {}
+    record Start(Object id, Runnable runnable) implements Event {}
+    record Stop(Object id) implements Event {}
+    sealed interface Done extends Event {}
+    record Success() implements Done {}
+    record Failure(Exception exception) implements Done {}
+    static class Sleeper implements Runnable {
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                while (true) {}
+            }
+        }
+    }
+    static class Runner1 extends Sleeper {}
+    static class Runner2 extends Sleeper {}
+
+    // could use class::method::task in thread name
+    @Test
+    void executor() throws Exception {
+        BlockingQueue<Event> events = new LinkedBlockingQueue<>();
+        Map<Object, Thread> threads = new HashMap<>();
+
+        List<Class<? extends Runnable>> runnables = List.of(Runner1.class, Runner2.class);
+        for (Class<? extends Runnable> runnable : runnables) {
+            events.put(new Start(runnable, ReflectionUtils.newInstance(runnable)));
+        }
+
+        threads.put(null, Thread.startVirtualThread(() -> {
+            try {
+                Thread.sleep(100);
+//                throw new RuntimeException();
+                events.put(new Success());
+            } catch (Exception exception) {
+                try {
+                    events.put(new Failure(exception));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }));
+
+        long taskShutdownMs = 10; // attempt to wait this long for threads to die
+
+        for (Event event = events.take(); !(event instanceof Success); event = events.take()) {
+            switch (event) {
+                case Start(Object id, Runnable runnable) ->
+                    threads.computeIfAbsent(id, $ -> Thread.startVirtualThread(runnable));
+                case Stop(Object id) -> {
+                    Thread thread = threads.get(id);
+                    if (null == thread) { return; }
+                    stop(thread, taskShutdownMs);
+                }
+                /**
+                 * new idea:
+                 * if it fails throw exception with suppressed InterruptIgnoredExceptions
+                 * if test succeeds but tasks don't die throw InterruptIgnoredException with additional suppressed
+                 * */
+                case Success success -> {}
+                case Failure(var exception) -> {
+                    threads.values().forEach(thread -> stop(thread, taskShutdownMs));
+                    throw exception;
+                }
+                // new logic will be to just stop all threads and rethrow the exception.
+            }
+        }
+        threads.values().forEach(thread -> stop(thread, taskShutdownMs));
+        Thread.sleep(1800);
+    }
+
+    void stop(Thread thread, long delay) {
+        thread.interrupt();
+        if (0 == delay) {
+            return;
+        }
+        Thread.startVirtualThread(() -> {
+            try {
+                Thread.sleep(delay);
+                StackTraceElement[] stackTraceElements = thread.getStackTrace();
+                if (0 != stackTraceElements.length) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Thread failed to shutdown when interrupted:\n");
+                    for (StackTraceElement element : stackTraceElements) {
+                        sb.append("\t").append(element).append("\n");
+                    }
+                    System.out.println(sb);
+                }
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 
     interface Client extends AutoCloseable {

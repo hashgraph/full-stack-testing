@@ -4,18 +4,15 @@ import org.apiguardian.api.API;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.extension.support.TypeBasedParameterResolver;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.platform.commons.util.ReflectionUtils;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 
 import java.lang.annotation.*;
 import java.lang.reflect.Method;
 
-import static com.swirldslabs.fullstacktest.api.JupiterEngineTest.jupiterExecute;
 import static org.apiguardian.api.API.Status.STABLE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 /*
@@ -29,6 +26,11 @@ public class MyTest {
         EngineExecutionResults results = jupiterExecute(MonitorTest.class);
         results.allEvents().debug();
     }
+
+//    @AfterEach
+//    void afterEach() {
+//        assertEquals(1, 2);
+//    }
 
     static EngineExecutionResults jupiterExecute(Class<?> aClass) {
         return EngineTestKit
@@ -54,13 +56,15 @@ public class MyTest {
         @Override
         public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
             extensionContext.publishReportEntry("interceptTestMethod");
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                extensionContext.publishReportEntry("got interrupted!");
-                throw new RuntimeException(e);
-            }
-            invocation.proceed();
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e) {
+//                extensionContext.publishReportEntry("got interrupted!");
+//                throw new RuntimeException(e);
+//            }
+            //invocation.proceed();
+            // ReflectionUtils.invokeMethod(this.method, this.target.orElse((Object)null), this.arguments);
+            ReflectionUtils.invokeMethod(invocationContext.getExecutable(), invocationContext.getTarget().orElse(null), invocationContext.getArguments().toArray());
         }
 
         @Override
@@ -70,7 +74,17 @@ public class MyTest {
         }
 
         @Override
+        public void interceptAfterEachMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+            invocation.proceed();
+        }
+
+        @Override
         public MyClient resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+//            try {
+//                extensionContext.getExecutableInvoker().invoke(MonitorTest.class.getMethod("foo", MyClient.class), extensionContext.getRequiredTestInstance());
+//            } catch (NoSuchMethodException e) {
+//                throw new RuntimeException(e);
+//            }
             extensionContext.publishReportEntry("resolveParameter" + extensionContext);
             extensionContext.getStore(ExtensionContext.Namespace.create("myResource")).getOrComputeIfAbsent(MyResource.class);
             return new MyClient();
@@ -103,5 +117,12 @@ public class MyTest {
         void test2(TestReporter reporter, MyClient client) {
             reporter.publishEntry("inside test2");
         }
+
+        @AfterEach
+        void afterEach(TestReporter reporter, MyClient client) {}
+
+//        public void foo(MyClient client) {
+//            System.out.println("foo called!");
+//        }
     }
 }
