@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class EventBus {
+public class SimpleMessageQueue {
     public interface Message {}
 
     public static class Subscription implements AutoCloseable {
