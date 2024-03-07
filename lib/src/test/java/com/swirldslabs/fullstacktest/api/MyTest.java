@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 
 import static org.apiguardian.api.API.Status.STABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 /*
@@ -52,7 +53,7 @@ public class MyTest {
         public void close() {
         }
     }
-    static class MonitorExtension extends TypeBasedParameterResolver<MyClient> implements InvocationInterceptor {
+    static class MonitorExtension extends TypeBasedParameterResolver<MyClient> implements InvocationInterceptor, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
         @Override
         public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
             extensionContext.publishReportEntry("interceptTestMethod");
@@ -62,9 +63,9 @@ public class MyTest {
 //                extensionContext.publishReportEntry("got interrupted!");
 //                throw new RuntimeException(e);
 //            }
-            //invocation.proceed();
+            invocation.proceed();
             // ReflectionUtils.invokeMethod(this.method, this.target.orElse((Object)null), this.arguments);
-            ReflectionUtils.invokeMethod(invocationContext.getExecutable(), invocationContext.getTarget().orElse(null), invocationContext.getArguments().toArray());
+            //ReflectionUtils.invokeMethod(invocationContext.getExecutable(), invocationContext.getTarget().orElse(null), invocationContext.getArguments().toArray());
         }
 
         @Override
@@ -89,6 +90,25 @@ public class MyTest {
             extensionContext.getStore(ExtensionContext.Namespace.create("myResource")).getOrComputeIfAbsent(MyResource.class);
             return new MyClient();
         }
+
+        @Override
+        public void afterAll(ExtensionContext extensionContext) throws Exception {
+            extensionContext.publishReportEntry("afterAll");
+//            assumeTrue(false);
+        }
+
+        @Override
+        public void beforeEach(ExtensionContext extensionContext) throws Exception {
+            extensionContext.publishReportEntry("beforeEach");
+//            assumeTrue(false);
+        }
+
+        @Override
+        public void afterEach(ExtensionContext extensionContext) throws Exception {
+            extensionContext.publishReportEntry("afterEach");
+            //Thread.sleep(1500);
+            assertEquals(1,2);
+        }
     }
 
     @Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
@@ -110,6 +130,7 @@ public class MyTest {
 //        @Execution(ExecutionMode.CONCURRENT)
         void test1(TestReporter reporter, MyClient client) {
             reporter.publishEntry("inside test1");
+            assertEquals(1,2);
         }
         @Test
         @Timeout(1)

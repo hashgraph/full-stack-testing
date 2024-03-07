@@ -1,7 +1,6 @@
 package com.swirldslabs.fullstacktest.api;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestReporter;
+import org.junit.jupiter.api.*;
 import org.junit.platform.commons.util.ReflectionUtils;
 
 import java.lang.reflect.Proxy;
@@ -266,6 +265,12 @@ public class VirtualThreadsTest {
     static class Runner1 extends Sleeper {}
     static class Runner2 extends Sleeper {}
 
+//    @AfterAll
+//    @Timeout(value = 1, unit = TimeUnit.MILLISECONDS)
+//    static void beforeEach() throws Exception {
+//        Thread.sleep(1000);
+//        assertEquals(1,2);
+//    }
     // could use class::method::task in thread name
     @Test
     void executor() throws Exception {
