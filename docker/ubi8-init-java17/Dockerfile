@@ -103,8 +103,11 @@ ADD network-node.service /usr/lib/systemd/system/
 
 # Ensure proper file permissions
 RUN chmod -R +x /opt/hgcapp/services-hedera/HapiApp2.0/entrypoint.sh && \
-    touch /opt/hgcapp/services-hedera/HapiApp2.0/application.env && \
     chown -R 2000:2000 /opt/hgcapp/
+
+RUN mkdir -p /etc/network-node && \
+    touch /etc/network-node/application.env && \
+    chown -R 2000:2000 /etc/network-node
 
 # Expose TCP/UDP Port Definitions
 EXPOSE 50111/tcp 50211/tcp 50212/tcp
