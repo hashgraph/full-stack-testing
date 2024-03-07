@@ -1,6 +1,7 @@
 package com.swirldslabs.fullstacktest.api.v3;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,14 +39,11 @@ public class SimpleMessageQueue {
     }
 
     public void publish(Message message) throws InterruptedException {
+        Objects.requireNonNull(message);
         for (Subscription sub : subscriptions) {
             if (sub.filter.test(message)) {
                 sub.queue.put(message);
             }
         }
-    }
-
-    public int subscribers() {
-        return subscriptions.size();
     }
 }
