@@ -2,29 +2,21 @@ package com.swirldslabs.fullstacktest.api;
 
 import com.swirldslabs.fullstacktest.api.environment.EnvironmentTest;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
-import org.junit.platform.testkit.engine.EngineTestKit;
 
+import static com.swirldslabs.fullstacktest.api.JupiterEngineTest.jupiterExecute;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 public class FullStackTestTest {
     private static final Logger logger = LoggerFactory.getLogger(EnvironmentTest.class);
     @Test
     void test() {
-        EngineExecutionResults results = run(BasicFullStackTest.class);
+        EngineExecutionResults results = jupiterExecute(BasicFullStackTest.class);
         results.allEvents().debug();
         results.testEvents().assertStatistics(stats -> stats.started(1).succeeded(1));
         results.containerEvents().assertStatistics(stats -> stats.started(2).succeeded(2));
-    }
-
-    EngineExecutionResults run(Class<?> aClass) {
-        return EngineTestKit
-                .engine("junit-jupiter")
-                .selectors(selectClass(aClass))
-                .execute();
     }
 
     static class BasicEnvironment implements Environment {

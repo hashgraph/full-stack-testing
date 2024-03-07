@@ -39,4 +39,9 @@ java {
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+//    setJvmArgs(listOf("--enable-preview"))
+}
+
+tasks.compileTestJava {
+    options.compilerArgs.addAll(listOf("-parameters"/*, "--enable-preview", "-Xlint:preview"*/))
 }

@@ -1,0 +1,74 @@
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.TimeoutException;
+
+public class LoomTest {
+    private static final ScopedValue<String> NAME = ScopedValue.newInstance();
+
+    String childTask1() throws InterruptedException {
+        Thread.sleep(1000);
+        System.out.println("childTask1: " + NAME.get());
+        return "childTask1";
+    }
+    String childTask2() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {}
+            System.out.println(STR."childTask2 caught: \{e} " + NAME.get());
+            throw new RuntimeException(e);
+        }
+        System.out.println("childTask2");
+        return "childTask2";
+    }
+    String childTask3() {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {}
+            System.out.println(STR."childTask3 caught: \{e} " + NAME.get());
+            throw new RuntimeException(e);
+        }
+        System.out.println("childTask3");
+        return "childTask3";
+    }
+    @Test
+    void scopedValue() throws InterruptedException {
+        ScopedValue.runWhere(NAME, "duke", () -> {
+            try (var scope = new StructuredTaskScope<String>()) {
+                scope.fork(this::childTask1);
+                scope.fork(this::childTask2);
+                scope.fork(this::childTask3);
+//                scope.joinUntil(Instant.now().plusMillis(1500));
+//                scope.join();
+                System.out.println("joined");
+                Thread me = Thread.currentThread();
+                scope.fork(() -> {
+                    for (int i = 0; i < 10; ++i) {
+                        me.interrupt();
+                        System.out.println("interupt!");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Thread.interrupted();
+                        }
+                    }
+                    return "";
+                });
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+            }
+        });
+        System.out.println("done " + NAME.isBound());
+        Thread.sleep(3000);
+    }
+}
