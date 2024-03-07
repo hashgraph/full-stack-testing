@@ -7,7 +7,6 @@
 [![codecov](https://codecov.io/github/hashgraph/full-stack-testing/branch/main/graph/badge.svg?token=ABNne1KOxE)](https://codecov.io/github/hashgraph/full-stack-testing)
 
 
-
 The Full Stack Testing (FST) Suite provides a framework and an associated set of tools for conducting
 end-to-end and full stack tests against the Hedera network software. Designed with ease of use in mind, the tools are
 purpose built for the Hedera community and open-source contributors.
