@@ -50,3 +50,27 @@ privileged: true
 export MINIO_ROOT_USER={{ include "minio.accessKey" . }}
 export MINIO_ROOT_PASSWORD={{ include "minio.secretKey" . }}
 {{- end -}}
+
+{{- define "fullstack.volumeClaimTemplate" -}}
+- metadata:
+    name: {{ .name }}
+    annotations:
+      helm.sh/resource-policy: keep
+    labels:
+      fullstack.hedera.com/type: node-pvc
+  spec:
+    accessModes: [ "ReadWriteOnce" ]
+    resources:
+      requests:
+        storage: {{ default "2Gi" .storage }}
+{{- end -}}
+
+{{- define "fullstack.volumeTemplate" -}}
+- name: {{ .name }}
+  {{- if .pvcEnabled }}
+  persistentVolumeClaim:
+    claimName: {{ .claimName }}
+  {{- else }}
+  emptyDir: {}
+  {{- end }}
+{{- end -}}

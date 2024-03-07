@@ -52,6 +52,17 @@ acme-cluster-issuer:
 # default settings for a single node
 # This default configurations can be overridden for each node in the hedera.nodes section.
 defaults:
+  volumeClaims:
+    enabled: false
+    node:
+      accountBalances: "100Gi"
+      eventStreams: "100Gi"
+      recordStreams: "100Gi"
+      dataOnboard: "1Gi"
+      dataSaved: "500Gi"
+      dataStats: "50Gi"
+      dataUpgrade: "5Gi"
+      output: "5Gi"
   resources:
     requests:
       cpu: 100m
