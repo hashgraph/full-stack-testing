@@ -10,8 +10,10 @@ import static org.apiguardian.api.API.Status.STABLE;
 @Target({ ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @ExtendWith({ TestMonitorExtension.class })
+@Repeatable(ArrayOfMonitorWith.class)
 @Inherited
 @Documented
 @API(status = STABLE, since = "1.0")
 public @interface MonitorWith {
+    Class<? extends Monitor>[] value();
 }

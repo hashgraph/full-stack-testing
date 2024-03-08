@@ -1,9 +1,17 @@
 package com.swirldslabs.fullstacktest.api.v3;
 
 import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
+import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.jupiter.api.extension.support.TypeBasedParameterResolver;
+import org.junit.platform.commons.support.AnnotationSupport;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.junit.platform.commons.support.AnnotationSupport.findRepeatableAnnotations;
 
 public class TestMonitorExtension extends TypeBasedParameterResolver<TestMonitorContext> implements AfterEachCallback, BeforeEachCallback, InvocationInterceptor {
     @Override
@@ -11,14 +19,27 @@ public class TestMonitorExtension extends TypeBasedParameterResolver<TestMonitor
 
     }
 
+    Store store(ExtensionContext extensionContext) {
+        Class<?> testClass = extensionContext.getRequiredTestClass();
+        Method testMethod = extensionContext.getRequiredTestMethod();
+        Namespace namespace = Namespace.create(testClass, testMethod);
+        return extensionContext.getStore(namespace);
+    }
+
     @Override
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
-
+        try {
+            store(extensionContext).put(TestMonitorContext.class, new TestMonitorContext(extensionContext));
+        } catch (Exception exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
     }
 
     @Override
     public TestMonitorContext resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return new TestMonitorContext();
+        return store(extensionContext).get(TestMonitorContext.class, TestMonitorContext.class);
     }
 
     @Override
@@ -28,7 +49,7 @@ public class TestMonitorExtension extends TypeBasedParameterResolver<TestMonitor
 
     @Override
     public <T> T interceptTestFactoryMethod(Invocation<T> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
-        invocation.proceed();
+        return invocation.proceed();
     }
 
     @Override

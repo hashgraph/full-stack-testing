@@ -12,12 +12,12 @@ public class EventBusTest {
     void test() throws Exception {
         SimpleMessageQueue eventBus = new SimpleMessageQueue();
         eventBus.publish(new StartEvent());
-        try (SimpleMessageQueue.Subscription all = eventBus.subscribe(m -> true)) {
+        try (SimpleMessageQueue.Subscription<SimpleMessageQueue.Message> all = eventBus.subscribe(SimpleMessageQueue.Message.class)) {
             assertEquals(0, all.queue.size());
             eventBus.publish(new StartEvent());
             assertEquals(1, all.queue.size());
         }
-        try (SimpleMessageQueue.Subscription start = eventBus.subscribe(m -> m instanceof StartEvent)) {
+        try (SimpleMessageQueue.Subscription<StartEvent> start = eventBus.subscribe(StartEvent.class)) {
             assertEquals(0, start.queue.size());
             eventBus.publish(new StopEvent());
             assertEquals(0, start.queue.size());
