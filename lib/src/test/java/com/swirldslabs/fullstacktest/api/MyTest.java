@@ -122,7 +122,7 @@ public class MyTest {
     }
 
 //    @Execution(ExecutionMode.CONCURRENT)
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+//    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @MonitorWith(MyMonitor.class)
     static class MonitorTest {
         @Test

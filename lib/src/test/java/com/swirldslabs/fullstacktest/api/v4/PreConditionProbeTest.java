@@ -1,12 +1,13 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
-import com.swirldslabs.fullstacktest.api.v3.MonitorWithTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.opentest4j.IncompleteExecutionException;
 
 import java.time.Duration;
+import java.util.Optional;
+import java.util.Random;
 
 import static com.swirldslabs.fullstacktest.api.JupiterEngineTest.jupiterExecute;
 
@@ -14,7 +15,7 @@ public class PreConditionProbeTest {
     interface MyPreConditionProbe extends PreConditionProbe {
 
         @Override
-        public default Duration retryDelay() {
+        public default Duration retryDelay(Random random, long attempt, Optional<Duration> previous) {
             return Duration.ZERO;
         }
     }
@@ -71,9 +72,8 @@ public class PreConditionProbeTest {
     }
 
     static class MyInvariant implements Invariant {
-
         @Override
-        public void verify() throws AssertionError, IncompleteExecutionException, InterruptedException {
+        public void monitor() throws AssertionError, IncompleteExecutionException, InterruptedException {
             Thread.sleep(15);
         }
     }
@@ -96,5 +96,12 @@ public class PreConditionProbeTest {
     void test() {
         EngineExecutionResults results = jupiterExecute(MyTest.class);
         results.allEvents().debug();
+    }
+
+    static class X implements InvariantProbe, PreConditionProbe {
+        @Override
+        public boolean probe() throws AssertionError, IncompleteExecutionException, InterruptedException {
+            return false;
+        }
     }
 }

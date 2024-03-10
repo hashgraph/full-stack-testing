@@ -5,11 +5,13 @@ import org.opentest4j.IncompleteExecutionException;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.Random;
 
 /**
- * Probe based verifier.
+ * Probe for constraint verification.
  */
-public interface Probe extends ConstraintVerifier {
+public interface Probe {
     /**
      * Initial delay before performing readiness probe.
      * */
@@ -27,8 +29,9 @@ public interface Probe extends ConstraintVerifier {
     /**
      * Delay between retries
      * */
-    default Duration retryDelay() {
-        return Duration.of(5, ChronoUnit.SECONDS);
+    default Duration retryDelay(Random random, long attempt, Optional<Duration> previous) {
+        // 5 +/- 1 seconds
+        return Duration.of(4000 + random.nextInt(2001), ChronoUnit.MILLIS);
     }
 
     /**
@@ -51,15 +54,17 @@ public interface Probe extends ConstraintVerifier {
      */
     boolean probe() throws AssertionError, IncompleteExecutionException, InterruptedException;
 
-    @Override
+    /**
+     * Use probe to perform constraint verification.
+     * */
     default void verify() throws AssertionError, IncompleteExecutionException, InterruptedException {
+        Duration previous = null;
+        Random random = new Random();
         Thread.sleep(initialDelay());
-        for (long retry = 0; ; ++retry) {
-            if (probe()) {
-                return;
-            }
+        long retry = 0;
+        while (!probe()) {
             Assumptions.assumeTrue(retry < maxRetries(), failureMessage());
-            Thread.sleep(retryDelay());
+            Thread.sleep(previous = retryDelay(random, ++retry, Optional.ofNullable(previous)));
         }
     }
 }

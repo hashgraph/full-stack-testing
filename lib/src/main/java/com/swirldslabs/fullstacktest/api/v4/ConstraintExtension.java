@@ -16,6 +16,9 @@ import java.util.stream.Stream;
 
 import static org.junit.platform.commons.support.AnnotationSupport.findRepeatableAnnotations;
 
+/**
+ * Junit5 extension to support constraint based verification, before, during and after test execution.
+ * */
 public class ConstraintExtension extends TypeBasedParameterResolver<ConstraintContext> implements AfterTestExecutionCallback, BeforeTestExecutionCallback, InvocationInterceptor {
     @Override
     public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
@@ -31,7 +34,7 @@ public class ConstraintExtension extends TypeBasedParameterResolver<ConstraintCo
         Class<?> testClass = extensionContext.getRequiredTestClass();
         Method testMethod = extensionContext.getRequiredTestMethod();
         ThreadFactory threadFactory = Thread.ofVirtual()
-                .name(testClass.getName() + "#" + testMethod.getName() + "@PreCondition", 0)
+                .name(testClass.getName() + "#" + testMethod.getName())
                 .factory();
         List<Class<? extends PreCondition>> preConditions = Stream.concat(
                         findRepeatableAnnotations(testClass, Constraint.class).stream(),
@@ -47,7 +50,7 @@ public class ConstraintExtension extends TypeBasedParameterResolver<ConstraintCo
             Thread thread = threadFactory.newThread(() -> {
                 BeforeTestMessage message;
                 try {
-                    instance.verify();
+                    instance.check();
                     message = new Ready(Thread.currentThread());
                 } catch (Throwable throwable) {
                     if (throwable instanceof InterruptedException) {

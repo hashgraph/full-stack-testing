@@ -1,6 +1,5 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
-import com.swirldslabs.fullstacktest.api.v3.TestMonitorExtension;
 import org.apiguardian.api.API;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -9,7 +8,7 @@ import java.lang.annotation.*;
 import static org.apiguardian.api.API.Status.STABLE;
 
 /**
- * {@code @Constraint} is used to verify requirements.
+ * {@code @Constraint} annotation associates constraint verifiers with test classes and methods.
  * */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
