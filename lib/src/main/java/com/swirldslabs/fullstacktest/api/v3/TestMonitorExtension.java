@@ -13,21 +13,14 @@ import java.util.stream.Stream;
 
 import static org.junit.platform.commons.support.AnnotationSupport.findRepeatableAnnotations;
 
-public class TestMonitorExtension extends TypeBasedParameterResolver<TestMonitorContext> implements AfterEachCallback, BeforeEachCallback, InvocationInterceptor {
+public class TestMonitorExtension extends TypeBasedParameterResolver<TestMonitorContext> implements AfterTestExecutionCallback, BeforeTestExecutionCallback, InvocationInterceptor {
     @Override
-    public void afterEach(ExtensionContext extensionContext) throws Exception {
+    public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
 
     }
 
-    Store store(ExtensionContext extensionContext) {
-        Class<?> testClass = extensionContext.getRequiredTestClass();
-        Method testMethod = extensionContext.getRequiredTestMethod();
-        Namespace namespace = Namespace.create(testClass, testMethod);
-        return extensionContext.getStore(namespace);
-    }
-
     @Override
-    public void beforeEach(ExtensionContext extensionContext) throws Exception {
+    public void beforeTestExecution(ExtensionContext extensionContext) throws Exception {
         try {
             store(extensionContext).put(TestMonitorContext.class, new TestMonitorContext(extensionContext));
         } catch (Exception exception) {
@@ -35,6 +28,13 @@ public class TestMonitorExtension extends TypeBasedParameterResolver<TestMonitor
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
+    }
+
+    Store store(ExtensionContext extensionContext) {
+        Class<?> testClass = extensionContext.getRequiredTestClass();
+        Method testMethod = extensionContext.getRequiredTestMethod();
+        Namespace namespace = Namespace.create(testClass, testMethod);
+        return extensionContext.getStore(namespace);
     }
 
     @Override
