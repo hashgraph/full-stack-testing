@@ -49,13 +49,13 @@ public interface Probe extends ConstraintVerifier {
      * @see <a href="https://junit.org/junit5/docs/current/api/org.junit.jupiter.api/org/junit/jupiter/api/Assertions.html">Assertions</a>
      * @see <a href="https://junit.org/junit5/docs/current/api/org.junit.jupiter.api/org/junit/jupiter/api/Assumptions.html">Assumptions</a>
      */
-    boolean isVerified() throws AssertionError, IncompleteExecutionException, InterruptedException;
+    boolean probe() throws AssertionError, IncompleteExecutionException, InterruptedException;
 
     @Override
     default void verify() throws AssertionError, IncompleteExecutionException, InterruptedException {
         Thread.sleep(initialDelay());
         for (long retry = 0; ; ++retry) {
-            if (isVerified()) {
+            if (probe()) {
                 return;
             }
             Assumptions.assumeTrue(retry < maxRetries(), failureMessage());

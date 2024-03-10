@@ -11,9 +11,9 @@ import static org.apiguardian.api.API.Status.STABLE;
 /**
  * {@code @Constraint} is used to verify requirements.
  * */
-@Target({ ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@ExtendWith({ TestMonitorExtension.class })
+@ExtendWith({ConstraintExtension.class})
 @Repeatable(Constraints.class)
 @Inherited
 @Documented
