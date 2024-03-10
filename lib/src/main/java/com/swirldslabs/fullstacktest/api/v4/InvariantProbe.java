@@ -7,9 +7,9 @@ import org.opentest4j.IncompleteExecutionException;
  */
 public interface InvariantProbe extends Invariant, Probe {
     @Override
-    default void validate() throws AssertionError, IncompleteExecutionException, InterruptedException {
+    default void verify() throws AssertionError, IncompleteExecutionException, InterruptedException {
         while (!Thread.currentThread().isInterrupted()) {
-            Probe.super.validate();
+            Probe.super.verify();
             Thread.sleep(retryDelay());
         }
     }

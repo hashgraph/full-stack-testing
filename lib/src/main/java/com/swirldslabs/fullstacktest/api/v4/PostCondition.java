@@ -1,7 +1,7 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
 /**
- * Post-condition validator for test case.
+ * Post-condition verifier for test case.
  * */
-public interface PostCondition extends Validator {
+public interface PostCondition extends ConstraintVerifier {
 }

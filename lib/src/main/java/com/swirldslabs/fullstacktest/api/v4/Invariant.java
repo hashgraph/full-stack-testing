@@ -1,7 +1,7 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
 /**
- * Invariant validator for test case.
+ * Invariant verifier for test case.
  * */
-public interface Invariant extends Validator {
+public interface Invariant extends ConstraintVerifier {
 }

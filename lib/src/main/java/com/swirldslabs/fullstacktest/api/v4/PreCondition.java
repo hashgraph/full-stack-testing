@@ -1,6 +1,6 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
 /**
- * Pre-condition validator for test case.
+ * Pre-condition verifier for test case.
  * */
-public interface PreCondition extends Validator {}
+public interface PreCondition extends ConstraintVerifier {}
