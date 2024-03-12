@@ -4,7 +4,7 @@ import org.apiguardian.api.API;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.extension.support.TypeBasedParameterResolver;
-import org.junit.platform.commons.util.ReflectionUtils;
+import org.junit.platform.commons.logging.LogRecordListener;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 import org.junit.platform.testkit.engine.EngineTestKit;
 
@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 
 import static org.apiguardian.api.API.Status.STABLE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
@@ -51,9 +52,15 @@ public class MyTest {
     static class MyResource implements ExtensionContext.Store.CloseableResource {
         @Override
         public void close() {
+//            assertEquals(1,2);
+//            assumeTrue(false);
+//            assertEquals(1,2);
         }
     }
-    static class MonitorExtension extends TypeBasedParameterResolver<MyClient> implements InvocationInterceptor, AfterAllCallback, BeforeEachCallback, AfterEachCallback {
+    static class MonitorExtension extends TypeBasedParameterResolver<MyClient> implements InvocationInterceptor, AfterAllCallback, BeforeEachCallback, AfterEachCallback, TestExecutionExceptionHandler, AfterTestExecutionCallback {
+        public MonitorExtension() {
+        }
+
         @Override
         public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
             extensionContext.publishReportEntry("interceptTestMethod");
@@ -107,7 +114,17 @@ public class MyTest {
         public void afterEach(ExtensionContext extensionContext) throws Exception {
             extensionContext.publishReportEntry("afterEach");
             //Thread.sleep(1500);
-            assertEquals(1,2);
+//            assertEquals(1,2);
+        }
+
+        @Override
+        public void handleTestExecutionException(ExtensionContext extensionContext, Throwable throwable) throws Throwable {
+            int i = 1;
+        }
+
+        @Override
+        public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
+            int i = 1;
         }
     }
 
@@ -135,8 +152,13 @@ public class MyTest {
         @Test
         @Timeout(1)
 //        @Execution(ExecutionMode.CONCURRENT)
-        void test2(TestReporter reporter, MyClient client) {
+        void test2(TestReporter reporter, MyClient client) throws Exception {
             reporter.publishEntry("inside test2");
+            //try {
+                Thread.sleep(2000);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException();
+//            }
         }
 
         @AfterEach
@@ -145,5 +167,38 @@ public class MyTest {
 //        public void foo(MyClient client) {
 //            System.out.println("foo called!");
 //        }
+    }
+
+    static class Foo {
+//        @BeforeEach
+//        void before() {
+//            assumeTrue(false);
+//        }
+        @Test
+        void foo1() {
+    assertTrue(false, "hello?");
+}
+        @Test
+        void foo2(TestReporter reporter) {
+            assertTrue(false, "hello?");
+        }
+        @Test
+        void foo3(TestReporter reporter) {
+            reporter.publishEntry("report!");
+//            throw new RuntimeException();
+            assumeTrue(false, "hello?");
+        }
+        @Test
+        void foo4() {
+            assertTrue(false, "hello?");
+        }
+        @Test
+        void foo5() {
+            assertTrue(false, "hello?");
+        }
+        @Test
+        void foo6() {
+            throw new RuntimeException("rte");
+        }
     }
 }

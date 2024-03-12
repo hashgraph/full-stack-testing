@@ -27,6 +27,7 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation(libs.junit.jupiter)
+    implementation("org.junit.platform:junit-platform-reporting")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -39,7 +40,6 @@ java {
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
-//    setJvmArgs(listOf("--enable-preview"))
 }
 
 tasks.compileTestJava {

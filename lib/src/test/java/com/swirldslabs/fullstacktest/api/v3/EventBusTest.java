@@ -1,5 +1,6 @@
 package com.swirldslabs.fullstacktest.api.v3;
 
+import com.swirldslabs.fullstacktest.api.v4.SimpleMessageQueue;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

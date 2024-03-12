@@ -1,4 +1,4 @@
-package com.swirldslabs.fullstacktest.api.v3;
+package com.swirldslabs.fullstacktest.api.v4;
 
 import java.util.Collections;
 import java.util.Objects;

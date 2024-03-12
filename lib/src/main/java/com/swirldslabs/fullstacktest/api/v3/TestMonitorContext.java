@@ -1,7 +1,8 @@
 package com.swirldslabs.fullstacktest.api.v3;
 
-import com.swirldslabs.fullstacktest.api.v3.SimpleMessageQueue.Message;
-import com.swirldslabs.fullstacktest.api.v3.SimpleMessageQueue.Subscription;
+import com.swirldslabs.fullstacktest.api.v4.SimpleMessageQueue;
+import com.swirldslabs.fullstacktest.api.v4.SimpleMessageQueue.Message;
+import com.swirldslabs.fullstacktest.api.v4.SimpleMessageQueue.Subscription;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.util.ReflectionUtils;
 
