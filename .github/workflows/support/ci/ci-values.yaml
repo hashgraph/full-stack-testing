@@ -1,0 +1,8 @@
+# helm test container
+tester:
+  image:
+    registry: "docker.fst.local"
+    repository: "kubectl-bats"
+    tag: "local"
+    pullPolicy: "Never"
+  resources: {}

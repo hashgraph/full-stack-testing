@@ -51,12 +51,6 @@ jobs:
         # nmt-install.sh uses ubi8-init-dind image
         scriptName: [ direct-install.sh, nmt-install.sh  ]
     steps:
-      - name: Setup Make
-        run: |
-          if ! command -v make >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y make
-          fi
       - name: Get changed files related to charts
         id: changed-files
         uses: tj-actions/changed-files@90a06d6ba9543371ab4df8eeca0be07ca6054959 #v42.0.2
@@ -64,8 +58,10 @@ jobs:
           files_yaml: |
             chart:
               - charts/**
+              - .github/workflows/support/**
             scripts:
               - dev/**
+              - .github/workflows/support/**
 
       - name: List all changed files related to charts
         id: check-changed-files
@@ -134,8 +130,7 @@ jobs:
           kubectl get node --show-labels
 
       - name: Helm Chart Test
-        working-directory: dev
+        working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          source ci_test.sh
