@@ -56,6 +56,7 @@ public class TestMonitorContext {
         }
         Set<Thread> set = running.values().stream().map(v -> v.thread).collect(Collectors.toCollection(HashSet::new));
         subscription = messageQueue.subscribe(InitialMessage.class);
+        set.forEach(Thread::start);
         while (!set.isEmpty()) {
             switch (subscription.queue.take()) {
                 case Ready(Thread thread) -> set.remove(thread);

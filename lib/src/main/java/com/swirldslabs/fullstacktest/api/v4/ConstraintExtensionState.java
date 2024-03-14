@@ -188,6 +188,8 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                             msgQueue.publish(new ExitedExceptionally(obj.invariant, Thread.currentThread(), throwable));
                         }
                     })));
+            // maybe: run invocation.proceed() in same thread
+            // run switch(msqQueue) in seperate thread, or even seperate threads (exit & request handlers)
             map.put(null, threadFactory.newThread(() -> {
                 try {
                     invocation.proceed();

@@ -168,37 +168,4 @@ public class MyTest {
 //            System.out.println("foo called!");
 //        }
     }
-
-    static class Foo {
-//        @BeforeEach
-//        void before() {
-//            assumeTrue(false);
-//        }
-        @Test
-        void foo1() {
-    assertTrue(false, "hello?");
-}
-        @Test
-        void foo2(TestReporter reporter) {
-            assertTrue(false, "hello?");
-        }
-        @Test
-        void foo3(TestReporter reporter) {
-            reporter.publishEntry("report!");
-//            throw new RuntimeException();
-            assumeTrue(false, "hello?");
-        }
-        @Test
-        void foo4() {
-            assertTrue(false, "hello?");
-        }
-        @Test
-        void foo5() {
-            assertTrue(false, "hello?");
-        }
-        @Test
-        void foo6() {
-            throw new RuntimeException("rte");
-        }
-    }
 }

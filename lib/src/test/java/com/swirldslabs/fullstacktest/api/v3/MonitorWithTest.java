@@ -1,19 +1,20 @@
 package com.swirldslabs.fullstacktest.api.v3;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.platform.testkit.engine.EngineExecutionResults;
 
 import static com.swirldslabs.fullstacktest.api.JupiterEngineTest.jupiterExecute;
 
 public class MonitorWithTest {
-    static class Monitor1 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor2 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor3 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor4 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor5 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor6 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor7 implements Monitor { public void monitor(Runnable ready) {} }
-    static class Monitor8 implements Monitor { public void monitor(Runnable ready) {} }
+    static class Monitor1 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor2 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor3 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor4 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor5 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor6 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor7 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
+    static class Monitor8 implements Monitor { public void monitor(Runnable ready) { ready.run(); } }
 
 
     @MonitorWith(Monitor1.class)
@@ -28,6 +29,7 @@ public class MonitorWithTest {
         @Test
         @MonitorWith(Monitor7.class)
         @MonitorWith({Monitor1.class, Monitor8.class})
+        @Timeout(1)
         void test() {}
     }
 
