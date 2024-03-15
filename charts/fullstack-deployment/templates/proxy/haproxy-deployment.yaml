@@ -52,7 +52,7 @@ spec:
             # https://hub.docker.com/_/haproxy/
             mountPath: /usr/local/etc/haproxy
           - name: haproxy-ofac-volume
-            mountPath: /var/opt/ofac/
+            mountPath: /var/opt/
         {{- with default $defaults.resources $haproxy.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
