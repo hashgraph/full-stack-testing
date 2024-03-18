@@ -5,25 +5,30 @@ import com.swirldslabs.fullstacktest.api.v4.SimpleMessageQueue.Subscription;
 import org.junit.jupiter.api.extension.*;
 import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.junit.jupiter.api.extension.support.TypeBasedParameterResolver;
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
 import org.junit.platform.commons.util.ReflectionUtils;
 
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.platform.commons.support.AnnotationSupport.findRepeatableAnnotations;
 
 public class ConstraintExtensionState extends TypeBasedParameterResolver<ConstraintContext> implements AfterTestExecutionCallback, BeforeTestExecutionCallback, CloseableResource, InvocationInterceptor {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     SimpleMessageQueue msgQueue = new SimpleMessageQueue();
     ThreadFactory threadFactory;
+
     record TestCase(Class<?> aClass, Method aMethod) {
         public TestCase(ExtensionContext extensionContext) {
             this(extensionContext.getRequiredTestClass(), extensionContext.getRequiredTestMethod());
@@ -33,6 +38,19 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
         if (null == threadFactory) {
             threadFactory = Thread.ofVirtual()
                     .name(testCase.aClass.getName() + "#" + testCase.aMethod.getName())
+                    .uncaughtExceptionHandler((t, e) -> {
+                        boolean interrupted = Thread.interrupted();
+                        if (e instanceof Unexceptional) {
+                            msgQueue.publish(new ExitedNormally(null, t));
+                        } else if (e instanceof WrappedException) {
+                            msgQueue.publish(new ExitedExceptionally(null, t, e.getCause()));
+                        } else {
+                            msgQueue.publish(new ExitedExceptionally(null, t, e));
+                        }
+                        if (interrupted) {
+                            Thread.currentThread().interrupt();
+                        }
+                    })
                     .factory();
         }
         return threadFactory;
@@ -72,9 +90,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
 //        });
 //    }
     @Override
-    public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
-
-    }
+    public void afterTestExecution(ExtensionContext extensionContext) throws Exception {}
 
     sealed interface Response extends Message {}
     record Started<T extends Invariant>(T invariant) implements Response {}
@@ -174,20 +190,32 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
 
     record ClassAndInstance(Class<? extends Invariant> aClass, Invariant invariant) {}
     Set<Thread> threads = new HashSet<>();
+    static class Unexceptional extends RuntimeException {}
+    static class WrappedException extends RuntimeException {
+        public WrappedException(Throwable cause) {
+            super(cause);
+        }
+    }
     @Override
     public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
         TestCase testCase = init(extensionContext);
         try (Subscription<AllTheMessages> subscription = msgQueue.subscribe(AllTheMessages.class)) {
-            Map<Object, Thread> map = constraints(testCase, Invariant.class)
+            Map<Invariant, Thread> map = constraints(testCase, Invariant.class)
                     .map($ -> new ClassAndInstance($, ReflectionUtils.newInstance($)))
-                    .collect(Collectors.toMap(ClassAndInstance::aClass, obj -> threadFactory.newThread(() -> {
+                    .collect(Collectors.toMap(ClassAndInstance::invariant, obj -> threadFactory.newThread(() -> {
                         try {
                             obj.invariant.monitorInvariant();
-                            msgQueue.publish(new ExitedNormally(obj.invariant, Thread.currentThread()));
-                        } catch (Throwable throwable) {
-                            msgQueue.publish(new ExitedExceptionally(obj.invariant, Thread.currentThread(), throwable));
+                            throw new Unexceptional();
+                        } catch (InterruptedException exception) {
+                            Thread.currentThread().interrupt();
                         }
-                    })));
+                    }), (a, b) -> a, /*WeakHashMap*/HashMap::new));
+//            logger.info(() -> "created threads: " + map.values());
+            // fixme: I think the problem may be a race condition due to receiving the exited-normally event
+            //        and possibly even the stop-request while the thread is still alive.
+            //        I think I can mitigate this with a default-uncaught-exception-handler
+            Map<Class<? extends Invariant>, ? extends Invariant> map2 = map.entrySet().stream().collect(Collectors.toMap($ -> $.getKey().getClass(), $ -> $.getKey(),
+                    (a, b) -> a, /*WeakHashMap*/HashMap::new));
             // maybe: run invocation.proceed() in same thread
             // run switch(msqQueue) in seperate thread, or even seperate threads (exit & request handlers)
             map.put(null, threadFactory.newThread(() -> {
@@ -195,41 +223,56 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                     invocation.proceed();
                     msgQueue.publish(new ExitedSuccessfully(Thread.currentThread()));
                 } catch (Throwable throwable) {
-                    msgQueue.publish(new ExitedExceptionally(null, Thread.currentThread(), throwable));
+                    throw new WrappedException(throwable);
                 }
             }));
             threads.addAll(map.values());
-            map.values().forEach(Thread::start);
-            Map<Thread, Object> pendingStop = new HashMap<>();
+            map.values().stream().distinct().forEach(Thread::start);
+            Map<Thread, Object> pendingStop = new IdentityHashMap<>();//new HashMap<>();
             while (!Thread.currentThread().isInterrupted()) {
+//                logger.info(() -> "waiting to rx next msg");
+                for (; null == subscription.queue.peek(); Thread.sleep(1));
+//                logger.info(() -> "next msg rx: " + subscription.queue.peek());
                 switch (subscription.queue.take()) {
                     case StartRequest(Invariant invariant) -> {
                         Thread thread = threadFactory.newThread(() -> {
                             try {
                                 invariant.monitorInvariant();
-                                msgQueue.publish(new ExitedNormally(invariant, Thread.currentThread()));
-                            } catch (Throwable throwable) {
-                                msgQueue.publish(new ExitedExceptionally(invariant, Thread.currentThread(), throwable));
+                                throw new Unexceptional();
+                            } catch (InterruptedException exception) {
+                                Thread.currentThread().interrupt();
                             }
                         });
                         thread.start();
+//                        logger.info(() -> "started thread: " + thread);
                         msgQueue.publish(new Started(invariant));
                         map.put(invariant, thread);
                     }
                     case StopRequest(Object object) -> {
-                        Thread thread = map.get(object);
+                        Invariant invariant = object instanceof Class<?> ? map2.get(object) : (Invariant) object;
+                        Thread thread = map.get(invariant);
                         if (null == thread) {
                             msgQueue.publish(new Error(object, "not found: " + object));
-                        } else {
+                        } else if (thread.isAlive()) {
                             thread.interrupt();
                             pendingStop.put(thread, object);
-                            map.remove(object);
+//                            logger.info(() -> "pendingStop: " + thread + ", " + object + ", " + invariant);
+                            if (null == invariant) {
+//                                logger.info(() -> "invariant is null, map: " + map);
+//                                logger.info(() -> "invariant is null, map2: " + map2);
+                            }
+//                            map.remove(object);
+                        } else {
+                            msgQueue.publish(new Stopped(object, invariant));
                         }
                     }
                     case ExitedExceptionally(Invariant invariant, Thread thread, Throwable throwable) -> {
+                        thread.join();
+//                        logger.info(() -> "ExitedExceptionally thread.isAlive: " + thread.isAlive() + ", " + thread);
                         if (pendingStop.containsKey(thread) && throwable instanceof InterruptedException) {
                             Object object = pendingStop.remove(thread);
                             threads.remove(thread);
+                            invariant = map.entrySet().stream().filter(e -> e.getValue().equals(thread)).findAny().get().getKey();
                             msgQueue.publish(new Stopped(object, invariant));
                         } else {
                             threads.forEach(Thread::interrupt);
@@ -237,9 +280,16 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                         }
                     }
                     case ExitedNormally(Invariant invariant, Thread thread) -> {
+//                        logger.info(() -> "ExitedNormally joining thread: " + thread);
+                        thread.join();
+//                        logger.info(() -> "ExitedNormally thread.isAlive: " + thread.isAlive() + ", " + thread);
                         if (pendingStop.containsKey(thread)) {
+//                            logger.info(() -> "publishing stop event");
                             Object object = pendingStop.remove(thread);
+                            invariant = map.entrySet().stream().filter(e -> e.getValue().equals(thread)).findAny().get().getKey();
                             msgQueue.publish(new Stopped(object, invariant));
+                        } else {
+//                            logger.info(() -> "thread not found: " + thread + ", in " + pendingStop);
                         }
                         threads.remove(thread);
                     }
@@ -249,6 +299,11 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                     }
                 }
             }
+        } catch (Throwable throwable) {
+//            logger.info(() -> "caught: " + throwable);
+            throw throwable;
+        } finally {
+//            logger.info(() -> "exiting for intercept test method");
         }
     }
 
@@ -259,11 +314,13 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
 
     @Override
     public void interceptTestTemplateMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
-        InvocationInterceptor.super.interceptTestTemplateMethod(invocation, invocationContext, extensionContext);
+//        InvocationInterceptor.super.interceptTestTemplateMethod(invocation, invocationContext, extensionContext);
+        interceptTestMethod(invocation, invocationContext, extensionContext);
     }
 
     @Override
     public void interceptDynamicTest(Invocation<Void> invocation, DynamicTestInvocationContext invocationContext, ExtensionContext extensionContext) throws Throwable {
-        InvocationInterceptor.super.interceptDynamicTest(invocation, invocationContext, extensionContext);
+//        InvocationInterceptor.super.interceptDynamicTest(invocation, invocationContext, extensionContext);
+        interceptTestMethod(invocation, null, extensionContext);
     }
 }

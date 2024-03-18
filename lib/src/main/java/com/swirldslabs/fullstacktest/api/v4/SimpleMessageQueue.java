@@ -1,5 +1,9 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
+import org.junit.platform.commons.logging.Logger;
+import org.junit.platform.commons.logging.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
@@ -9,7 +13,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * Need to test this
+ * */
 public class SimpleMessageQueue {
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     public interface Message {}
 
     public static class Subscription<T extends Message> implements AutoCloseable {
@@ -31,7 +39,9 @@ public class SimpleMessageQueue {
             if (aClass.isAssignableFrom(message.getClass())) {
                 T msg = (T) message;
                 if (filter.test(msg)) {
+//                    logger.info(() -> "putting msg in queue: " + msg + ", " + queue + ", from inside thread=" + Thread.currentThread());
                     queue.put(msg);
+//                    logger.info(() -> "msg in queue: " + msg + ", " + queue);
                 }
             }
         }
@@ -53,13 +63,17 @@ public class SimpleMessageQueue {
     }
 
     public void publish(Message message) {
+//        logger.info(() -> "publish: " + message);
+//        System.out.println("publish: " + message);
         Objects.requireNonNull(message);
-        try {
-            for (Subscription<? extends Message> subscription : subscriptions) {
-                subscription.accept(message);
+        Thread.ofVirtual().start(() -> { // run in another thread which is *unlikely* to be interrupted. fixme!
+            try {
+                for (Subscription<? extends Message> subscription : subscriptions) {
+                    subscription.accept(message);
+                }
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
             }
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-        }
+        });
     }
 }

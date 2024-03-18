@@ -18,7 +18,15 @@ public class ConstraintExtension extends TypeBasedParameterResolver<ConstraintCo
     }
     @Override
     public void afterTestExecution(ExtensionContext extensionContext) throws Exception {
-        state(extensionContext).afterTestExecution(extensionContext);
+        ConstraintExtensionState state = state(extensionContext);
+        state.afterTestExecution(extensionContext);
+        try {
+            state.close();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+        extensionContext.getStore(create(extensionContext.getRequiredTestClass(), extensionContext.getRequiredTestMethod()))
+                .remove(ConstraintExtensionState.class);
     }
 
     @Override
@@ -48,6 +56,7 @@ public class ConstraintExtension extends TypeBasedParameterResolver<ConstraintCo
 
     @Override
     public void interceptDynamicTest(Invocation<Void> invocation, DynamicTestInvocationContext invocationContext, ExtensionContext extensionContext) throws Throwable {
-        state(extensionContext).interceptDynamicTest(invocation, invocationContext, extensionContext);
+        ExtensionContext ctx = extensionContext.getParent().get();
+        state(ctx).interceptDynamicTest(invocation, invocationContext, ctx);
     }
 }
