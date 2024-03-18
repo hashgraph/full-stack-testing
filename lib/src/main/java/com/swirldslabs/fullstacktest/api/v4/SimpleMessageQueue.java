@@ -39,9 +39,9 @@ public class SimpleMessageQueue {
             if (aClass.isAssignableFrom(message.getClass())) {
                 T msg = (T) message;
                 if (filter.test(msg)) {
-//                    logger.info(() -> "putting msg in queue: " + msg + ", " + queue + ", from inside thread=" + Thread.currentThread());
+                    logger.info(() -> "putting msg in queue: " + msg + ", " + queue + ", from inside thread=" + Thread.currentThread());
                     queue.put(msg);
-//                    logger.info(() -> "msg in queue: " + msg + ", " + queue);
+                    logger.info(() -> "msg in queue: " + msg + ", " + queue);
                 }
             }
         }
@@ -64,7 +64,7 @@ public class SimpleMessageQueue {
 
     public void publish(Message message) {
 //        logger.info(() -> "publish: " + message);
-//        System.out.println("publish: " + message);
+        System.out.println("publish: " + message);
         Objects.requireNonNull(message);
         Thread.ofVirtual().start(() -> { // run in another thread which is *unlikely* to be interrupted. fixme!
             try {

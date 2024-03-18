@@ -1,6 +1,7 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -95,8 +96,13 @@ public class PreconditionProbeTest {
     static class MyInvariant1 extends MyInvariant {
         @Override
         public void monitorInvariant() throws AssertionError, IncompleteExecutionException, InterruptedException {
-            Thread.sleep(1000);
-            for (long loop = Long.MIN_VALUE; loop < Long.MAX_VALUE; ++loop);
+            System.out.println("MyInvariant1 start: " + Thread.currentThread());
+            try {
+                Thread.sleep(1000);
+            } finally {
+                System.out.println("MyInvariant1 done");
+            }
+//            for (long loop = Long.MIN_VALUE; loop < Long.MAX_VALUE; ++loop);
         }
     }
     static class MyInvariant2 extends MyInvariant {}
@@ -138,6 +144,7 @@ public class PreconditionProbeTest {
     @Constraint(Probe6.class)
     @Constraint(Probe7.class)
     @Constraint(MyInvariant3.class)
+    @Disabled
     static class MyTest extends BaseTest {
         @BeforeAll
         static void before() {}

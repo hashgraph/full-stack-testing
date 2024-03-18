@@ -208,6 +208,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                             throw new Unexceptional();
                         } catch (InterruptedException exception) {
                             Thread.currentThread().interrupt();
+//                            throw new WrappedException(exception);
                         }
                     }), (a, b) -> a, /*WeakHashMap*/HashMap::new));
 //            logger.info(() -> "created threads: " + map.values());
@@ -231,7 +232,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
             Map<Thread, Object> pendingStop = new IdentityHashMap<>();//new HashMap<>();
             while (!Thread.currentThread().isInterrupted()) {
 //                logger.info(() -> "waiting to rx next msg");
-                for (; null == subscription.queue.peek(); Thread.sleep(1));
+//                for (; null == subscription.queue.peek(); Thread.sleep(1));
 //                logger.info(() -> "next msg rx: " + subscription.queue.peek());
                 switch (subscription.queue.take()) {
                     case StartRequest(Invariant invariant) -> {
@@ -241,6 +242,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                                 throw new Unexceptional();
                             } catch (InterruptedException exception) {
                                 Thread.currentThread().interrupt();
+//                                throw new WrappedException(exception);
                             }
                         });
                         thread.start();
@@ -256,10 +258,10 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                         } else if (thread.isAlive()) {
                             thread.interrupt();
                             pendingStop.put(thread, object);
-//                            logger.info(() -> "pendingStop: " + thread + ", " + object + ", " + invariant);
+                            logger.info(() -> "pendingStop: " + thread + ", " + object + ", " + invariant);
                             if (null == invariant) {
-//                                logger.info(() -> "invariant is null, map: " + map);
-//                                logger.info(() -> "invariant is null, map2: " + map2);
+                                logger.info(() -> "invariant is null, map: " + map);
+                                logger.info(() -> "invariant is null, map2: " + map2);
                             }
 //                            map.remove(object);
                         } else {
@@ -320,7 +322,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
 
     @Override
     public void interceptDynamicTest(Invocation<Void> invocation, DynamicTestInvocationContext invocationContext, ExtensionContext extensionContext) throws Throwable {
-//        InvocationInterceptor.super.interceptDynamicTest(invocation, invocationContext, extensionContext);
-        interceptTestMethod(invocation, null, extensionContext);
+        InvocationInterceptor.super.interceptDynamicTest(invocation, invocationContext, extensionContext);
+//        interceptTestMethod(invocation, null, extensionContext);
     }
 }

@@ -43,5 +43,13 @@ tasks.named<Test>("test") {
 }
 
 tasks.compileTestJava {
-    options.compilerArgs.addAll(listOf("-parameters"/*, "--enable-preview", "-Xlint:preview"*/))
+    options.compilerArgs.addAll(listOf("-parameters"))
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.addAll(listOf("--enable-preview"))
+}
+
+tasks.withType<Test> {
+    setJvmArgs(listOf("--enable-preview"))
 }

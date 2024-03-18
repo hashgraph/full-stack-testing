@@ -13,7 +13,7 @@ import java.lang.invoke.MethodHandles;
  * */
 public class ConstraintContext {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private SimpleMessageQueue msgQueue;
+    /*private*/ SimpleMessageQueue msgQueue;
 
     public ConstraintContext(SimpleMessageQueue msgQueue) {
         this.msgQueue = msgQueue;

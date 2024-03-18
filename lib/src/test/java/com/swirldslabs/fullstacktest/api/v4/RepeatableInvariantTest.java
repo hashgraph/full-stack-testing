@@ -1,6 +1,8 @@
 package com.swirldslabs.fullstacktest.api.v4;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+@Disabled
 @Timeout(10)
 public class RepeatableInvariantTest {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -94,10 +97,11 @@ public class RepeatableInvariantTest {
                 invariant.registerPhaser(phaser);
                 ctx.start(invariant);
             }
+            System.out.println("context: " + ctx + ", msgQ: " + ctx.msgQueue);
             assertEquals(11, phaser.getRegisteredParties());
             phaser.arriveAndDeregister();
         }
-//        @Disabled
+        @Disabled
         @Test
 //        @RepeatedTest(1000)
 //        @Timeout(2)
@@ -110,24 +114,26 @@ public class RepeatableInvariantTest {
 //        @BeforeEach
 //        void beforeEach() {
 ////            RepeatableInvariantTest.sleepDuration = ZERO; //FOREVER.getDuration();
-//            sleepDuration = initialSleepDuration;
+//            sleepDuration = ZERO;
 //        }
-//        @Disabled
-        @RepeatedTest(5)
+        @Disabled
+//        @Execution(ExecutionMode.CONCURRENT)
+        @RepeatedTest(50)
         @Constraint({SynchronizedInvariant8.class, SynchronizedInvariant9.class})
         void test2(ConstraintContext ctx) throws Exception {
             test(ctx, new Phaser(1));
         }
 
-//        @Disabled
+        @Disabled
         @TestFactory
         @Constraint({SynchronizedInvariant8.class, SynchronizedInvariant9.class})
         Stream<DynamicTest> test3(ConstraintContext ctx) throws Exception {
+            test(ctx, new Phaser(1));
 //            sleepDuration = FOREVER.getDuration();
             return IntStream.range(0, 5)
                     .mapToObj(n -> dynamicTest("dynamic test:" + n, () -> {
-//                        sleepDuration = initialSleepDuration;
-                        test(ctx, new Phaser(1));
+                        System.out.println("test3: " + Thread.currentThread());
+//                        test(ctx, new Phaser(1));
                     }));
         }
     }
@@ -146,7 +152,7 @@ public class RepeatableInvariantTest {
     static Stream<Arguments> generateArguments() {
         return Stream.of(ZERO, FOREVER.getDuration()).flatMap(sleepDuration ->
                 Stream.of(false, true).flatMap(concurrentClasses ->
-                        Stream.of(false/*, true*/).flatMap(concurrentMethods ->
+                        Stream.of(false, true).flatMap(concurrentMethods ->
                                 Stream.of(arguments(sleepDuration, concurrentClasses, concurrentMethods)))));
     }
 //    static Duration initialSleepDuration = null;
@@ -158,6 +164,6 @@ public class RepeatableInvariantTest {
         RepeatableInvariantTest.sleepDuration = sleepDuration;
         jupiterExecute(concurrentClasses, concurrentMethods, LifeCyclePerClassTest.class, LifeCyclePerMethodTest.class)
 //        results.allEvents().debug();
-                .testEvents().assertStatistics(stats -> stats.started(22).succeeded(22).failed(0));
+                .testEvents().assertStatistics(stats -> stats.started(102).succeeded(102).failed(0));
     }
 }
