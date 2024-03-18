@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.core.model.jsonrpcrelay;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
+
+import java.util.List;
+
+public class JSONRPCRelay extends AbstractWorkload<JSONRPCRelay> {
+
+    public JSONRPCRelay(List<WorkloadReplica<JSONRPCRelay>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
 }

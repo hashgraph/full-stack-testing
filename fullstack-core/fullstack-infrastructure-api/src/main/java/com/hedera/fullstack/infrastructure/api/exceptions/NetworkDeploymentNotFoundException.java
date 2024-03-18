@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.exceptions;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+/**
+ * Thrown if a {@link com.hedera.fullstack.infrastructure.api.model.NetworkDeployment} with cannot be found
+ */
+public class NetworkDeploymentNotFoundException extends Exception {
+    NetworkDeploymentNotFoundException(String message) {
+        super(message);
+    }
 }

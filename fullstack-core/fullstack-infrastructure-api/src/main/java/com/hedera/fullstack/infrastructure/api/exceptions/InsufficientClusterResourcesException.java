@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.api.providers;
+package com.hedera.fullstack.infrastructure.api.exceptions;
 
-public interface InfrastructureManager {}
+/**
+ * Thrown when there are not enough resources on the cluster to deploy a new node.
+ * This can be remedied by adding more resources to the cluster or deleting existing deployments on the cluster
+ */
+public class InsufficientClusterResourcesException extends Exception {
+    public InsufficientClusterResourcesException(String message) {
+        super(message);
+    }
+}

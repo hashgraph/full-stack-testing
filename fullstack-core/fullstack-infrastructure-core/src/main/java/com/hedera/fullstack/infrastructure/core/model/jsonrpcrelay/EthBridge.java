@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.resource.generator.api;
+package com.hedera.fullstack.infrastructure.core.model.jsonrpcrelay;
 
-public class Dummy {}
+import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
+
+import java.util.List;
+
+public class EthBridge extends AbstractWorkload<EthBridge> {
+
+    public EthBridge(List<WorkloadReplica<EthBridge>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
+}

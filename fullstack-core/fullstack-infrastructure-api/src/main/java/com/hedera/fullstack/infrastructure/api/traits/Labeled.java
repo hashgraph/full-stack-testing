@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.traits;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+import java.util.Map;
+
+/**
+ * Anything that can be labeled.
+ */
+public interface Labeled {
+    default Map<String, String> labels() {
+        return Map.of();
+    }
 }

@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.core.model.minio;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
+
+import java.util.List;
+
+public class Tenant extends AbstractWorkload<Tenant> {
+
+    public Tenant(List<WorkloadReplica<Tenant>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
 }

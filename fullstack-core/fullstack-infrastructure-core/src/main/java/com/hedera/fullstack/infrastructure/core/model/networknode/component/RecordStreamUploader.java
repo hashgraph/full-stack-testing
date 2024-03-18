@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.core.model.networknode.component;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
-}
+import com.hedera.fullstack.infrastructure.api.model.Component;
+
+public class RecordStreamUploader implements Component {}

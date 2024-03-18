@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.traits;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Path;
+
+/**
+ * A trait for workloads that need to interact with files.
+ */
+public interface FileAware {
+
+    InputStream retrieveFile(Path remotePath);
+
+    // gets from default container
+    void putFile(OutputStream file, Path remotePath);
 }

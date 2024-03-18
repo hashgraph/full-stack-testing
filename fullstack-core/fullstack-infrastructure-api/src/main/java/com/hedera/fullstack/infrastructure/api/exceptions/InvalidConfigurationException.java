@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.exceptions;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+/**
+ * <p>Thrown when the {@link com.hedera.fullstack.configuration.infrastructure.NetworkDeploymentConfiguration} is invalid.</p>
+ * <p>This can happen if the network deployment configuration has failed validation even before the deployment has started.</p>
+ */
+public class InvalidConfigurationException extends Exception {
+    public InvalidConfigurationException(String message) {
+        super(message);
+    }
 }

@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-plugins {
-    id("com.hedera.fullstack.conventions")
-    id("com.hedera.fullstack.jpms-modules")
-    //    id("com.hedera.fullstack.maven-publish")
-}
+package com.hedera.fullstack.infrastructure.api.traits;
 
-dependencies {
-    api(platform(project(":fullstack-bom")))
-    implementation(project(":fullstack-configuration-api"))
+import java.io.InputStream;
+import java.util.concurrent.Future;
+
+/**
+ * A Trait for which enables {@link com.hedera.fullstack.infrastructure.api.model.Component} to execute commands.
+ */
+public interface ExecutionAware {
+
+    CommandResult exec(String command);
+
+    CommandResult exec(String container, String command);
+
+    record CommandResult(Future<Integer> exitCode, InputStream stdout, InputStream stderr) {}
 }

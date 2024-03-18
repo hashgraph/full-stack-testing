@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.api.providers;
+package com.hedera.fullstack.configuration.infrastructure;
 
-import com.hedera.fullstack.helm.client.HelmClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import java.util.List;
 
-public class K8sInfrastructureManager implements InfrastructureManager {
-    HelmClient helmClient;
-    KubernetesClient k8sClient;
+/**
+ * A container class to hold all configuration needed to hold the NetworkDeployment
+ */
+public class NetworkDeploymentConfiguration {
+
+    // FUTURE: This class needs to closely reflect what will be passed in values.yaml
+
+    InstallType installType;
+    List<Node> nodes;
 }

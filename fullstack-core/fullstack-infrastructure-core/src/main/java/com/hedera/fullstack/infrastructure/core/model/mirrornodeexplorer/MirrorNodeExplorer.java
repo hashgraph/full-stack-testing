@@ -14,6 +14,17 @@
  * limitations under the License.
  */
 
-package com.hedera.fullstack.infrastructure.core;
+package com.hedera.fullstack.infrastructure.core.model.mirrornodeexplorer;
 
-public class Dummy {}
+import com.hedera.fullstack.infrastructure.api.model.AbstractWorkload;
+import com.hedera.fullstack.infrastructure.api.model.Cluster;
+import com.hedera.fullstack.infrastructure.api.model.WorkloadReplica;
+
+import java.util.List;
+
+public class MirrorNodeExplorer extends AbstractWorkload<MirrorNodeExplorer> {
+
+    public MirrorNodeExplorer(List<WorkloadReplica<MirrorNodeExplorer>> workloadReplicas, Cluster cluster) {
+        super(workloadReplicas, cluster);
+    }
+}
