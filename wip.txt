@@ -1,0 +1,6 @@
+Since 219c19b tests were added and changes were made simply to get the tests passing. Some of those changes were quick and dirty hacks that need to be reviewed and replaced with more thoughtful alternatives.
+
+* Tests are flaky when run with gradle (see gradle/issues/15621), maven is available as a workaround.
+* The main test case that matters is the poorly named testLifeCyclePerMethod (test3 should be enabled, see RegisterExtensionTest for poc), also its predecessor PreconditionProbeTest.
+* The API for starting and stopping monitors could possibly be replaced with one where the monitors are represented by objects with start/stop methods.
+* The method to publish messages should probably not be async.

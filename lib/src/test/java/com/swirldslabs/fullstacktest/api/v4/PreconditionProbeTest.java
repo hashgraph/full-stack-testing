@@ -144,7 +144,7 @@ public class PreconditionProbeTest {
     @Constraint(Probe6.class)
     @Constraint(Probe7.class)
     @Constraint(MyInvariant3.class)
-    @Disabled
+//    @Disabled
     static class MyTest extends BaseTest {
         @BeforeAll
         static void before() {}

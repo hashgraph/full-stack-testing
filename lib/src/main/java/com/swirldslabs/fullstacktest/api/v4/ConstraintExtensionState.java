@@ -199,7 +199,9 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
     @Override
     public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
         TestCase testCase = init(extensionContext);
-        try (Subscription<AllTheMessages> subscription = msgQueue.subscribe(AllTheMessages.class)) {
+        System.out.println("enter interceptTestMethod: " + msgQueue);
+        try (Subscription<AllTheMessages> subscription = msgQueue.subscribe(AllTheMessages.class);
+             Subscription<Message> debug = msgQueue.subscribe(Message.class)) {
             Map<Invariant, Thread> map = constraints(testCase, Invariant.class)
                     .map($ -> new ClassAndInstance($, ReflectionUtils.newInstance($)))
                     .collect(Collectors.toMap(ClassAndInstance::invariant, obj -> threadFactory.newThread(() -> {
@@ -208,7 +210,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                             throw new Unexceptional();
                         } catch (InterruptedException exception) {
                             Thread.currentThread().interrupt();
-//                            throw new WrappedException(exception);
+                            throw new WrappedException(exception);
                         }
                     }), (a, b) -> a, /*WeakHashMap*/HashMap::new));
 //            logger.info(() -> "created threads: " + map.values());
@@ -230,11 +232,15 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
             threads.addAll(map.values());
             map.values().stream().distinct().forEach(Thread::start);
             Map<Thread, Object> pendingStop = new IdentityHashMap<>();//new HashMap<>();
+            List<AllTheMessages> rx = new ArrayList<>();
             while (!Thread.currentThread().isInterrupted()) {
-//                logger.info(() -> "waiting to rx next msg");
-//                for (; null == subscription.queue.peek(); Thread.sleep(1));
-//                logger.info(() -> "next msg rx: " + subscription.queue.peek());
-                switch (subscription.queue.take()) {
+//                logger.info(() -> "waiting to rx next msg Q:" + msgQueue);
+//                for (; null == subscription.queue.peek(); Thread.sleep(10));
+//                logger.info(() -> "next msg rx: " + subscription.queue.peek() + ", Q:" + msgQueue);
+                AllTheMessages next = subscription.queue.take();
+//                rx.add(next);
+//                System.out.println("next msg rx: " + next + ", Q:" + msgQueue);
+                switch (next) {
                     case StartRequest(Invariant invariant) -> {
                         Thread thread = threadFactory.newThread(() -> {
                             try {
@@ -242,7 +248,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
                                 throw new Unexceptional();
                             } catch (InterruptedException exception) {
                                 Thread.currentThread().interrupt();
-//                                throw new WrappedException(exception);
+                                throw new WrappedException(exception);
                             }
                         });
                         thread.start();
@@ -305,6 +311,7 @@ public class ConstraintExtensionState extends TypeBasedParameterResolver<Constra
 //            logger.info(() -> "caught: " + throwable);
             throw throwable;
         } finally {
+//            System.out.println("exit interceptTestMethod: " + msgQueue);
 //            logger.info(() -> "exiting for intercept test method");
         }
     }

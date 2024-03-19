@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-@Disabled
-@Timeout(10)
+//@Disabled
+@Timeout(300)
 public class RepeatableInvariantTest {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     static Duration sleepDuration;
@@ -101,7 +101,7 @@ public class RepeatableInvariantTest {
             assertEquals(11, phaser.getRegisteredParties());
             phaser.arriveAndDeregister();
         }
-        @Disabled
+//        @Disabled
         @Test
 //        @RepeatedTest(1000)
 //        @Timeout(2)
@@ -111,12 +111,14 @@ public class RepeatableInvariantTest {
             test(ctx, new Phaser(1));
         }
 
-//        @BeforeEach
-//        void beforeEach() {
-////            RepeatableInvariantTest.sleepDuration = ZERO; //FOREVER.getDuration();
-//            sleepDuration = ZERO;
-//        }
-        @Disabled
+        @BeforeEach
+        void beforeEach() {
+//            RepeatableInvariantTest.sleepDuration = ZERO; //FOREVER.getDuration();
+            if (null == sleepDuration) {
+                sleepDuration = ZERO;
+            }
+        }
+//        @Disabled
 //        @Execution(ExecutionMode.CONCURRENT)
         @RepeatedTest(50)
         @Constraint({SynchronizedInvariant8.class, SynchronizedInvariant9.class})

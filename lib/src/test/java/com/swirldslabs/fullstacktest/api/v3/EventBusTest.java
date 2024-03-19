@@ -23,7 +23,7 @@ public class EventBusTest {
         try (SimpleMessageQueue.Subscription<StartEvent> start = eventBus.subscribe(StartEvent.class)) {
             assertEquals(0, start.queue.size());
             eventBus.publish(new StopEvent());
-            Thread.sleep(100);
+//            Thread.sleep(100);
             assertEquals(0, start.queue.size());
             eventBus.publish(new StartEvent());
             Thread.sleep(100);

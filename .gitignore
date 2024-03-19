@@ -6,3 +6,9 @@ build
 
 # Ignore IntelliJ files
 .idea/
+
+# Maven build
+target/
+
+# emacs backup
+*~

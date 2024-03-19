@@ -447,4 +447,27 @@ public class VirtualThreadsTest {
     /*
     * Could maintain some concurrent collection of resources, which implement
     * */
+
+    @Test
+    void interruptTest() throws Exception {
+        Thread thread = Thread.ofVirtual().start(() -> {
+            Thread.ofVirtual().start(() -> {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException exception) {
+                    System.out.println("interrupted!");
+                }
+                System.out.println("done");
+            });
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException exception) {
+                System.out.println("interrupted!");
+            }
+            System.out.println("done");
+        });
+        Thread.sleep(1);
+        thread.interrupt();
+        Thread.sleep(1500);
+    }
 }
