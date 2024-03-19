@@ -38,6 +38,8 @@ spec:
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
         - name: haproxy-config-volume
+          emptyDir: {}
+        - name: haproxy-configmap-volume
           configMap:
             name: haproxy-cm-{{ $node.name }}
         - name: haproxy-ofac-volume
@@ -51,12 +53,18 @@ spec:
           - name: haproxy-config-volume
             # https://hub.docker.com/_/haproxy/
             mountPath: /usr/local/etc/haproxy
+          - name: haproxy-configmap-volume
+            # https://hub.docker.com/_/haproxy/
+            mountPath: /usr/local/etc/haproxy/haproxy.cfg
+            subPath: haproxy.cfg
           - name: haproxy-ofac-volume
             mountPath: /var/opt/
         {{- with default $defaults.resources $haproxy.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+        ports:
+          - containerPort: 5555 # data plane api
 {{- end }}
 {{- end }}
 
