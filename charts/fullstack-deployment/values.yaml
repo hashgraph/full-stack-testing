@@ -82,8 +82,8 @@ defaults:
     nameOverride: "haproxy"
     image:
       registry: "docker.io"
-      repository: "haproxy"
-      tag: "2.4-alpine"
+      repository: "haproxytech/haproxy-alpine"
+      tag: "2.4.25"
       pullPolicy: "IfNotPresent"
     resources: {}
     serviceType: "LoadBalancer"
