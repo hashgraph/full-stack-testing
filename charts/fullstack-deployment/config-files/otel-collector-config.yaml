@@ -18,7 +18,7 @@ processors:
 
 exporters:
   prometheus:
-    endpoint: "0.0.0.0:9090" # note: network-node-svc exposes this port for all prometheus metrics instead of node's port 9999
+    endpoint: "0.0.0.0:9090" # note: network-node service exposes this port for all prometheus metrics instead of node's port 9999
     const_labels:
       source: p-{{ default "otel-collector" .otelDefaults.nameOverride }} # PromQL: {source="p-otel-collector"}
 
