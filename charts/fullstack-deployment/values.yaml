@@ -63,20 +63,19 @@ defaults:
       dataStats: "50Gi"
       dataUpgrade: "5Gi"
       output: "5Gi"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 1
-      memory: 2G
   root: # root container
     image:
       registry: "ghcr.io"
       repository: "hashgraph/full-stack-testing/ubi8-init-java17"
       tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
       pullPolicy: "IfNotPresent"
-    resources: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 1
+        memory: 2G
   haproxy:
     enabled: true
     nameOverride: "haproxy"

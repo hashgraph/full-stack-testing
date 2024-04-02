@@ -6,7 +6,6 @@
 {{- $balanceUploader := ($node.sidecars).accountBalanceUploader | default $.Values.defaults.sidecars.accountBalanceUploader -}}
 {{- $backupUploader := ($node.sidecars).backupUploader | default $.Values.defaults.sidecars.backupUploader -}}
 {{- $otelCollector := ($node.sidecars).otelCollector | default $.Values.defaults.sidecars.otelCollector -}}
-{{- $resources := $node.resources | default $.Values.defaults.resources }}
 {{- $cloud := $.Values.cloud }}
 {{- $defaults := $.Values.defaults }}
 {{- $minioserver := (index $.Values "minio-server") }}
@@ -90,7 +89,7 @@ spec:
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         securityContext: # need to run as root with privileged mode
           {{- include "fullstack.root.security.context.privileged" . | nindent 10 }}
-        {{- with $resources }}
+        {{- with default $defaults.root.resources $node.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
