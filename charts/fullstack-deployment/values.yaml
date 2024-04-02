@@ -69,13 +69,7 @@ defaults:
       repository: "hashgraph/full-stack-testing/ubi8-init-java17"
       tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
       pullPolicy: "IfNotPresent"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 100Mi
-      limits:
-        cpu: 1
-        memory: 2G
+    resources: {}
   haproxy:
     enabled: true
     nameOverride: "haproxy"
