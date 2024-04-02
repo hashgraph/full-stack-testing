@@ -139,7 +139,7 @@ defaults:
           prioritize: true
       resources: {}
     accountBalanceUploader:
-      enabled: true
+      enabled: false
       nameOverride: "account-balance-uploader"
       image:
         registry: gcr.io
