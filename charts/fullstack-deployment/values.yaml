@@ -63,13 +63,6 @@ defaults:
       dataStats: "50Gi"
       dataUpgrade: "5Gi"
       output: "5Gi"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 1
-      memory: 2G
   root: # root container
     image:
       registry: "ghcr.io"
@@ -140,7 +133,7 @@ defaults:
           prioritize: true
       resources: {}
     accountBalanceUploader:
-      enabled: true
+      enabled: false
       nameOverride: "account-balance-uploader"
       image:
         registry: gcr.io
@@ -251,10 +244,10 @@ hedera-mirror-node:
     enabled: false
   rosetta: # not needed for default FST use case
     enabled: false
-  monitor: # not needed for default FST use case
-    enabled: false
   redis:
     enabled: false # not needed for default FST use case
+  web3:
+    enabled: false
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
 
@@ -354,17 +347,6 @@ hedera-mirror-node:
         effect: "NoSchedule"
     monitor:
       enabled: false
-  web3:
-    nodeSelector: {}
-    tolerations:
-      - key: "fullstack-scheduling.io/os"
-        operator: "Equal"
-        value: "linux"
-        effect: "NoSchedule"
-      - key: "fullstack-scheduling.io/role"
-        operator: "Equal"
-        value: "network"
-        effect: "NoSchedule"
 
 haproxy-ingress:
   controller:
