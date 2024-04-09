@@ -15,6 +15,25 @@ receivers:
 
 processors:
   batch:
+  # Add standard label sets to both logs and metrics.
+  attributes/addLabels:
+    actions:
+      - key: environment
+        action: insert
+        value: "{{ .environment_name }}"
+      - key: metrics_node_id
+        action: insert
+        value: "{{ .otel_node_id | add1 }}"
+      - key: node_id
+        action: insert
+        value: "{{ .otel_node_id }}"
+      # TODO how to pass otel_instance_hostname and otel_instance_ip?
+      #      - key: inventory_name
+      #        action: insert
+      #        value: "{{ .otel_instance_hostname }} - {{ .otel_instance_ip }}"
+      - key: instance_type
+        action: insert
+        value: "{{ .otel_instance_type }}"
 
 exporters:
   prometheus:
@@ -51,8 +70,11 @@ service:
       processors: [batch]
       exporters: [otlp]
     metrics:
-      receivers: [prometheus]
-      processors: [batch]
+      receivers:
+        - prometheus
+      processors:
+        - attributes/addLabels
+        - batch
       exporters:
         - prometheus
         {{- if .otelDefaults.exporters.prometheusRemoteWrite.enabled }}

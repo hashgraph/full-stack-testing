@@ -80,7 +80,7 @@ spec:
         {{- if $otelCollector.enabled }}
         - name: otel-collector-volume
           configMap:
-            name: otel-collector-cm
+            name: otel-cm-{{ $node.name }}
         {{- end }}
       containers:
       # Root Container: {{ $node.name }}-root-container
