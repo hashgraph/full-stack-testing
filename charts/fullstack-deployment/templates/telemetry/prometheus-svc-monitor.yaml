@@ -13,5 +13,5 @@ spec:
       fullstack.hedera.com/prometheus-endpoint: active
   endpoints:
     - port: prometheus # must match the prometheus port-name in network-node-svc.yaml
-      interval: 10s # ideally it should be higher than the node-metrics-scraper interval set in otel-collector-config.yaml
+      interval: 5s
 {{- end }}
