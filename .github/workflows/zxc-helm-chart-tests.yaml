@@ -96,7 +96,7 @@ jobs:
           echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
 
       - name: Checkout Code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f # v4.1.3
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
