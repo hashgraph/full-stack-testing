@@ -81,6 +81,64 @@ spec:
         - name: otel-collector-volume
           configMap:
             name: otel-cm-{{ $node.name }}
+        - name: network-node-data-config
+          configMap:
+            name: network-node-data-config-cm
+            optional: true
+        - name: network-node-etc
+          configMap:
+            name: network-node-etc-cm
+            optional: true
+        - name: network-node-hapi-app-config-txt
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: config.txt
+                path: config.txt
+        - name: network-node-hapi-app-hedera-crt
+          secret:
+            secretName: network-node-hapi-app-secrets
+            optional: true
+            items:
+              - key: hedera-{{ $node.name }}.crt
+                path: hedera.crt
+        - name: network-node-hapi-app-hedera-key
+          secret:
+            secretName: network-node-hapi-app-secrets
+            optional: true
+            items:
+              - key: hedera-{{ $node.name }}.key
+                path: hedera.key
+        - name: network-node-hapi-app-log4j2-xml
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: log4j2.xml
+                path: log4j2.xml
+        - name: network-node-hapi-app-settings-txt
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: settings.txt
+                path: settings.txt
+        - name: network-node-hapi-app-settings-used-txt
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: settingsUsed.txt
+                path: settingsUsed.txt
+        - name: network-node-platform
+          configMap:
+            name: network-node-platform-cm
+            optional: true
+        - name: network-node-keys
+          secret:
+            secretName: network-node-keys-secrets
+            optional: true
         {{- end }}
       containers:
       # Root Container: {{ $node.name }}-root-container
@@ -94,12 +152,38 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
+          - name: network-node-etc
+            mountPath: /etc/network-node
+          - name: network-node-platform
+            mountPath: /home/hedera/platform
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventsStreams
           - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
+          - name: network-node-hapi-app-config-txt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/config.txt
+            subPath: config.txt
+          - name: network-node-hapi-app-hedera-crt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.crt
+            subPath: hedera.crt
+          - name: network-node-hapi-app-hedera-key
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.key
+            subPath: hedera.key
+          - name: network-node-hapi-app-log4j2-xml
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/log4j2.xml
+            subPath: log4j2.xml
+          - name: network-node-hapi-app-settings-txt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/settings.txt
+            subPath: settings.txt
+          - name: network-node-hapi-app-settings-used-txt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/settingsUsed.txt
+            subPath: settingsUsed.txt
+          - name: network-node-data-config
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/config
+          - name: network-node-keys
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/keys
           - name: hgcapp-data-onboard
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/onboard
           - name: hgcapp-data-saved
