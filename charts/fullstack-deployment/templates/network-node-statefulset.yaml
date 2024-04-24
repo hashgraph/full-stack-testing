@@ -89,12 +89,19 @@ spec:
           configMap:
             name: network-node-etc-cm
             optional: true
+        - name: network-node-hapi-app-application-env
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: applicationEnv
+                path: application.env
         - name: network-node-hapi-app-config-txt
           configMap:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: config.txt
+              - key: configTxt
                 path: config.txt
         - name: network-node-hapi-app-hedera-crt
           secret:
@@ -115,26 +122,22 @@ spec:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: log4j2.xml
+              - key: log4j2Xml
                 path: log4j2.xml
         - name: network-node-hapi-app-settings-txt
           configMap:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: settings.txt
+              - key: settingsTxt
                 path: settings.txt
         - name: network-node-hapi-app-settings-used-txt
           configMap:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: settingsUsed.txt
+              - key: settingsUsedTxt
                 path: settingsUsed.txt
-        - name: network-node-platform
-          configMap:
-            name: network-node-platform-cm
-            optional: true
         - name: network-node-keys
           secret:
             secretName: network-node-keys-secrets
@@ -154,14 +157,15 @@ spec:
         volumeMounts:
           - name: network-node-etc
             mountPath: /etc/network-node
-          - name: network-node-platform
-            mountPath: /home/hedera/platform
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventsStreams
           - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
+          - name: network-node-hapi-app-application-env
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/application.env
+            subPath: application.env
           - name: network-node-hapi-app-config-txt
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/config.txt
             subPath: config.txt

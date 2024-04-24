@@ -457,8 +457,17 @@ deployment:
     testRequester: ""
 
 # hedera node configuration
-# Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
 hedera:
+  configMaps:
+    apiPermissionsProperties: "apiPermissionsProperties"
+    applicationEnv: "applicationEnv"
+    applicationProperties: "applicationProperties"
+    bootstrapProperties: "bootstrapProperties"
+    configTxt: "configTxt"
+    log4j2Xml: "log4j2Xml"
+    settingsTxt: "settingsTxt"
+    settingsUsedTxt: "settingsUsedTxt"
+  # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
   nodes:
     - name: node0
       accountId: 0.0.3

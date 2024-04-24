@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-node-data-config-cm
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
+  labels:
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
+data:
+  api-permission.properties: |
+    {{ .Values.hedera.configMaps.apiPermissionsProperties }}
+  application.properties: |
+    {{ .Values.hedera.configMaps.applicationProperties }}
+  bootstrap.properties: |
+    {{ .Values.hedera.configMaps.bootstrapProperties }}
