@@ -7,12 +7,12 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
   applicationEnv: |
-    {{ .Values.hedera.configMaps.applicationEnv }}
+    {{ .Values.hedera.configMaps.applicationEnv | nindent 4 }}
   configTxt: |
-    {{ .Values.hedera.configMaps.configTxt }}
+    {{ .Values.hedera.configMaps.configTxt | nindent 4 }}
   log4j2Xml: |
-    {{ .Values.hedera.configMaps.log4j2Xml }}
+    {{ .Values.hedera.configMaps.log4j2Xml | nindent 4 }}
   settingsTxt: |
-    {{ .Values.hedera.configMaps.settingsTxt }}
+    {{ .Values.hedera.configMaps.settingsTxt | nindent 4 }}
   settingsUsedTxt: |
-    {{ .Values.hedera.configMaps.settingsUsedTxt }}
+    {{ .Values.hedera.configMaps.settingsUsedTxt | nindent 4 }}
