@@ -12,5 +12,3 @@ data:
     {{ .Values.hedera.configMaps.log4j2Xml | nindent 4 }}
   settingsTxt: |
     {{ .Values.hedera.configMaps.settingsTxt | nindent 4 }}
-  settingsUsedTxt: |
-    {{ .Values.hedera.configMaps.settingsUsedTxt | nindent 4 }}
