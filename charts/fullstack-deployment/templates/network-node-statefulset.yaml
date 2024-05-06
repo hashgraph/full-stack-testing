@@ -89,10 +89,6 @@ spec:
           configMap:
             name: network-node-etc-cm
             optional: true
-        - name: network-node-hapi-app-application-env
-          configMap:
-            name: network-node-hapi-app-cm
-            optional: true
             items:
               - key: applicationEnv
                 path: application.env
@@ -139,7 +135,7 @@ spec:
               - key: settingsUsedTxt
                 path: settingsUsed.txt
         - name: network-node-keys
-          secret:
+          secret: # TODO pem vs pfx
             secretName: network-node-keys-secrets
             optional: true
         {{- end }}
@@ -156,16 +152,14 @@ spec:
         {{- end }}
         volumeMounts:
           - name: network-node-etc
-            mountPath: /etc/network-node
+            mountPath: /etc/network-node/application.env
+            subPath: application.env
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventsStreams
           - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
-          - name: network-node-hapi-app-application-env
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/application.env
-            subPath: application.env
           - name: network-node-hapi-app-config-txt
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/config.txt
             subPath: config.txt

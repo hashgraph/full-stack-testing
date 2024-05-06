@@ -6,8 +6,6 @@ metadata:
   labels:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
-  applicationEnv: |
-    {{ .Values.hedera.configMaps.applicationEnv | nindent 4 }}
   configTxt: |
     {{ .Values.hedera.configMaps.configTxt | nindent 4 }}
   log4j2Xml: |

@@ -558,73 +558,140 @@ hedera:
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %-4L %c{1} - %m{nolookups}%n"/>
           </Console>
 
-          <RollingFile name="RollingFile" fileName="logs/hgcaa.log"
-            filePattern="logs/hgcaa.log-%d{yyyy-MM-dd}-%i.log">
+          <RollingFile name="RollingFile" fileName="output/hgcaa.log"
+            filePattern="output/hgcaa-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout>
               <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %-4L %c{1} - %m{nolookups}%n</pattern>
             </PatternLayout>
             <Policies>
+              <TimeBasedTriggeringPolicy/>
               <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="10"/>
+            <DefaultRolloverStrategy max="10">
+              <Delete basePath="output" maxDepth="3">
+                <IfFileName glob="hgcaa-*.log.gz">
+                  <IfLastModified age="P3D"/>
+                </IfFileName>
+              </Delete>
+            </DefaultRolloverStrategy>
           </RollingFile>
 
-          <RollingFile name="QueriesRollingFile" fileName="logs/queries.log"
-            filePattern="logs/queries.log-%d{yyyy-MM-dd}-%i.log">
+          <RollingFile name="QueriesRollingFile" fileName="output/queries.log"
+            filePattern="output/queries-%d{yyyy-MM-dd}-%i.log.gz">
             <BurstFilter level="INFO" rate="50" maxBurst="500"/>
             <PatternLayout>
               <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %-4L %c{1} - %m{nolookups}%n</pattern>
             </PatternLayout>
             <Policies>
+              <TimeBasedTriggeringPolicy/>
               <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="10"/>
+            <DefaultRolloverStrategy max="10">
+              <Delete basePath="output" maxDepth="3">
+                <IfFileName glob="queries-*.log.gz">
+                  <IfLastModified age="P3D"/>
+                </IfFileName>
+              </Delete>
+            </DefaultRolloverStrategy>
           </RollingFile>
 
-          <RollingFile name="fileLog" fileName="logs/swirlds.log"
-            filePattern="logs/swirlds.log-%d{yyyy-MM-dd}-%i.log">
+          <RollingFile name="fileLog" fileName="output/swirlds.log"
+            filePattern="output/swirlds-sdk-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout>
               <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-8sn %-5p %-16marker &lt;%t&gt; %c{1}: %msg{nolookups}%n</pattern>
             </PatternLayout>
             <Policies>
+              <TimeBasedTriggeringPolicy/>
               <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="10"/>
+            <DefaultRolloverStrategy max="10">
+              <Delete basePath="output" maxDepth="3">
+                <IfFileName glob="swirlds-sdk-*.log.gz">
+                  <IfLastModified age="P10D"/>
+                </IfFileName>
+              </Delete>
+            </DefaultRolloverStrategy>
           </RollingFile>
 
-          <RollingFile name="vMapLog" fileName="logs/swirlds-vmap.log"
-                       filePattern="logs/swirlds-vmap.log-%d{yyyy-MM-dd}-%i.log">
+          <RollingFile name="vMapLog" fileName="output/swirlds-vmap.log"
+            filePattern="output/swirlds-vmap-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout>
               <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-8sn %-5p %-16marker &lt;%t&gt; %c{1}: %msg{nolookups}%n</pattern>
             </PatternLayout>
             <Policies>
+              <TimeBasedTriggeringPolicy/>
               <SizeBasedTriggeringPolicy size="100 MB"/>
             </Policies>
+            <DefaultRolloverStrategy max="10">
+              <Delete basePath="output" maxDepth="3">
+                <IfFileName glob="swirlds-vmap-*.log.gz">
+                  <IfLastModified age="P3D"/>
+                </IfFileName>
+              </Delete>
+            </DefaultRolloverStrategy>
+          </RollingFile>
+
+          <!-- Platform hash stream logs -->
+          <RollingFile name="swirldsHashStream" fileName="output/swirlds-hashstream/swirlds-hashstream.log"
+            filePattern="output/swirlds-hashstream/swirlds-hashstream-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout>
+              <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-8sn %-5p %-16marker &lt;%t&gt; %c{1}: %msg{nolookups}%n</pattern>
+            </PatternLayout>
+            <Policies>
+              <TimeBasedTriggeringPolicy/>
+              <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+              <Delete basePath="output" maxDepth="3">
+                <IfFileName glob="swirlds-hashstream/swirlds-hashstream-*.log.gz">
+                  <IfLastModified age="P3D"/>
+                </IfFileName>
+              </Delete>
+            </DefaultRolloverStrategy>
+          </RollingFile>
+
+          <!-- Transaction state logs -->
+          <RollingFile name="TransactionStateLogs"
+                       fileName="output/transaction-state/state-changes.log"
+                       filePattern="output/transaction-state/state-changes-%d{yyyy-MM-dd--HH-mm-ss}-%i.log.gz">
+            <PatternLayout>
+              <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %m{nolookups}%n</pattern>
+            </PatternLayout>
+            <SizeBasedTriggeringPolicy size="50 MB" />
             <DefaultRolloverStrategy max="10"/>
           </RollingFile>
 
         </Appenders>
         <Loggers>
-          <Root level="TRACE">
+          <Root level="FATAL">
             <!-- <AppenderRef ref="Console"/> -->
             <AppenderRef ref="fileLog"/>
           </Root>
 
-          <Logger name="com.swirlds" level="TRACE" additivity="false">
+          <Logger name="com.swirlds" level="INFO" additivity="false">
             <AppenderRef ref="fileLog">
               <Filters>
-                <!-- JasperDB & Virtual Merkle -->
-                <MarkerFilter marker="JASPER_DB"              onMatch="DENY" onMismatch="NEUTRAL"/>
+                <!-- MerkleDb & Virtual Merkle -->
+                <MarkerFilter marker="MERKLE_DB"              onMatch="DENY" onMismatch="NEUTRAL"/>
                 <MarkerFilter marker="VIRTUAL_MERKLE_STATS"   onMatch="DENY" onMismatch="NEUTRAL"/>
+                <MarkerFilter marker="STATE_HASH"             onMatch="DENY" onMismatch="NEUTRAL"/>
               </Filters>
             </AppenderRef>
 
             <AppenderRef ref="vMapLog">
               <Filters>
-                <!-- JasperDB & Virtual Merkle -->
-                <MarkerFilter marker="JASPER_DB"              onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <!-- MerkleDb & Virtual Merkle -->
+                <MarkerFilter marker="MERKLE_DB"              onMatch="ACCEPT" onMismatch="NEUTRAL"/>
                 <MarkerFilter marker="VIRTUAL_MERKLE_STATS"   onMatch="ACCEPT" onMismatch="NEUTRAL"/>
                 <MarkerFilter marker="DISABLED"               onMatch="DENY"   onMismatch="DENY" />
+              </Filters>
+            </AppenderRef>
+
+            <AppenderRef ref="swirldsHashStream">
+              <Filters>
+                <!-- Hash stream log -->
+                <MarkerFilter marker="STATE_HASH"             onMatch="ACCEPT"  onMismatch="NEUTRAL"/>
+                <MarkerFilter marker="DISABLED"               onMatch="DENY"    onMismatch="DENY" />
               </Filters>
             </AppenderRef>
 
@@ -674,6 +741,7 @@ hedera:
               <MarkerFilter marker="CERTIFICATES"           onMatch="DENY"   onMismatch="NEUTRAL"/>
               <MarkerFilter marker="LOCKS"                  onMatch="DENY"   onMismatch="NEUTRAL"/>
               <MarkerFilter marker="TIME_MEASURE"           onMatch="DENY"   onMismatch="NEUTRAL"/>
+              <MarkerFilter marker="THREADS"                onMatch="ACCEPT"   onMismatch="NEUTRAL"/>
 
               <!-- Signed State Signatures -->
               <MarkerFilter marker="STATE_SIG_DIST"         onMatch="DENY"   onMismatch="NEUTRAL"/>
@@ -693,6 +761,7 @@ hedera:
               <!-- Saved States -->
               <MarkerFilter marker="SNAPSHOT_MANAGER"       onMatch="ACCEPT" onMismatch="NEUTRAL"/>
               <MarkerFilter marker="STATE_TO_DISK"          onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+              <MarkerFilter marker="STATE_HASH"             onMatch="ACCEPT" onMismatch="NEUTRAL"/>
 
               <!-- Beta Mirror -->
               <MarkerFilter marker="BETA_MIRROR_NODE"       onMatch="ACCEPT" onMismatch="NEUTRAL"/>
@@ -712,12 +781,17 @@ hedera:
               <MarkerFilter marker="MERKLE_GENERATION"      onMatch="DENY"   onMismatch="NEUTRAL"/>
               <MarkerFilter marker="MERKLE_LOCKS"           onMatch="DENY"   onMismatch="NEUTRAL"/>
 
-              <!-- JasperDB & Virtual Merkle -->
-              <MarkerFilter marker="JASPER_DB"              onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+              <!-- MerkleDb & Virtual Merkle -->
+              <MarkerFilter marker="MERKLE_DB"              onMatch="ACCEPT" onMismatch="NEUTRAL"/>
               <MarkerFilter marker="VIRTUAL_MERKLE_STATS"   onMatch="ACCEPT" onMismatch="NEUTRAL"/>
 
               <MarkerFilter marker="DISABLED"               onMatch="DENY"   onMismatch="DENY" />
             </Filters>
+          </Logger>
+
+          <!-- Send transaction state logs to their own appender   -->
+          <Logger name="com.hedera.node.app.state.logging.TransactionStateLogger" level="info" additivity="false">
+            <AppenderRef ref="TransactionStateLogs"/>
           </Logger>
 
           <Logger name="com.hedera" level="info" additivity="false">
@@ -772,7 +846,7 @@ hedera:
             <!-- <AppenderRef ref="Console"/> -->
             <AppenderRef ref="RollingFile"/>
           </Logger>
-      	<Logger name="com.hedera.services.legacy.config" level="info" additivity="false">
+        	<Logger name="com.hedera.services.legacy.config" level="info" additivity="false">
             <AppenderRef ref="RollingFile"/>
             <AppenderRef ref="Console"/>
           </Logger>
@@ -855,6 +929,10 @@ hedera:
             <AppenderRef ref="RollingFile"/>
           </Logger>
           <Logger name="io.netty" level="ERROR" additivity="false">
+            <!-- <AppenderRef ref="Console"/> -->
+            <AppenderRef ref="RollingFile"/>
+          </Logger>
+          <Logger name="io.grpc" level="ERROR" additivity="false">
             <!-- <AppenderRef ref="Console"/> -->
             <AppenderRef ref="RollingFile"/>
           </Logger>
