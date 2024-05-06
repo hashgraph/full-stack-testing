@@ -548,6 +548,12 @@ hedera:
       contracts.maxNumWithHapiSigsAccess=0
 
     configTxt: |
+      swirld, 298
+      app, HederaNode.jar
+      address, 0, node0, node0, 1, network-node0-0.network-node0.solo-e2e.svc.cluster.local, 50111, network-node0.solo-e2e.svc.cluster.local, 50111, 0.0.3
+      address, 1, node1, node1, 1, network-node1-0.network-node1.solo-e2e.svc.cluster.local, 50111, network-node1.solo-e2e.svc.cluster.local, 50111, 0.0.4
+      address, 2, node2, node2, 1, network-node2-0.network-node2.solo-e2e.svc.cluster.local, 50111, network-node2.solo-e2e.svc.cluster.local, 50111, 0.0.5
+      nextNodeId, 3
 
     log4j2Xml: |
       <?xml version="1.0" encoding="UTF-8"?>
@@ -973,8 +979,6 @@ hedera:
       loadKeysFromPfxFiles,                          true
       crypto.enableNewKeyStoreModel,                 true
 
-
-    settingsUsedTxt: ""
   # Only the name of the node is required. The rest of the configuration will be inherited from `defaults` section
   nodes:
     - name: node0
