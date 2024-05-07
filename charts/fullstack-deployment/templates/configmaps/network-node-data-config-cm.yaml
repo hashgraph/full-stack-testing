@@ -1,3 +1,4 @@
+{{- if or $.Values.hedera.configMaps.apiPermissionsProperties $.Values.hedera.configMaps.applicationProperties $.Values.hedera.configMaps.bootstrapProperties }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,9 +7,16 @@ metadata:
   labels:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
+{{- if $.Values.hedera.configMaps.apiPermissionsProperties }}
   api-permission.properties: |
 {{ .Values.hedera.configMaps.apiPermissionsProperties | nindent 4 }}
+{{- end }}
+{{- if $.Values.hedera.configMaps.applicationProperties }}
   application.properties: |
 {{ .Values.hedera.configMaps.applicationProperties | nindent 4 }}
+{{- end }}
+{{- if $.Values.hedera.configMaps.bootstrapProperties }}
   bootstrap.properties: |
 {{ .Values.hedera.configMaps.bootstrapProperties | nindent 4 }}
+{{- end }}
+{{- end }}
