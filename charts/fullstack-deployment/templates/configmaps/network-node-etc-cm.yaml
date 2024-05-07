@@ -7,4 +7,4 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
   applicationEnv: |
-    {{ .Values.hedera.configMaps.applicationEnv | nindent 4 }}
+{{ .Values.hedera.configMaps.applicationEnv | nindent 4 }}
