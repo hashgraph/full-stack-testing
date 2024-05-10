@@ -1,5 +1,7 @@
 
 {{ range $index, $node := $.Values.hedera.nodes }}
+{{- $hapiAppSecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-hapi-app-secrets" }}
+{{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-keys-secrets" }}
 {{- $root := $node.root | default $.Values.defaults.root -}}
 {{- $recordStream := ($node.sidecars).recordStreamUploader | default $.Values.defaults.sidecars.recordStreamUploader -}}
 {{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
@@ -82,6 +84,60 @@ spec:
           configMap:
             name: otel-cm-{{ $node.name }}
         {{- end }}
+        - name: network-node-data-config
+          configMap:
+            name: network-node-data-config-cm
+            optional: true
+        - name: network-node-etc
+          configMap:
+            name: network-node-etc-cm
+            optional: true
+            items:
+              - key: applicationEnv
+                path: application.env
+        - name: network-node-hapi-app-config-txt
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: configTxt
+                path: config.txt
+        {{- if $hapiAppSecrets }}
+        - name: network-node-hapi-app-hedera-crt
+          secret:
+            secretName: network-node-hapi-app-secrets
+            optional: true
+            items:
+              - key: hedera-{{ $node.name }}.crt
+                path: hedera.crt
+        - name: network-node-hapi-app-hedera-key
+          secret:
+            secretName: network-node-hapi-app-secrets
+            optional: true
+            items:
+              - key: hedera-{{ $node.name }}.key
+                path: hedera.key
+        {{- end }}
+        - name: network-node-hapi-app-log4j2-xml
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: log4j2Xml
+                path: log4j2.xml
+        - name: network-node-hapi-app-settings-txt
+          configMap:
+            name: network-node-hapi-app-cm
+            optional: true
+            items:
+              - key: settingsTxt
+                path: settings.txt
+        {{- if $networkNodeKeySecrets }}
+        - name: network-node-keys
+          secret: # TODO pem vs pfx
+            secretName: network-node-keys-secrets
+            optional: true
+        {{- end }}
       containers:
       # Root Container: {{ $node.name }}-root-container
       - name: {{ $root.nameOverride | default "root-container" }}
@@ -94,12 +150,48 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
         volumeMounts:
+          {{- if $.Values.hedera.configMaps.applicationEnv }}
+          - name: network-node-etc
+            mountPath: /etc/network-node/application.env
+            subPath: application.env
+          {{- end }}
           - name: hgcapp-account-balances
             mountPath: /opt/hgcapp/accountBalances
           - name: hgcapp-event-streams
             mountPath: /opt/hgcapp/eventsStreams
           - name: hgcapp-record-streams
             mountPath: /opt/hgcapp/recordStreams
+          {{- if $.Values.hedera.configMaps.configTxt }}
+          - name: network-node-hapi-app-config-txt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/config.txt
+            subPath: config.txt
+          {{- end }}
+          {{- if $hapiAppSecrets }}
+          - name: network-node-hapi-app-hedera-crt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.crt
+            subPath: hedera.crt
+          - name: network-node-hapi-app-hedera-key
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.key
+            subPath: hedera.key
+          {{- end }}
+          {{- if $.Values.hedera.configMaps.log4j2Xml }}
+          - name: network-node-hapi-app-log4j2-xml
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/log4j2.xml
+            subPath: log4j2.xml
+          {{- end }}
+          {{- if $.Values.hedera.configMaps.settingsTxt }}
+          - name: network-node-hapi-app-settings-txt
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/settings.txt
+            subPath: settings.txt
+          {{- end }}
+          {{- if or $.Values.hedera.configMaps.apiPermissionsProperties $.Values.hedera.configMaps.applicationProperties $.Values.hedera.configMaps.bootstrapProperties }}
+          - name: network-node-data-config
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/config
+          {{- end }}
+          {{- if $networkNodeKeySecrets }}
+          - name: network-node-keys
+            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/keys
+          {{- end }}
           - name: hgcapp-data-onboard
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/onboard
           - name: hgcapp-data-saved

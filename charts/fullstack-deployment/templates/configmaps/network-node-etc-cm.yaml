@@ -1,0 +1,12 @@
+{{- if $.Values.hedera.configMaps.applicationEnv }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-node-etc-cm
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
+  labels:
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
+data:
+  applicationEnv: |
+{{ .Values.hedera.configMaps.applicationEnv | nindent 4 }}
+{{- end }}
