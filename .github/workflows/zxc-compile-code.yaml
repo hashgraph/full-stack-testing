@@ -125,6 +125,11 @@ jobs:
           docker system prune -f
           docker image prune -f
 
+      - name: Install wget
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+
       - name: Setup Kind
         uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
