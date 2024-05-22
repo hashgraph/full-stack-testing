@@ -49,6 +49,32 @@ spec:
       - name: {{ default $defaults.nameOverride $haproxy.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $haproxy.image "Chart" $.Chart "defaults" $defaults ) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $haproxy.image "defaults" $defaults )  }}
+        startupProbe:
+          exec:
+            command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              jq_check() {
+                jq --version > /dev/null 2>&1 && return
+                echo "jq not found, installing jq"
+                apk update -q && apk add jq || return 1
+              }
+              probe() {
+                jq_check || return 1
+                wget -q -O response.json --header "Authorization: Basic $(echo -n "admin:adminpwd" | base64)" http://localhost:5555/v2/services/haproxy/stats/native?type=backend || return 1
+                BACKEND_STATUS=$(jq '.[] | .stats[] | select(.name == "http_backend") | .stats.status' < response.json)
+                echo "http_backend status: $BACKEND_STATUS"
+                if [ $BACKEND_STATUS = "UP" ]; then
+                  return 0
+                else
+                  return 1
+                fi
+              }
+              probe
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          failureThreshold: 720
         volumeMounts:
           - name: haproxy-config-volume
             # https://hub.docker.com/_/haproxy/
@@ -63,8 +89,6 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
-        ports:
-          - containerPort: 5555 # data plane api
 {{- end }}
 {{- end }}
 
