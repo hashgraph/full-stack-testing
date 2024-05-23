@@ -102,13 +102,6 @@ jobs:
           # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
           fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
-      - name: Docker Prune
-        id: docker-prune
-        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
-        run: |
-          docker system prune -f
-          docker image prune -f
-
       - name: Install wget
         run: |
           sudo apt-get update

@@ -28,9 +28,6 @@ spec:
     - name: prometheus # port name must be prometheus for prometheus-svc-monitor
       port: 9090
       targetPort: 9090 # stats port
-    - name: data-plane-api
-      port: 5555
-      targetPort: 5555
 {{- end }}
 {{- end }}
 
