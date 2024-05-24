@@ -12,6 +12,7 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   clusterIP: None
+  publishNotReadyAddresses: true
   selector:
     app: network-{{ $nodeConfig.name }}
   ports:
