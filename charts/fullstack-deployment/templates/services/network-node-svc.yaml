@@ -1,17 +1,24 @@
+{{- $defaults := $.Values.defaults.service }}
+{{ $headless := list true false }}
 {{ range $nodeConfig := ($.Values.hedera.nodes) }}
+{{ range $isHeadless := $headless}}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: network-{{ $nodeConfig.name }}
+  name: network-{{ $nodeConfig.name }}{{ if not $isHeadless }}-svc{{ end }}
   namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
   labels:
-    fullstack.hedera.com/type: network-node-svc
+    fullstack.hedera.com/type: network-node{{ if $isHeadless }}-headless{{ end }}-svc
     fullstack.hedera.com/node-name: {{ $nodeConfig.name }}
     fullstack.hedera.com/prometheus-endpoint: active
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
+  {{- if $isHeadless }}
   clusterIP: None
+  {{- else }}
+  type: {{ $defaults.serviceType | default "ClusterIP" }}
+  {{- end }}
   publishNotReadyAddresses: true
   selector:
     app: network-{{ $nodeConfig.name }}
@@ -37,4 +44,5 @@ spec:
     protocol: TCP
     port: 9090
     targetPort: 9090 # otel-collector's prometheus exporter port
+{{- end }}
 {{- end }}
