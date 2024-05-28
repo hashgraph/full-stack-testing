@@ -58,7 +58,7 @@ spec:
               jq_check() {
                 jq --version > /dev/null 2>&1 && return
                 echo "jq not found, installing jq"
-                apk update -q && apk add jq || return 1
+                apk add jq || return 1
               }
               probe() {
                 jq_check || return 1

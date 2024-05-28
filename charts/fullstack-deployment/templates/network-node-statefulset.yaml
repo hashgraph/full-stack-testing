@@ -141,6 +141,30 @@ spec:
       containers:
       # Root Container: {{ $node.name }}-root-container
       - name: {{ $root.nameOverride | default "root-container" }}
+        startupProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - |
+                jshell --version &>/dev/null
+                cat << EOF | jshell /dev/stdin
+                int rc = 1;
+                try {
+                  final String serviceName = "network-{{ $node.name }}";
+                  final String namespace = "{{ default $.Release.Namespace $.Values.global.namespaceOverride }}";
+                  final String clusterDomain = "cluster.local";
+                  final String fqdn = String.join(".", serviceName, namespace, "svc", clusterDomain);
+                  final InetAddress serviceAddress = InetAddress.getByName(fqdn);
+                  rc = 0;
+                } catch (Exception exception) {
+                  System.out.println(exception);
+                }
+                /exit rc
+                EOF
+          failureThreshold: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
         image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
         securityContext: # need to run as root with privileged mode
@@ -203,6 +227,8 @@ spec:
           - name: hgcapp-output
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/output
         env:
+          - name: JAVA_OPTS
+            value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       {{- if $balanceUploader.enabled }}
       # Sidecar: {{ $node.name }}-account-balance-uploader
