@@ -11,6 +11,7 @@ metadata:
   labels:
     fullstack.hedera.com/type: envoy-proxy-svc
     fullstack.hedera.com/node-name: {{ $node.name }}
+    fullstack.hedera.com/account-id: {{ $node.accountId }}
     fullstack.hedera.com/prometheus-endpoint: active
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
