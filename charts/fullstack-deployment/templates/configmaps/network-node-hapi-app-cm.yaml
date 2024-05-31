@@ -8,15 +8,15 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
 {{- if $.Values.hedera.configMaps.configTxt }}
-  configTxt: |
+  config.txt: |
 {{ .Values.hedera.configMaps.configTxt | nindent 4 }}
 {{- end }}
 {{- if $.Values.hedera.configMaps.log4j2Xml }}
-  log4j2Xml: |
+  log4j2.xml: |
 {{ .Values.hedera.configMaps.log4j2Xml | indent 4 }}
 {{- end }}
 {{- if $.Values.hedera.configMaps.settingsTxt }}
-  settingsTxt: |
+  settings.txt: |
 {{ .Values.hedera.configMaps.settingsTxt | nindent 4 }}
 {{- end }}
 {{- end }}
