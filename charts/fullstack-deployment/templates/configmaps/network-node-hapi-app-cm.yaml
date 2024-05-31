@@ -1,0 +1,22 @@
+{{- if or $.Values.hedera.configMaps.configTxt $.Values.hedera.configMaps.log4j2Xml $.Values.hedera.configMaps.settingsTxt }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-node-hapi-app-cm
+  namespace: {{ default $.Release.Namespace $.Values.global.namespaceOverride }}
+  labels:
+    {{- include "fullstack.testLabels" $ | nindent 4 }}
+data:
+{{- if $.Values.hedera.configMaps.configTxt }}
+  configTxt: |
+{{ .Values.hedera.configMaps.configTxt | nindent 4 }}
+{{- end }}
+{{- if $.Values.hedera.configMaps.log4j2Xml }}
+  log4j2Xml: |
+{{ .Values.hedera.configMaps.log4j2Xml | indent 4 }}
+{{- end }}
+{{- if $.Values.hedera.configMaps.settingsTxt }}
+  settingsTxt: |
+{{ .Values.hedera.configMaps.settingsTxt | nindent 4 }}
+{{- end }}
+{{- end }}
