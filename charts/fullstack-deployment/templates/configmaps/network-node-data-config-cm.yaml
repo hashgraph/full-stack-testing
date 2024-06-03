@@ -8,15 +8,12 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
 {{- if $.Values.hedera.configMaps.apiPermissionsProperties }}
-  api-permission.properties: |
-{{ .Values.hedera.configMaps.apiPermissionsProperties | nindent 4 }}
+  api-permission.properties: {{ toYaml .Values.hedera.configMaps.apiPermissionsProperties | indent 4 }}
 {{- end }}
 {{- if $.Values.hedera.configMaps.applicationProperties }}
-  application.properties: |
-{{ .Values.hedera.configMaps.applicationProperties | nindent 4 }}
+  application.properties: {{ toYaml .Values.hedera.configMaps.applicationProperties  | indent 4 }}
 {{- end }}
 {{- if $.Values.hedera.configMaps.bootstrapProperties }}
-  bootstrap.properties: |
-{{ .Values.hedera.configMaps.bootstrapProperties | nindent 4 }}
+  bootstrap.properties: {{ toYaml .Values.hedera.configMaps.bootstrapProperties  | indent 4 }}
 {{- end }}
 {{- end }}

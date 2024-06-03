@@ -93,14 +93,14 @@ spec:
             name: network-node-etc-cm
             optional: true
             items:
-              - key: applicationEnv
+              - key: application.env
                 path: application.env
         - name: network-node-hapi-app-config-txt
           configMap:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: configTxt
+              - key: config.txt
                 path: config.txt
         {{- if $hapiAppSecrets }}
         - name: network-node-hapi-app-hedera-crt
@@ -123,14 +123,14 @@ spec:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: log4j2Xml
+              - key: log4j2.xml
                 path: log4j2.xml
         - name: network-node-hapi-app-settings-txt
           configMap:
             name: network-node-hapi-app-cm
             optional: true
             items:
-              - key: settingsTxt
+              - key: settings.txt
                 path: settings.txt
         {{- if $networkNodeKeySecrets }}
         - name: network-node-keys

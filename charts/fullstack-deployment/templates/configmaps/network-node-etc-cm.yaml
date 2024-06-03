@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 data:
-  applicationEnv: |
-{{ .Values.hedera.configMaps.applicationEnv | nindent 4 }}
+{{- if $.Values.hedera.configMaps.applicationEnv }}
+  application.env: {{ toYaml .Values.hedera.configMaps.applicationEnv  | indent 4 }}
+{{- end }}
 {{- end }}
