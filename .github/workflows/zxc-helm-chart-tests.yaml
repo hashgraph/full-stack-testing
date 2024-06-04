@@ -131,4 +131,5 @@ jobs:
         working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
+          sleep 3600
           source ci_test.sh
