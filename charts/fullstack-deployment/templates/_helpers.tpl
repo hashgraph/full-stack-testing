@@ -35,14 +35,14 @@ privileged: true
 {{- end }}
 
 {{- define "fullstack.images.pullPolicy" -}}
-{{ (.image).pullPolicy | default .defaults.image.pullPolicy }}
+{{ (.image).pullPolicy | default (((.defaults).root).image).pullPolicy }}
 {{- end }}
 
 
 {{- define "fullstack.container.image" -}}
-{{- $reg := (.image).registry | default .defaults.image.registry -}}
-{{- $repo := (.image).repository | default .defaults.image.repository -}}
-{{- $tag := default .defaults.image.tag (.image).tag | default .Chart.AppVersion -}}
+{{- $reg := (.image).registry | default (((.defaults).root).image).registry -}}
+{{- $repo := (.image).repository | default (((.defaults).root).image).repository -}}
+{{- $tag := default (((.defaults).root).image).tag (.image).tag | default .Chart.AppVersion -}}
 {{ $reg }}/{{ $repo }}:{{ $tag }}
 {{- end }}
 
