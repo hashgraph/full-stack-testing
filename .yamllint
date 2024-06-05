@@ -1,0 +1,15 @@
+extends: default
+
+rules:
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  comments:
+    min-spaces-from-content: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  # don't bother me with this rule
+  document-start: disable
+  line-length: disable
+  indentation: disable

@@ -49,7 +49,7 @@ jobs:
       matrix:
         # direct-install.sh uses ubi8-init-java17 image
         # nmt-install.sh uses ubi8-init-dind image
-        scriptName: [ direct-install.sh, nmt-install.sh  ]
+        scriptName: [ direct-install.sh, nmt-install.sh ]
     steps:
       - name: Setup Make
         run: |

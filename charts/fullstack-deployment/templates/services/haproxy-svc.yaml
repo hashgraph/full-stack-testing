@@ -30,4 +30,3 @@ spec:
       targetPort: 9090 # stats port
 {{- end }}
 {{- end }}
-

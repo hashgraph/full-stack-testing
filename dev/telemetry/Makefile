@@ -80,4 +80,3 @@ destroy-all:
 	-${MAKE} destroy-telemetry-stack
 	-${MAKE} destroy-prometheus-example-app
 	-${MAKE} destroy-tracing-example-app
-

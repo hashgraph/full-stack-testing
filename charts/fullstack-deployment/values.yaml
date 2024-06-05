@@ -460,6 +460,8 @@ deployment:
 
 # hedera node configuration
 hedera:
+  initContainers: []
+
   configMaps:
     apiPermissionsProperties: ""
     applicationEnv: ""
