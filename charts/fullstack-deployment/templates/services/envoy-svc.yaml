@@ -29,4 +29,3 @@ spec:
       targetPort: 9090 # envoy-proxy's prometheus-listener port
 {{- end }}
 {{- end }}
-

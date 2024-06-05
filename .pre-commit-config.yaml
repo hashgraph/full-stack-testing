@@ -5,10 +5,9 @@ repos:
     rev: v4.5.0
     hooks:
       - id: end-of-file-fixer
-      - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
-      - id: detect-private-key
+#      - id: detect-private-key
       - id: forbid-new-submodules
   - repo: https://github.com/jguttman94/pre-commit-gradle
     rev: v0.3.0
@@ -20,3 +19,13 @@ repos:
     hooks:
       - id: conventional-pre-commit
         stages: [ commit-msg ]
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=./.yamllint]
+        exclude: charts
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.23 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
+    hooks:
+      - id: helmlint

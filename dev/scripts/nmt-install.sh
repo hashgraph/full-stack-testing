@@ -83,4 +83,3 @@ function stop_node_all() {
 
   return "${EX_OK}"
 }
-

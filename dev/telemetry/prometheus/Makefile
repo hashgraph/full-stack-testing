@@ -55,5 +55,3 @@ deploy-prometheus-example-app:
 .PHONY: destroy-prometheus-example-app
 destroy-prometheus-example-app:
 	source "${SCRIPTS_DIR}/${TELEMETRY_SCRIPT}" && destroy-prometheus-example-app
-
-
