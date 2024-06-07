@@ -18,6 +18,7 @@ spec:
   {{- if $envoyProxy.loadBalancerEnabled }}
   type: LoadBalancer
   {{- end }}
+  externalTrafficPolicy: Local
   selector:
     app: envoy-proxy-{{ $node.name }}
   ports:
