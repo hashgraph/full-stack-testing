@@ -19,9 +19,9 @@ spec:
   clusterIP: None
   {{- else }}
   type: {{ $defaults.serviceType | default "ClusterIP" }}
+  externalTrafficPolicy: Local
   {{- end }}
   publishNotReadyAddresses: true
-  externalTrafficPolicy: Local
   selector:
     app: network-{{ $nodeConfig.name }}
   ports:
