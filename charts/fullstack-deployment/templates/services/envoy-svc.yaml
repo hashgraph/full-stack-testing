@@ -17,6 +17,7 @@ metadata:
 spec:
   {{- if $envoyProxy.loadBalancerEnabled }}
   type: LoadBalancer
+  externalTrafficPolicy: Local
   {{- end }}
   selector:
     app: envoy-proxy-{{ $node.name }}
@@ -29,4 +30,3 @@ spec:
       targetPort: 9090 # envoy-proxy's prometheus-listener port
 {{- end }}
 {{- end }}
-

@@ -19,6 +19,7 @@ spec:
   clusterIP: None
   {{- else }}
   type: {{ $defaults.serviceType | default "ClusterIP" }}
+  externalTrafficPolicy: Local
   {{- end }}
   publishNotReadyAddresses: true
   selector:

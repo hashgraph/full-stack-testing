@@ -16,6 +16,7 @@ metadata:
     {{- include "fullstack.testLabels" $ | nindent 4 }}
 spec:
   type: {{ $defaults.serviceType | default "ClusterIP" }}
+  externalTrafficPolicy: Local
   selector:
     app: haproxy-{{ $node.name }}
   ports:
@@ -30,4 +31,3 @@ spec:
       targetPort: 9090 # stats port
 {{- end }}
 {{- end }}
-

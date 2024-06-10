@@ -1,8 +1,8 @@
-
 {{ range $index, $node := $.Values.hedera.nodes }}
 {{- $hapiAppSecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-hapi-app-secrets" }}
 {{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-keys-secrets" }}
 {{- $root := $node.root | default $.Values.defaults.root -}}
+{{- $rootImage := ($node.root).image | default $.Values.defaults.root.image -}}
 {{- $recordStream := ($node.sidecars).recordStreamUploader | default $.Values.defaults.sidecars.recordStreamUploader -}}
 {{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
 {{- $balanceUploader := ($node.sidecars).accountBalanceUploader | default $.Values.defaults.sidecars.accountBalanceUploader -}}
@@ -13,6 +13,7 @@
 {{- $minioserver := (index $.Values "minio-server") }}
 {{- $nodeStorage := $.Values.defaults.volumeClaims.node }}
 {{- $pvcEnabled := $.Values.defaults.volumeClaims.enabled }}
+{{- $initContainersLength := len $.Values.hedera.initContainers}}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -165,8 +166,8 @@ spec:
           failureThreshold: 30
           periodSeconds: 10
           timeoutSeconds: 5
-        image: {{ include "fullstack.container.image" (dict "image" $root.image "Chart" $.Chart "defaults" $root) }}
-        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $root.image "defaults" $root) }}
+        image: {{ include "fullstack.container.image" (dict "image" $rootImage "Chart" $.Chart "defaults" $.Values.defaults) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $rootImage "defaults" $.Values.defaults) }}
         securityContext: # need to run as root with privileged mode
           {{- include "fullstack.root.security.context.privileged" . | nindent 10 }}
         {{- with default $defaults.root.resources $node.resources }}
@@ -474,5 +475,9 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+      {{- end }}
+      {{- if gt $initContainersLength 0 }}
+      initContainers:
+        {{- toYaml $.Values.hedera.initContainers | nindent 8 }}
       {{- end }}
 {{ end }}

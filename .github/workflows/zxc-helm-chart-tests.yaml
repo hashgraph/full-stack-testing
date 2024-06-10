@@ -49,7 +49,7 @@ jobs:
       matrix:
         # direct-install.sh uses ubi8-init-java17 image
         # nmt-install.sh uses ubi8-init-dind image
-        scriptName: [ direct-install.sh, nmt-install.sh  ]
+        scriptName: [ direct-install.sh, nmt-install.sh ]
     steps:
       - name: Get changed files related to charts
         id: changed-files
@@ -78,7 +78,7 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
-          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ]; then
+          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.chart_any_changed }}" == "true"]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
           else
