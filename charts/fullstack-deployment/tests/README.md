@@ -8,8 +8,6 @@ This directory contains the BATS tests for helm chart.
 `run.sh` is the entrypoint to execute the tests locally assuming
 you have the network deployed already.
 
-# just test change 
-
 ## How to create and debug test
 - Use the `test_basic_deployment.bats` file as the template while creating new tests.
 - In order to run and debug the tests inside the helm test container, do the following:

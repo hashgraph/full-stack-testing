@@ -9,7 +9,7 @@ Below are few helper commands to start the hedera network in the local kubernete
 - `make destroy-network`: uninstalls the helm chart
 - `make reset`: destroy the network, setup and start all nodes
 ## Prerequisite
-
+# test change
 Before you can run the commands above, you will need to have the following installed locally:
 - make
 - helm
