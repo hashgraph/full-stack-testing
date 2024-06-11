@@ -88,6 +88,8 @@ jobs:
           for file in ${{ steps.changed-files.outputs.scripts_all_changed_files }}; do
             echo " - ${file} was changed"
           done
+          echo "chart_any_changed = ${{ steps.changed-files.outputs.chart_any_changed }}"
+          echo "scripts_any_changed = ${{ steps.changed-files.outputs.scripts_any_changed }}"
           echo ""
           if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.chart_any_changed }}" == "true"]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
@@ -136,5 +138,5 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          # make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
           sleep 3600
