@@ -88,8 +88,6 @@ jobs:
           for file in ${{ steps.changed-files.outputs.scripts_all_changed_files }}; do
             echo " - ${file} was changed"
           done
-          echo "chart_any_changed = ${{ steps.changed-files.outputs.chart_any_changed }}"
-          echo "scripts_any_changed = ${{ steps.changed-files.outputs.scripts_any_changed }}"
           echo ""
           if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.chart_any_changed }}" == "true"]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
