@@ -27,8 +27,6 @@ on:
         type: string
         required: false
         default: "Helm Chart Test"
-  pull_request:
-  push:
 
 defaults:
   run:
