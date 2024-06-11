@@ -63,7 +63,7 @@ jobs:
 
       - name: Get changed files related to charts
         id: changed-files
-        uses: tj-actions/changed-files@90a06d6ba9543371ab4df8eeca0be07ca6054959 #v42.0.2
+        uses: tj-actions/changed-files@d6babd6899969df1a11d14c368283ea4436bca78 #v44.5.2
         with:
           since_last_remote_commit: false
           files_yaml: |
@@ -90,7 +90,7 @@ jobs:
           echo "scripts_any_changed = ${{ steps.changed-files.outputs.scripts_any_changed }}"
 
           echo ""
-          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.chart_any_changed }}" == "true"]; then
+          if [[ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" || "${{ steps.changed-files.outputs.chart_any_changed }}" == "true" ]]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
           else
