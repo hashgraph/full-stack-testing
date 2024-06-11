@@ -152,6 +152,8 @@ function is_sidecar_ready() {
   return "${EX_ERR}"
 }
 
+# minor change
+
 function has_sidecar() {
   local pod=$1
   local sidecar_name=$2
