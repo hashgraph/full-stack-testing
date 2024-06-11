@@ -169,6 +169,19 @@ function has_sidecar() {
   echo "${found}"
 }
 
+function is_pod_phrase_running() {
+  local pod=$1
+  [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_pod_phrase_running)" && return "${EX_ERR}"
+
+  local pod_status=$(kubectl get pod "${pod}" -o jsonpath="{.status.phase}" -n "${NAMESPACE}")
+  [ -z "${pod_status}" ] && pod_status="Running"
+
+  log_debug "Pod '${pod}' is running in namespace ${NAMESPACE} : ${pod_status}"
+
+  [[ "${pod_status}" = "Running" ]] && return "${EX_OK}"
+  return "${EX_ERR}"
+}
+
 function is_pod_ready() {
   local pod=$1
   [[ -z "${pod}" ]] && echo "ERROR: Pod name is needed (is_pod_ready)" && return "${EX_ERR}"
