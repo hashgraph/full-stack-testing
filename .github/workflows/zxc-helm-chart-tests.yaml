@@ -89,6 +89,8 @@ jobs:
           done
           echo "chart_any_changed = ${{ steps.changed-files.outputs.chart_any_changed }}"
           echo "scripts_any_changed = ${{ steps.changed-files.outputs.scripts_any_changed }}"
+          echo "any_changed = ${{ steps.changed-files.outputs.any_changed }}"
+          echo "any_modified = ${{ steps.changed-files.outputs.any_modified }}"
 
           echo ""
           if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.chart_any_changed }}" == "true"]; then
