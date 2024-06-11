@@ -28,7 +28,7 @@ setup() {
         log_debug "Checking HAProxy for network-node '${node_name}'"
         local haproxy_pod=$(get_pod_by_label "app=haproxy-${node_name},fullstack.hedera.com/type=haproxy")
         log_debug "Checking HAProxy pod ${haproxy_pod}"
-        is_pod_ready "${haproxy_pod}" || test_status="${FAIL}"
+        is_pod_phrase_running "${haproxy_pod}" || test_status="${FAIL}"
       else
         log_debug "HAProxy is not enabled for node '${node_name}'. Skipping check"
       fi
