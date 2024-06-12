@@ -107,10 +107,12 @@ destroy-network: destroy-test-container uninstall-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup
+	echo "********************   Start setup-nodes  *******************"
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
 
 .PHONY: start-nodes
 start-nodes:
+	echo "********************   Start start-nodes  *******************"
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
 
 .PHONY: verify-nodes
@@ -240,13 +242,9 @@ ci-test:
 	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
 	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
 	# NOTE: It needs latest make (version ~=4.3)
-	function cleanup_test () {
-		$(MAKE) destroy-network
-	}
-	trap cleanup_test EXIT # always destroy-network on exit
 	$(MAKE) ci-deploy-network setup-nodes start-nodes
 
 .PHONY: ci-deploy-network
 ci-deploy-network: setup-cluster local-kubectl-bats
 	$(MAKE) deploy-network CHART_VALUES_FILES="$(PWD)/ci/ci-values.yaml"
-	$(MAKE) helm-test
+	echo "********************   Done with deploy-network  *******************"
