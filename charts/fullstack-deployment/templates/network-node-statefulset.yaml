@@ -228,8 +228,6 @@ spec:
           - name: hgcapp-output
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/output
         env:
-          - name: JAVA_OPTS
-            value: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
       {{- if $balanceUploader.enabled }}
       # Sidecar: {{ $node.name }}-account-balance-uploader
