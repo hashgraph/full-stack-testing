@@ -66,7 +66,7 @@ defaults:
   root: # root container
     image:
       registry: "ghcr.io"
-      repository: "hashgraph/full-stack-testing/ubi8-init-java17"
+      repository: "hashgraph/full-stack-testing/ubi8-init-java21"
       tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
       pullPolicy: "IfNotPresent"
     resources: {}
@@ -475,7 +475,3 @@ hedera:
   nodes:
     - name: node0
       accountId: 0.0.3
-    - name: node1
-      accountId: 0.0.4
-    - name: node2
-      accountId: 0.0.5
