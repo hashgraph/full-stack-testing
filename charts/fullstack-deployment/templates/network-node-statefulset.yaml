@@ -2,6 +2,7 @@
 {{- $hapiAppSecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-hapi-app-secrets" }}
 {{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-keys-secrets" }}
 {{- $root := $node.root | default $.Values.defaults.root -}}
+{{- $rootExtraEnv := ($root).extraEnv | default $.Values.defaults.root.extraEnv -}}
 {{- $rootImage := ($node.root).image | default $.Values.defaults.root.image -}}
 {{- $recordStream := ($node.sidecars).recordStreamUploader | default $.Values.defaults.sidecars.recordStreamUploader -}}
 {{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
@@ -229,6 +230,9 @@ spec:
             mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/output
         env:
           {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
+          {{- with $rootExtraEnv }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
       {{- if $balanceUploader.enabled }}
       # Sidecar: {{ $node.name }}-account-balance-uploader
       - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
