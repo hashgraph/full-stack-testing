@@ -4,7 +4,6 @@ SHELL=/bin/bash
 # Ensure we can catch error to run cleanup when multiple make commands are run in sequence.
 # Here we tell make to run all scripts as one-shell and also set 'pipefail' and 'errexit' flags.
 # https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
-SHELLOPTS:=$(if $(SHELLOPTS),$(SHELLOPTS):)pipefail:errexit
 .ONESHELL:
 
 # Here we tell make not to output the actual command before execution in order to reduce noise in the logs.
