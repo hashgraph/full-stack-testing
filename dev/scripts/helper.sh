@@ -34,7 +34,7 @@ readonly PLATFORM_INSTALLER_DIR="${SCRIPT_DIR}/../resources/platform"
 readonly PLATFORM_INSTALLER_PATH="${PLATFORM_INSTALLER_DIR}/${PLATFORM_INSTALLER}"
 readonly PLATFORM_INSTALLER_URL=$(prepare_platform_software_URL "${PLATFORM_VERSION}")
 
-readonly OPENJDK_VERSION="${OPENJDK_VERSION:-17.0.2}"
+readonly OPENJDK_VERSION="${OPENJDK_VERSION:-21.0.1}"
 
 function log_time() {
   local end_time duration execution_time
@@ -495,7 +495,6 @@ function install_nmt() {
     return "${EX_ERR}"
   fi
 
-  cleanup_path "${pod}" "${HGCAPP_DIR}/*" || return "${EX_ERR}"
   "${KCTL}" exec "${pod}" -c root-container -- chmod +x "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" || return "${EX_ERR}"
   "${KCTL}" exec "${pod}" -c root-container -- sudo "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" --accept -- -fg || return "${EX_ERR}"
 
