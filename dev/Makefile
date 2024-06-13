@@ -107,11 +107,20 @@ destroy-network: destroy-test-container uninstall-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup
+ifeq (${SCRIPT_NAME},nmt-install.sh)
+	-source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
+else
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
+endif
+
 
 .PHONY: start-nodes
 start-nodes:
+ifeq (${SCRIPT_NAME},nmt-install.sh)
+	-source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
+else
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
+endif
 
 .PHONY: verify-nodes
 verify-nodes:
@@ -240,14 +249,7 @@ ci-test:
 	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
 	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
 	# NOTE: It needs latest make (version ~=4.3)
-ifeq (${SCRIPT_NAME},nmt-install.sh)
-	$(MAKE) ci-deploy-network
-	# ignore error of setup-nodes and start-nodes for nmt-install.sh as NMT would fail when trying to delete symlinked files.
-	-$(MAKE) setup-nodes
-	-$(MAKE) start-nodes
-else
 	$(MAKE) ci-deploy-network setup-nodes start-nodes
-endif
 
 .PHONY: ci-deploy-network
 ci-deploy-network: setup-cluster local-kubectl-bats
