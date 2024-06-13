@@ -495,6 +495,8 @@ function install_nmt() {
     return "${EX_ERR}"
   fi
 
+  # do not call rm directoires for nmt install
+  # cleanup_path "${pod}" "${HGCAPP_DIR}/*" || return "${EX_ERR}"
   "${KCTL}" exec "${pod}" -c root-container -- chmod +x "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" || return "${EX_ERR}"
   "${KCTL}" exec "${pod}" -c root-container -- sudo "${HEDERA_HOME_DIR}/${NMT_INSTALLER}" --accept -- -fg || return "${EX_ERR}"
 

@@ -108,6 +108,7 @@ destroy-network: destroy-test-container uninstall-chart
 .PHONY: setup-nodes
 setup-nodes: setup
 ifeq (${SCRIPT_NAME},nmt-install.sh)
+	# ignore error from nmt install due to error of removing symlink
 	-source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
 else
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
@@ -117,6 +118,7 @@ endif
 .PHONY: start-nodes
 start-nodes:
 ifeq (${SCRIPT_NAME},nmt-install.sh)
+	# ignore error from nmt install due to error of removing symlink
 	-source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
 else
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
@@ -249,6 +251,10 @@ ci-test:
 	# We are only enabling this in this make target, however if necessary, similar pattern can be used in other targets.
 	# Ref: https://stackoverflow.com/questions/28597794/how-can-i-clean-up-after-an-error-in-a-makefile
 	# NOTE: It needs latest make (version ~=4.3)
+	function cleanup_test () {
+		$(MAKE) destroy-network
+	}
+	trap cleanup_test EXIT # always destroy-network on exit
 	$(MAKE) ci-deploy-network setup-nodes start-nodes
 
 .PHONY: ci-deploy-network
