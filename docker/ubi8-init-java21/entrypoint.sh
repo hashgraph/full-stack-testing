@@ -41,7 +41,7 @@ if [[ -n "${JAVA_HEAP_MAX}" ]]; then
 fi
 
 # Setup Main Class
-[[ -z "${JAVA_MAIN_CLASS}" ]] && JAVA_MAIN_CLASS="com.swirlds.platform.Browser"
+[[ -z "${JAVA_MAIN_CLASS}" ]] && JAVA_MAIN_CLASS="com.hedera.node.app.ServicesMain"
 
 # Setup Classpath
 JCP_OVERRIDDEN="false"

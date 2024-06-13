@@ -70,6 +70,7 @@ defaults:
       tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
       pullPolicy: "IfNotPresent"
     resources: {}
+    extraEnv: []
   service:
     serviceType: "LoadBalancer"
   haproxy:
