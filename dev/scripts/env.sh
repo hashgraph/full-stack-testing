@@ -115,7 +115,7 @@ POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
 #NODE_NAMES=(node0 node1 node2 node3)
-NODE_NAMES=(node0)
+NODE_NAMES=(node0,node1,node2)
 
 POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"

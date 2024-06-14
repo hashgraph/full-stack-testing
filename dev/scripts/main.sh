@@ -120,9 +120,9 @@ function uninstall_chart() {
 
   # it is needed for GKE deployment
   local has_secret
-  has_secret=$(kubectl get secret | grep -c "sh.helm.release.v1.${RELEASE_NAME}.*")
+  has_secret=$(kubectl get secret | grep -c "sh.helm.release.v1.fullstack-cluster-setup.*")
   if [[ $has_secret ]]; then
-    kubectl delete secret "sh.helm.release.v1.${RELEASE_NAME}.v1" || true
+    kubectl delete secret "sh.helm.release.v1.fullstack-cluster-setup.v1" || true
   fi
 
   local has_postgres_pvc

@@ -146,24 +146,8 @@ spec:
         startupProbe:
           exec:
             command:
-              - sh
-              - -c
-              - |
-                jshell --version &>/dev/null
-                cat << EOF | jshell /dev/stdin
-                int rc = 1;
-                try {
-                  final String serviceName = "network-{{ $node.name }}";
-                  final String namespace = "{{ default $.Release.Namespace $.Values.global.namespaceOverride }}";
-                  final String clusterDomain = "cluster.local";
-                  final String fqdn = String.join(".", serviceName, namespace, "svc", clusterDomain);
-                  final InetAddress serviceAddress = InetAddress.getByName(fqdn);
-                  rc = 0;
-                } catch (Exception exception) {
-                  System.out.println(exception);
-                }
-                /exit rc
-                EOF
+              - curl
+              - network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133
           failureThreshold: 30
           periodSeconds: 10
           timeoutSeconds: 5

@@ -107,11 +107,22 @@ destroy-network: destroy-test-container uninstall-chart
 
 .PHONY: setup-nodes
 setup-nodes: setup
+ifeq (${SCRIPT_NAME},nmt-install.sh)
+	echo "Ignore error from nmt install due to error of removing symlink"
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all || true
+else
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
+endif
+
 
 .PHONY: start-nodes
 start-nodes:
+ifeq (${SCRIPT_NAME},nmt-install.sh)
+	echo "Ignore error from nmt install due to error of removing symlink"
+	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all || true
+else
 	source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
+endif
 
 .PHONY: verify-nodes
 verify-nodes:
