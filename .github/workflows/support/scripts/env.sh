@@ -102,6 +102,7 @@ function prepare_platform_software_URL() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly CLUSTER_SETUP_VALUES_FILE="${TMP_DIR}/cluster-values.yaml"
+mkdir -p "$TMP_DIR"
 load_env_file
 
 USER="${USER:-changeme}"
@@ -115,27 +116,19 @@ POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
 #NODE_NAMES=(node0 node1 node2 node3)
-NODE_NAMES=(node0,node1,node2)
+NODE_NAMES=(node0)
 
 POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
-readonly SETUP_CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-cluster-setup"
-readonly CHART_DIR="${SCRIPT_DIR}/../../charts/fullstack-deployment"
+readonly SETUP_CHART_DIR="../../../charts/fullstack-cluster-setup"
+readonly CHART_DIR="../../../charts/fullstack-deployment"
 
 # telemetry related env variables
-readonly COMMON_RESOURCES="${SCRIPT_DIR}/../common-resources"
-readonly GATEWAY_API_DIR="${SCRIPT_DIR}/../gateway-api"
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
-readonly PROMETHEUS_DIR="${TELEMETRY_DIR}/prometheus"
-readonly PROMETHEUS_VERSION=v0.67.1
-readonly PROMETHEUS_OPERATOR_YAML="${PROMETHEUS_DIR}/prometheus-operator.yaml"
-readonly PROMETHEUS_YAML="${PROMETHEUS_DIR}/prometheus.yaml"
-readonly PROMETHEUS_RBAC_YAML="${PROMETHEUS_DIR}/prometheus-rbac.yaml"
-readonly PROMETHEUS_EXAMPLE_APP_YAML="${PROMETHEUS_DIR}/example-app.yaml"
 
 # docker build related env variables
-readonly DOCKERFILE_DIR="${SCRIPT_DIR}/../../docker"
+readonly DOCKERFILE_DIR="../../../docker"
 readonly LOCAL_DOCKER_REGISTRY="docker.fst.local" # same as in dev/ci/ci-values.yaml
 readonly LOCAL_DOCKER_IMAGE_TAG="local"
 
