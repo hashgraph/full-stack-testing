@@ -93,14 +93,12 @@ jobs:
           if [[ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" || "${{ steps.changed-files.outputs.chart_any_changed }}" == "true" ]]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
+          elif github.event_name == 'workflow_dispatch'; then
+            echo "Executing helm chart tests due to workflwo dispatch"
+            echo "run-tests=true" >> "${GITHUB_OUTPUT}"
           else
             echo ">> No relevant files are changed. No need to run helm chart tests"
           fi
-
-      - name: Workflow trigger
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "run-tests=true" >> "${GITHUB_OUTPUT}"
 
       - name: Initialize Job Variables
         id: vars
