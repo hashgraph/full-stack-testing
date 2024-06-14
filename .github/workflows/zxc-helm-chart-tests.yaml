@@ -100,11 +100,6 @@ jobs:
             echo ">> No relevant files are changed. No need to run helm chart tests"
           fi
 
-      - name: Workflow trigger
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          echo "run-tests=true" >> "${GITHUB_OUTPUT}"
-
       - name: Initialize Job Variables
         id: vars
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
