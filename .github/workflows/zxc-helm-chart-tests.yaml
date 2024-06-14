@@ -90,10 +90,11 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
+          echo " github.event_name = ${{ github.event_name }}"
           if [[ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" || "${{ steps.changed-files.outputs.chart_any_changed }}" == "true" ]]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
-          elif github.event_name == 'workflow_dispatch'; then
+          elif [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
             echo "Executing helm chart tests due to workflwo dispatch"
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
           else
