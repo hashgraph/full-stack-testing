@@ -66,10 +66,11 @@ defaults:
   root: # root container
     image:
       registry: "ghcr.io"
-      repository: "hashgraph/full-stack-testing/ubi8-init-java17"
+      repository: "hashgraph/full-stack-testing/ubi8-init-java21"
       tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
       pullPolicy: "IfNotPresent"
     resources: {}
+    extraEnv: []
   service:
     serviceType: "LoadBalancer"
   haproxy:
