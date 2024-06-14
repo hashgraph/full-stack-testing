@@ -228,6 +228,7 @@ function get_pod_by_label() {
 }
 
 function is_route_accepted() {
+  # test trigger
   local route_type=$1
   [[ -z "${route_type}" ]] && echo "ERROR: Route type is needed" && return "${EX_ERR}"
 
