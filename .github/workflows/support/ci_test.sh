@@ -2,6 +2,7 @@
 
 echo "-----------------------------------------------------------------------------------------------------"
 echo "Setting up environment variables"
+echo "SCRIPT_NAME: ${SCRIPT_NAME}"
 
 CUR_DIR="scripts"
 
