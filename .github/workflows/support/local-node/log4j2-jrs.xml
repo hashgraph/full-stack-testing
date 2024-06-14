@@ -7,7 +7,7 @@
     </Console>
 
     <RollingFile name="RollingFile" fileName="logs/hgcaa.log"
-      filePattern="logs/hgcaa.log-%d{yyyy-MM-dd}-%i.log">
+                 filePattern="logs/hgcaa.log-%d{yyyy-MM-dd}-%i.log">
       <PatternLayout>
         <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %-4L %c{1} - %m{nolookups}%n</pattern>
       </PatternLayout>
@@ -18,7 +18,7 @@
     </RollingFile>
 
     <RollingFile name="QueriesRollingFile" fileName="logs/queries.log"
-      filePattern="logs/queries.log-%d{yyyy-MM-dd}-%i.log">
+                 filePattern="logs/queries.log-%d{yyyy-MM-dd}-%i.log">
       <BurstFilter level="INFO" rate="50" maxBurst="500"/>
       <PatternLayout>
         <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p %-4L %c{1} - %m{nolookups}%n</pattern>
@@ -30,7 +30,7 @@
     </RollingFile>
 
     <RollingFile name="fileLog" fileName="logs/swirlds.log"
-      filePattern="logs/swirlds.log-%d{yyyy-MM-dd}-%i.log">
+                 filePattern="logs/swirlds.log-%d{yyyy-MM-dd}-%i.log">
       <PatternLayout>
         <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-8sn %-5p %-16marker &lt;%t&gt; %c{1}: %msg{nolookups}%n</pattern>
       </PatternLayout>
@@ -71,7 +71,6 @@
         <Filters>
           <!-- JasperDB & Virtual Merkle -->
           <MarkerFilter marker="JASPER_DB"              onMatch="ACCEPT" onMismatch="NEUTRAL"/>
-          <MarkerFilter marker="VIRTUAL_MERKLE_STATS"   onMatch="ACCEPT" onMismatch="NEUTRAL"/>
           <MarkerFilter marker="DISABLED"               onMatch="DENY"   onMismatch="DENY" />
         </Filters>
       </AppenderRef>
@@ -220,7 +219,7 @@
       <!-- <AppenderRef ref="Console"/> -->
       <AppenderRef ref="RollingFile"/>
     </Logger>
-	<Logger name="com.hedera.services.legacy.config" level="info" additivity="false">
+    <Logger name="com.hedera.services.legacy.config" level="info" additivity="false">
       <AppenderRef ref="RollingFile"/>
       <AppenderRef ref="Console"/>
     </Logger>

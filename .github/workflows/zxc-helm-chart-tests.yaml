@@ -74,7 +74,6 @@ jobs:
               - .github/workflows/support/**
             scripts:
               - dev/**
-              - .github/workflows/support/**
 
       - name: List all changed files related to charts
         id: check-changed-files
@@ -137,5 +136,4 @@ jobs:
         working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          sleep 3600
           source ci_test.sh
