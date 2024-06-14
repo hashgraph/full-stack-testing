@@ -2,7 +2,6 @@
 
 echo "-----------------------------------------------------------------------------------------------------"
 echo "Setting up environment variables"
-SCRIPT_NAME=direct-install.sh
 
 CUR_DIR="scripts"
 
