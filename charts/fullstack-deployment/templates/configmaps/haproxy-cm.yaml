@@ -1,6 +1,8 @@
 # Create a haproxy configmap for each network node
 # This will change in the future, we plan create a haproxy for a given network node only if specified in the config
 {{- range $index, $node := ($.Values.hedera.nodes) }}
+{{- $random_user := randAlpha 10  -}}
+{{- $random_password := randAlpha 10  -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,6 +13,7 @@ metadata:
 data:
   haproxy.cfg: |
     {{- tpl ($.Files.Get "config-files/haproxy.cfg") (dict "nodeConfig" $node "namespace" $.Release.Namespace "Template" $.Template) | nindent 4 }}
+    {{ (dict "haproxy_user" $random_user "haproxy_password" $random_password) }}
 ---
 {{ end }}
 apiVersion: v1
