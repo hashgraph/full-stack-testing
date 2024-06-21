@@ -49,6 +49,17 @@ spec:
       - name: {{ default $defaults.nameOverride $haproxy.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $haproxy.image "Chart" $.Chart "defaults" $defaults ) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $haproxy.image "defaults" $defaults )  }}
+        livenessProbe:
+          httpGet:
+            path: /v2/services/haproxy/stats/native?type=backend
+            port: 5555
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 5555
+          initialDelaySeconds: 30
+          periodSeconds: 10
         startupProbe:
           exec:
             command:
