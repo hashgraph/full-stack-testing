@@ -1,4 +1,3 @@
-{{- $previous := lookup "v1" "ConfigMap" .Release.Namespace "haproxy-cm-{{ $node.name }}" }}
 # Create a haproxy configmap for each network node
 # This will change in the future, we plan create a haproxy for a given network node only if specified in the config
 {{- $haproxy_password := .Values.global.haproxy_password  -}}
