@@ -20,6 +20,7 @@ name: "ZXC: FS Helm Chart Tests"
 # - .github/workflows/flow-pull-request-checks.yaml
 
 on:
+  workflow_dispatch:
   workflow_call:
     inputs:
       custom-job-label:
@@ -57,6 +58,13 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y make
           fi
+
+      - name: Checkout Code
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
+          fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
+
       - name: Get changed files related to charts
         id: changed-files
         uses: tj-actions/changed-files@d6babd6899969df1a11d14c368283ea4436bca78 #v44.5.2
@@ -64,6 +72,7 @@ jobs:
           files_yaml: |
             chart:
               - charts/**
+              - .github/workflows/support/**
             scripts:
               - dev/**
 
@@ -82,9 +91,13 @@ jobs:
             echo " - ${file} was changed"
           done
           echo ""
-          if [ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" ] || [ "${{ steps.changed-files.outputs.chart_any_changed }}" == "true"]; then
+          echo " github.event_name = ${{ github.event_name }}"
+          if [[ "${{ steps.changed-files.outputs.scripts_any_changed }}" == "true" || "${{ steps.changed-files.outputs.chart_any_changed }}" == "true" ]]; then
             echo "run-tests=true" >> "${GITHUB_OUTPUT}"
             echo "Executing helm chart tests...."
+          elif [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
+            echo "run-tests=true" >> "${GITHUB_OUTPUT}"
+            echo "Executing helm chart tests due to workflow dispatch"
           else
             echo ">> No relevant files are changed. No need to run helm chart tests"
           fi
@@ -94,13 +107,6 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
           echo "script_name=${{ matrix.scriptName }}" >> "${GITHUB_OUTPUT}"
-
-      - name: Checkout Code
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
-        if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
-        with:
-          # the fetch depth defaults to only the commit that triggered the workflow unless the spotless check was enabled
-          fetch-depth: ${{ inputs.enable-spotless-check && '0' || '' }}
 
       - name: Install wget
         run: |
@@ -112,7 +118,7 @@ jobs:
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         with:
           node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
-          config: dev/dev-cluster.yaml
+          config: .github/workflows/support/dev-cluster.yaml
           version: v0.20.0
           verbosity: 3
           wait: 120s
@@ -132,8 +138,8 @@ jobs:
           kubectl get node --show-labels
 
       - name: Helm Chart Test
-        working-directory: dev
+        working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          echo "Running test with SCRIPT_NAME=${{ steps.vars.outputs.script_name}}"
-          make ci-test SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          export SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
+          source ci_test.sh
