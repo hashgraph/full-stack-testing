@@ -74,3 +74,23 @@ export MINIO_ROOT_PASSWORD={{ include "minio.secretKey" . }}
   emptyDir: {}
   {{- end }}
 {{- end -}}
+
+{{- define "generateHaproxyPassword" -}}
+{{- $password := randAlpha 10 -}}
+{{- $previous := lookup "v1" "Secret" .Release.Namespace "haproxy-secrets" }}
+{{- if and $previous (index $previous.data "haproxy_password") -}}
+{{- $password := $previous.data.haproxy_password -}}
+{{- end -}}
+{{- $_ := set .Values.global "haproxy_password" ($password) -}}
+{{- $password -}}
+{{- end -}}
+
+{{- define "generateHaproxyUser" -}}
+{{- $username := randAlpha 10 -}}
+{{- $previous := lookup "v1" "Secret" .Release.Namespace "haproxy-secrets" }}
+{{- if and $previous (index $previous.data "haproxy_user") -}}
+{{- $username := $previous.data.haproxy_user -}}
+{{- end -}}
+{{- $_ := set .Values.global "haproxy_user" ($username) -}}
+{{- $username -}}
+{{- end -}}
