@@ -22,7 +22,8 @@
 # NOTE: Must be placed last to ensure enforcement over all other rules
 
 # Protection Rules for Github Configuration Files and Actions Workflows
-/.github/                                       @hashgraph/release-engineering-managers
+/.github/                                       @hashgraph/release-engineering-managers @hashgraph/devops-ci
+/.github/workflows/                             @hashgraph/release-engineering-managers @hashgraph/devops-ci
 
 # Codacy Tool Configurations
 /config/                                        @hashgraph/release-engineering-managers
@@ -35,12 +36,12 @@
 /CODEOWNERS                                     @hashgraph/release-engineering-managers
 
 # Protect the repository root files
-/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
 **/LICENSE                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
 
 # CodeCov configuration
 **/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers
 
 # Git Ignore definitions
-**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers
-**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
+**/.gitignore.*                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
