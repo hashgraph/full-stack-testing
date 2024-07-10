@@ -13,7 +13,7 @@
 /docker/**                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
 /fullstack-core/**                              @hashgraph/release-engineering
 /fullstack-examples/**                          @hashgraph/release-engineering
-/fullstack-gradle-plugin/**                     @hashgraph/release-engineering
+/fullstack-gradle-plugin/**                     @hashgraph/release-engineering @hashgraph/devops-ci
 
 #########################
 #####  Core Files  ######
