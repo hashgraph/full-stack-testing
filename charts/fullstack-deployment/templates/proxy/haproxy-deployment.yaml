@@ -49,6 +49,14 @@ spec:
       - name: {{ default $defaults.nameOverride $haproxy.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $haproxy.image "Chart" $.Chart "defaults" $defaults ) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $haproxy.image "defaults" $defaults )  }}
+        livenessProbe:
+          httpGet:
+            path: /v2/services/haproxy/stats/native?type=backend
+            port: 5555
+        readinessProbe:
+          httpGet:
+            path: /v2/services/haproxy/stats/native?type=backend
+            port: 5555
         startupProbe:
           exec:
             command:
@@ -62,7 +70,7 @@ spec:
               }
               probe() {
                 jq_check || return 1
-                wget -q -O response.json --header "Authorization: Basic $(echo -n "admin:{{ $.Values.global.haproxy_password }}" | base64)" http://localhost:5555/v2/services/haproxy/stats/native?type=backend || return 1
+                wget -q -O response.json --header "Authorization: Basic $(echo -n "admin:{{ $.Values.global.haproxy_password }}")" http://localhost:5555/v2/services/haproxy/stats/native?type=backend || return 1
                 BACKEND_STATUS=$(jq -r '.[] | .stats[] | select(.name == "http_backend") | .stats.status' < response.json)
                 echo "http_backend status: $BACKEND_STATUS"
                 if [ "$BACKEND_STATUS" = "UP" ]; then
