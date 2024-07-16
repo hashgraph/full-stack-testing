@@ -678,6 +678,20 @@ function verify_network_state() {
   return "$EX_OK"
 }
 
+function verify_haproxy() {
+  # iterate over each haprox pod check if READY is 1/1
+  local pods=$("${KCTL}" get pods -l fullstack.hedera.com/type=haproxy -o jsonpath='{.items[*].metadata.name}')
+  for pod in ${pods}; do
+    local status=$("${KCTL}" get pod "${pod}" -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}')
+    if [[ "${status}" != "True" ]]; then
+      echo "ERROR: <<< HAProxy pod ${pod} is not ready. >>>"
+      return "${EX_ERR}"
+    fi
+    echo "HAProxy pod ${pod} is ready"
+  done
+  return "${EX_OK}"
+}
+
 function verify_node_all() {
   if [[ "${#NODE_NAMES[*]}" -le 0 ]]; then
     echo "ERROR: Node list is empty. Set NODE_NAMES env variable with a list of nodes"
