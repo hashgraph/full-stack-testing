@@ -46,32 +46,9 @@ function show_env_vars() {
     echo "NAMESPACE: ${NAMESPACE}"
     echo "SCRIPT_DIR: ${SCRIPT_DIR}"
     echo "TMP_DIR: ${TMP_DIR}"
+    echo "NODE_NAMES: ${NODE_NAMES[*]}"
     echo "-----------------------------------------------------------------------------------------------------"
     echo ""
-}
-
-function setup_tmp_dir() {
-    if [ ! -f "${TMP_DIR}/.env" ]; then \
-      echo "Creating .env file from template.env"
-      cp "${SCRIPT_DIR}/template.env" "${TMP_DIR}/.env"
-      echo "File list in ${TMP_DIR}"
-      ls -la "${TMP_DIR}"
-    fi
-}
-
-function load_env_file() {
-    setup_tmp_dir
-    if [ -f "${TMP_DIR}/.env" ]; then \
-        echo "Loading .env file: ${TMP_DIR}/.env"
-        set -a
-        # shellcheck source=./../temp/.env
-        source "${TMP_DIR}/.env"
-        set +a
-    fi
-}
-
-function setup() {
-    load_env_file
 }
 
 function parse_minor_version() {
@@ -103,20 +80,19 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly TMP_DIR="${SCRIPT_DIR}/../temp"
 readonly CLUSTER_SETUP_VALUES_FILE="${TMP_DIR}/cluster-values.yaml"
 mkdir -p "$TMP_DIR"
-load_env_file
 
 USER="${USER:-changeme}"
 CLUSTER_NAME="${CLUSTER_NAME:-fst}"
 NAMESPACE="${NAMESPACE:-fst-${USER}}"
 RELEASE_NAME="${RELEASE_NAME:-fst}"
-NMT_VERSION=v2.0.0-alpha.0
-PLATFORM_VERSION=v0.39.1
+NMT_VERSION=v1.2.4
+PLATFORM_VERSION=v0.49.0-alpha.2
 
 POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
 
 #NODE_NAMES=(node0 node1 node2 node3)
-NODE_NAMES=(node0)
+NODE_NAMES=(node0 node1 node2)
 
 POD_MONITOR_ROLE="${POD_MONITOR_ROLE:-pod-monitor-role}"
 GATEWAY_CLASS_NAME="${GATEWAY_CLASS_NAME:-fst-gateway-class}"
