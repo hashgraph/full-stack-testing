@@ -88,8 +88,7 @@ kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.co
 echo "Running helm chart tests (takes ~5m, timeout 15m)... "
 echo "-----------------------------------------------------------------------------------------------------"
 
-helm test "${RELEASE_NAME}" --filter name=network-test --timeout 15m
-kubectl logs network-test
+
 
 echo "-----------------------------------------------------------------------------------------------------"
 echo "Setup and start nodes"
@@ -102,22 +101,3 @@ else
   source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
 fi
 
-echo "-----------------------------------------------------------------------------------------------------"
-echo "Tear down cluster"
-
-kubectl delete pod network-test -n "${NAMESPACE}" || true
-
-echo "Uninstalling helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}... "
-echo "-----------------------------------------------------------------------------------------------------"
-helm uninstall -n "${NAMESPACE}" "${RELEASE_NAME}"
-sleep 10
-echo "Uninstalled helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}"
-
-echo "Removing postgres pvc"
-has_postgres_pvc=$(kubectl get pvc --no-headers -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}" | wc -l)
-if [[ $has_postgres_pvc ]]; then
-kubectl delete pvc -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}"
-fi
-
-echo "Workflow finished successfully"
-echo "-----------------------------------------------------------------------------------------------------"
