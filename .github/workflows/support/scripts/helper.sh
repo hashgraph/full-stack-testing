@@ -687,6 +687,7 @@ function verify_haproxy() {
       echo "ERROR: <<< HAProxy pod ${pod} is not ready. >>>"
       return "${EX_ERR}"
     fi
+    echo "HAProxy pod ${pod} is ready"
   done
   return "${EX_OK}"
 }
