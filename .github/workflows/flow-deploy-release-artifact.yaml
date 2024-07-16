@@ -190,12 +190,12 @@ jobs:
           java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@66535aaf56f831b35e3a8481c9c99b665b84dd45 # v3.4.2
+        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
         with:
           gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
 
       - name: Apply Version Number Update (Explicit)
-        uses: gradle/gradle-build-action@66535aaf56f831b35e3a8481c9c99b665b84dd45 # v3.4.2
+        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
         with:
           gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
           arguments: versionAsSpecified --scan -PnewVersion=${{ needs.prepare-release.outputs.version }}
@@ -250,7 +250,7 @@ jobs:
           java-version: ${{ inputs.java-version }}
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@66535aaf56f831b35e3a8481c9c99b665b84dd45 # v3.4.2
+        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
         with:
           gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
 
