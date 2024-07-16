@@ -92,6 +92,8 @@ function start_node_all() {
 
   verify_node_all || return "${EX_ERR}"
 
+  verify_haproxy || return "${EX_ERR}"
+
   return "${EX_OK}"
 }
 
