@@ -281,8 +281,6 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
       {{- end }}
-
-
       {{- if $recordStream.enabled }}
       # Sidecar: {{ $node.name }}-record-stream-uploader
       - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
@@ -349,7 +347,6 @@ spec:
         {{- end }}
       {{- end }}
       {{- if $recordStreamSidecar.enabled }}
-      # Sidecar: {{ $node.name }}-record-stream-uploader
       - name: {{ default "record-stream-sidecar-uploader" $recordStreamSidecar.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $recordStreamSidecar.image "Chart" $.Chart "defaults" $defaults.sidecars.recordStreamSidecarUploader) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStreamSidecar.image "defaults" $defaults.sidecars.recordStreamSidecarUploader) }}
