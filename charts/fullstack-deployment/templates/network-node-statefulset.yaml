@@ -1,20 +1,20 @@
 {{ range $index, $node := $.Values.hedera.nodes }}
-{{- $hapiAppSecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-hapi-app-secrets" }}
-{{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-keys-secrets" }}
-{{- $root := $node.root | default $.Values.defaults.root -}}
-{{- $rootExtraEnv := ($root).extraEnv | default $.Values.defaults.root.extraEnv -}}
-{{- $rootImage := ($node.root).image | default $.Values.defaults.root.image -}}
-{{- $recordStream := ($node.sidecars).recordStreamUploader | default $.Values.defaults.sidecars.recordStreamUploader -}}
-{{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
-{{- $balanceUploader := ($node.sidecars).accountBalanceUploader | default $.Values.defaults.sidecars.accountBalanceUploader -}}
-{{- $backupUploader := ($node.sidecars).backupUploader | default $.Values.defaults.sidecars.backupUploader -}}
-{{- $otelCollector := ($node.sidecars).otelCollector | default $.Values.defaults.sidecars.otelCollector -}}
-{{- $cloud := $.Values.cloud }}
-{{- $defaults := $.Values.defaults }}
-{{- $minioserver := (index $.Values "minio-server") }}
-{{- $nodeStorage := $.Values.defaults.volumeClaims.node }}
-{{- $pvcEnabled := $.Values.defaults.volumeClaims.enabled }}
-{{- $initContainersLength := len $.Values.hedera.initContainers}}
+  {{- $hapiAppSecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-hapi-app-secrets" }}
+  {{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-keys-secrets" }}
+  {{- $root := $node.root | default $.Values.defaults.root -}}
+  {{- $rootExtraEnv := ($root).extraEnv | default $.Values.defaults.root.extraEnv -}}
+  {{- $rootImage := ($node.root).image | default $.Values.defaults.root.image -}}
+  {{- $recordStream := ($node.sidecars).recordStreamUploader | default $.Values.defaults.sidecars.recordStreamUploader -}}
+  {{- $eventStream := ($node.sidecars).eventStreamUploader | default $.Values.defaults.sidecars.eventStreamUploader -}}
+  {{- $balanceUploader := ($node.sidecars).accountBalanceUploader | default $.Values.defaults.sidecars.accountBalanceUploader -}}
+  {{- $backupUploader := ($node.sidecars).backupUploader | default $.Values.defaults.sidecars.backupUploader -}}
+  {{- $otelCollector := ($node.sidecars).otelCollector | default $.Values.defaults.sidecars.otelCollector -}}
+  {{- $cloud := $.Values.cloud }}
+  {{- $defaults := $.Values.defaults }}
+  {{- $minioserver := (index $.Values "minio-server") }}
+  {{- $nodeStorage := $.Values.defaults.volumeClaims.node }}
+  {{- $pvcEnabled := $.Values.defaults.volumeClaims.enabled }}
+  {{- $initContainersLength := len $.Values.hedera.initContainers}}
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -24,7 +24,7 @@ metadata:
   labels:
     app: network-{{ $node.name }}
   {{- if $.Values.deployment.podLabels }}
-    {{- $.Values.deployment.podLabels | toYaml | nindent 4 }}
+  {{- $.Values.deployment.podLabels | toYaml | nindent 4 }}
   {{- end }}
   {{- if $.Values.deployment.podAnnotations }}
   annotations:
@@ -39,13 +39,13 @@ spec:
   {{- if $pvcEnabled }}
   volumeClaimTemplates:
     {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-account-balances-pvc" "storage" $nodeStorage.accountBalances) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-event-streams-pvc" "storage" $nodeStorage.eventStreams) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-record-streams-pvc" "storage" $nodeStorage.recordStreams) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-onboard-pvc" "storage" $nodeStorage.dataOnboard) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-saved-pvc" "storage" $nodeStorage.dataSaved) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-stats-pvc" "storage" $nodeStorage.dataStats) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-upgrade-pvc" "storage" $nodeStorage.dataUpgrade) | nindent 4 }}
-    {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-output-pvc" "storage" $nodeStorage.output) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-event-streams-pvc" "storage" $nodeStorage.eventStreams) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-record-streams-pvc" "storage" $nodeStorage.recordStreams) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-onboard-pvc" "storage" $nodeStorage.dataOnboard) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-saved-pvc" "storage" $nodeStorage.dataSaved) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-stats-pvc" "storage" $nodeStorage.dataStats) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-data-upgrade-pvc" "storage" $nodeStorage.dataUpgrade) | nindent 4 }}
+      {{ include "fullstack.volumeClaimTemplate" (dict "name" "hgcapp-output-pvc" "storage" $nodeStorage.output) | nindent 4 }}
   {{- end }}
   template:
     metadata:
@@ -74,149 +74,149 @@ spec:
       terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
       volumes:
         {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-account-balances" "claimName" (printf "%s-%s-%s" "hgcapp-account-balances-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-event-streams" "claimName" (printf "%s-%s-%s" "hgcapp-event-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-record-streams" "claimName" (printf "%s-%s-%s" "hgcapp-record-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-onboard" "claimName" (printf "%s-%s-%s" "hgcapp-data-onboard-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-saved" "claimName" (printf "%s-%s-%s" "hgcapp-data-saved-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-stats" "claimName" (printf "%s-%s-%s" "hgcapp-data-stats-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-upgrade" "claimName" (printf "%s-%s-%s" "hgcapp-data-upgrade-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-output" "claimName" (printf "%s-%s-%s" "hgcapp-output-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
-        {{- if $otelCollector.enabled }}
-        - name: otel-collector-volume
-          configMap:
-            name: otel-cm-{{ $node.name }}
-        {{- end }}
-        - name: network-node-data-config
-          configMap:
-            name: network-node-data-config-cm
-            optional: true
-        - name: network-node-etc
-          configMap:
-            name: network-node-etc-cm
-            optional: true
-            items:
-              - key: application.env
-                path: application.env
-        - name: network-node-hapi-app-config-txt
-          configMap:
-            name: network-node-hapi-app-cm
-            optional: true
-            items:
-              - key: config.txt
-                path: config.txt
-        {{- if $hapiAppSecrets }}
-        - name: network-node-hapi-app-hedera-crt
-          secret:
-            secretName: network-node-hapi-app-secrets
-            optional: true
-            items:
-              - key: hedera-{{ $node.name }}.crt
-                path: hedera.crt
-        - name: network-node-hapi-app-hedera-key
-          secret:
-            secretName: network-node-hapi-app-secrets
-            optional: true
-            items:
-              - key: hedera-{{ $node.name }}.key
-                path: hedera.key
-        {{- end }}
-        - name: network-node-hapi-app-log4j2-xml
-          configMap:
-            name: network-node-hapi-app-cm
-            optional: true
-            items:
-              - key: log4j2.xml
-                path: log4j2.xml
-        - name: network-node-hapi-app-settings-txt
-          configMap:
-            name: network-node-hapi-app-cm
-            optional: true
-            items:
-              - key: settings.txt
-                path: settings.txt
-        {{- if $networkNodeKeySecrets }}
-        - name: network-node-keys
-          secret: # TODO pem vs pfx
-            secretName: network-node-keys-secrets
-            optional: true
-        {{- end }}
-      containers:
-      # Root Container: {{ $node.name }}-root-container
-      - name: {{ $root.nameOverride | default "root-container" }}
-        startupProbe:
-          exec:
-            command:
-              - curl
-              - network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133
-          failureThreshold: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-        image: {{ include "fullstack.container.image" (dict "image" $rootImage "Chart" $.Chart "defaults" $.Values.defaults) }}
-        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $rootImage "defaults" $.Values.defaults) }}
-        securityContext: # need to run as root with privileged mode
-          {{- include "fullstack.root.security.context.privileged" . | nindent 10 }}
-        {{- with default $defaults.root.resources $node.resources }}
-        resources:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
-        volumeMounts:
-          {{- if $.Values.hedera.configMaps.applicationEnv }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-event-streams" "claimName" (printf "%s-%s-%s" "hgcapp-event-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-record-streams" "claimName" (printf "%s-%s-%s" "hgcapp-record-streams-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-onboard" "claimName" (printf "%s-%s-%s" "hgcapp-data-onboard-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-saved" "claimName" (printf "%s-%s-%s" "hgcapp-data-saved-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-stats" "claimName" (printf "%s-%s-%s" "hgcapp-data-stats-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-data-upgrade" "claimName" (printf "%s-%s-%s" "hgcapp-data-upgrade-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{ include "fullstack.volumeTemplate" (dict "name" "hgcapp-output" "claimName" (printf "%s-%s-%s" "hgcapp-output-pvc-network" $node.name "0") "pvcEnabled" $pvcEnabled ) | nindent 8 }}
+          {{- if $otelCollector.enabled }}
+          - name: otel-collector-volume
+            configMap:
+              name: otel-cm-{{ $node.name }}
+          {{- end }}
+          - name: network-node-data-config
+            configMap:
+              name: network-node-data-config-cm
+              optional: true
           - name: network-node-etc
-            mountPath: /etc/network-node/application.env
-            subPath: application.env
-          {{- end }}
-          - name: hgcapp-account-balances
-            mountPath: /opt/hgcapp/accountBalances
-          - name: hgcapp-event-streams
-            mountPath: /opt/hgcapp/eventsStreams
-          - name: hgcapp-record-streams
-            mountPath: /opt/hgcapp/recordStreams
-          {{- if $.Values.hedera.configMaps.configTxt }}
+            configMap:
+              name: network-node-etc-cm
+              optional: true
+              items:
+                - key: application.env
+                  path: application.env
           - name: network-node-hapi-app-config-txt
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/config.txt
-            subPath: config.txt
-          {{- end }}
+            configMap:
+              name: network-node-hapi-app-cm
+              optional: true
+              items:
+                - key: config.txt
+                  path: config.txt
           {{- if $hapiAppSecrets }}
           - name: network-node-hapi-app-hedera-crt
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.crt
-            subPath: hedera.crt
+            secret:
+              secretName: network-node-hapi-app-secrets
+              optional: true
+              items:
+                - key: hedera-{{ $node.name }}.crt
+                  path: hedera.crt
           - name: network-node-hapi-app-hedera-key
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.key
-            subPath: hedera.key
+            secret:
+              secretName: network-node-hapi-app-secrets
+              optional: true
+              items:
+                - key: hedera-{{ $node.name }}.key
+                  path: hedera.key
           {{- end }}
-          {{- if $.Values.hedera.configMaps.log4j2Xml }}
           - name: network-node-hapi-app-log4j2-xml
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/log4j2.xml
-            subPath: log4j2.xml
-          {{- end }}
-          {{- if $.Values.hedera.configMaps.settingsTxt }}
+            configMap:
+              name: network-node-hapi-app-cm
+              optional: true
+              items:
+                - key: log4j2.xml
+                  path: log4j2.xml
           - name: network-node-hapi-app-settings-txt
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/settings.txt
-            subPath: settings.txt
-          {{- end }}
-          {{- if or $.Values.hedera.configMaps.apiPermissionsProperties $.Values.hedera.configMaps.applicationProperties $.Values.hedera.configMaps.bootstrapProperties }}
-          - name: network-node-data-config
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/config
-          {{- end }}
+            configMap:
+              name: network-node-hapi-app-cm
+              optional: true
+              items:
+                - key: settings.txt
+                  path: settings.txt
           {{- if $networkNodeKeySecrets }}
           - name: network-node-keys
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/keys
+            secret: # TODO pem vs pfx
+              secretName: network-node-keys-secrets
+              optional: true
           {{- end }}
-          - name: hgcapp-data-onboard
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/onboard
-          - name: hgcapp-data-saved
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/saved
-          - name: hgcapp-data-stats
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/stats
-          - name: hgcapp-data-upgrade
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/upgrade
-          - name: hgcapp-output
-            mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/output
-        env:
-          {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
-          {{- with $rootExtraEnv }}
+      containers:
+        # Root Container: {{ $node.name }}-root-container
+        - name: {{ $root.nameOverride | default "root-container" }}
+          startupProbe:
+            exec:
+              command:
+                - curl
+                - network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          image: {{ include "fullstack.container.image" (dict "image" $rootImage "Chart" $.Chart "defaults" $.Values.defaults) }}
+          imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $rootImage "defaults" $.Values.defaults) }}
+          securityContext: # need to run as root with privileged mode
+            {{- include "fullstack.root.security.context.privileged" . | nindent 10 }}
+          {{- with default $defaults.root.resources $node.resources }}
+          resources:
             {{- toYaml . | nindent 10 }}
           {{- end }}
+          volumeMounts:
+            {{- if $.Values.hedera.configMaps.applicationEnv }}
+            - name: network-node-etc
+              mountPath: /etc/network-node/application.env
+              subPath: application.env
+            {{- end }}
+            - name: hgcapp-account-balances
+              mountPath: /opt/hgcapp/accountBalances
+            - name: hgcapp-event-streams
+              mountPath: /opt/hgcapp/eventsStreams
+            - name: hgcapp-record-streams
+              mountPath: /opt/hgcapp/recordStreams
+            {{- if $.Values.hedera.configMaps.configTxt }}
+            - name: network-node-hapi-app-config-txt
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/config.txt
+              subPath: config.txt
+            {{- end }}
+            {{- if $hapiAppSecrets }}
+            - name: network-node-hapi-app-hedera-crt
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.crt
+              subPath: hedera.crt
+            - name: network-node-hapi-app-hedera-key
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/hedera.key
+              subPath: hedera.key
+            {{- end }}
+            {{- if $.Values.hedera.configMaps.log4j2Xml }}
+            - name: network-node-hapi-app-log4j2-xml
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/log4j2.xml
+              subPath: log4j2.xml
+            {{- end }}
+            {{- if $.Values.hedera.configMaps.settingsTxt }}
+            - name: network-node-hapi-app-settings-txt
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/settings.txt
+              subPath: settings.txt
+            {{- end }}
+            {{- if or $.Values.hedera.configMaps.apiPermissionsProperties $.Values.hedera.configMaps.applicationProperties $.Values.hedera.configMaps.bootstrapProperties }}
+            - name: network-node-data-config
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/config
+            {{- end }}
+            {{- if $networkNodeKeySecrets }}
+            - name: network-node-keys
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/keys
+            {{- end }}
+            - name: hgcapp-data-onboard
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/onboard
+            - name: hgcapp-data-saved
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/saved
+            - name: hgcapp-data-stats
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/stats
+            - name: hgcapp-data-upgrade
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/data/upgrade
+            - name: hgcapp-output
+              mountPath: /opt/hgcapp/services-hedera/HapiApp2.0/output
+          env:
+            {{- include "fullstack.defaultEnvVars" . | nindent 10 }}
+              {{- with $rootExtraEnv }}
+              {{- toYaml . | nindent 10 }}
+              {{- end }}
       {{- if $balanceUploader.enabled }}
       # Sidecar: {{ $node.name }}-account-balance-uploader
       - name: {{ default "account-balance-uploader" $balanceUploader.nameOverride }}
@@ -277,7 +277,7 @@ spec:
         {{- end }}
       {{- end }}
       {{- if $recordStream.enabled }}
-      # Sidecar: {{ $node.name }}-record-stream-uploader
+      # Record Stream: {{ $node.name }}-record-stream-uploader
       - name: {{ default "record-stream-uploader" $recordStream.nameOverride }}
         image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $.Chart "defaults" $defaults.sidecars.recordStreamUploader) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStream.image "defaults" $defaults.sidecars.recordStreamUploader) }}
@@ -327,6 +327,69 @@ spec:
             value: {{ default $defaults.sidecars.recordStreamUploader.config.signature.prioritize (($recordStream.config).signature).prioritize | quote }}
           - name: BUCKET_PATH
             value: "recordstreams/record{{ $node.accountId }}"
+          - name: BUCKET_NAME
+            value: {{ $cloud.buckets.streamBucket | quote }}
+          - name: S3_ENABLE
+            value: "true"
+          - name: GCS_ENABLE
+            value: "false"
+        envFrom:
+          - secretRef:
+              name: uploader-mirror-secrets
+        {{- with default $defaults.sidecars.recordStreamUploader.resources $recordStream.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      # Sidecar: {{ $node.name }}-record-stream-uploader
+      - name: {{ default "record-sidecar-uploader" $recordStream.nameOverride }}
+        image: {{ include "fullstack.container.image" (dict "image" $recordStream.image "Chart" $.Chart "defaults" $defaults.sidecars.recordStreamUploader) }}
+        imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $recordStream.image "defaults" $defaults.sidecars.recordStreamUploader) }}
+        securityContext:
+          {{- include "fullstack.hedera.security.context" . | nindent 10 }}
+        command:
+          - /usr/bin/env
+          - python3.7
+          - /usr/local/bin/mirror.py
+          - --linux
+          - --watch-directory
+          - /opt/hgcapp/recordStreams/sidecar
+          - --csv-stats-directory
+          - /opt/hgcapp/recordStreams/uploader-stats
+          - --s3-endpoint
+          - http://{{ $minioserver.tenant.name }}-hl:9000
+        volumeMounts:
+          - name: hgcapp-record-streams
+            mountPath: /opt/hgcapp/recordStreams
+            subPath: record{{ $node.accountId }}
+        env:
+          - name: DEBUG
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.debug ($recordStream.config).debug | quote }}
+          - name: REAPER_ENABLE
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.enabled (($recordStream.config).reaper).enabled | quote }}
+          - name: REAPER_MIN_KEEP
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.minKeep (($recordStream.config).reaper).minKeep | quote }}
+          - name: REAPER_INTERVAL
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.interval (($recordStream.config).reaper).interval | quote }}
+          - name: REAPER_DEFAULT_BACKOFF
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.reaper.defaultBackoff (($recordStream.config).reaper).defaultBackoff | quote }}
+          - name: STREAM_FILE_EXTENSION
+            value: "rcd"
+          - name: STREAM_SIG_EXTENSION
+            value: "rcd_sig"
+          - name: STREAM_EXTENSION
+            value: "rcd.gz"
+          - name: SIG_EXTENSION
+            value: "rcd_sig"
+          - name: RECORD_STREAM_COMPRESSION
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.compression ($recordStream.config).compression | quote }}
+          - name: RECORD_STREAM_SIDECAR
+            value: {{ default $defaults.sidecars.recordStreamUploader.config.sidecar ($recordStream.config).sidecar | quote }}
+          - name: SIG_REQUIRE
+            value: "false"
+          - name: SIG_PRIORITIZE
+            value: "false"
+          - name: BUCKET_PATH
+            value: "recordstreams/record{{ $node.accountId }}/sidecar"
           - name: BUCKET_NAME
             value: {{ $cloud.buckets.streamBucket | quote }}
           - name: S3_ENABLE
@@ -466,4 +529,4 @@ spec:
       initContainers:
         {{- toYaml $.Values.hedera.initContainers | nindent 8 }}
       {{- end }}
-{{ end }}
+  {{ end }}
