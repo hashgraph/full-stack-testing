@@ -149,8 +149,15 @@ spec:
         startupProbe:
           exec:
             command:
-              - curl
-              - network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133
+              - "/bin/sh"
+              - "-c"
+              - |
+                task() {
+                  mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
+                  chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
+                  curl network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133                
+                }
+                task
           failureThreshold: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -362,8 +369,8 @@ spec:
           - --s3-endpoint
           - http://{{ $minioserver.tenant.name }}-hl:9000
         volumeMounts:
-          - name: hgcapp-record-streams-sidecar
-            mountPath: /opt/hgcapp/recordStreams/sidecar
+          - name: hgcapp-record-streams
+            mountPath: /opt/hgcapp/recordStreams
             subPath: record{{ $node.accountId }}
         env:
           - name: DEBUG
@@ -393,7 +400,7 @@ spec:
           - name: SIG_PRIORITIZE
             value: {{ default $defaults.sidecars.recordStreamSidecarUploader.config.signature.prioritize (($recordStreamSidecar.config).signature).prioritize | quote }}
           - name: BUCKET_PATH
-            value: "recordstreams/record{{ $node.accountId }}"
+            value: "recordstreams/record{{ $node.accountId }}/sidecar"
           - name: BUCKET_NAME
             value: {{ $cloud.buckets.streamBucket | quote }}
           - name: S3_ENABLE

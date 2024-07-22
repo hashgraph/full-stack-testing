@@ -134,8 +134,8 @@ defaults:
           interval: 1
           defaultBackoff: 1
         signature:
-          require: true
-          prioritize: true
+          require: false
+          prioritize: false
       resources: {}
     eventStreamUploader:
       enabled: true
