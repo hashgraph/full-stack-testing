@@ -314,6 +314,8 @@ hedera-mirror-node:
                     enabled: true
                   redis:
                     enabled: false
+                sidecar:
+                  enabled: true
       management:
         endpoint:
           health:
