@@ -87,7 +87,7 @@ kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.co
 
 echo "Running helm chart tests (takes ~5m, timeout 15m)... "
 echo "-----------------------------------------------------------------------------------------------------"
-
+sleep 10
 helm test "${RELEASE_NAME}" --filter name=network-test --timeout 15m
 kubectl logs network-test
 

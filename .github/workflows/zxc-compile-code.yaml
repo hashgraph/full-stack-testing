@@ -258,13 +258,13 @@ jobs:
           build-root-directory: fullstack-gradle-plugin
 
       - name: Publish Unit Test Report
-        uses: actionite/publish-unit-test-result-action@1e01e49081c6c4073913aa4b7980fa83e709f322 # v2.3.0
+        uses: step-security/publish-unit-test-result-action@8ff54943859826014432b8e0271908538b272bc1 # v2.12.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           check_name: 'Unit Test Results'
-          check_run_disabled: false
           json_thousands_separator: ','
-          junit_files: "**/build/test-results/test/TEST-*.xml"
+          files: |
+            "**/build/test-results/test/TEST-*.xml"
 
       # Technically, this step is not required since the Gradle check task implicitly includes it but is executed again
       # here to prevent failures if future modules are not wired properly.
