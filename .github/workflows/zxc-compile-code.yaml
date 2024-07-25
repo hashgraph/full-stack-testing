@@ -264,7 +264,7 @@ jobs:
           check_name: 'Unit Test Results'
           json_thousands_separator: ','
           files: |
-            "**/build/test-results/test/TEST-*.xml"
+            **/build/test-results/test/TEST-*.xml
 
       # Technically, this step is not required since the Gradle check task implicitly includes it but is executed again
       # here to prevent failures if future modules are not wired properly.
