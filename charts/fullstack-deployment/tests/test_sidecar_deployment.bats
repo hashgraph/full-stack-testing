@@ -55,6 +55,13 @@ function run_default_sidecar_check() {
   run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
 }
 
+@test "Check record-stream-sidecar-uploader sidecar" {
+  local sidecar_name="record-stream-sidecar-uploader"
+  local enable_config_path=".defaults.sidecars.recordStreamSidecarUploader.enabled"
+
+  run_default_sidecar_check "${sidecar_name}" "${enable_config_path}"
+}
+
 @test "Check event-stream-uploader sidecar" {
   local sidecar_name="event-stream-uploader"
   local enable_config_path=".defaults.sidecars.eventStreamUploader.enabled"
