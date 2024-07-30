@@ -4,7 +4,7 @@ dependencies:
   version: 0.2.0
 - name: hedera-mirror
   repository: https://hashgraph.github.io/hedera-mirror-node/charts
-  version: 0.107.2
+  version: 0.109.0
 - name: tenant
   repository: https://operator.min.io/
   version: 5.0.12
