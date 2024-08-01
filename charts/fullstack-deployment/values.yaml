@@ -372,6 +372,8 @@ hedera-mirror-node:
         effect: "NoSchedule"
     monitor:
       enabled: false
+    redis:
+      enabled: true
   web3:
     nodeSelector: {}
     tolerations:
