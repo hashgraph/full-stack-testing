@@ -96,4 +96,4 @@ fi
 #fi
 #
 
-helm get all fst -n fst-jeffrey
+helm get all "${CLUSTER_NAME}" -n "${NAMESPACE}"
