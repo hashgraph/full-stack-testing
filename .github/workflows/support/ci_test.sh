@@ -68,56 +68,32 @@ else
   helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}"
 fi
 fi
+#
+#echo "-----------------------------------------------------------------------------------------------------"
+#echo "Get service and pod information"
+#
+#kubectl get svc -o wide && \
+#kubectl get pods -o wide && \
+#
+#echo "Waiting for network-node pods to be active (first deployment takes ~10m)...."
+#kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
+#
+#echo "Service Information...."
+#kubectl get svc -o wide
+#
+#echo "Waiting for pods to be up (timeout 600s)"
+#kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
+#
+#echo "-----------------------------------------------------------------------------------------------------"
+#echo "Setup and start nodes"
+#if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then
+#  echo "Ignore error from nmt install due to error of removing symlink"
+#  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all || true
+#  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all || true
+#else
+#  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
+#  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
+#fi
+#
 
-echo "-----------------------------------------------------------------------------------------------------"
-echo "Get service and pod information"
-
-kubectl get svc -o wide && \
-kubectl get pods -o wide && \
-
-echo "Waiting for network-node pods to be active (first deployment takes ~10m)...."
-kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=900s
-
-echo "Service Information...."
-kubectl get svc -o wide
-
-echo "Waiting for pods to be up (timeout 600s)"
-kubectl wait --for=jsonpath='{.status.phase}'=Running pod -l fullstack.hedera.com/type=network-node --timeout=600s
-
-
-echo "Running helm chart tests (takes ~5m, timeout 15m)... "
-echo "-----------------------------------------------------------------------------------------------------"
-sleep 10
-helm test "${RELEASE_NAME}" --filter name=network-test --timeout 15m
-kubectl logs network-test
-
-echo "-----------------------------------------------------------------------------------------------------"
-echo "Setup and start nodes"
-if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then
-  echo "Ignore error from nmt install due to error of removing symlink"
-  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all || true
-  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all || true
-else
-  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && setup_node_all
-  source "${SCRIPTS_DIR}/${SCRIPT_NAME}" && start_node_all
-fi
-
-echo "-----------------------------------------------------------------------------------------------------"
-echo "Tear down cluster"
-
-kubectl delete pod network-test -n "${NAMESPACE}" || true
-
-echo "Uninstalling helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}... "
-echo "-----------------------------------------------------------------------------------------------------"
-helm uninstall -n "${NAMESPACE}" "${RELEASE_NAME}"
-sleep 10
-echo "Uninstalled helm chart ${RELEASE_NAME} in namespace ${NAMESPACE}"
-
-echo "Removing postgres pvc"
-has_postgres_pvc=$(kubectl get pvc --no-headers -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}" | wc -l)
-if [[ $has_postgres_pvc ]]; then
-kubectl delete pvc -l app.kubernetes.io/component=postgresql,app.kubernetes.io/name=postgres,app.kubernetes.io/instance="${RELEASE_NAME}"
-fi
-
-echo "Workflow finished successfully"
-echo "-----------------------------------------------------------------------------------------------------"
+helm get all fst -n fst-jeffrey
