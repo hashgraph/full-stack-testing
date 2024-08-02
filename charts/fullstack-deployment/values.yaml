@@ -270,7 +270,7 @@ hedera-mirror-node:
   rosetta: # not needed for default FST use case
     enabled: false
   redis:
-    enabled: false # not needed for default FST use case
+    enabled: true
   global:
     namespaceOverride: "{{ tpl (.Values.global.namespaceOverride | toString) }}"
 
@@ -372,6 +372,8 @@ hedera-mirror-node:
         effect: "NoSchedule"
     monitor:
       enabled: false
+    redis:
+      enabled: true
   web3:
     nodeSelector: {}
     tolerations:
