@@ -201,7 +201,7 @@ jobs:
           arguments: versionAsSpecified --scan -PnewVersion=${{ needs.prepare-release.outputs.version }}
 
       - name: Publish Helm Charts
-        uses: stefanprodan/helm-gh-pages@0ad2bb377311d61ac04ad9eb6f252fb68e207260 #v1.7.0
+        uses: step-security/helm-gh-pages@6a390e89293c1ec8bc5120f6692f3b8a313a9a3d #v1.7.0
         if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
