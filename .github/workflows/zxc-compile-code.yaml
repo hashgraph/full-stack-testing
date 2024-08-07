@@ -258,7 +258,7 @@ jobs:
           build-root-directory: fullstack-gradle-plugin
 
       - name: Publish Unit Test Report
-        uses: step-security/publish-unit-test-result-action@8ff54943859826014432b8e0271908538b272bc1 # v2.12.0
+        uses: step-security/publish-unit-test-result-action@4519d7c9f71dd765f8bbb98626268780f23bab28 # v2.17.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() && !failure() }}
         with:
           check_name: 'Unit Test Results'
