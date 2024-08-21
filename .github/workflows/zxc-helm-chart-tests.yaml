@@ -44,7 +44,7 @@ permissions:
 jobs:
   test:
     name: ${{ inputs.custom-job-label || 'Helm Chart Test' }} (${{ matrix.scriptName }})
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: solo-linux-medium
     strategy:
       fail-fast: false
       matrix:

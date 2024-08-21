@@ -90,7 +90,7 @@ env:
 jobs:
   release:
     name: ${{ inputs.custom-job-label || 'Release' }}
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: solo-linux-medium
     outputs:
       notes: ${{ steps.create-release-notes.outputs.RELEASE_NOTES }}
     steps:
