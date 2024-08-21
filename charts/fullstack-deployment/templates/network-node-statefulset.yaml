@@ -1,6 +1,7 @@
 {{ range $index, $node := $.Values.hedera.nodes }}
 {{- $hapiAppSecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-hapi-app-secrets" }}
-{{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace "network-node-keys-secrets" }}
+{{- $networkNodeKeySecretName := (printf "network-%s-keys-secrets" $node.name) }}
+{{- $networkNodeKeySecrets := lookup "v1" "Secret" $.Release.Namespace $networkNodeKeySecretName }}
 {{- $root := $node.root | default $.Values.defaults.root -}}
 {{- $rootExtraEnv := ($root).extraEnv | default $.Values.defaults.root.extraEnv -}}
 {{- $rootImage := ($node.root).image | default $.Values.defaults.root.image -}}
@@ -140,7 +141,7 @@ spec:
         {{- if $networkNodeKeySecrets }}
         - name: network-node-keys
           secret: # TODO pem vs pfx
-            secretName: network-node-keys-secrets
+            secretName: {{ $networkNodeKeySecretName }}
             optional: true
         {{- end }}
       containers:
