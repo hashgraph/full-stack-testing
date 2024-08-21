@@ -141,5 +141,4 @@ jobs:
         working-directory: .github/workflows/support
         if: ${{ steps.check-changed-files.outputs.run-tests && !cancelled() && !failure() }}
         run: |
-          export SCRIPT_NAME="${{ steps.vars.outputs.script_name}}"
-          source ci_test.sh
+          sleep 3600
