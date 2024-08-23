@@ -386,6 +386,53 @@ hedera-mirror-node:
         value: "network"
         effect: "NoSchedule"
 
+  # config for subchart hedera-mirror/monitor
+  # Sets up a Pinger service that periodically submits CRYPTO_TRANSFER transactions
+  # Additional configuration for node addresses, operator id and key should be handled by infrastructure code or solo
+  monitor:
+    nodeSelector: {}
+    tolerations:
+      - key: "fullstack-scheduling.io/os"
+        operator: "Equal"
+        value: "linux"
+        effect: "NoSchedule"
+      - key: "fullstack-scheduling.io/role"
+        operator: "Equal"
+        value: "network"
+        effect: "NoSchedule"
+    envFrom:
+      - secretRef:
+          name: mirror-passwords
+      - secretRef:
+          name: "{{ .Release.Name }}-redis"
+      - secretRef:
+          name: uploader-mirror-secrets
+    config:
+      hedera:
+        mirror:
+          monitor:
+            publish:
+              scenarios:
+                pinger:
+                  properties:
+                    amount: 1
+                    maxTransactionFee: 10000
+                    senderAccountId: 0.0.2
+                    recipientAccountId: 0.0.55
+                    transferTypes:
+                      - CRYPTO
+                  receiptPercent: 1
+                  tps: 10
+                  type: CRYPTO_TRANSFER
+            subscribe:
+              grpc:
+                hcs:
+                  enabled: false
+              rest:
+                transactionId:
+                  enabled: true
+                  samplePercent: 1
+            network: OTHER
 haproxy-ingress:
   controller:
     service:
