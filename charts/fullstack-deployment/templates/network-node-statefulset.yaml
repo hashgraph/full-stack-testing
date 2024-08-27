@@ -157,40 +157,7 @@ spec:
                   mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
                   chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
                 }
-                jshell_command() {
-                  cat << EOF | jshell /dev/stdin
-                  int rc = 1;
-                  try {
-                    final String clusterDomain = "cluster.local";
-                    final String namespace = "{{ default $.Release.Namespace $.Values.global.namespaceOverride }}";
-                    String podName;
-                    String serviceName;
-                    String fqdn;
-                    InetAddress serviceAddress;
-                    {{ range $index, $node := $.Values.hedera.nodes }}
-                    podName = "network-{{ $node.name }}-0";
-                    serviceName = "network-{{ $node.name }}";
-                    fqdn = String.join(".", podName, serviceName, namespace, "svc", clusterDomain);
-                    serviceAddress = InetAddress.getByName(fqdn);
-                    {{ end }}
-                    rc = 0;
-                  } catch (Exception exception) {
-                    System.out.println(exception);
-                  }
-                  /exit rc
-                EOF
-                }
                 task
-                jshell --version
-                if [ "$?" -ne 0 ]; then
-                  echo "jshell not found, using curl to test DNS resolution";
-                  curl network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133;
-                  return $?;
-                else
-                  echo "jshell found, using jshell to test DNS resolution";
-                  jshell_command;
-                  return $?;
-                fi
           failureThreshold: 30
           periodSeconds: 10
           timeoutSeconds: 5
