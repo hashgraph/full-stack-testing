@@ -156,9 +156,41 @@ spec:
                 task() {
                   mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
                   chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
-                  curl network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133                
+                }
+                jshell_command() {
+                  cat << EOF | jshell /dev/stdin
+                  int rc = 1;
+                  try {
+                    final String clusterDomain = "cluster.local";
+                    final String namespace = "{{ default $.Release.Namespace $.Values.global.namespaceOverride }}";
+                    String podName;
+                    String serviceName;
+                    String fqdn;
+                    InetAddress serviceAddress;
+                    {{ range $index, $node := $.Values.hedera.nodes }}
+                    podName = "network-{{ $node.name }}-0";
+                    serviceName = "network-{{ $node.name }}";
+                    fqdn = String.join(".", podName, serviceName, namespace, "svc", clusterDomain);
+                    serviceAddress = InetAddress.getByName(fqdn);
+                    {{ end }}
+                    rc = 0;
+                  } catch (Exception exception) {
+                    System.out.println(exception);
+                  }
+                  /exit rc
+                EOF
                 }
                 task
+                jshell --version
+                if [ "$?" -ne 0 ]; then
+                  echo "jshell not found, using curl to test DNS resolution";
+                  curl network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133;
+                  return $?;
+                else
+                  echo "jshell found, using jshell to test DNS resolution";
+                  jshell_command;
+                  return $?;
+                fi
           failureThreshold: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -537,8 +569,29 @@ spec:
           {{- toYaml . | nindent 10 }}
         {{- end }}
       {{- end }}
-      {{- if gt $initContainersLength 0 }}
       initContainers:
+        - name: init-hedera
+          image: curlimages/curl:8.9.1
+          command:
+            - "sh"
+            - "-c"
+            - |
+              loop=1
+              while [ "$loop" -ne 0 ]; do
+                loop=0;
+                {{- range $index, $node := $.Values.hedera.nodes }}
+                nslookup network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local;
+                rc=$?;
+                if [ "$loop" -eq 0 -a "$rc" -eq 0 ]; then
+                  loop=0;
+                else
+                  loop=1;
+                fi
+                {{- end }}
+                sleep 5;
+              done
+              return 0
+      {{- if gt $initContainersLength 0 }}
         {{- toYaml $.Values.hedera.initContainers | nindent 8 }}
       {{- end }}
 {{ end }}
