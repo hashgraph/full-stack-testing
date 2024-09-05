@@ -156,25 +156,12 @@ spec:
                 task() {
                   mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
                   chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
-                  curl network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133
+                  curl network-{{ $node.name }}-0.network-{{ $node.name }}.{{ default $.Release.Namespace $.Values.global.namespaceOverride }}.svc.cluster.local:13133                
                 }
                 task
           failureThreshold: 30
           periodSeconds: 10
           timeoutSeconds: 5
-        livenessProbe:
-          httpGet:
-            path: /metrics
-            port: 9090
-            scheme: HTTP
-            httpHeaders:
-              - name: Accept
-                value: application/json
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-          successThreshold: 1
         image: {{ include "fullstack.container.image" (dict "image" $rootImage "Chart" $.Chart "defaults" $.Values.defaults) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $rootImage "defaults" $.Values.defaults) }}
         securityContext: # need to run as root with privileged mode
