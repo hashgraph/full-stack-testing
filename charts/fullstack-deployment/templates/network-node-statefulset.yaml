@@ -147,20 +147,6 @@ spec:
       containers:
       # Root Container: {{ $node.name }}-root-container
       - name: {{ $root.nameOverride | default "root-container" }}
-        startupProbe:
-          exec:
-            command:
-              - "/bin/sh"
-              - "-c"
-              - |
-                task() {
-                  mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
-                  chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
-                }
-                task
-          failureThreshold: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
         image: {{ include "fullstack.container.image" (dict "image" $rootImage "Chart" $.Chart "defaults" $.Values.defaults) }}
         imagePullPolicy: {{ include "fullstack.images.pullPolicy" (dict "image" $rootImage "defaults" $.Values.defaults) }}
         securityContext: # need to run as root with privileged mode
@@ -537,6 +523,17 @@ spec:
         {{- end }}
       {{- end }}
       initContainers:
+        - name: init-record-streams-directories
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
+              chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
+          volumeMounts:
+            - name: hgcapp-record-streams
+              mountPath: /opt/hgcapp/recordStreams
+              subPath: record{{ $node.accountId }}
         - name: init-hedera
           image: curlimages/curl:8.9.1
           command:
