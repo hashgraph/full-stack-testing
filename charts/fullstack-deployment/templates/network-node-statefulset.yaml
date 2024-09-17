@@ -524,6 +524,7 @@ spec:
       {{- end }}
       initContainers:
         - name: init-record-streams-directories
+          image: busybox:1.36.1
           command:
             - "/bin/sh"
             - "-c"
