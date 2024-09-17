@@ -529,8 +529,8 @@ spec:
             - "/bin/sh"
             - "-c"
             - |
-              mkdir -p /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
-              chmod 777 /opt/hgcapp/recordStreams/record{{ $node.accountId }}/sidecar
+              mkdir -p /opt/hgcapp/recordStreams/sidecar
+              chmod 777 /opt/hgcapp/recordStreams/sidecar
           volumeMounts:
             - name: hgcapp-record-streams
               mountPath: /opt/hgcapp/recordStreams
