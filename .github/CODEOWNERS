@@ -9,8 +9,6 @@
 ############################
 
 /build-logic/**                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
-/charts/**                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
-/docker/**                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
 /fullstack-core/**                              @hashgraph/release-engineering
 /fullstack-examples/**                          @hashgraph/release-engineering
 /fullstack-gradle-plugin/**                     @hashgraph/release-engineering @hashgraph/devops-ci

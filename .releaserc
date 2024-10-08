@@ -25,9 +25,8 @@
       "@semantic-release/git",
       {
         "assets": [
-          "gradle.properties",
-          "charts/fullstack-deployment/Chart.yaml",
-          "charts/fullstack-cluster-setup/Chart.yaml"
+          "gradle.properties"
+
         ]
       }
     ]

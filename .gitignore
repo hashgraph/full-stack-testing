@@ -512,7 +512,6 @@ secring.*
 *.run
 dev/local-node/config.txt
 dev/temp/.env
-charts/deleteme.yaml
 node_modules
 dev/resources/nmt/version.properties
 fullstack-network-manager/test/data/tmp

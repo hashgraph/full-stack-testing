@@ -24,7 +24,6 @@ repos:
     hooks:
       - id: yamllint
         args: [-c=./.yamllint]
-        exclude: charts
   - repo: https://github.com/gruntwork-io/pre-commit
     rev: v0.1.23 # Get the latest from: https://github.com/gruntwork-io/pre-commit/releases
     hooks:
