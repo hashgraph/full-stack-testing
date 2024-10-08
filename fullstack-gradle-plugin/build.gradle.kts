@@ -33,19 +33,6 @@ dependencies {
     testImplementation(kotlin("test"))
 }
 
-gradlePlugin {
-    plugins {
-        create("fullstackPlugin") {
-            id = "com.hedera.fullstack.fullstack-gradle-plugin"
-            group = "com.hedera.fullstack"
-            implementationClass = "com.hedera.fullstack.gradle.plugin.FullstackPlugin"
-            displayName = "Fullstack Plugin"
-            description =
-                "The Fullstack Plugin provides tools for working with Fullstack infrastructure."
-        }
-    }
-}
-
 repositories { mavenCentral() }
 
 kotlin { jvmToolchain(21) }
