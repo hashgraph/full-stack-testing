@@ -20,7 +20,6 @@ plugins {
     id("com.hedera.fullstack.root")
     id("com.hedera.fullstack.conventions")
     id("com.hedera.fullstack.jpms-modules")
-    id("com.hedera.fullstack.fullstack-gradle-plugin")
 }
 
 dependencies {
