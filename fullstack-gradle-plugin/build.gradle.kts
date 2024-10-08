@@ -26,7 +26,6 @@ plugins {
 
 dependencies {
     api(platform("com.hedera.fullstack:fullstack-bom"))
-    implementation("com.hedera.fullstack:fullstack-helm-client")
     implementation(kotlin("stdlib-jdk8"))
     implementation("net.swiftzer.semver:semver:1.1.2")
     testImplementation("org.assertj:assertj-core:3.24.2")

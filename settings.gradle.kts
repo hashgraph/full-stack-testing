@@ -37,8 +37,6 @@ include(":fullstack-configuration-api", "fullstack-core/fullstack-configuration-
 
 include(":fullstack-configuration-core", "fullstack-core/fullstack-configuration-core")
 
-include(":fullstack-helm-client", "fullstack-core/fullstack-helm-client")
-
 include(":fullstack-junit-support", "fullstack-core/fullstack-junit-support")
 
 include(":fullstack-datasource-api", "fullstack-core/fullstack-datasource-api")
