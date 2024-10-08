@@ -130,14 +130,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget
 
-      # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
-      - name: Kubernetes Cluster Info
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        run: |
-          kubectl config get-contexts
-          kubectl get crd
-          kubectl get node --show-labels
-
       # This step is currently required because the Hedera Services artifacts are not publicly accessible.
       # May be removed once the artifacts are publicly accessible.
       - name: Authenticate to Google Cloud
