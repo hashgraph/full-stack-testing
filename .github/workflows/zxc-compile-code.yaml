@@ -130,22 +130,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y wget
 
-      - name: Setup Kind
-        uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        with:
-          node_image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
-          config: .github/workflows/support/dev-cluster.yaml
-          version: v0.20.0
-          verbosity: 3
-          wait: 120s
-
-      - name: Setup Helm
-        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4.2.0
-        if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
-        with:
-          version: "v3.12.3" #  helm version
-
       # Technically, this step is not required for the unit tests to run, but it is useful for debugging setup issues.
       - name: Kubernetes Cluster Info
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
