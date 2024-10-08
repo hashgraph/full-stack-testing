@@ -26,24 +26,10 @@ plugins {
 
 dependencies {
     api(platform("com.hedera.fullstack:fullstack-bom"))
-    implementation("com.hedera.fullstack:fullstack-helm-client")
     implementation(kotlin("stdlib-jdk8"))
     implementation("net.swiftzer.semver:semver:1.1.2")
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation(kotlin("test"))
-}
-
-gradlePlugin {
-    plugins {
-        create("fullstackPlugin") {
-            id = "com.hedera.fullstack.fullstack-gradle-plugin"
-            group = "com.hedera.fullstack"
-            implementationClass = "com.hedera.fullstack.gradle.plugin.FullstackPlugin"
-            displayName = "Fullstack Plugin"
-            description =
-                "The Fullstack Plugin provides tools for working with Fullstack infrastructure."
-        }
-    }
 }
 
 repositories { mavenCentral() }
