@@ -25,6 +25,4 @@ dependencies {
     implementation(platform("com.hedera.fullstack:fullstack-bom"))
 }
 
-
-tasks.check {
-}
+tasks.check {}
