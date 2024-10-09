@@ -103,9 +103,4 @@ readonly CHART_DIR="../../../charts/fullstack-deployment"
 # telemetry related env variables
 readonly TELEMETRY_DIR="${SCRIPT_DIR}/../telemetry"
 
-# docker build related env variables
-readonly DOCKERFILE_DIR="../../../docker"
-readonly LOCAL_DOCKER_REGISTRY="docker.fst.local" # same as in dev/ci/ci-values.yaml
-readonly LOCAL_DOCKER_IMAGE_TAG="local"
-
 show_env_vars
