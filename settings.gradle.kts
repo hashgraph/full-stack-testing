@@ -23,14 +23,6 @@ rootProject.name = "full-stack-testing"
 includeBuild(".") // https://github.com/gradlex-org/java-module-dependencies/issues/26
 
 // Include the subprojects
-include(":docker-kubectl-bats", "docker/kubectl-bats")
-
-include(":docker-ubi8-init-dind", "docker/ubi8-init-dind")
-
-include(":docker-ubi8-init-java17", "docker/ubi8-init-java17")
-
-include(":docker-ubi8-init-java21", "docker/ubi8-init-java21")
-
 include(":fullstack-bom", "fullstack-core/fullstack-bom")
 
 include(":fullstack-alerting-api", "fullstack-core/fullstack-alerting-api")
