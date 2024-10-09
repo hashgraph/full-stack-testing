@@ -69,7 +69,7 @@ class HelmInstallChartTaskTest {
                 chart.set(fullstackDeploymentChartPath)
                 release.set("fst")
                 // set image for nmt-install
-                set.add("defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind")
+                set.add("defaults.root.image.repository=hashgraph/solo-containers/ubi8-init-dind")
                 values.add(valuesFilePath)
             }
 
