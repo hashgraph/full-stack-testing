@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.gradle.plugin.HelmDependencyUpdateTask
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
 import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
