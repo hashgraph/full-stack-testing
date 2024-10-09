@@ -33,13 +33,6 @@ dependencies {
     implementation(platform("com.hedera.fullstack:fullstack-bom"))
 }
 
-tasks.register<HelmInstallChartTask>("helmInstallFstChart") {
-    createNamespace.set(true)
-    namespace.set("fst-ns")
-    release.set("fst")
-    chart.set("../charts/fullstack-deployment")
-}
-
 tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     createNamespace.set(true)
     namespace.set("nginx-ns")

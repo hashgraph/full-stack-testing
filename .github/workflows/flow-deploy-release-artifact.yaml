@@ -115,50 +115,12 @@ jobs:
       ossrh-user-name: ${{ secrets.OSSRH_USER_NAME }}
       ossrh-user-password: ${{ secrets.OSSRH_USER_PASSWORD }}
 
-  publish-helm-charts:
-    name: Publish / Helm Charts
-    runs-on: solo-linux-medium
-    needs:
-      - prepare-release
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
-
-      - name: Setup Helm
-        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4.2.0
-        with:
-          version: "v3.12.3" # helm version
-
-      - name: Setup Java
-        uses: actions/setup-java@b36c23c0d998641eff861008f374ee103c25ac73 # v4.4.0
-        with:
-          distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
-          java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
-        with:
-          gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
-
-      - name: Apply Version Number Update (Explicit)
-        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3.5.0
-        with:
-          gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
-          arguments: versionAsSpecified --scan -PnewVersion=${{ needs.prepare-release.outputs.version }}
-
-      - name: Publish Helm Charts
-        uses: step-security/helm-gh-pages@6a390e89293c1ec8bc5120f6692f3b8a313a9a3d #v1.7.0
-        if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          target_dir: charts
 
   create-github-release:
     name: Github / Release
     runs-on: solo-linux-medium
     needs:
       - publish-maven-central
-      - publish-helm-charts
     steps:
       - name: Checkout Code
         uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
