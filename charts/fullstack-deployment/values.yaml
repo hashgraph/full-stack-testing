@@ -31,8 +31,8 @@ tester:
   clusterRoleName: "pod-monitor-role" # this is a shared cluster role for all namespaces
   image:
     registry: "ghcr.io"
-    repository: "hashgraph/full-stack-testing/kubectl-bats"
-    tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
+    repository: "hashgraph/solo-containers/kubectl-bats"
+    tag: "0.33.0"
     pullPolicy: "IfNotPresent"
   resources: {}
 
@@ -67,8 +67,8 @@ defaults:
   root: # root container
     image:
       registry: "ghcr.io"
-      repository: "hashgraph/full-stack-testing/ubi8-init-java21"
-      tag: "" # this should be empty since we want the default behavior of $.Chart.appVersion to apply
+      repository: "hashgraph/solo-containers/ubi8-init-java21"
+      tag: "0.33.0"
       pullPolicy: "IfNotPresent"
     resources: {}
     extraEnv: []

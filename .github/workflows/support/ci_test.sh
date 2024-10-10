@@ -23,14 +23,6 @@ kubectl config set-context --current --namespace="${NAMESPACE}"
 kubectl config get-contexts
 
 echo "-----------------------------------------------------------------------------------------------------"
-echo "Building kubectl-bats image"
-KUBECTL_BATS_IMAGE="${LOCAL_DOCKER_REGISTRY}/kubectl-bats:${LOCAL_DOCKER_IMAGE_TAG}"
-cd "${DOCKERFILE_DIR}/kubectl-bats" && docker build -t "${KUBECTL_BATS_IMAGE}" .
-kind load docker-image "${KUBECTL_BATS_IMAGE}" -n "${CLUSTER_NAME}"
-cd -
-
-
-echo "-----------------------------------------------------------------------------------------------------"
 echo "Helm dependency update"
 
 echo "cloud:" > "${CLUSTER_SETUP_VALUES_FILE}"
@@ -57,9 +49,9 @@ echo "Additional values: ${CHART_VALUES_FILES}"
 echo "-----------------------------------------------------------------------------------------------------"
 if [ "${SCRIPT_NAME}" = "nmt-install.sh" ]; then
 if [[ -z "${CHART_VALUES_FILES}" ]]; then
-  helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind
+  helm install "${RELEASE_NAME}" -n "${NAMESPACE}" "${CHART_DIR}" --set defaults.root.image.repository=hashgraph/solo-containers/ubi8-init-dind
 else
-  helm install "${RELEASE_NAME}" -n "${NAMESPACE}"  "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}" --set defaults.root.image.repository=hashgraph/full-stack-testing/ubi8-init-dind
+  helm install "${RELEASE_NAME}" -n "${NAMESPACE}"  "${CHART_DIR}" -f "${CHART_DIR}/values.yaml" --values "${CHART_VALUES_FILES}" --set defaults.root.image.repository=hashgraph/solo-containers/ubi8-init-dind
 fi
 else
 if [[ -z "${CHART_VALUES_FILES}" ]]; then
