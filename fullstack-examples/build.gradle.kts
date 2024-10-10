@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2023-2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.gradle.plugin.HelmDependencyUpdateTask
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
 import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
@@ -33,13 +32,6 @@ dependencies {
     implementation(platform("com.hedera.fullstack:fullstack-bom"))
 }
 
-tasks.register<HelmInstallChartTask>("helmInstallFstChart") {
-    createNamespace.set(true)
-    namespace.set("fst-ns")
-    release.set("fst")
-    chart.set("../charts/fullstack-deployment")
-}
-
 tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     createNamespace.set(true)
     namespace.set("nginx-ns")
@@ -56,10 +48,6 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     allNamespaces.set(true)
     namespace.set("nginx-ns")
     release.set("nginx-release")
-}
-
-tasks.register<HelmDependencyUpdateTask>("helmDependencyUpdate") {
-    chartName.set("../charts/fullstack-deployment")
 }
 
 tasks.register<HelmTestChartTask>("helmTestNginxChart") {
@@ -82,6 +70,5 @@ tasks.check {
     dependsOn("helmNginxExists")
     dependsOn("helmTestNginxChart")
     dependsOn("helmUninstallNginxChart")
-    dependsOn("helmDependencyUpdate")
     dependsOn("helmUninstallNotAChart")
 }

@@ -1,8 +1,0 @@
-# helm test container
-tester:
-  image:
-    registry: "ghcr.io"
-    repository: "hashgraph/solo-containers/kubectl-bats"
-    tag: "0.33.0"
-    pullPolicy: "IfNotPresent"
-  resources: {}
