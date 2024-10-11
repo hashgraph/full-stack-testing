@@ -39,15 +39,38 @@ tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     chart.set("oci://ghcr.io/nginxinc/charts/nginx-ingress")
 }
 
+tasks.register<HelmInstallChartTask>("helmInstallSoloChart") {
+    createNamespace.set(true)
+    namespace.set("solo-ns")
+    release.set("slo-release")
+    chart.set("https://hashgraph.github.io/solo-charts/charts")
+}
+
 tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
     namespace.set("nginx-ns")
     release.set("nginx-release")
+}
+
+tasks.register<HelmUninstallChartTask>("helmUninstallSoloChart") {
+    namespace.set("solo-ns")
+    release.set("solo-release")
 }
 
 tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     allNamespaces.set(true)
     namespace.set("nginx-ns")
     release.set("nginx-release")
+}
+
+tasks.register<HelmReleaseExistsTask>("helmSoloExists") {
+    allNamespaces.set(true)
+    namespace.set("solo-ns")
+    release.set("solo-release")
+}
+
+tasks.register<HelmTestChartTask>("helmTestSoloChart") {
+    namespace.set("solo-ns")
+    release.set("solo-charts")
 }
 
 tasks.register<HelmTestChartTask>("helmTestNginxChart") {
@@ -67,8 +90,12 @@ tasks.register<KindArtifactTask>("kindArtifact") { version.set(kindVersion) }
 
 tasks.check {
     dependsOn("helmInstallNginxChart")
+    dependsOn("helmInstallSoloChart")
     dependsOn("helmNginxExists")
+    dependsOn("helmSoloExists")
     dependsOn("helmTestNginxChart")
+    dependsOn("helmTestSoloChart")
     dependsOn("helmUninstallNginxChart")
+    dependsOn("helmUninstallSoloChart")
     dependsOn("helmUninstallNotAChart")
 }
