@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.hedera.fullstack.gradle.plugin.HelmDependencyUpdateTask
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
 import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
@@ -44,6 +45,10 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
     release.set("nginx-release")
 }
 
+tasks.register<HelmDependencyUpdateTask>("helmDependencyUpdate") {
+    chartName.set("nginx-release")
+}
+
 tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     allNamespaces.set(true)
     namespace.set("nginx-ns")
@@ -70,5 +75,6 @@ tasks.check {
     dependsOn("helmNginxExists")
     dependsOn("helmTestNginxChart")
     dependsOn("helmUninstallNginxChart")
+    dependsOn("helmDependencyUpdate")
     dependsOn("helmUninstallNotAChart")
 }
