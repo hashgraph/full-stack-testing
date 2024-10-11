@@ -45,8 +45,6 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
     release.set("nginx-release")
 }
 
-tasks.register<HelmDependencyUpdateTask>("helmDependencyUpdate") { chartName.set("nginx-release") }
-
 tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     allNamespaces.set(true)
     namespace.set("nginx-ns")
