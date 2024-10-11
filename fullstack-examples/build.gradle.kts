@@ -42,7 +42,7 @@ tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
 tasks.register<HelmInstallChartTask>("helmInstallSoloChart") {
     createNamespace.set(true)
     namespace.set("solo-ns")
-    release.set("slo-release")
+    release.set("v0.33.0")
     chart.set("https://hashgraph.github.io/solo-charts/charts")
 }
 
@@ -53,7 +53,7 @@ tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
 
 tasks.register<HelmUninstallChartTask>("helmUninstallSoloChart") {
     namespace.set("solo-ns")
-    release.set("solo-release")
+    release.set("v0.33.0")
 }
 
 tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
@@ -65,12 +65,12 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
 tasks.register<HelmReleaseExistsTask>("helmSoloExists") {
     allNamespaces.set(true)
     namespace.set("solo-ns")
-    release.set("solo-release")
+    release.set("v0.33.0")
 }
 
 tasks.register<HelmTestChartTask>("helmTestSoloChart") {
     namespace.set("solo-ns")
-    release.set("solo-charts")
+    release.set("v0.33.0")
 }
 
 tasks.register<HelmTestChartTask>("helmTestNginxChart") {
