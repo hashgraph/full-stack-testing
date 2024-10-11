@@ -43,7 +43,7 @@ tasks.register<HelmInstallChartTask>("helmInstallSoloChart") {
     createNamespace.set(true)
     namespace.set("solo-ns")
     release.set("v0.33.0")
-    chart.set("https://hashgraph.github.io/solo-charts/charts")
+    chart.set("https://hashgraph.github.io/solo-charts/charts/solo-deployment")
 }
 
 tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
