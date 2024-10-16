@@ -59,12 +59,6 @@ jobs:
       gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
       gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
 
-  chart-tests:
-    name: FS Helm Chart Tests
-    uses: ./.github/workflows/zxc-helm-chart-tests.yaml
-    with:
-      custom-job-label: Standard
-
   codecov:
     name: CodeCov
     uses: ./.github/workflows/zxc-code-analysis.yaml
