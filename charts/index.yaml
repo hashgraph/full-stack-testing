@@ -1076,7 +1076,7 @@ entries:
     version: 0.12.0
   - apiVersion: v2
     appVersion: 0.0.0
-    created: "2024-07-12T15:46:31.103542578Z"
+    created: "2024-10-18T15:50:39.49871361Z"
     dependencies:
     - alias: minio-operator
       condition: cloud.minio.enabled
@@ -1098,7 +1098,7 @@ entries:
       version: v1.13.3
     description: An umbrella Helm chart to setup shared resources for 1+ deployments
       of the `fullstack-deployment` chart(s)
-    digest: 54cf9f13cd507533c0577d077d73677ce83de18a67b1fa0a483dd8e567081ce6
+    digest: 9f0809e8c939307890bbf91fcadab42be1636b0118b181710f04a6287566072a
     name: fullstack-cluster-setup
     type: application
     urls:
@@ -2253,7 +2253,7 @@ entries:
     version: 0.12.0
   - apiVersion: v2
     appVersion: 0.0.0
-    created: "2024-07-12T15:46:31.156703393Z"
+    created: "2024-10-18T15:50:39.540820241Z"
     dependencies:
     - condition: hedera-explorer.enabled
       name: hedera-explorer
@@ -2263,7 +2263,7 @@ entries:
       condition: hedera-mirror-node.enabled
       name: hedera-mirror
       repository: https://hashgraph.github.io/hedera-mirror-node/charts
-      version: 0.107.2
+      version: 0.113.0
     - alias: minio-server
       condition: cloud.minio.enabled
       name: tenant
@@ -2278,11 +2278,11 @@ entries:
       repository: https://haproxy-ingress.github.io/charts
       version: 0.14.5
     description: An umbrella Helm chart for a chart deployment of `fullstack-deployment`
-    digest: 8c10afadbeb440fe86d9fc489a946f0c9af8aac6028e65da41b58bc362bb4642
+    digest: 4dceff720e4e236c9301441fdb459bcf47c2b33b08fe624254542e63fef834d8
     kubeVersion: '>=1.25.0-0'
     name: fullstack-deployment
     type: application
     urls:
     - https://hashgraph.github.io/full-stack-testing/charts/fullstack-deployment-0.0.0.tgz
     version: 0.0.0
-generated: "2024-09-06T18:50:58.890813391Z"
+generated: "2024-10-18T15:50:39.450881454Z"
