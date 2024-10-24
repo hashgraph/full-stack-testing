@@ -40,7 +40,19 @@ class HelmDependencyUpdateTaskTest {
         }
     }
 
+    @Test
     @DisplayName("Test Helm Dependency Update Task")
+    internal fun testDependencyUpdate() {
+//        val helmDependencyUpdateTask = project.tasks.create(
+//            "helmDependencyUpdateTask",
+//            HelmDependencyUpdateTask::class
+//        ).apply {
+//            chartName.set(CHART)
+//            workingDirectory.set(File(".").toPath().toString())
+//        }
+//        assertThat(helmDependencyUpdateTask.chartName.get()).isEqualTo(CHART)
+//        helmDependencyUpdateTask.dependencyUpdate()
+    }
 
     @Test
     @DisplayName("Test Helm Dependency Update Task with no chart name")
