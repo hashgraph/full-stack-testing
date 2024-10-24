@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2023-2024 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.hedera.fullstack.gradle.plugin.HelmDependencyUpdateTask
 import com.hedera.fullstack.gradle.plugin.HelmInstallChartTask
 import com.hedera.fullstack.gradle.plugin.HelmReleaseExistsTask
 import com.hedera.fullstack.gradle.plugin.HelmTestChartTask
@@ -33,13 +32,6 @@ dependencies {
     implementation(platform("com.hedera.fullstack:fullstack-bom"))
 }
 
-tasks.register<HelmInstallChartTask>("helmInstallFstChart") {
-    createNamespace.set(true)
-    namespace.set("fst-ns")
-    release.set("fst")
-    chart.set("../charts/fullstack-deployment")
-}
-
 tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     createNamespace.set(true)
     namespace.set("nginx-ns")
@@ -47,9 +39,21 @@ tasks.register<HelmInstallChartTask>("helmInstallNginxChart") {
     chart.set("oci://ghcr.io/nginxinc/charts/nginx-ingress")
 }
 
+tasks.register<HelmInstallChartTask>("helmInstallSoloChart") {
+    createNamespace.set(true)
+    namespace.set("solo-ns")
+    release.set("v0.33.0")
+    chart.set("https://hashgraph.github.io/solo-charts/charts/solo-cluster-setup-0.33.0.tgz")
+}
+
 tasks.register<HelmUninstallChartTask>("helmUninstallNginxChart") {
     namespace.set("nginx-ns")
     release.set("nginx-release")
+}
+
+tasks.register<HelmUninstallChartTask>("helmUninstallSoloChart") {
+    namespace.set("solo-ns")
+    release.set("v0.33.0")
 }
 
 tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
@@ -58,8 +62,15 @@ tasks.register<HelmReleaseExistsTask>("helmNginxExists") {
     release.set("nginx-release")
 }
 
-tasks.register<HelmDependencyUpdateTask>("helmDependencyUpdate") {
-    chartName.set("../charts/fullstack-deployment")
+tasks.register<HelmReleaseExistsTask>("helmSoloExists") {
+    allNamespaces.set(true)
+    namespace.set("solo-ns")
+    release.set("v0.33.0")
+}
+
+tasks.register<HelmTestChartTask>("helmTestSoloChart") {
+    namespace.set("solo-ns")
+    release.set("v0.33.0")
 }
 
 tasks.register<HelmTestChartTask>("helmTestNginxChart") {
@@ -79,9 +90,12 @@ tasks.register<KindArtifactTask>("kindArtifact") { version.set(kindVersion) }
 
 tasks.check {
     dependsOn("helmInstallNginxChart")
+    dependsOn("helmInstallSoloChart")
     dependsOn("helmNginxExists")
+    dependsOn("helmSoloExists")
     dependsOn("helmTestNginxChart")
+    dependsOn("helmTestSoloChart")
     dependsOn("helmUninstallNginxChart")
-    dependsOn("helmDependencyUpdate")
+    dependsOn("helmUninstallSoloChart")
     dependsOn("helmUninstallNotAChart")
 }
