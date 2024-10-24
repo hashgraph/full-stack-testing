@@ -39,7 +39,9 @@ class HelmDependencyUpdateTaskTest {
             project = ProjectBuilder.builder().build()
         }
     }
-    
+
+    @DisplayName("Test Helm Dependency Update Task")
+
     @Test
     @DisplayName("Test Helm Dependency Update Task with no chart name")
     internal fun testDependencyUpdateWithNoChartName() {
