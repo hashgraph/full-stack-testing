@@ -137,7 +137,7 @@ jobs:
           name: Coverage Reports
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@05f5a9cfad807516dbbef9929c4a42df3eb78766 # v5.0.3
+        uses: codecov/codecov-action@015f24e6818733317a2da2edd6290ab26238649a # v5.0.7
         if: ${{ inputs.enable-codecov-analysis && !cancelled() && !failure() }}
         env:
           CODECOV_TOKEN: ${{ secrets.codecov-token }}
