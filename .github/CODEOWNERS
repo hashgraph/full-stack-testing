@@ -31,11 +31,11 @@
 .releaserc                                      @hashgraph/release-engineering-managers @hashgraph/release-engineering
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
-/CODEOWNERS                                     @hashgraph/release-engineering-managers @hashgraph/release-engineering
+/CODEOWNERS                                     @hashgraph/release-engineering-managers
 
 # Protect the repository root files
 /README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
-**/LICENSE                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/LICENSE                                      @hashgraph/release-engineering-managers
 
 # CodeCov configuration
 **/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers
