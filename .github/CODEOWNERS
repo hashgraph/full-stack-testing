@@ -28,7 +28,7 @@
 .remarkrc                                       @hashgraph/release-engineering-managers @hashgraph/release-engineering
 
 # Semantic Release Configuration
-.releaserc                                      @hashgraph/release-engineering-managers @hashgraph/release-engineering
+.releaserc                                      @hashgraph/release-engineering-managers @hashgraph/release-engineering @hashgraph/devops-ci
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
 /CODEOWNERS                                     @hashgraph/release-engineering-managers
@@ -38,7 +38,7 @@
 **/LICENSE                                      @hashgraph/release-engineering-managers
 
 # CodeCov configuration
-**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci @hashgraph/devops-ci-committers 
 
 # Git Ignore definitions
 **/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
