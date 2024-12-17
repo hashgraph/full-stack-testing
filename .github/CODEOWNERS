@@ -9,9 +9,9 @@
 ############################
 
 /build-logic/**                                 @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
-/fullstack-core/**                              @hashgraph/release-engineering
-/fullstack-examples/**                          @hashgraph/release-engineering
-/fullstack-gradle-plugin/**                     @hashgraph/release-engineering @hashgraph/devops-ci
+/fullstack-core/**                              @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/fullstack-examples/**                          @hashgraph/release-engineering @hashgraph/release-engineering-managers
+/fullstack-gradle-plugin/**                     @hashgraph/release-engineering @hashgraph/devops-ci @hashgraph/release-engineering-managers
 
 #########################
 #####  Core Files  ######
@@ -20,25 +20,25 @@
 # NOTE: Must be placed last to ensure enforcement over all other rules
 
 # Protection Rules for Github Configuration Files and Actions Workflows
-/.github/                                       @hashgraph/release-engineering-managers @hashgraph/devops-ci
-/.github/workflows/                             @hashgraph/release-engineering-managers @hashgraph/devops-ci
+/.github/                                       @hashgraph/release-engineering-managers @hashgraph/devops-ci @hashgraph/release-engineering
+/.github/workflows/                             @hashgraph/release-engineering-managers @hashgraph/devops-ci @hashgraph/release-engineering
 
 # Codacy Tool Configurations
-/config/                                        @hashgraph/release-engineering-managers
-.remarkrc                                       @hashgraph/release-engineering-managers
+/config/                                        @hashgraph/release-engineering-managers @hashgraph/release-engineering
+.remarkrc                                       @hashgraph/release-engineering-managers @hashgraph/release-engineering
 
 # Semantic Release Configuration
-.releaserc                                      @hashgraph/release-engineering-managers
+.releaserc                                      @hashgraph/release-engineering-managers @hashgraph/release-engineering @hashgraph/devops-ci
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
 /CODEOWNERS                                     @hashgraph/release-engineering-managers
 
 # Protect the repository root files
 /README.md                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
-**/LICENSE                                      @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/LICENSE                                      @hashgraph/release-engineering-managers
 
 # CodeCov configuration
-**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers
+**/codecov.yml                                  @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci @hashgraph/devops-ci-committers 
 
 # Git Ignore definitions
 **/.gitignore                                   @hashgraph/release-engineering @hashgraph/release-engineering-managers @hashgraph/devops-ci
