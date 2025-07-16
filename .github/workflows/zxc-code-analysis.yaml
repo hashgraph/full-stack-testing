@@ -126,7 +126,7 @@ jobs:
 
       # Node.JS 16.x is required for the Snyk CLI, Sonar Scan, and CodeCov steps below.
       - name: Setup Node
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ inputs.node-version }}
 
