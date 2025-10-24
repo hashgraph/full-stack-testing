@@ -281,14 +281,14 @@ jobs:
           arguments: jacocoTestReport --scan
 
       - name: Publish Jacoco Coverage Report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
           name: Coverage Reports
           path: '**/jacocoTestReport.xml'
 
       - name: Publish Test Reports
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ inputs.enable-unit-tests && steps.gradle-build.conclusion == 'success' && steps.gradle-build-examples.conclusion == 'success' && steps.gradle-build-gradle-plugin.conclusion == 'success' && !cancelled() }}
         with:
           name: Test Reports
