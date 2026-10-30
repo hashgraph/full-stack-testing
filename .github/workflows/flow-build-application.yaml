@@ -33,11 +33,6 @@ on:
         type: boolean
         required: false
         default: false
-      enable-snyk-scan:
-        description: "Snyk Scan Enabled"
-        type: boolean
-        required: false
-        default: false
       java-version:
         description: "Java JDK Version:"
         type: string
@@ -87,12 +82,10 @@ jobs:
       java-version: ${{ github.event.inputs.java-version || '21.0.1' }}
       java-distribution: ${{ github.event.inputs.java-distribution || 'temurin' }}
       gradle-version: ${{ github.event.inputs.gradle-version || 'wrapper' }}
-      enable-snyk-scan: ${{ github.event_name == 'push' || github.event.inputs.enable-snyk-scan == 'true' }}
       enable-sonar-analysis: ${{ github.event_name == 'push' || github.event.inputs.enable-sonar-analysis == 'true' }}
       enable-codecov-analysis: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
     secrets:
       gradle-cache-username: ${{ secrets.GRADLE_CACHE_USERNAME }}
       gradle-cache-password: ${{ secrets.GRADLE_CACHE_PASSWORD }}
       sonar-token: ${{ secrets.SONAR_TOKEN }}
-      snyk-token: ${{ secrets.SNYK_TOKEN }}
       codecov-token: ${{ secrets.CODECOV_TOKEN }}
