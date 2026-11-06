@@ -174,7 +174,7 @@ jobs:
       # May be removed once the artifacts are publicly accessible.
       - name: Setup Google Cloud SDK
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
-        uses: google-github-actions/setup-gcloud@77e7a554d41e2ee56fc945c52dfd3f33d12def9a # v2.1.4
+        uses: step-security/setup-gcloud@eca4ba5778ff559fbc5cb59ab4db7ecdcf779b98 # v3.0.1
 
       - name: Compile
         id: gradle-build
