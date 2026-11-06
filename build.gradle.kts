@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Hedera Hashgraph, LLC
+ * Copyright (C) 2023-2026 Hedera Hashgraph, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 plugins { id("com.hedera.fullstack.root") }
 
 repositories {
-    // Source Maven Central Artifacts from JFrog Artifactory
-    maven { url = uri("https://artifacts.swirldslabs.io/artifactory/central-maven-external/") }
+    mavenCentral()
     gradlePluginPortal()
 }
