@@ -163,7 +163,7 @@ jobs:
       # May be removed once the artifacts are publicly accessible.
       - name: Authenticate to Google Cloud
         id: google-auth
-        uses: step-security/google-github-auth@40f6deebd366f16c782d7a0ad0844e3b96a032a6 # v2.1.10
+        uses: step-security/google-github-auth@775fc4c80760272ef389c9f9f8d98de7db0c170d # v3.0.2
         if: ${{ inputs.enable-unit-tests && !cancelled() && !failure() }}
         with:
           token_format: 'access_token'
